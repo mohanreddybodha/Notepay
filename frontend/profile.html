@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Notepay — My Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="css/global.css"/>
+  <script>
+    if (localStorage.getItem("np_dark")) {
+      document.documentElement.classList.add("dark-mode");
+      window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
+    }
+  </script>
+  <style>
+    .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);width:100%;max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);transition: background 0.3s, color 0.3s;}
+    .status-bar{display:none;}
+    .ab{background:var(--primary-dk);display:flex;align-items:center;padding:10px 16px 14px;gap:8px;}
+    .back{color:rgba(255,255,255,.85);font-size:22px;cursor:pointer;padding:3px 7px;border-radius:8px;line-height:1;}
+    .back:hover{background:rgba(255,255,255,.1);}
+    .ab-ttl{flex:1;text-align:center;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:white;}
+    .scr{flex:1;overflow-y:auto;}
+    .scr::-webkit-scrollbar{display:none;}
+    /* Profile Header */
+    .prof-hdr{background:var(--surf-var);padding:20px 18px 22px;display:flex;flex-direction:column;align-items:center;gap:8px;border-bottom:1.5px solid var(--border);}
+    .prof-av{width:72px;height:72px;background:var(--primary-dk);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:900;border:3px solid var(--border2);font-family:'Nunito',sans-serif;}
+    .prof-nm{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);}
+    .prof-phone{font-size:13px;color:var(--text3);font-weight:600;}
+    .prof-edit-btn{border:1.5px solid var(--primary);border-radius:20px;padding:7px 20px;font-size:12.5px;font-weight:800;color:var(--primary);cursor:pointer;transition:all .15s;margin-top:2px;background:none;}
+    .prof-edit-btn:hover{background:var(--primary);color:white;}
+    /* Sections */
+    .psec{margin:14px 14px 0;}
+    .psec-lbl{font-size:9.5px;font-weight:800;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;padding-left:2px;}
+    .pcard{background:var(--card);border-radius:12px;border:1.5px solid var(--border2);overflow:hidden;}
+    .prow{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border2);}
+    .prow:last-child{border-bottom:none;}
+    .prow-c{cursor:pointer;transition:background .12s;}
+    .prow-c:hover{background:var(--surf-var);}
+    .pr-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+    .pr-val{font-size:14px;font-weight:800;color:var(--text);margin-top:2px;}
+    .pr-arrow{color:var(--text3);font-size:18px;}
+    /* Toggle */
+    .toggle{width:40px;height:24px;background:var(--tog-off);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;}
+    .toggle.on{background:var(--tog-on);}
+    .toggle-th{position:absolute;top:4px;left:4px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+    .toggle.on .toggle-th{transform:translateX(16px);}
+    /* Logout section */
+    .logout-sec{margin:14px 14px 20px;}
+    .logout-row{display:flex;align-items:center;gap:8px;padding:13px 16px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border2);}
+    .logout-row:last-child{border-bottom:none;}
+    .lo-lbl{font-size:14px;font-weight:800;color:var(--red);font-family:'Nunito',sans-serif;}
+    .lo-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+    .footer{text-align:center;font-size:11px;color:var(--text3);font-weight:600;padding:12px 0 24px;}
+    /* Popup */
+    .pop-ov{position:fixed;inset:0;background:rgba(13,27,42,.8);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;}
+    .pop-box{background:var(--card);border-radius:22px;padding:22px 20px;width:100%;max-width:300px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+    .pop-ic{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 10px;}
+    .pop-t{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);text-align:center;margin-bottom:5px;}
+    .pop-m{font-size:12.5px;color:var(--text2);text-align:center;line-height:1.65;margin-bottom:14px;}
+    .pop-line{height:1px;background:var(--border2);margin-bottom:12px;}
+    .pop-btns{display:flex;gap:8px;}
+    .pbc{flex:1;text-align:center;font-size:13.5px;font-weight:700;color:var(--text3);cursor:pointer;padding:9px 0;}
+    .pbk{border-radius:14px;text-align:center;padding:10px 20px;font-size:13.5px;font-weight:900;color:white;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 3px 0 rgba(0,0,0,.22);}
+    .pbk.r{background:var(--red);}
+    .loader{width:22px;height:22px;border:2.5px solid var(--border2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:60px auto;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="ab">
+    <div class="back" onclick="history.back()">←</div>
+    <div class="ab-ttl">My Profile</div>
+    <div style="width:32px"></div>
+  </div>
+  <div class="scr">
+    <div id="loading"><div class="loader"></div></div>
+    <div id="content" style="display:none;">
+      <div class="prof-hdr">
+        <div class="prof-av" id="prof-av">?</div>
+        <div class="prof-nm" id="prof-nm">—</div>
+        <div class="prof-phone" id="prof-phone">—</div>
+        <button class="prof-edit-btn" onclick="window.location.href='edit-profile.html'">Edit Profile</button>
+      </div>
+
+      <div class="psec" style="margin-top:16px;"><div class="psec-lbl">Account Info</div>
+        <div class="pcard">
+          <div class="prow"><div><div class="pr-lbl">Gender</div><div class="pr-val" id="prof-gender">—</div></div></div>
+          <div class="prow"><div><div class="pr-lbl">Member Since</div><div class="pr-val" id="prof-since">—</div></div></div>
+        </div>
+      </div>
+
+      <div class="psec" style="margin-top:12px;"><div class="psec-lbl">Preferences</div>
+        <div class="pcard">
+          <div class="prow">
+            <div><div class="pr-lbl">Dark Mode</div></div>
+            <div class="toggle" id="dark-toggle" onclick="toggleDark(this)"><div class="toggle-th"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="logout-sec" style="margin-top:12px;"><div class="psec-lbl">Session</div>
+        <div class="pcard">
+          <div class="logout-row" onclick="showLogoutPop()">
+            <div><div class="lo-lbl">Logout</div><div class="lo-sub">Sign out from this device</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+    </div>
+  </div>
+</div>
+
+<!-- Logout Popup -->
+<div class="pop-ov" id="logout-pop" style="display:none;">
+  <div class="pop-box">
+    <div class="pop-ic" style="background:var(--surf-var);border:2px solid var(--border2);">📱</div>
+    <div class="pop-t">Logout?</div>
+    <div class="pop-m">You will be signed out from this device. Continue?</div>
+    <div class="pop-line"></div>
+    <div class="pop-btns">
+      <div class="pbc" onclick="document.getElementById('logout-pop').style.display='none'">Cancel</div>
+      <div class="pbk r" onclick="doLogout()">Logout</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth-guard.js"></script>
+<script>
+  waitForAuthReady().then(async user => {
+    if (!user) return;
+    try {
+      const p = await getMyProfile();
+      document.getElementById("prof-av").textContent   = getInitials(p.full_name);
+      document.getElementById("prof-nm").textContent   = p.full_name;
+      document.getElementById("prof-phone").textContent= p.phone_number;
+      document.getElementById("prof-gender").textContent= p.gender === "other" ? "Prefer not to say" : p.gender;
+      document.getElementById("prof-since").textContent = formatDate(p.created_at);
+      // Store for edit page
+      sessionStorage.setItem("np_profile", JSON.stringify(p));
+    } catch(e) { showToast("Failed to load profile.","error"); }
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("content").style.display = "block";
+  });
+
+  function toggleDark(el) {
+    el.classList.toggle("on");
+    document.body.classList.toggle("dark-mode", el.classList.contains("on"));
+    // Persist preference
+    localStorage.setItem("np_dark", el.classList.contains("on") ? "1" : "");
+  }
+
+  // Restore dark mode preference
+  if (localStorage.getItem("np_dark")) {
+    document.getElementById("dark-toggle")?.classList.add("on");
+  }
+
+  function showLogoutPop() { document.getElementById("logout-pop").style.display="flex"; }
+
+  async function doLogout() {
+    try {
+      await auth.signOut();
+      sessionStorage.clear();
+      window.location.replace("login.html");
+    } catch(e) {
+      showToast("Logout failed.","error");
+      document.getElementById("logout-pop").style.display="none";
+    }
+  }
+</script>
+</body>
+</html>

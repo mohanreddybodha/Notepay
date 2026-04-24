@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Notepay — Your Details</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="css/global.css"/>
+  <script>
+    if (localStorage.getItem("np_dark")) {
+      document.documentElement.classList.add("dark-mode");
+      window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
+    }
+  </script>
+  <style>
+    .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
+    .status-bar{background:var(--surf-var);display:flex;justify-content:space-between;padding:10px 20px 8px;font-size:11px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;border-bottom:1px solid var(--border);}
+    .ab{background:var(--surf-var);display:flex;align-items:center;padding:10px 16px 12px;gap:8px;border-bottom:1.5px solid var(--border2);}
+    .back{color:var(--primary);font-size:22px;cursor:pointer;padding:3px 7px;border-radius:8px;}
+    .ab-ttl{flex:1;text-align:center;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--text);}
+    .form-body{flex:1;display:flex;flex-direction:column;padding:24px 20px;}
+    /* Avatar placeholder */
+    .avatar-wrap{display:flex;justify-content:center;margin-bottom:22px;}
+    .avatar{width:80px;height:80px;background:var(--surf-var2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;border:3px solid var(--border2);}
+    /* Fields */
+    .field-wrap{margin-bottom:14px;}
+    .field-label-out{font-size:11px;font-weight:800;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+    .field{width:100%;background:var(--input-bg);border:2px solid var(--input-border);border-radius:14px;padding:12px 15px;transition:border-color .18s,box-shadow .18s;}
+    .field:focus-within{border-color:var(--input-focus);box-shadow:0 0 0 3px rgba(26,78,140,.08);}
+    .field input{width:100%;border:none;outline:none;background:transparent;font-size:15px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;}
+    .field input::placeholder{color:var(--text3);font-weight:600;}
+    /* Gender */
+    .gender-label{font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px;}
+    .gender-row{display:flex;gap:8px;margin-bottom:14px;}
+    .gp{flex:1;text-align:center;padding:10px 0;border-radius:12px;font-size:13.5px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:2px solid var(--border);color:var(--text2);background:var(--input-bg);transition:all .15s;user-select:none;}
+    .gp.sel{background:var(--primary);color:white;border-color:var(--primary);}
+    /* Phone display */
+    .phone-field{width:100%;background:var(--input-bg);border:2px solid var(--border2);border-radius:14px;padding:12px 15px;margin-bottom:20px;}
+    .ph-label{font-size:9.5px;font-weight:800;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px;}
+    .ph-row{display:flex;justify-content:space-between;align-items:center;}
+    .ph-val{font-size:15px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;}
+    .ph-verified{font-size:11.5px;font-weight:800;color:var(--green);}
+    /* Button */
+    .btn-create{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;margin-top:4px;}
+    .btn-create:hover{transform:translateY(-1px);}
+    .btn-create:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
+    .btn-create:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
+    .error-msg{display:none;align-items:center;gap:6px;background:#FFF0EC;border:1.5px solid #D4906A;border-radius:10px;padding:9px 12px;font-size:12px;color:var(--red);font-weight:700;width:100%;margin-bottom:10px;}
+    .error-msg.visible{display:flex;}
+    .footer{text-align:center;font-size:11px;color:var(--text3);font-weight:600;padding:14px 0 18px;margin-top:auto;}
+    .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-create.loading .btn-text{display:none;}
+    .btn-create.loading .spinner{display:block;}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="ab">
+    <div class="back" onclick="history.back()">←</div>
+    <div class="ab-ttl">Your Details</div>
+    <div style="width:32px"></div>
+  </div>
+  <div class="form-body">
+    <div class="avatar-wrap">
+      <div class="avatar" id="avatar-preview">📒</div>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field">
+        <input type="text" id="full-name" placeholder="Full Name" autocomplete="name" maxlength="60"/>
+      </div>
+    </div>
+
+    <div class="gender-label">Gender</div>
+    <div class="gender-row">
+      <div class="gp" id="g-male"   onclick="selGender('Male', 'g-male')">Male</div>
+      <div class="gp" id="g-female" onclick="selGender('Female', 'g-female')">Female</div>
+      <div class="gp" id="g-other"  onclick="selGender('Prefer not to say', 'g-other')">Other</div>
+    </div>
+
+    <div class="phone-field">
+      <div class="ph-label">Mobile Number</div>
+      <div class="ph-row">
+        <div class="ph-val" id="phone-show">—</div>
+        <div class="ph-verified">✓ Verified</div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="err-box"><span>⚠️</span><span id="err-txt">Please fill all fields.</span></div>
+
+    <button class="btn-create" id="create-btn" type="button">
+      <span class="btn-text">Create Account</span>
+      <span class="spinner"></span>
+    </button>
+
+    <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  let userPhone = "";
+  let selectedGender = null;
+
+  // Wait for Firebase auth
+  waitForAuthReady().then(user => {
+    if (!user) {
+      window.location.replace("login.html");
+      return;
+    }
+    // Try to get phone from Firebase user, fallback to sessionStorage
+    userPhone = user.phoneNumber || sessionStorage.getItem("np_phone") || "";
+    document.getElementById("phone-show").textContent = userPhone;
+  });
+
+  function selGender(val, id) {
+    selectedGender = val;
+    ["g-male", "g-female", "g-other"].forEach(x => {
+      document.getElementById(x).classList.toggle("sel", x === id);
+    });
+  }
+
+  // Update avatar initials as user types
+  document.getElementById("full-name").addEventListener("input", function () {
+    const initials = getInitials(this.value);
+    document.getElementById("avatar-preview").textContent = initials || "📒";
+  });
+
+  document.getElementById("create-btn").addEventListener("click", createAccount);
+
+  async function createAccount() {
+    const name   = document.getElementById("full-name").value.trim();
+    const errBox = document.getElementById("err-box");
+    const errTxt = document.getElementById("err-txt");
+    const btn    = document.getElementById("create-btn");
+
+    if (!name) { errTxt.textContent = "Full name is required."; errBox.classList.add("visible"); return; }
+    if (!selectedGender) { errTxt.textContent = "Please select your gender."; errBox.classList.add("visible"); return; }
+    errBox.classList.remove("visible");
+
+    btn.classList.add("loading"); btn.disabled = true;
+
+    try {
+      const token = sessionStorage.getItem("np_token_tmp") || await getIdToken();
+      const { status, data } = await registerUser(token, name, selectedGender, userPhone);
+
+      if (status === 200 || status === 201) {
+        sessionStorage.removeItem("np_new_user");
+        sessionStorage.removeItem("np_token_tmp");
+        window.location.replace("dashboard.html");
+      } else {
+        if (data?.detail && Array.isArray(data.detail)) {
+          throw new Error(data.detail[0].msg);
+        }
+        throw new Error(data?.detail || "Registration failed. Please try again.");
+      }
+    } catch (err) {
+      errTxt.textContent = err.message;
+      errBox.classList.add("visible");
+      btn.classList.remove("loading"); btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

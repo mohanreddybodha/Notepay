@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Notepay — Login</title>
+  <meta name="description" content="Sign in to Notepay — Event Donation and Expense Tracker."/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <!-- Firebase compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="css/global.css"/>
+  <style>
+    .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
+    .status-bar{background:var(--surf-var);display:flex;justify-content:space-between;padding:10px 20px 8px;font-size:11px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;border-bottom:1px solid var(--border);}
+    .form-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 24px 24px;}
+
+    /* ── Logo ── */
+    .logo-icon{width:76px;height:76px;background:white;border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(13,43,85,.13);margin-bottom:14px;border:1px solid var(--border);}
+    .logo-icon svg{width:42px;height:42px;}
+    .logo-name{font-family:'Nunito',sans-serif;font-size:28px;font-weight:900;color:var(--primary-dk);}
+    .logo-tag{font-size:12.5px;color:var(--text3);margin-top:3px;margin-bottom:24px;font-weight:600;}
+    .divider{width:100%;height:1.5px;background:var(--border2);margin-bottom:24px;}
+
+    /* ── Section headings ── */
+    .h1{font-family:'Nunito',sans-serif;font-size:22px;font-weight:900;color:var(--text);align-self:flex-start;}
+    .h1-sub{font-size:13px;color:var(--text3);align-self:flex-start;margin-top:3px;margin-bottom:20px;font-weight:600;}
+
+    /* ── Field ── */
+    .field-wrap{width:100%;margin-bottom:16px;}
+    .field{width:100%;background:var(--input-bg);border:2px solid var(--input-border);border-radius:14px;padding:12px 15px 11px;transition:border-color .18s,box-shadow .18s;}
+    .field:focus-within{border-color:var(--input-focus);box-shadow:0 0 0 3px rgba(26,78,140,.08);}
+    .field-label{font-size:9.5px;font-weight:800;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px;}
+    .field-row{display:flex;align-items:center;gap:8px;}
+    .country-code{font-size:16px;font-weight:800;color:var(--text2);flex-shrink:0;border-right:1.5px solid var(--border2);padding-right:10px;}
+    .phone-input{flex:1;border:none;outline:none;background:transparent;font-size:16px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;}
+    .phone-input::placeholder{color:var(--text3);font-weight:600;}
+
+    /* ── OTP digit boxes ── */
+    .otp-row{display:flex;gap:8px;width:100%;margin:16px 0 12px;}
+    .otp-box{flex:1;height:56px;background:var(--input-bg);border:2px solid var(--input-border);border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-size:26px;font-weight:900;color:var(--text);transition:border-color .15s;}
+    .otp-box.filled{border-color:var(--primary);}
+
+    /* ── Pill showing phone number in OTP section ── */
+    .phone-pill{display:inline-flex;align-items:center;gap:6px;background:var(--border2);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+    .change-link{color:var(--primary);font-weight:800;cursor:pointer;font-size:12.5px;margin-top:2px;align-self:flex-start;}
+
+    /* ── Buttons ── */
+    .btn-primary{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;}
+    .btn-primary:hover{background:#163f72;transform:translateY(-1px);}
+    .btn-primary:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
+    .btn-primary:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
+
+    /* ── Error box ── */
+    .error-msg{display:none;align-items:center;gap:6px;background:#FFF0EC;border:1.5px solid #D4906A;border-radius:10px;padding:9px 12px;font-size:12px;color:var(--red);font-weight:700;width:100%;margin-top:8px;line-height:1.5;}
+    .error-msg.visible{display:flex;}
+
+    /* ── Resend ── */
+    .resend-row{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:10px;}
+    .resend-timer{font-size:12px;color:var(--text3);font-weight:600;}
+    .resend-link{font-size:13px;font-weight:800;color:var(--primary);cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .2s;}
+    .resend-link.active{opacity:1;pointer-events:auto;}
+
+    /* ── Note box ── */
+    .note-box{background:#EAF4FF;border-radius:10px;padding:10px 12px;font-size:11.5px;color:#1a4a80;line-height:1.6;display:flex;gap:7px;width:100%;margin-top:12px;}
+
+    /* ── Spacer ── */
+    .spacer{flex:1;}
+    .note-txt{text-align:center;font-size:12px;color:var(--text3);font-weight:600;margin-top:20px;}
+    .terms-wrap{text-align:center;margin-top:10px;}
+    .terms-line{font-size:11px;color:var(--text3);font-weight:600;}
+    .terms-link{display:inline-block;font-size:12px;font-weight:800;color:var(--primary);margin-top:3px;cursor:pointer;}
+    .footer{text-align:center;font-size:11px;color:var(--text3);font-weight:600;padding:14px 0 18px;margin-top:16px;}
+
+    /* ── Spinner ── */
+    .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-primary.loading .btn-text{display:none;}
+    .btn-primary.loading .spinner{display:block;}
+
+    /* ── Sections ── */
+    #section-phone{display:flex;flex-direction:column;align-items:center;width:100%;}
+    #section-otp{display:none;flex-direction:column;align-items:center;width:100%;}
+  </style>
+</head>
+<body>
+<div class="page" id="page-login">
+  <div class="form-body">
+
+    <!-- Logo (always visible) -->
+    <div class="logo-icon">
+      <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="7" y="4" width="24" height="32" rx="3" fill="#1A4E8C"/>
+        <rect x="5" y="6" width="4" height="28" rx="2" fill="#0D2B55"/>
+        <rect x="12" y="12" width="14" height="2" rx="1" fill="white" fill-opacity=".85"/>
+        <rect x="12" y="17" width="14" height="2" rx="1" fill="white" fill-opacity=".85"/>
+        <rect x="12" y="22" width="10" height="2" rx="1" fill="white" fill-opacity=".6"/>
+        <rect x="12" y="27" width="6" height="2" rx="1" fill="#0FA3A3"/>
+      </svg>
+    </div>
+    <div class="logo-name">Notepay</div>
+    <div class="logo-tag">Event Donation &amp; Expense Tracker</div>
+    <div class="divider"></div>
+
+
+
+    <!-- ═══════════════════════════════════
+         SECTION 1 — Phone Number Entry
+    ═══════════════════════════════════ -->
+    <div id="section-phone">
+      <h1 class="h1">Welcome</h1>
+      <p class="h1-sub">Enter your mobile number to continue</p>
+
+      <div class="field-wrap">
+        <div class="field" id="phone-field">
+          <div class="field-label">Mobile Number</div>
+          <div class="field-row">
+            <div class="country-code">+91</div>
+            <input type="tel" id="phone-input" class="phone-input"
+              placeholder="00000 00000" maxlength="10"
+              inputmode="numeric" autocomplete="tel-national"
+              aria-label="Mobile number"/>
+          </div>
+        </div>
+        <div class="error-msg" id="phone-error">
+          <span>⚠️</span><span id="phone-err-text">Please enter a valid 10-digit mobile number.</span>
+        </div>
+      </div>
+
+      <!-- Invisible reCAPTCHA anchor -->
+      <div id="recaptcha-container" style="margin-bottom:8px;"></div>
+
+      <button class="btn-primary" id="send-btn" type="button">
+        <span class="btn-text">Send OTP</span>
+        <span class="spinner"></span>
+      </button>
+
+      <div class="spacer"></div>
+      <p class="note-txt">New user? We'll set up your account after OTP verification.</p>
+      <div class="terms-wrap">
+        <div class="terms-line">By continuing you agree to our</div>
+        <a href="#" class="terms-link">Terms of Service &amp; Privacy Policy</a>
+      </div>
+      <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         SECTION 2 — OTP Verify
+    ═══════════════════════════════════ -->
+    <div id="section-otp">
+      <h1 class="h1">Verify OTP</h1>
+      <p class="h1-sub">6-digit code sent to</p>
+      <div class="phone-pill" id="otp-phone-pill">+91 XXXXXXXXXX</div>
+      <span class="change-link" onclick="goBackToPhone()">✂️ Change number</span>
+
+      <!-- OTP digit boxes (visual) -->
+      <div class="otp-row" id="otp-row" onclick="document.getElementById('otp-hidden').focus()">
+        <div class="otp-box" id="ob0"></div>
+        <div class="otp-box" id="ob1"></div>
+        <div class="otp-box" id="ob2"></div>
+        <div class="otp-box" id="ob3"></div>
+        <div class="otp-box" id="ob4"></div>
+        <div class="otp-box" id="ob5"></div>
+      </div>
+      <!-- Hidden real input -->
+      <input id="otp-hidden" type="tel" inputmode="numeric" maxlength="6"
+        autocomplete="one-time-code"
+        style="position:absolute;opacity:0;width:1px;height:1px;"/>
+
+      <div class="error-msg" id="otp-error">
+        <span>⚠️</span><span id="otp-err-text">Invalid OTP. Please try again.</span>
+      </div>
+
+      <button class="btn-primary" id="verify-btn" type="button" disabled style="margin-top:4px;">
+        <span class="btn-text">Verify &amp; Continue</span>
+        <span class="spinner"></span>
+      </button>
+
+      <div class="resend-row">
+        <div class="resend-timer">Resend in <strong id="countdown">60</strong>s</div>
+        <div class="resend-link" id="resend-link" onclick="resendOTP()">Resend OTP</div>
+      </div>
+
+      <div class="note-box" style="margin-top:14px;">
+        📱 OTP is valid for 10 minutes. Do not share it with anyone.
+      </div>
+      <div class="footer" style="margin-top:auto;">Notepay v1.0 &middot; Made with ♥ in India</div>
+    </div>
+
+  </div><!-- /form-body -->
+</div><!-- /page -->
+
+<script src="js/firebase-config.js"></script>
+<script src="js/api.js"></script>
+<script>
+// ─────────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────────
+let confirmationResult = null;
+let countdownTimer     = null;
+let recaptchaVerifier  = null;
+
+// ─────────────────────────────────────────────
+//  On page load — check existing session
+// ─────────────────────────────────────────────
+waitForAuthReady().then(user => {
+  if (user) window.location.replace("dashboard.html");
+});
+
+// ─────────────────────────────────────────────
+//  Init invisible reCAPTCHA
+// ─────────────────────────────────────────────
+window.addEventListener("load", () => {
+  recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
+    size: "invisible",
+    callback: () => {}
+  });
+  recaptchaVerifier.render();
+});
+
+// ─────────────────────────────────────────────
+//  Phone section
+// ─────────────────────────────────────────────
+const phoneInput = document.getElementById("phone-input");
+const phoneError = document.getElementById("phone-error");
+const phoneErrTxt= document.getElementById("phone-err-text");
+const sendBtn    = document.getElementById("send-btn");
+
+phoneInput.addEventListener("input", function () {
+  this.value = this.value.replace(/\D/g,"").slice(0,10);
+  phoneError.classList.remove("visible");
+});
+phoneInput.addEventListener("keydown", e => { if(e.key==="Enter") sendOTP(); });
+
+function showPhoneError(msg) {
+  phoneErrTxt.textContent = msg;
+  phoneError.classList.add("visible");
+}
+
+async function sendOTP() {
+  const num = phoneInput.value.trim();
+  if (!num || num.length < 10) { showPhoneError("Enter a valid 10-digit mobile number."); return; }
+  if (!/^[6-9]\d{9}$/.test(num)) { showPhoneError("Enter a valid Indian mobile number (starts with 6–9)."); return; }
+
+  sendBtn.classList.add("loading"); sendBtn.disabled = true;
+  phoneError.classList.remove("visible");
+
+  try {
+    // Reset verifier if reused
+    if (!recaptchaVerifier) {
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible", callback:()=>{} });
+      await recaptchaVerifier.render();
+    }
+
+    confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
+    // Show OTP section — confirmationResult stays in this window
+    showOTPSection(num);
+  } catch(err) {
+    console.error("sendOTP error:", err);
+    showPhoneError(getFriendlyError(err));
+    sendBtn.classList.remove("loading"); sendBtn.disabled = false;
+    // Reset reCAPTCHA
+    try {
+      recaptchaVerifier.clear();
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible", callback:()=>{} });
+      await recaptchaVerifier.render();
+    } catch(e) {}
+  }
+}
+
+sendBtn.addEventListener("click", sendOTP);
+
+// ─────────────────────────────────────────────
+//  Show OTP section
+// ─────────────────────────────────────────────
+function showOTPSection(num) {
+  document.getElementById("section-phone").style.display = "none";
+  document.getElementById("section-otp").style.display   = "flex";
+  document.getElementById("otp-phone-pill").textContent  = "+91 " + num;
+  sendBtn.classList.remove("loading"); sendBtn.disabled = false;
+  otpHidden.value = "";
+  updateBoxes("");
+  otpError.classList.remove("visible");
+  verifyBtn.disabled = true;
+  startCountdown();
+  setTimeout(() => otpHidden.focus(), 200);
+}
+
+function goBackToPhone() {
+  document.getElementById("section-otp").style.display   = "none";
+  document.getElementById("section-phone").style.display = "flex";
+  if (countdownTimer) clearInterval(countdownTimer);
+  confirmationResult = null;
+}
+
+// ─────────────────────────────────────────────
+//  OTP section
+// ─────────────────────────────────────────────
+const otpHidden  = document.getElementById("otp-hidden");
+const verifyBtn  = document.getElementById("verify-btn");
+const otpError   = document.getElementById("otp-error");
+const otpErrTxt  = document.getElementById("otp-err-text");
+
+document.getElementById("otp-row").addEventListener("click", () => otpHidden.focus());
+
+otpHidden.addEventListener("input", function () {
+  const val = this.value.replace(/\D/g,"").slice(0,6);
+  this.value = val;
+  updateBoxes(val);
+  otpError.classList.remove("visible");
+  verifyBtn.disabled = val.length < 6;
+  if (val.length === 6) verifyOTP();
+});
+
+function updateBoxes(val) {
+  for (let i = 0; i < 6; i++) {
+    const box = document.getElementById("ob" + i);
+    box.textContent = val[i] || "";
+    box.classList.toggle("filled", !!val[i]);
+  }
+}
+
+function showOTPError(msg) {
+  otpErrTxt.textContent = msg;
+  otpError.classList.add("visible");
+}
+
+verifyBtn.addEventListener("click", verifyOTP);
+
+async function verifyOTP() {
+  const code = otpHidden.value;
+  if (code.length < 6) return;
+  if (!confirmationResult) {
+    showOTPError("Session expired. Please go back and send OTP again.");
+    return;
+  }
+
+  verifyBtn.classList.add("loading"); verifyBtn.disabled = true;
+  otpError.classList.remove("visible");
+
+  try {
+    const result = await confirmationResult.confirm(code);
+    const user   = result.user;
+    const token  = await user.getIdToken();
+
+    // Check if user registered in backend
+    const { status, data } = await apiFetchWithToken("GET", "/users/me", token);
+
+    if (status === 200) {
+      // Existing user → Dashboard
+      window.location.replace("dashboard.html");
+    } else if (status === 404) {
+      // New user → Profile Setup
+      sessionStorage.setItem("np_new_user", "1");
+      sessionStorage.setItem("np_phone", "+91 " + phoneInput.value.trim());
+      sessionStorage.setItem("np_token_tmp", token);
+      window.location.replace("profile-setup.html");
+    } else {
+      const errMsg = (data && data.detail) ? (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail)) : `Unexpected server response (${status}).`;
+      throw new Error(errMsg);
+    }
+  } catch(err) {
+    console.error("verifyOTP error:", err);
+    showOTPError(getFriendlyError(err));
+    verifyBtn.classList.remove("loading"); verifyBtn.disabled = false;
+    // Re-enable re-entry
+    otpHidden.value = "";
+    updateBoxes("");
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Resend countdown
+// ─────────────────────────────────────────────
+function startCountdown() {
+  let secs = 60;
+  const cd  = document.getElementById("countdown");
+  const rl  = document.getElementById("resend-link");
+  rl.classList.remove("active");
+  cd.textContent = secs;
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    secs--;
+    cd.textContent = secs;
+    if (secs <= 0) { clearInterval(countdownTimer); rl.classList.add("active"); }
+  }, 1000);
+}
+
+async function resendOTP() {
+  const num = phoneInput.value.trim();
+  if (!num) { goBackToPhone(); return; }
+  document.getElementById("resend-link").classList.remove("active");
+  try {
+    recaptchaVerifier.clear();
+    recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible", callback:()=>{} });
+    await recaptchaVerifier.render();
+    confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
+    startCountdown();
+    showToast("OTP resent!");
+  } catch(err) {
+    showOTPError(getFriendlyError(err));
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Friendly error messages
+// ─────────────────────────────────────────────
+function getFriendlyError(err) {
+  const code = err.code || "";
+  if (code.includes("invalid-verification-code")) return "Invalid OTP. Please check and try again.";
+  if (code.includes("code-expired"))              return "OTP has expired. Please request a new one.";
+  if (code.includes("too-many-requests"))         return "Too many attempts. Please wait a few minutes.";
+  if (code.includes("billing-not-enabled"))       return "SMS not enabled. Add a test number in Firebase Console.";
+  if (code.includes("invalid-phone-number"))      return "Invalid phone number format.";
+  if (code.includes("missing-phone-number"))      return "Please enter a phone number.";
+  if (code.includes("quota-exceeded"))            return "SMS quota exceeded. Try again later.";
+  return err.message || "Something went wrong. Please try again.";
+}
+</script>
+</body>
+</html>

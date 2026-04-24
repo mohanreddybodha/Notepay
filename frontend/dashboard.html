@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Notepay — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="css/global.css"/>
+  <script>
+    if (localStorage.getItem("np_dark")) {
+      document.documentElement.classList.add("dark-mode");
+      window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
+    }
+  </script>
+  <style>
+    .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);width:100%;max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);transition: background 0.3s, color 0.3s;}
+    .status-bar{display:none;}
+    .app-bar{background:var(--primary-dk);display:flex;align-items:center;padding:10px 16px 14px;gap:8px;}
+    .logo-row{display:flex;align-items:center;gap:9px;}
+    .logo-box{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+    .logo-box svg{width:20px;height:20px;}
+    .logo-text{font-family:'Nunito',sans-serif;font-size:19px;font-weight:900;color:white;}
+    .spacer{flex:1;}
+    .av-btn{width:34px;height:34px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:900;cursor:pointer;border:2px solid rgba(255,255,255,.3);font-family:'Nunito',sans-serif;transition:transform .15s;text-decoration:none;}
+    .av-btn:hover{transform:scale(1.08);}
+    /* Tabs */
+    .tab-heading{display:flex;border-bottom:2px solid var(--border2);flex-shrink:0;background:var(--surface);}
+    .tab-h{flex:1;text-align:center;padding:10px 4px 11px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;color:var(--text3);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;user-select:none;}
+    .tab-h.active{color:var(--primary);border-bottom-color:var(--teal);}
+    .badge{background:var(--surf-var2);color:var(--text3);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:800;margin-left:4px;}
+    /* Search */
+    .search-bar{margin:12px 14px 0;background:var(--card);border-radius:20px;padding:9px 14px;display:flex;align-items:center;gap:8px;border:1.5px solid var(--border2);transition:border-color .15s;}
+    .search-bar.focused{border-color:var(--primary);}
+    .search-bar svg{width:15px;height:15px;flex-shrink:0;opacity:.5;}
+    .search-input{flex:1;border:none;outline:none;background:transparent;font-size:13px;color:var(--text);font-family:'Nunito Sans',sans-serif;font-weight:600;}
+    .search-input::placeholder{color:var(--text3);}
+    .clear-btn{font-size:14px;color:var(--text3);cursor:pointer;display:none;}
+    .clear-btn.visible{display:block;}
+    /* Event list */
+    .scr{flex:1;overflow-y:auto;padding-bottom:80px;padding-top:8px;}
+    .scr::-webkit-scrollbar{display:none;}
+    .hint{font-size:11px;color:var(--text3);padding:8px 16px 4px;font-weight:600;}
+    /* Event card */
+    .ev-card{background:var(--card);border-radius:14px;margin:0 14px 10px;border:1.5px solid var(--border2);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+    .ev-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,43,85,.1);}
+    .ec-body{padding:12px 14px 10px;}
+    .ec-top{display:flex;justify-content:space-between;align-items:flex-start;}
+    .ec-name{font-family:'Nunito',sans-serif;font-size:14.5px;font-weight:900;color:var(--text);}
+    .ec-desc{font-size:12px;color:var(--text3);margin-top:2px;}
+    .ec-meta{display:flex;justify-content:space-between;margin-top:7px;font-size:11.5px;color:var(--text3);}
+    .ec-amts{display:flex;gap:12px;margin-top:6px;}
+    .ec-g{font-size:12.5px;font-weight:800;color:var(--green);}
+    .ec-r{font-size:12.5px;font-weight:800;color:var(--red);}
+    .rb{border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:800;font-family:'Nunito',sans-serif;}
+    .rb-o{background:var(--surf-var);color:var(--primary-dk);border:1.5px solid var(--border2);}
+    .rb-c{background:var(--surf-var);color:var(--teal);border:1.5px solid var(--border2);}
+    .deact-bar{background:var(--deact-bar);padding:6px 14px;font-size:11.5px;font-weight:800;color:white;display:flex;align-items:center;gap:6px;}
+    /* Empty states */
+    .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:50px 24px;text-align:center;}
+    .es-icon{font-size:44px;margin-bottom:4px;}
+    .es-title{font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--text2);}
+    .es-sub{font-size:13px;color:var(--text3);line-height:1.65;}
+    /* Loading */
+    .loading-state{display:flex;flex-direction:column;align-items:center;padding:50px;gap:12px;}
+    .loader{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* FAB */
+    .fab{position:fixed;bottom:22px;right:50%;transform:translateX(calc(50% + 20px));background:var(--primary-dk);border-radius:24px;padding:12px 20px;display:flex;align-items:center;gap:8px;color:white;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(13,43,85,.45);transition:transform .15s;z-index:20;border:none;max-width:200px;}
+    @media(min-width:480px){.fab{right:calc(50% - 220px);transform:none;}}
+    .fab:hover{transform:translateX(calc(50% + 20px)) scale(1.04);}
+    @media(min-width:480px){.fab:hover{transform:scale(1.04);}}
+    /* Sheet */
+    .sheet-ov{position:fixed;inset:0;background:rgba(13,27,42,.8);display:flex;align-items:flex-end;z-index:100;animation:fi .2s ease;}
+    @keyframes fi{from{opacity:0}to{opacity:1}}
+    .sheet-box{background:var(--card);border-radius:24px 24px 0 0;padding:14px 18px 36px;width:100%;max-width:480px;margin:0 auto;animation:su .25s cubic-bezier(.32,1,.4,1);}
+    @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .sh-handle{width:44px;height:5px;background:var(--border);border-radius:3px;margin:0 auto 16px;}
+    .sh-title{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);margin-bottom:14px;}
+    .choice{background:var(--surf-var);border-radius:13px;border:1.5px solid var(--border2);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .15s;}
+    .choice:hover{background:var(--surf-var2);border-color:var(--primary);}
+    .ch-t{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--primary);}
+    .ch-s{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5;}
+    .btn-cancel{width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="app-bar">
+    <div class="logo-row">
+      <div class="logo-box">
+        <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="7" y="4" width="24" height="32" rx="3" fill="white" fill-opacity=".9"/>
+          <rect x="5" y="6" width="4" height="28" rx="2" fill="white" fill-opacity=".5"/>
+          <rect x="12" y="12" width="14" height="2" rx="1" fill="#1A4E8C"/>
+          <rect x="12" y="17" width="14" height="2" rx="1" fill="#1A4E8C"/>
+          <rect x="12" y="22" width="10" height="2" rx="1" fill="#0FA3A3"/>
+        </svg>
+      </div>
+      <div class="logo-text">Notepay</div>
+    </div>
+    <div class="spacer"></div>
+
+
+
+    <a href="profile.html" class="av-btn" id="av-btn" aria-label="My Profile">?</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-heading">
+    <div class="tab-h active" id="tab-my" onclick="switchTab(0)">My Events<span class="badge" id="badge-my">0</span></div>
+    <div class="tab-h" id="tab-shared" onclick="switchTab(1)">Shared Events<span class="badge" id="badge-shared">0</span></div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar" id="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search-input" id="search-input" type="text" placeholder="Search events…" oninput="filterEvents(this.value)"/>
+    <span class="clear-btn" id="clear-btn" onclick="clearSearch()">✕</span>
+  </div>
+
+  <!-- My Events Pane -->
+  <div id="pane-my" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="hint">Events you created · You are the organizer</div>
+    <div class="scr" id="list-my"><div class="loading-state"><div class="loader"></div></div></div>
+  </div>
+
+  <!-- Shared Events Pane -->
+  <div id="pane-shared" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="hint">Events you joined via code · You are a collector</div>
+    <div class="scr" id="list-shared"><div class="loading-state"><div class="loader"></div></div></div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openSheet()" aria-label="Add new event">＋ New Event</button>
+</div>
+
+<!-- Add Event Sheet -->
+<div class="sheet-ov" id="sheet-add" style="display:none;" onclick="closeSheet()">
+  <div class="sheet-box" onclick="event.stopPropagation()">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Add New Event</div>
+    <div class="choice" onclick="closeSheet();window.location.href='create-event.html'">
+      <div class="ch-t">Create Event</div>
+      <div class="ch-s">Start a new event as organizer · You manage donations and expenses</div>
+    </div>
+    <div class="choice" onclick="closeSheet();window.location.href='join-event.html'">
+      <div class="ch-t">Join by Event Code</div>
+      <div class="ch-s">Enter code shared by organizer · Join as a collector</div>
+    </div>
+    <button class="btn-cancel" onclick="closeSheet()">Cancel</button>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth-guard.js"></script>
+<script>
+  let myEvents = [], sharedEvents = [], currentTab = 0;
+
+  // ── On load ──
+  waitForAuthReady().then(async user => {
+    if (!user) return;
+    // Set avatar initials
+    try {
+      const profile = await getMyProfile();
+      const initials = getInitials(profile.full_name);
+      document.getElementById("av-btn").textContent = initials;
+      document.getElementById("av-btn-side").textContent = initials;
+      document.getElementById("user-name-side").textContent = profile.full_name;
+      sessionStorage.setItem("np_my_id", profile.id);
+    } catch(e) {}
+    loadEvents();
+  });
+
+  async function loadEvents() {
+    try {
+      [myEvents, sharedEvents] = await Promise.all([getMyEvents(), getSharedEvents()]);
+      document.getElementById("badge-my").textContent = myEvents.length;
+      document.getElementById("badge-shared").textContent = sharedEvents.length;
+      renderEvents();
+    } catch(err) {
+      document.getElementById("list-my").innerHTML = renderError("Failed to load events.");
+      document.getElementById("list-shared").innerHTML = renderError("Failed to load events.");
+    }
+  }
+
+  function renderEvents(q = "") {
+    const q2 = q.trim().toLowerCase();
+    const filterFn = e => !q2 || e.name.toLowerCase().includes(q2) || e.description.toLowerCase().includes(q2);
+    document.getElementById("list-my").innerHTML     = renderList(myEvents.filter(filterFn), "organizer");
+    document.getElementById("list-shared").innerHTML = renderList(sharedEvents.filter(filterFn), "collector");
+  }
+
+  function renderList(events, role) {
+    if (!events.length) {
+      return `<div class="empty-state">
+        <div class="es-icon">${role==="organizer"?"📋":"📌"}</div>
+        <div class="es-title">No events yet</div>
+        <div class="es-sub">${role==="organizer"?"Create your first event using the + button.":"Join an event using an invite code."}</div>
+      </div>`;
+    }
+    return events.map(e => renderCard(e, role)).join("");
+  }
+
+  function renderCard(e, role) {
+    const isActive = e.is_active;
+    const isRestricted = e.is_restricted;
+    
+    let statusBanner = "";
+    let statusNote = "";
+
+    if (!isActive) {
+      statusBanner = `<div class="deact-bar">⚠️ Event Deactivated</div>`;
+      if (role === "collector") {
+        statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">📵 Contact your organizer</div></div>`;
+      } else {
+        statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">🔒 You deactivated this · Tap to manage</div></div>`;
+      }
+    } else if (isRestricted) {
+      statusBanner = `<div class="deact-bar" style="background:var(--red);">🚫 You are restricted</div>`;
+      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">📵 Contact your organizer</div></div>`;
+    }
+
+    const badge = role==="organizer"
+      ? `<div class="rb rb-o">Organizer</div>`
+      : `<div class="rb rb-c">Collector</div>`;
+
+    return `<div class="ev-card" onclick="openEvent(${e.id})">
+      <div class="ec-body">
+        <div class="ec-top">
+          <div>
+            <div class="ec-name">${escHtml(e.name)}</div>
+            <div class="ec-desc">${escHtml(e.description)}</div>
+          </div>
+          ${badge}
+        </div>
+        <div class="ec-meta">
+          <span>📅 ${formatDate(e.event_date)}</span>
+        </div>
+      </div>
+      ${statusBanner}
+      ${statusNote}
+    </div>`;
+  }
+
+  function renderError(msg) {
+    return `<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Error</div><div class="es-sub">${msg} <span style="color:var(--primary);cursor:pointer;font-weight:700;" onclick="loadEvents()">Retry</span></div></div>`;
+  }
+
+  function openEvent(id) {
+    window.location.href = `event.html?id=${id}`;
+  }
+
+  // ── Tabs ──
+  function switchTab(idx) {
+    currentTab = idx;
+    document.getElementById("tab-my").classList.toggle("active", idx===0);
+    document.getElementById("tab-shared").classList.toggle("active", idx===1);
+    document.getElementById("pane-my").style.display     = idx===0 ? "flex" : "none";
+    document.getElementById("pane-shared").style.display = idx===1 ? "flex" : "none";
+    document.getElementById("pane-my").style.flexDirection = "column";
+    document.getElementById("pane-shared").style.flexDirection = "column";
+  }
+
+  // ── Swipe to switch tabs ──
+  let sx = 0;
+  document.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend",   e => {
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 60) { if (dx < 0 && currentTab===0) switchTab(1); else if (dx > 0 && currentTab===1) switchTab(0); }
+  }, {passive:true});
+
+  // ── Search ──
+  const searchBar = document.getElementById("search-bar");
+  document.getElementById("search-input").addEventListener("focus",  () => searchBar.classList.add("focused"));
+  document.getElementById("search-input").addEventListener("blur",   () => searchBar.classList.remove("focused"));
+
+  function filterEvents(q) {
+    document.getElementById("clear-btn").classList.toggle("visible", q.length > 0);
+    renderEvents(q);
+  }
+  function clearSearch() {
+    const inp = document.getElementById("search-input");
+    inp.value = "";
+    document.getElementById("clear-btn").classList.remove("visible");
+    renderEvents();
+    inp.focus();
+  }
+
+  // ── Sheet ──
+  function openSheet()  { document.getElementById("sheet-add").style.display="flex"; }
+  function closeSheet() { document.getElementById("sheet-add").style.display="none"; }
+
+  // ── Helpers ──
+  function escHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+</script>
+</body>
+</html>

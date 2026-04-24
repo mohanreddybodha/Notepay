@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>Notepay — Create Event</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="css/global.css"/>
+  <script>
+    if (localStorage.getItem("np_dark")) {
+      document.documentElement.classList.add("dark-mode");
+      window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
+    }
+  </script>
+  <style>
+    .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
+    .status-bar{background:var(--primary-dk);display:flex;justify-content:space-between;padding:10px 20px 8px;font-size:11px;font-weight:800;color:rgba(255,255,255,.85);font-family:'Nunito',sans-serif;}
+    .app-bar{background:var(--primary-dk);display:flex;align-items:center;padding:10px 16px 14px;gap:8px;}
+    .logo-row{display:flex;align-items:center;gap:9px;}
+    .logo-box{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+    .logo-box svg{width:20px;height:20px;}
+    .logo-text{font-family:'Nunito',sans-serif;font-size:19px;font-weight:900;color:white;}
+    .ab-ttl{position:absolute;left:50%;transform:translateX(-50%);font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white;}
+    .close-btn{margin-left:auto;color:rgba(255,255,255,.75);font-size:22px;cursor:pointer;padding:3px 7px;border-radius:8px;transition:background .15s;line-height:1;}
+    .close-btn:hover{background:rgba(255,255,255,.12);}
+    .scr{flex:1;overflow-y:auto;padding:20px 20px 40px;}
+    .scr::-webkit-scrollbar{display:none;}
+    .field-wrap{margin-bottom:14px;}
+    .field-label-out{font-size:11px;font-weight:800;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+    .field{width:100%;background:var(--input-bg);border:2px solid var(--input-border);border-radius:14px;padding:13px 15px;transition:border-color .18s,box-shadow .18s;}
+    .field:focus-within{border-color:var(--input-focus);box-shadow:0 0 0 3px rgba(26,78,140,.08);}
+    .field input,.field textarea{width:100%;border:none;outline:none;background:transparent;font-size:15px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;resize:none;}
+    .field input::placeholder,.field textarea::placeholder{color:var(--text3);font-weight:600;}
+    .organizer-note{text-align:center;font-size:12.5px;color:var(--text3);font-weight:600;margin-bottom:18px;}
+    .btn-create{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;}
+    .btn-create:hover{transform:translateY(-1px);}
+    .btn-create:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
+    .btn-create:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
+    .btn-cancel{width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;margin-top:8px;}
+    .error-msg{display:none;align-items:center;gap:6px;background:#FFF0EC;border:1.5px solid #D4906A;border-radius:10px;padding:9px 12px;font-size:12px;color:var(--red);font-weight:700;width:100%;margin-bottom:12px;}
+    .error-msg.visible{display:flex;}
+    .footer{text-align:center;font-size:11px;color:var(--text3);font-weight:600;padding:12px 0 0;}
+    .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-create.loading .btn-text{display:none;}
+    .btn-create.loading .spinner{display:block;}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="app-bar" style="position:relative;">
+    <div class="logo-row">
+      <div class="logo-box">
+        <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="7" y="4" width="24" height="32" rx="3" fill="white" fill-opacity=".9"/>
+          <rect x="5" y="6" width="4" height="28" rx="2" fill="white" fill-opacity=".5"/>
+          <rect x="12" y="12" width="14" height="2" rx="1" fill="#1A4E8C"/>
+          <rect x="12" y="17" width="14" height="2" rx="1" fill="#1A4E8C"/>
+          <rect x="12" y="22" width="10" height="2" rx="1" fill="#0FA3A3"/>
+        </svg>
+      </div>
+      <div class="logo-text">Notepay</div>
+    </div>
+    <div class="ab-ttl">Create Event</div>
+    <div class="close-btn" onclick="history.back()">✕</div>
+  </div>
+
+  <div class="scr">
+    <div class="error-msg" id="err-box"><span>⚠️</span><span id="err-txt">Please fill all required fields.</span></div>
+
+    <div class="field-wrap">
+      <div class="field-label-out">Event Name *</div>
+      <div class="field"><input type="text" id="ev-name" placeholder="e.g. Ganesh Festival 2025" maxlength="100"/></div>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field-label-out">Short Description *</div>
+      <div class="field"><textarea id="ev-desc" placeholder="e.g. Annual colony donations" rows="2" maxlength="200"></textarea></div>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field-label-out">Event Date *</div>
+      <div class="field"><input type="date" id="ev-date"/></div>
+    </div>
+
+    <div class="organizer-note">You will be the Organizer of this event</div>
+
+    <button class="btn-create" id="create-btn" type="button">
+      <span class="btn-text">Create Event</span>
+      <span class="spinner"></span>
+    </button>
+    <button class="btn-cancel" onclick="history.back()">Cancel</button>
+    <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth-guard.js"></script>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const editId = urlParams.get("edit");
+
+  if (editId) {
+    document.querySelector(".ab-ttl").textContent = "Rename Event";
+    document.querySelector(".btn-text").textContent = "Save Changes";
+    document.querySelector(".organizer-note").style.display = "none";
+    
+    // Load existing event data
+    waitForAuthReady().then(async user => {
+      if (!user) return;
+      try {
+        const my = await getMyEvents();
+        const ev = my.find(e => e.id == editId);
+        if (ev) {
+          document.getElementById("ev-name").value = ev.name;
+          document.getElementById("ev-desc").value = ev.description;
+          document.getElementById("ev-date").value = ev.event_date.split("T")[0];
+        }
+      } catch(e) {
+        console.error("Failed to load event details", e);
+      }
+    });
+  } else {
+    // Set default date to today
+    document.getElementById("ev-date").valueAsDate = new Date();
+  }
+
+  document.getElementById("create-btn").addEventListener("click", async () => {
+    const name  = document.getElementById("ev-name").value.trim();
+    const desc  = document.getElementById("ev-desc").value.trim();
+    const date  = document.getElementById("ev-date").value;
+    const errBox = document.getElementById("err-box");
+    const errTxt = document.getElementById("err-txt");
+    const btn   = document.getElementById("create-btn");
+
+    if (!name) { errTxt.textContent="Event name is required."; errBox.classList.add("visible"); return; }
+    if (!desc) { errTxt.textContent="Description is required."; errBox.classList.add("visible"); return; }
+    if (!date) { errTxt.textContent="Event date is required."; errBox.classList.add("visible"); return; }
+    errBox.classList.remove("visible");
+
+    btn.classList.add("loading"); btn.disabled = true;
+    try {
+      if (editId) {
+        await updateEvent(editId, { name, description: desc, event_date: new Date(date).toISOString() });
+        showToast("Event updated!");
+        window.history.back();
+      } else {
+        await createEvent(name, desc, date);
+        showToast("Event created!");
+        window.location.replace("dashboard.html");
+      }
+    } catch(err) {
+      errTxt.textContent = err.message || "Failed to save event. Please try again.";
+      errBox.classList.add("visible");
+      btn.classList.remove("loading"); btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
