@@ -226,13 +226,13 @@
       gap: 12px;
       border: 1.5px solid var(--border2);
       transition: all .2s ease;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
 
     .search-bar.focused {
       border-color: var(--primary);
       background: var(--surface);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
     }
 
     .search-bar svg {
@@ -1029,7 +1029,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
     }
 
     .sbox-header {
@@ -1047,7 +1047,9 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    .sbox-body::-webkit-scrollbar { display: none; }
+    .sbox-body::-webkit-scrollbar {
+      display: none;
+    }
 
     .sbox-footer {
       padding: 12px 18px 32px;
@@ -1671,20 +1673,114 @@
         padding: 5px 8px;
         font-size: 10.5px;
       }
+    }
 
-      .rot-stat {
-        font-size: 10px;
-        gap: 4px;
-      }
+    .bal-meta {
+      font-size: 11px;
+      opacity: 0.85;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-      .rot-stat b {
-        font-size: 11px;
-      }
+    .sum-card-t {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--text2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-      .rot-ov-top {
-        padding: 0 8px;
-        gap: 4px;
-      }
+    .sum-prog-bg {
+      height: 8px;
+      background: var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .sum-prog-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    .col-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .col-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: var(--row-alt);
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
+    .col-name {
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .col-val {
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .txn-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border2);
+      transition: background 0.2s;
+    }
+
+    .txn-item:last-child {
+      border-bottom: none;
+    }
+
+    .txn-ic {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .txn-don {
+      background: #E8F5E9;
+      color: #2E7D32;
+    }
+
+    .txn-exp {
+      background: #FFEBEE;
+      color: #C62828;
+    }
+
+    .rot-stat b {
+      font-size: 11px;
+    }
+
+    .rot-stat {
+      font-size: 10px;
+      gap: 4px;
+    }
+
+    .rot-ov-top {
+      padding: 0 8px;
+      gap: 4px;
     }
 
     /* New Width Selectors */
@@ -1747,6 +1843,7 @@
 
     .w-range {
       -webkit-appearance: none;
+      appearance: none;
       width: 100%;
       height: 6px;
       background: var(--border2);
@@ -1764,12 +1861,6 @@
       cursor: pointer;
       border: 3px solid white;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transition: none;
     }
   </style>
 </head>
@@ -2183,14 +2274,16 @@
         </div>
         <div class="sbox-body">
           <div class="ef-field" style="margin-bottom:6px;">
-            <div class="ef-label">Column Name <span id="cc-char-count" style="float:right;opacity:0.6;">0/25</span></div>
+            <div class="ef-label">Column Name <span id="cc-char-count" style="float:right;opacity:0.6;">0/25</span>
+            </div>
             <input class="ef-input" id="cc-name" type="text" placeholder="e.g. House No." maxlength="25"
               oninput="updateCharCount(this); document.getElementById('cc-error').style.display='none';" />
             <div id="cc-error" style="color:var(--red); font-size:11px; margin-top:4px; font-weight:700; display:none;">
             </div>
           </div>
           <div class="ef-field" style="margin-bottom:6px;">
-            <div id="cc-size-label" class="ef-label" style="margin-bottom:8px; color:var(--primary); font-weight:900;">No.
+            <div id="cc-size-label" class="ef-label" style="margin-bottom:8px; color:var(--primary); font-weight:900;">
+              No.
               of characters that fit in column: 20</div>
 
             <div class="w-preview-wrap">
@@ -3006,58 +3099,178 @@
         const s = summaryData;
         const bal = s.balance;
 
+        // Top Collectors (5)
+        const collectorStats = {};
+        donations.forEach(d => {
+          const name = d.collected_by_name || 'System';
+          if (!collectorStats[name]) collectorStats[name] = 0;
+          collectorStats[name] += (d.amount || 0);
+        });
+        const topCollectors = Object.entries(collectorStats)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+
+        // Top Donors (5)
+        const donorTotals = {};
+        donations.forEach(d => {
+          const name = d.donor_name;
+          if (!donorTotals[name]) donorTotals[name] = 0;
+          donorTotals[name] += (d.amount || 0);
+        });
+        const topDonors = Object.entries(donorTotals)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+
+        // Top Expenses (5)
+        const topExpenses = [...expenses]
+          .sort((a, b) => (b.amount || 0) - (a.amount || 0))
+          .slice(0, 5);
+
+        // Spending Efficiency
+        const spendRatio = s.total_donations > 0 ? (s.total_expenses / s.total_donations) * 100 : 0;
+        const isDark = document.body.classList.contains("dark-mode");
+        const cardBg = isDark ? "#1e293b" : "#ffffff";
+        const cardBorder = isDark ? "#334155" : "#e2e8f0";
+        const titleColor = isDark ? "#f8fafc" : "#1e293b";
+        const metaColor = isDark ? "#94a3b8" : "#64748b";
+        const blueAmt = isDark ? "#60a5fa" : "#2563eb";
+
         let txns = s.recent_transactions || [];
         const hasMore = txns.length > vTxnsCount;
         const displayedTxns = txns.slice(0, vTxnsCount);
 
         const html = `
-      <div class="bal-card">
-        <div class="bal-lbl">Balance Remaining</div>
-        <div class="bal-amt ${bal >= 0 ? "pos" : "neg"}">${formatINR(Math.abs(bal))}</div>
-        <div class="bal-meta">${bal >= 0 ? "Surplus" : "Deficit"} · as of today</div>
-      </div>
-      <div class="stats">
-        <div class="stat"><div class="st-lbl">Total Donations</div><div class="st-amt g">${formatINR(s.total_donations)}</div><div class="st-cnt">${s.donations_count} donors</div></div>
-        <div class="stat"><div class="st-lbl">Total Expenses</div><div class="st-amt r">${formatINR(s.total_expenses)}</div><div class="st-cnt">${s.expenses_count} items</div></div>
-      </div>
-      
-      <!-- Recent Transactions -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px;">
-        <div style="font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;color:var(--text2);">Recent Transactions</div>
-        <div style="font-size:11px;color:var(--text3);font-weight:700;">Showing ${displayedTxns.length} of ${txns.length}</div>
-      </div>
-      
-      <div style="background:var(--card);border:1.5px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:10px;">
-        ${displayedTxns.length ? displayedTxns.map((t, i) => `
-          <div style="display:flex;justify-content:space-between;padding:12px 14px;border-bottom:${(i === displayedTxns.length - 1 && !hasMore && vTxnsCount <= 5) ? 'none' : '1px solid var(--border2)'};background:${i % 2 ? 'var(--row-alt)' : 'transparent'}">
-            <div>
-              <div style="font-size:13px;font-weight:800;color:var(--text);">${escHtml(t.title)}</div>
-              <div style="font-size:10px;color:var(--text3);">${formatDate(t.date)} · by ${escHtml(t.collected_by_name)}</div>
+      <div style="padding: 10px; max-width: 500px; margin: 0 auto;">
+        <!-- Available Balance -->
+        <div style="background:var(--primary-dk); border-radius:18px; padding:20px; margin-bottom:12px; color:white; box-shadow:0 10px 20px -5px rgba(0,0,0,0.3); text-align:center;">
+          <div style="font-size:12px; font-weight:800; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Available Balance</div>
+          <div style="font-size:32px; font-weight:900; margin:4px 0;">${formatINR(Math.abs(bal))}</div>
+          <div style="font-size:11px; font-weight:700; opacity:0.9;">${bal >= 0 ? "🟢 SURPLUS STATUS" : "🔴 DEFICIT ALERT"} · REAL-TIME</div>
+        </div>
+
+        <div class="stats" style="display:flex; gap:10px; margin-bottom:12px;">
+          <div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
+            <div style="font-size:11px; font-weight:800; color:var(--text3);">COLLECTED</div>
+            <div style="font-size:16px; font-weight:900; color:var(--green);">${formatINR(s.total_donations)}</div>
+          </div>
+          <div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
+            <div style="font-size:11px; font-weight:800; color:var(--text3);">SPENT</div>
+            <div style="font-size:16px; font-weight:900; color:var(--red);">${formatINR(s.total_expenses)}</div>
+          </div>
+        </div>
+
+        <div class="sum-grid" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Spending Efficiency -->
+          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:14px; font-weight:900; color:var(--text);">Spending Ratio</span>
+              <span style="font-size:12px; font-weight:800; color:var(--primary);">${spendRatio.toFixed(1)}%</span>
             </div>
-            <div style="font-size:13.5px;font-weight:900;color:${t.type === 'donation' ? 'var(--green)' : 'var(--red)'};">
-              ${t.type === 'donation' ? '+' : '-'}${formatINR(t.amount)}
+            <div style="height:8px; background:var(--surf-var); border-radius:10px; overflow:hidden;">
+              <div style="height:100%; width:${Math.min(spendRatio, 100)}%; background:${spendRatio > 90 ? 'var(--red)' : spendRatio > 50 ? 'var(--amber)' : 'var(--green)'}; border-radius:10px;"></div>
             </div>
           </div>
-        `).join("") : `<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px;">No activity yet.</div>`}
-        
-        <div style="display:flex;background:var(--row-alt);">
-          ${hasMore ? `
-            <div style="flex:1;padding:12px;text-align:center;cursor:pointer;font-size:12px;font-weight:800;color:var(--primary);border-right:1px solid var(--border2);" onclick="renderSummary(1, '${containerId}')">
-              See More (+5)
-            </div>
-          ` : ""}
-          ${vTxnsCount > 5 ? `
-            <div style="flex:1;padding:12px;text-align:center;cursor:pointer;font-size:12px;font-weight:800;color:var(--text3);" onclick="renderSummary(-1, '${containerId}')">
-              See Less (Reset)
-            </div>
-          ` : ""}
-        </div>
-      </div>
 
-      ${isOrganizer && !isActive ? `<div style="display:flex;gap:10px;margin-top:20px;">
-        <button style="flex:1;background:var(--primary);border-radius:14px;padding:12px;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:900;color:white;cursor:pointer;border:none;box-shadow:0 3px 0 rgba(0,0,0,.22);" onclick="toggleDeactivate()">🔓 Reactivate Event</button>
-      </div>` : ""}
-      <div style="height:30px;"></div>
+          <!-- Top Collectors -->
+          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Collectors</span>
+              <span>🏆</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              ${topCollectors.length ? topCollectors.map(([name, amt], i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
+                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(name)}
+                  </div>
+                  <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(amt)}</div>
+                </div>
+              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
+            </div>
+          </div>
+
+          <!-- Top Donors -->
+          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Donors</span>
+              <span>💎</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              ${topDonors.length ? topDonors.map(([name, amt], i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
+                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(name)}
+                  </div>
+                  <div style="font-size:14px; font-weight:900; color:var(--green);">${formatINR(amt)}</div>
+                </div>
+              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
+            </div>
+          </div>
+
+          <!-- High Outflows -->
+          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:900; color:var(--text);">High Outflows</span>
+              <span>💸</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              ${topExpenses.length ? topExpenses.map((exp, i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
+                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(exp.description)}
+                  </div>
+                  <div style="font-size:14px; font-weight:900; color:var(--red);">${formatINR(exp.amount)}</div>
+                </div>
+              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px; padding:0 4px;">
+          <div style="font-size:15px; font-weight:900; color:var(--text);">Activity Feed</div>
+          <div style="font-size:11px; font-weight:800; color:var(--text3);">LOG: ${txns.length} ITEMS</div>
+        </div>
+
+        <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:20px; overflow:hidden; margin-bottom:15px; box-shadow:var(--shadow-sm);">
+          ${displayedTxns.length ? displayedTxns.map((t, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--border2); background:${i % 2 ? 'var(--row-alt)' : 'transparent'}">
+              <div style="display:flex; gap:12px; align-items:center;">
+                <div style="width:34px; height:34px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:16px; background:${t.type === 'donation' ? 'var(--primary-lt)' : 'rgba(239, 68, 68, 0.1)'}; color:${t.type === 'donation' ? 'var(--primary-dk)' : 'var(--red)'};">
+                  ${t.type === 'donation' ? '↓' : '↑'}
+                </div>
+                <div>
+                  <div style="font-size:13.5px; font-weight:850; color:var(--text);">${escHtml(t.title)}</div>
+                  <div style="font-size:10px; font-weight:700; color:var(--text3);">${formatDate(t.date).toUpperCase()} · ${escHtml(t.collected_by_name || 'SYSTEM')}</div>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:14px; font-weight:900; color:${t.type === 'donation' ? 'var(--green)' : 'var(--red)'};">
+                  ${t.type === 'donation' ? '+' : '-'}${formatINR(t.amount)}
+                </div>
+                <div style="font-size:9px; font-weight:800; color:var(--text3);">${t.type.toUpperCase()}</div>
+              </div>
+            </div>
+          `).join("") : `<div style="padding:30px; text-align:center; color:var(--text3); font-size:12px;">No transactions recorded.</div>`}
+          
+          <div style="display:flex; background:var(--row-alt); border-top:1px solid var(--border2);">
+            ${hasMore ? `
+              <div style="flex:1; padding:14px; text-align:center; cursor:pointer; font-size:12.5px; font-weight:900; color:var(--primary); border-right:1px solid var(--border2);" onclick="renderSummary(1, '${containerId}')">
+                SHOW MORE ACTIVITY
+              </div>
+            ` : ""}
+            ${vTxnsCount > 5 ? `
+              <div style="flex:1; padding:14px; text-align:center; cursor:pointer; font-size:12.5px; font-weight:900; color:var(--text3);" onclick="renderSummary(-1, '${containerId}')">
+                COLLAPSE LIST
+              </div>
+            ` : ""}
+          </div>
+        </div>
+
+        ${isOrganizer && !isActive ? `<div style="padding:0 4px; margin-bottom:30px;">
+          <button style="width:100%; background:var(--primary); border-radius:14px; padding:12px; font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:900; color:white; cursor:pointer; border:none; box-shadow:0 3px 0 rgba(0,0,0,0.22);" onclick="toggleDeactivate()">🔓 REACTIVATE EVENT</button>
+        </div>` : ""}
+        <div style="height:20px;"></div>
+      </div>
     `;
         if (body) body.innerHTML = html;
       } catch (e) {
@@ -4132,7 +4345,7 @@
       doc.setFontSize(20);
       doc.setTextColor(PRIMARY_DK[0], PRIMARY_DK[1], PRIMARY_DK[2]);
       doc.text("Statement of Accounts", 15, 20);
-      
+
       doc.setFontSize(10);
       doc.setTextColor(100);
       doc.setFont("helvetica", "normal");
@@ -4156,7 +4369,7 @@
       doc.setFont("helvetica", "normal");
       doc.setTextColor(TEXT_MAIN[0], TEXT_MAIN[1], TEXT_MAIN[2]);
       doc.text(`DATE OF EVENT: ${formatDate(eventData.event_date).toUpperCase()}`, 15, 51);
-      doc.text(`ORGANIZER: ${ (eventData.organizer_name || 'System').toUpperCase() }`, 15, 56);
+      doc.text(`ORGANIZER: ${(eventData.organizer_name || 'System').toUpperCase()}`, 15, 56);
       doc.text(`REPORT ISSUED: ${new Date().toLocaleString().toUpperCase()}`, pageWidth - 15, 51, { align: "right" });
 
       // --- FINANCIAL SUMMARY BOX ---
@@ -4180,7 +4393,7 @@
       doc.text(formatPDF_Amt(totalDon), 25, 85);
       doc.setTextColor(RED[0], RED[1], RED[2]);
       doc.text(formatPDF_Amt(totalExp), pageWidth / 2, 85, { align: "center" });
-      
+
       const balColor = balance >= 0 ? GREEN : RED;
       doc.setTextColor(balColor[0], balColor[1], balColor[2]);
       doc.text(formatPDF_Amt(balance), pageWidth - 25, 85, { align: "right" });
@@ -4190,7 +4403,7 @@
       // --- DONATIONS TABLE (CREDITS) ---
       const donCols = eventData.donation_custom_columns || [];
       const donHead = ['NAME', 'AMOUNT (RS.)', 'DATE', 'COLLECTED BY', ...donCols.map(c => (typeof c === 'string' ? c : c.n).toUpperCase())];
-      const donBody = donations.sort((a,b) => new Date(b.collected_at) - new Date(a.collected_at)).map(d => [
+      const donBody = donations.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at)).map(d => [
         d.donor_name.toUpperCase(),
         formatPDF_Amt(d.amount),
         formatDate(d.collected_at).toUpperCase(),
@@ -4203,7 +4416,7 @@
         doc.setTextColor(PRIMARY_DK[0], PRIMARY_DK[1], PRIMARY_DK[2]);
         doc.setFont("helvetica", "bold");
         doc.text("CREDIT LEDGER (DONATIONS)", 15, currentY);
-        
+
         doc.autoTable({
           startY: currentY + 4,
           head: [donHead],
@@ -4217,10 +4430,10 @@
             2: { halign: 'center' },
             3: { halign: 'center' }
           },
-          didParseCell: function(data) {
-             if (data.section === 'body' && data.column.index > 3) {
-                 data.cell.styles.halign = 'center';
-             }
+          didParseCell: function (data) {
+            if (data.section === 'body' && data.column.index > 3) {
+              data.cell.styles.halign = 'center';
+            }
           },
           margin: { left: 15, right: 15 }
         });
@@ -4233,7 +4446,7 @@
       // --- EXPENSES TABLE (DEBITS) ---
       const expCols = eventData.expense_custom_columns || [];
       const expHead = ['DESCRIPTION', 'AMOUNT (RS.)', 'DATE', 'ADDED BY', ...expCols.map(c => (typeof c === 'string' ? c : c.n).toUpperCase())];
-      const expBody = expenses.sort((a,b) => new Date(b.collected_at) - new Date(a.collected_at)).map(e => [
+      const expBody = expenses.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at)).map(e => [
         e.description.toUpperCase(),
         formatPDF_Amt(e.amount),
         formatDate(e.collected_at).toUpperCase(),
@@ -4260,10 +4473,10 @@
             2: { halign: 'center' },
             3: { halign: 'center' }
           },
-          didParseCell: function(data) {
-             if (data.section === 'body' && data.column.index > 3) {
-                 data.cell.styles.halign = 'center';
-             }
+          didParseCell: function (data) {
+            if (data.section === 'body' && data.column.index > 3) {
+              data.cell.styles.halign = 'center';
+            }
           },
           margin: { left: 15, right: 15 }
         });
@@ -4272,16 +4485,16 @@
 
       // --- FOOTER ---
       if (currentY > 260) { doc.addPage(); currentY = 20; }
-      
+
       doc.setFontSize(8);
       doc.setTextColor(150);
       doc.setFont("helvetica", "italic");
       doc.text("This document is an electronically generated statement of accounts from NotePay.", 15, currentY);
-      
+
       doc.setFont("helvetica", "bold");
       doc.setTextColor(120);
       doc.text("VERIFY REAL-TIME DATA:", 15, currentY + 6);
-      
+
       const link = window.location.href;
       doc.setTextColor(PRIMARY_DK[0], PRIMARY_DK[1], PRIMARY_DK[2]);
       doc.setFont("helvetica", "normal");
