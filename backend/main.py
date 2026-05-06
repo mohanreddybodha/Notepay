@@ -1,8 +1,16 @@
+import os
+import sys
+import json
+from datetime import datetime
+from typing import List, Optional
+
+# Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
 
 import models, schemas, crud, auth
 from database import engine, get_db
@@ -38,29 +46,34 @@ async def get_current_user_id(
     db: Session = Depends(get_db),
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
 ):
-    """
-    Verify the Firebase ID token sent as:  Authorization: Bearer <id_token>
-    Returns the internal DB user ID.
-    """
+    """Verify Firebase token; raises 401 if missing, 404 if user not in DB."""
     if not credentials:
-        raise HTTPException(
-            status_code=401,
-            detail="Authorization header required. Format: Bearer <firebase_id_token>"
-        )
-
-    # Verify token with Firebase Admin SDK (raises 401 on failure)
+        raise HTTPException(status_code=401, detail="Auth header required")
     decoded = await auth.verify_token(credentials)
-    firebase_uid = decoded["uid"]
-
-    # Look up user in our database
-    user = crud.get_user_by_firebase_uid(db, firebase_uid)
+    uid = decoded["uid"]
+    phone = decoded.get("phone_number")
+    
+    # Log for diagnosis (masking UID)
+    print(f"DEBUG AUTH: UID={uid[:5]}... PHONE={phone}")
+    
+    user = crud.get_user_by_firebase_uid(db, uid)
+    if not user and phone:
+        print(f"DEBUG AUTH: UID not found, checking phone: {phone}")
+        # Check if user exists by phone (UID might have changed)
+        user = crud.get_user_by_phone(db, phone)
+        if user:
+            print(f"DEBUG AUTH: Found user by phone! ID={user.id}. Linking to new UID.")
+            # Update UID to the new one
+            user.firebase_uid = uid
+            db.commit()
+            db.refresh(user)
+            
     if not user:
-        print(f"DEBUG: get_current_user_id failed for UID: {firebase_uid}")
-        raise HTTPException(
-            status_code=404,
-            detail="User not registered. Call POST /users first."
-        )
+        print("DEBUG AUTH: User not found in DB.")
+        raise HTTPException(status_code=404, detail="User not registered")
     return user.id
+
+# Optional user id dependency removed to enforce strict auth.
 
 
 # ─── HELPER: Membership Gatekeeper ─────────────────────────────────────────────
@@ -69,6 +82,9 @@ def verify_membership(db: Session, event_id: int, user_id: int,
                       require_unrestricted: bool = False):
     member = crud.get_member(db, event_id, user_id)
     if not member:
+        event = crud.get_event(db, event_id)
+        if event and event.is_public and not require_organizer and not require_unrestricted:
+            return None # Visitor mode
         raise HTTPException(status_code=403, detail="You are not a member of this event")
     if require_organizer and member.role != models.UserRole.organizer:
         raise HTTPException(status_code=403, detail="Only the organizer can perform this action")
@@ -77,10 +93,10 @@ def verify_membership(db: Session, event_id: int, user_id: int,
     return member
 
 def verify_event_active_for_collector(db: Session, event_id: int, user_id: int):
-    """Collectors are blocked from data access when event is deactivated. Organizers always pass."""
-    member = verify_membership(db, event_id, user_id, require_unrestricted=True)
+    """Collectors/Visitors are blocked from data access when event is deactivated. Organizers always pass."""
+    member = verify_membership(db, event_id, user_id, require_unrestricted=False)
     event = crud.get_event(db, event_id)
-    if not event.is_active and member.role != models.UserRole.organizer:
+    if not event.is_active and (not member or member.role != models.UserRole.organizer):
         raise HTTPException(status_code=403, detail="This event is deactivated. Contact your organizer.")
     return member
 
@@ -159,17 +175,20 @@ async def create_event(event: schemas.EventCreate,
 @app.get("/events", response_model=List[schemas.EventResponse], tags=["Events"])
 async def read_all_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """All events this user belongs to (Organizer + Collector). Includes deactivated."""
-    return crud.get_events_for_user(db, user_id=user_id)
+    events = crud.get_events_for_user(db, user_id=user_id)
+    return [fix_event_json(e) for e in events]
 
 @app.get("/events/my", response_model=List[schemas.EventResponse], tags=["Events"])
 async def read_my_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard — My Events tab: only events where user is Organizer."""
-    return crud.get_my_events(db, user_id=user_id)
+    events = crud.get_my_events(db, user_id=user_id)
+    return [fix_event_json(e) for e in events]
 
 @app.get("/events/shared", response_model=List[schemas.EventResponse], tags=["Events"])
 async def read_shared_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard — Shared Events tab: events joined via code (Collector). Includes deactivated."""
-    return crud.get_shared_events(db, user_id=user_id)
+    events = crud.get_shared_events(db, user_id=user_id)
+    return [fix_event_json(e) for e in events]
 
 @app.post("/events/join", tags=["Events"])
 async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -218,20 +237,93 @@ async def regenerate_invite_code(event_id: int, db: Session = Depends(get_db), u
     """Generate a brand new invite code. Old code becomes permanently invalid."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     return crud.regenerate_invite_code(db, event_id)
+@app.get("/events/watched", tags=["Events"])
+async def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Dashboard — Discover tab: public events recently viewed. Optimized with bulk membership check."""
+    watched = crud.get_watched_events(db, user_id)
+    if not watched: return []
+    
+    # Pre-fetch all memberships for these events to avoid N+1 queries
+    event_ids = [w.event_id for w in watched if w.event_id]
+    memberships = {}
+    if event_ids:
+        memberships = {m.event_id: m for m in db.query(models.EventMember).filter(
+            models.EventMember.user_id == user_id,
+            models.EventMember.event_id.in_(event_ids)
+        ).all()}
+    
+    resp = []
+    for w in watched:
+        e = w.event
+        if not e: continue
+        
+        member = memberships.get(e.id)
+        e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
+        e_dict["my_role"] = member.role if member else None
+        e_dict["is_restricted"] = member.is_restricted if member else False
+        
+        resp.append({
+            "id": w.id,
+            "user_id": w.user_id,
+            "event_id": w.event_id,
+            "last_viewed_at": w.last_viewed_at,
+            "event": fix_event_json(e_dict)
+        })
+    return resp
+
+@app.delete("/events/{event_id}/watched", tags=["Events"])
+async def remove_watched_history(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Remove event from watched history (Discover tab)."""
+    success = crud.remove_watched_event(db, user_id, event_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Watched event not found")
+    return {"message": "Removed from discovery tab"}
+
+def fix_event_json(e_dict):
+    """Robust JSON parsing for SQLite string fields."""
+    for col_name in ["donation_custom_columns", "expense_custom_columns"]:
+        val = e_dict.get(col_name)
+        if isinstance(val, str) and val.strip():
+            try:
+                e_dict[col_name] = json.loads(val)
+            except:
+                e_dict[col_name] = []
+        elif val is None:
+            e_dict[col_name] = []
+    return e_dict
+
 @app.get("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])
 async def read_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Fetch details for a single event, including user's current role and restriction status."""
-    verify_membership(db, event_id, user_id)
+    """Fetch details for a single event. Requires strict auth."""
     event = crud.get_event(db, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Add membership context
-    member = crud.get_member(db, event_id, user_id)
+    # Verify membership or public access
+    member = verify_membership(db, event_id, user_id)
+    
+    # If visitor, add to watched history
+    if not member:
+        crud.add_watched_event(db, user_id, event_id)
+    
+    # Explicitly map to avoid Pydantic serialization issues with SQLAlchemy objects
     event_dict = {c.name: getattr(event, c.name) for c in event.__table__.columns}
-    event_dict["my_role"] = member.role
-    event_dict["is_restricted"] = member.is_restricted
-    return event_dict
+    event_dict["my_role"] = member.role if member else None
+    event_dict["is_restricted"] = member.is_restricted if member else False
+    
+    return fix_event_json(event_dict)
+
+
+
+
+@app.patch("/events/{event_id}/privacy", response_model=schemas.EventResponse, tags=["Event Management"])
+async def toggle_event_privacy(event_id: int, is_public: bool, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Toggle event between Private and Public (unlisted). Organizer only."""
+    verify_membership(db, event_id, user_id, require_organizer=True)
+    event = crud.update_event(db, event_id, schemas.EventUpdate(is_public=is_public))
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return event
 
 @app.get("/events/{event_id}/members", response_model=List[schemas.EventMemberResponse], tags=["Event Management"])
 async def get_event_members(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -295,8 +387,8 @@ async def exit_event(event_id: int, db: Session = Depends(get_db), user_id: int 
 # ─── DONATIONS ─────────────────────────────────────────────────────────────────
 @app.get("/events/{event_id}/donations", response_model=List[schemas.DonationResponse], tags=["Donations"])
 async def get_event_donations(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """View all donations. Blocked when event is deactivated (Collector only blocked)."""
-    verify_event_active_for_collector(db, event_id, user_id)
+    """View all donations. Requires strict auth."""
+    verify_membership(db, event_id, user_id)
     return crud.get_donations(db, event_id)
 
 @app.post("/events/{event_id}/donations", response_model=schemas.DonationResponse, tags=["Donations"])
@@ -335,8 +427,8 @@ async def delete_donation(event_id: int, donation_id: int,
 # ─── EXPENSES ──────────────────────────────────────────────────────────────────
 @app.get("/events/{event_id}/expenses", response_model=List[schemas.ExpenseResponse], tags=["Expenses"])
 async def get_event_expenses(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """View all expenses. Blocked when event is deactivated (Collector only blocked)."""
-    verify_event_active_for_collector(db, event_id, user_id)
+    """View all expenses. Requires strict auth."""
+    verify_membership(db, event_id, user_id)
     return crud.get_expenses(db, event_id)
 
 @app.post("/events/{event_id}/expenses", response_model=schemas.ExpenseResponse, tags=["Expenses"])
@@ -374,6 +466,6 @@ async def delete_expense(event_id: int, expense_id: int,
 # ─── SUMMARY ───────────────────────────────────────────────────────────────────
 @app.get("/events/{event_id}/summary", response_model=schemas.EventSummaryResponse, tags=["Summary"])
 async def get_event_summary(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Summary tab: Total donations, expenses, balance. All members have access."""
-    verify_event_active_for_collector(db, event_id, user_id)
+    """Financial overview. Requires strict auth."""
+    verify_membership(db, event_id, user_id)
     return crud.get_event_summary(db, event_id)

@@ -37,12 +37,30 @@ function isLoggedIn() {
   return !!auth.currentUser;
 }
 
-// ── Wait for Firebase to restore session (returns Promise<User|null>) ──
+let authReadyPromise = null;
+
+/** Wait for Firebase to restore session (returns Promise<User|null>) */
 function waitForAuthReady() {
-  return new Promise(resolve => {
+  if (authReadyPromise) return authReadyPromise;
+  
+  console.log("Waiting for Firebase Auth...");
+  authReadyPromise = new Promise(resolve => {
+    // Safety timeout: resolve with null if Firebase takes too long
+    const timer = setTimeout(() => {
+      console.warn("Firebase Auth timed out. Proceeding as unauthenticated.");
+      resolve(null);
+    }, 10000);
+
     const unsub = auth.onAuthStateChanged(user => {
+      clearTimeout(timer);
+      console.log("Firebase Auth Ready. User:", user ? user.uid : "None");
       unsub();
       resolve(user);
+    }, err => {
+      clearTimeout(timer);
+      console.error("Firebase Auth Error:", err);
+      resolve(null);
     });
   });
+  return authReadyPromise;
 }

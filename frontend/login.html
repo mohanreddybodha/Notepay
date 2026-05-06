@@ -9,7 +9,7 @@
   <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css"/>
+  <link rel="stylesheet" href="css/global.css?v=6"/>
   <style>
     .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
     .status-bar{background:var(--surf-var);display:flex;justify-content:space-between;padding:10px 20px 8px;font-size:11px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;border-bottom:1px solid var(--border);}
@@ -347,14 +347,24 @@ async function verifyOTP() {
     const { status, data } = await apiFetchWithToken("GET", "/users/me", token);
 
     if (status === 200) {
-      // Existing user → Dashboard
-      window.location.replace("dashboard.html");
+      // Existing user
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("return");
+      if (returnUrl) {
+        window.location.replace(decodeURIComponent(returnUrl));
+      } else {
+        window.location.replace("dashboard.html");
+      }
     } else if (status === 404) {
       // New user → Profile Setup
       sessionStorage.setItem("np_new_user", "1");
       sessionStorage.setItem("np_phone", "+91 " + phoneInput.value.trim());
       sessionStorage.setItem("np_token_tmp", token);
-      window.location.replace("profile-setup.html");
+      let nextUrl = "profile-setup.html";
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("return");
+      if (returnUrl) nextUrl += "?return=" + encodeURIComponent(returnUrl);
+      window.location.replace(nextUrl);
     } else {
       const errMsg = (data && data.detail) ? (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail)) : `Unexpected server response (${status}).`;
       throw new Error(errMsg);

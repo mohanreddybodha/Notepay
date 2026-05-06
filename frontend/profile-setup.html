@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css"/>
+  <link rel="stylesheet" href="css/global.css?v=6"/>
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -151,7 +151,13 @@
       if (status === 200 || status === 201) {
         sessionStorage.removeItem("np_new_user");
         sessionStorage.removeItem("np_token_tmp");
-        window.location.replace("dashboard.html");
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get("return");
+        if (returnUrl) {
+          window.location.replace(decodeURIComponent(returnUrl));
+        } else {
+          window.location.replace("dashboard.html");
+        }
       } else {
         if (data?.detail && Array.isArray(data.detail)) {
           throw new Error(data.detail[0].msg);

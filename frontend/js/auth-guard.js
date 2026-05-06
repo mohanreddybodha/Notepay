@@ -7,6 +7,7 @@
 (async function authGuard() {
   const user = await waitForAuthReady();
   if (!user) {
-    window.location.replace("login.html");
+    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.replace(`login.html?return=${returnUrl}`);
   }
 })();

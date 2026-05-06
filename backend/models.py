@@ -37,6 +37,7 @@ class Event(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     invite_code = Column(String, unique=True, index=True)
     is_active = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=False)
     
     # Who created it
     organizer_id = Column(Integer, ForeignKey("users.id"))
@@ -90,3 +91,14 @@ class Expense(Base):
 
     event = relationship("Event", back_populates="expenses")
     collector_user = relationship("User", back_populates="expenses_collected")
+
+class WatchedEvent(Base):
+    __tablename__ = "watched_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    event_id = Column(Integer, ForeignKey("events.id"))
+    last_viewed_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    event = relationship("Event")

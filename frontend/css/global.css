@@ -113,6 +113,7 @@ html {
   margin: 0 auto;
   box-shadow: 0 0 0 1px var(--border);
   transition: background 0.3s, color 0.3s;
+  position: relative;
 }
 
 body {
@@ -161,7 +162,7 @@ a {
 
 /* ── TOAST ── */
 .toast {
-  position: fixed;
+  position: absolute;
   bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
@@ -354,7 +355,7 @@ a {
 
 /* ── POPUP OVERLAY ── */
 .pop-ov {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(13, 27, 42, 0.8);
   display: flex;
@@ -384,7 +385,7 @@ a {
 
 /* ── BOTTOM SHEET ── */
 .sheet-ov {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(13, 27, 42, 0.8);
   display: flex;

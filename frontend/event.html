@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css"/>
+  <link rel="stylesheet" href="css/global.css?v=6"/>
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -16,7 +16,7 @@
   </script>
   <style>
     *{box-sizing:border-box;}
-    .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);width:100%;max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);transition: background 0.3s, color 0.3s;}
+    .page{height:100dvh;display:flex;flex-direction:column;background:var(--surface);width:100%;max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);transition: background 0.3s, color 0.3s;overflow:hidden;}
     .status-bar{display:none;} /* Hidden as per previous request */
     .app-bar{background:var(--primary-dk);display:flex;align-items:center;padding:10px 16px 12px;gap:8px;min-height:52px;}
     .back{color:rgba(255,255,255,.85);font-size:22px;cursor:pointer;padding:3px 7px;border-radius:8px;line-height:1;}
@@ -50,8 +50,8 @@
     .sum-g{color:var(--green); font-weight: 900;}
     .sum-r{color:var(--red); font-weight: 900;}
     /* Spreadsheet table */
-    .tbl-wrap{margin:4px 14px;border:2px solid var(--border);border-radius:12px;flex-shrink:0;background:var(--surface); overflow: hidden; display: flex; flex-direction: column;}
-    .tbl-sc{background:var(--card); width: 100%; overflow-x: auto; position: relative; scroll-behavior: smooth; border-radius: 10px; display: block; -webkit-overflow-scrolling: touch;}
+    .tbl-wrap{margin:4px 14px;border:2px solid var(--border);border-radius:12px;flex:1;background:var(--surface); overflow: hidden; display: flex; flex-direction: column;}
+    .tbl-sc{background:var(--card); width: 100%; overflow-x: auto; overflow-y: auto; flex: 1; position: relative; scroll-behavior: smooth; border-radius: 10px; display: block; -webkit-overflow-scrolling: touch;}
     .tbl-sc::-webkit-scrollbar{display:none;}
     .tbl-inner{display: inline-block; min-width: 100%; vertical-align: top; background: var(--card);}
     
@@ -77,7 +77,7 @@
     .cr{color:var(--red);font-weight:900;}
     .cm{color:var(--text3);font-style:italic;font-size:11px;}
 
-    .new-row{display:flex; align-items:center; padding:0 12px; font-size:13px; color:var(--teal); font-weight:800; min-height:46px; cursor:pointer; background:var(--row-new); font-family:'Nunito',sans-serif; transition:background .15s; width: 100%; min-width: 100%; border-top: 1px solid var(--border2); position: sticky; left: 0; z-index: 600;}
+    .new-row{display:flex; align-items:center; font-size:13px; color:var(--teal); font-weight:800; min-height:46px; cursor:pointer; background:var(--row-new); font-family:'Nunito',sans-serif; transition:background .15s; width: max-content; min-width: 100%; border-top: 1px solid var(--border2);}
     .new-row:hover{background:#C8EEE8;}
     body.dark-mode .new-row { background: transparent; color: #12C5C5; border-top: 1px solid #333; }
     body.dark-mode .new-row:hover { background: var(--row-alt); }
@@ -96,7 +96,7 @@
     .is-theater.hidden-layer { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     #pane-sum.is-theater { display: block !important; overflow-y: auto !important; height: 100% !important; width: 100% !important; border: none !important; }
     
-    .scroll-list{flex:1; overflow-y:auto; display:flex; flex-direction:column; background: var(--card);}
+    .scroll-list{flex:1; overflow: hidden; display:flex; flex-direction:column; background: var(--card);}
     .scroll-list::-webkit-scrollbar{display:none;}
 
     /* Save button */
@@ -170,8 +170,8 @@
     .pbk.r{background:var(--red);}
     .pbk.b{background:var(--primary);}
     /* Dropdown */
-    .dd-ov{position:fixed;inset:0;z-index:20080;}
-    .dd-box{position:fixed;background:var(--card);border-radius:0 0 0 16px;min-width:200px;overflow:hidden;border:1.5px solid var(--border2);box-shadow:0 8px 30px rgba(0,0,0,.2);top:86px;right:0;}
+    .dd-ov{position:absolute;inset:0;z-index:20080;}
+    .dd-box{position:absolute;background:var(--card);border-radius:16px;min-width:200px;overflow:hidden;border:1.5px solid var(--border2);box-shadow:0 8px 30px rgba(0,0,0,.2);top:60px;right:12px;z-index:20081;}
     .dd-item{display:flex;align-items:center;padding:13px 16px;gap:10px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .12s;}
     .dd-item:last-child{border-bottom:none;}
     .dd-item:hover{background:var(--surf-var);}
@@ -180,7 +180,7 @@
     .dd-lbl{font-size:13.5px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;}
     .dd-item.dng .dd-lbl{color:var(--red);}
     /* Sheet */
-    .sov{position:fixed;inset:0;background:rgba(13,27,42,.8);display:flex;align-items:flex-end;z-index:11500;}
+    .sov{position:absolute;inset:0;background:rgba(13,27,42,.8);display:flex;align-items:flex-end;z-index:11500;}
     .sbox{background:var(--card);border-radius:24px 24px 0 0;padding:14px 18px 32px;width:100%;max-width:480px;margin:0 auto; transform-origin: bottom center; transition: transform 0.4s; max-height: 90vh; overflow-y: auto; overflow-x: hidden; }
     .sh-handle{width:44px;height:5px;background:var(--border);border-radius:3px;margin:0 auto 14px;}
     .sh-title{font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;color:var(--text);margin-bottom:5px;}
@@ -230,11 +230,7 @@
     body.dark-mode .ib-desc { color: #CCC; }
     body.dark-mode .st-lbl { color: #AAA; }
 
-    /* Fix for overlays on small screens */
-    .dd-box { position: fixed; top: 10px; right: 10px; width: 220px; z-index: 20001; }
-    @media (max-width: 480px) {
-      .dd-box { top: 56px; right: 8px; }
-    }
+    /* Fix for overlays on small screens removed (now handled by absolute positioning) */
 
     /* Custom columns UI */
     .add-col-btn{background:var(--teal);color:white;border:none;border-radius:12px;padding:3px 10px;font-size:10px;font-weight:900;text-transform:uppercase;cursor:pointer;margin-left:8px;box-shadow:0 2px 0 rgba(0,0,0,.15);display:none;}
@@ -261,7 +257,7 @@
     .flip-btn svg { width: 14px; height: 14px; color: var(--text2); }
 
     /* Theater Mode Rotation UI */
-    .rot-ov { position: fixed; inset: 0; background: var(--surface); z-index: 11000; display: none; flex-direction: column; }
+    .rot-ov { position: absolute; inset: 0; background: var(--surface); z-index: 11000; display: none; flex-direction: column; }
     .rot-ov-top { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; background: var(--surface); border-bottom: 1.5px solid var(--border2); flex-shrink: 0; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     .rot-ov-top::-webkit-scrollbar { display: none; }
     .rot-top-left { flex: 0 0 auto; display: flex; align-items: center; }
@@ -315,7 +311,7 @@
 <body>
 <div class="page" id="main-page">
   <div class="app-bar">
-    <div class="back" onclick="history.back()">←</div>
+    <div class="back" onclick="window.location.href='dashboard.html'">←</div>
     <div class="ab-ttl" id="ev-title">Loading…</div>
 
     <div class="dots-btn" id="dots-btn" onclick="openDD()" style="display:none;font-size:18px;line-height:1;padding:3px 7px;">⚙️</div>
@@ -330,7 +326,7 @@
     <div id="members-badge" class="badge-members" onclick="openMembersSheet()">👥 Members</div>
   </div>
   <div class="deact-bar" id="deact-banner" style="display:none;">⚠️ <span id="deact-lbl-banner">Event Deactivated · Collectors Locked Out</span></div>
-  <div class="tab-heading" id="tab-bar">
+  <div class="tab-heading" id="tab-bar" style="display:none;">
     <div class="tab-h active" id="tab-don" onclick="switchTab('don')">Donations</div>
     <div class="tab-h" id="tab-exp" onclick="switchTab('exp')">Expenses</div>
     <div class="tab-h" id="tab-sum" onclick="switchTab('sum')">Summary</div>
@@ -411,7 +407,6 @@
     <div style="font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;color:var(--text);">Access Locked</div>
     <div style="font-size:13px;color:var(--text3);line-height:1.6;">This event has been deactivated by the organizer. Contact them to get a new event code.</div>
   </div>
-</div>
 
 <!-- Entry Form -->
 <div id="entry-form-ov" class="sov" style="display:none;" onclick="closeEntryForm()">
@@ -564,6 +559,8 @@
     <div class="dd-item" onclick="closeDD();openRenameSheet()"><div class="dd-ic">✏️</div><div class="dd-lbl">Rename Event</div></div>
     <div class="dd-item" onclick="closeDD();openCodeSheet()"><div class="dd-ic">⚙️</div><div class="dd-lbl">Code Settings</div></div>
     <div class="dd-item" onclick="closeDD();openMembersSheet()"><div class="dd-ic">👥</div><div class="dd-lbl">Members</div></div>
+    <div class="dd-item" id="privacy-toggle-btn" onclick="handlePrivacyToggleClick()"><div class="dd-ic">🌐</div><div class="dd-lbl" id="privacy-lbl">Public Access: OFF</div></div>
+    <div class="dd-item" id="share-link-btn" style="display:none;" onclick="sharePublicLink()"><div class="dd-ic">🔗</div><div class="dd-lbl">Share View Link</div></div>
     <div class="dd-item" id="deact-btn" onclick="closeDD();toggleDeactivate()"><div class="dd-ic">🔒</div><div class="dd-lbl" id="deact-lbl-dd">Deactivate Event</div></div>
     <div class="dd-item dng" onclick="closeDD();showDelEventPop()"><div class="dd-ic">🗑️</div><div class="dd-lbl">Delete Event</div></div>
   </div>
@@ -598,6 +595,19 @@
 </div>
 
 <!-- Duplicate Entry Warning Popup -->
+<!-- Privacy Toggle Popup -->
+<div id="privacy-pop" class="pop-ov" style="z-index:1100; display:none;" onclick="closePrivacyPop()">
+  <div class="pop-box" onclick="event.stopPropagation()">
+    <div class="pop-ic" style="background:#E0F7FA; border:2px solid #80DEEA; color:#006064;">🌐</div>
+    <div class="pop-t" style="color:#00838F;">Enable Public Access?</div>
+    <div class="pop-m">Anyone with the share link will have **Read-Only** access to view all donation, expense, and summary details of "<strong id="privacy-event-name">Event</strong>". They will need to log in to NotePay to view.</div>
+    <div class="pop-line"></div>
+    <div class="pop-btns">
+      <button class="pbc" onclick="closePrivacyPop()">Cancel</button>
+      <button class="pbk" style="background:var(--primary); color:white; border:none;" onclick="confirmPrivacyToggle()">Enable</button>
+    </div>
+  </div>
+</div>
 <div id="duplicate-pop" class="pop-ov" style="display:none; z-index:13000;">
   <div class="pop-box">
     <div class="pop-ic" style="background:#FFF8EC;border:2px solid #E0C090;">⚠️</div>
@@ -691,7 +701,21 @@
 <!-- Collector Settings Dropdown -->
 <div id="dd-col-ov" class="sov" style="display:none;background:rgba(0,0,0,.1);" onclick="closeColDD()">
   <div class="dd-box" onclick="event.stopPropagation()">
-    <div class="dd-item" onclick="closeColDD();openExitPop()" style="color:var(--red);"><div class="dd-ic">🚪</div><div class="dd-lbl">Exit Event</div></div>
+    <div class="dd-item" id="col-action-item" onclick="closeColDD();openExitPop()" style="color:var(--red);"><div class="dd-ic">🚪</div><div class="dd-lbl" id="col-action-lbl">Exit Event</div></div>
+  </div>
+</div>
+
+<!-- Remove Event Confirmation Popup -->
+<div id="remove-pop" class="pop-ov" style="display:none;">
+  <div class="pop-box">
+    <div class="pop-ic" style="background:#FFF0EC;border:2px solid #E0A090;">🗑️</div>
+    <div class="pop-t" style="color:var(--red);">Remove Event?</div>
+    <div class="pop-m">Do you want remove event <strong id="remove-event-name"></strong> from discovery tap, you need visit link if remove.</div>
+    <div class="pop-line"></div>
+    <div class="pop-btns">
+      <button class="pbc" onclick="closeRemovePop()">Cancel</button>
+      <button class="pbk r" style="border:none;" onclick="confirmRemove()">Remove</button>
+    </div>
   </div>
 </div>
 
@@ -757,9 +781,10 @@
     <div class="dd-item" id="mctx-restrict" onclick="handleRestrictClick()">🚫 Restrict User</div>
   </div>
 </div>
+</div><!-- End main-page -->
 
 <script src="js/firebase-config.js"></script>
-<script src="js/api.js"></script>
+<script src="js/api.js?v=2"></script>
 <script src="js/auth-guard.js"></script>
 <script>
 // ── State ──
@@ -771,35 +796,53 @@ let isOrganizer= false;
 let isActive   = true;
 let donations  = [];
 let expenses   = [];
-let currentTab = "don";
+let currentTab = params.get("tab") || "don";
 let ctxTarget  = null; // { type:'don'|'exp', entry, row }
 let editTarget = null;
+let isVisitor  = false;
+let activeTheaterTab = params.get("theater");
+let theaterRotation = 0;
+const tabRotations = { don: 0, exp: 0, sum: 0 };
 
-if (!eventId) window.location.replace("dashboard.html");
+if (!eventId || isNaN(eventId)) {
+  console.error("Invalid or missing eventId:", params.get("id"));
+  window.location.replace("dashboard.html");
+}
 
-// ── Init ──
-waitForAuthReady().then(async user => {
-  if (!user) return;
+async function init() {
+  const user = await waitForAuthReady();
+  if (!user) return; // auth-guard.js will handle redirect
+  
+  const loader = document.getElementById("loading-pane");
+  const loadTimeout = setTimeout(() => {
+    if (loader && loader.style.display !== "none") {
+      loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">⏳</div><div style="font-weight:bold; margin-bottom:5px;">Taking longer than usual...</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">Check your connection or try again.</div><button class="pbk" onclick="location.reload()">Retry Now</button></div>`;
+    }
+  }, 10000);
+
   try {
     const profile = await getMyProfile();
     myUserId = profile.id;
-  } catch(e) {}
-  loadAll();
-});
+    await loadAll();
+  } catch (e) {
+    console.error("Init failed:", e);
+    renderPage();
+  } finally {
+    clearTimeout(loadTimeout);
+  }
+}
+
+init();
 
 async function loadAll() {
   try {
-    const profile = await getMyProfile();
-    myUserId = profile.id;
-    
     [eventData, donations, expenses] = await Promise.all([
       getEvent(eventId),
       getDonations(eventId),
       getExpenses(eventId)
     ]);
   } catch(e) {
-    // If blocked / hidden
-    console.warn("Could not load all data", e);
+    console.warn("loadAll partially failed:", e);
     if (!eventData) {
        try { eventData = await getEvent(eventId); } catch(e2) {}
     }
@@ -819,18 +862,35 @@ function renderPage() {
     
     isActive   = eventData.is_active;
     const myRoleStr = (eventData.my_role || "").toLowerCase();
+    isVisitor = (!eventData.my_role);
     
-    // PRIORITY: Trust the active role. Even if you are the creator (organizer_id),
-    // if your current role is "Collector" (due to restriction/demotion), you see Collector UI.
+    // PRIORITY: Trust the active role.
     if (myRoleStr === "collector") {
         isOrganizer = false;
     } else if (myRoleStr === "organizer") {
         isOrganizer = true;
     } else {
-        // Fallback for safety
-        isOrganizer = (eventData.organizer_id === myUserId);
+        isOrganizer = false; // Visitors are not organizers
     }
     const isRestricted = eventData.is_restricted;
+
+    // Persistence: Tabs will be switched later if user has access.
+
+    // Privacy Menu state
+    const privLbl = document.getElementById("privacy-lbl");
+    const shareBtn = document.getElementById("share-link-btn");
+    if (privLbl) privLbl.textContent = eventData.is_public ? "Public Access: ON" : "Public Access: OFF";
+    if (shareBtn) shareBtn.style.display = (isOrganizer && eventData.is_public) ? "flex" : "none";
+
+    // Read-only indicator for visitors
+    const placeholder = document.getElementById("dots-placeholder");
+    if (isVisitor) {
+      placeholder.innerHTML = `<div class="badge-role-o" style="font-size:9px; padding:4px 8px; background:var(--primary-lt); color:var(--primary-dk); border:1px solid var(--primary);">👁️ PUBLIC VIEW</div>`;
+      placeholder.style.width = "auto";
+    } else {
+      placeholder.innerHTML = "";
+      placeholder.style.width = "32px";
+    }
 
     // Basic info
     document.title = `Notepay — ${eventData.name}`;
@@ -849,7 +909,6 @@ function renderPage() {
     // Header dots menu
     const dotsOrg = document.getElementById("dots-btn");
     const dotsCol = document.getElementById("dots-btn-col");
-    const placeholder = document.getElementById("dots-placeholder");
     
     if (isOrganizer) {
       if (dotsOrg) dotsOrg.style.display = "flex";
@@ -871,9 +930,21 @@ function renderPage() {
         mb.style.cursor = "pointer";
       } else {
         mb.className = "badge-col";
-        mb.textContent = "Collector";
+        mb.textContent = isVisitor ? "Visitor" : "Collector";
         mb.onclick = null;
         mb.style.cursor = "default";
+      }
+    }
+
+    const colActionLbl = document.getElementById("col-action-lbl");
+    const colActionItem = document.getElementById("col-action-item");
+    if (colActionLbl && colActionItem) {
+      if (isVisitor) {
+        colActionLbl.textContent = "Remove Event";
+        colActionItem.onclick = () => { closeColDD(); openRemovePop(); };
+      } else {
+        colActionLbl.textContent = "Exit Event";
+        colActionItem.onclick = () => { closeColDD(); openExitPop(); };
       }
     }
 
@@ -886,6 +957,12 @@ function renderPage() {
     if (isRestricted) {
       if (deactBtnLbl) deactBtnLbl.style.display = "none";
       if (tb) tb.style.display = "none";
+      document.getElementById("pane-don").style.display = "none";
+      document.getElementById("pane-exp").style.display = "none";
+      document.getElementById("pane-sum").style.display = "none";
+      const tov = document.getElementById("theater-ov");
+      if (tov) tov.style.display = "none";
+      
       if (lp) {
         lp.style.display = "flex";
         lp.querySelector("div:nth-child(1)").textContent = "🚫";
@@ -913,6 +990,12 @@ function renderPage() {
         }
       } else {
         if (tb) tb.style.display = "none";
+        document.getElementById("pane-don").style.display = "none";
+        document.getElementById("pane-exp").style.display = "none";
+        document.getElementById("pane-sum").style.display = "none";
+        const tov = document.getElementById("theater-ov");
+        if (tov) tov.style.display = "none";
+
         if (lp) {
           lp.style.display = "flex";
           if (isOrganizer) {
@@ -929,7 +1012,11 @@ function renderPage() {
           } else {
              lp.querySelector("div:nth-child(1)").textContent = "🔒";
              lp.querySelector("div:nth-child(2)").textContent = "Access Locked";
-             lp.querySelector("div:nth-child(3)").textContent = "This event has been deactivated by the organizer. Contact them to get a new event code.";
+             if (isVisitor) {
+                 lp.querySelector("div:nth-child(3)").textContent = "This event has been deactivated by the organizer.";
+             } else {
+                 lp.querySelector("div:nth-child(3)").textContent = "This event has been deactivated by the organizer. Contact them to get a new event code.";
+             }
              lp.style.cursor = "default";
              lp.onclick = null;
           }
@@ -959,7 +1046,8 @@ function renderPage() {
     if (dacb) dacb.style.display = isOrganizer ? "block" : "none";
     if (eacb) eacb.style.display = isOrganizer ? "block" : "none";
 
-    switchTab(currentTab || "don");
+    switchTab(currentTab || "don", false);
+    if (activeTheaterTab) enterTheater(activeTheaterTab);
   } catch(e) {
     console.error("renderPage crashed:", e);
     const loader = document.getElementById("loading-pane");
@@ -975,10 +1063,16 @@ function hideDeactPopAndShowData() {
 }
 
 // ── Tab switching ──
-function switchTab(tab) {
+function switchTab(tab, updateUrl = true) {
   currentTab = tab;
+  if (updateUrl) {
+    const p = new URLSearchParams(window.location.search);
+    p.set("tab", tab);
+    history.replaceState(null, "", "?" + p.toString());
+  }
   ["don","exp","sum"].forEach(t => {
-    document.getElementById("tab-"+t).classList.toggle("active", t===tab);
+    const el = document.getElementById("tab-"+t);
+    if (el) el.classList.toggle("active", t===tab);
     const p = document.getElementById("pane-"+t);
     if (p) p.style.display = t===tab ? (t==="sum"?"block":"flex") : "none";
     if (p && t!=="sum") p.style.flexDirection = "column";
@@ -1043,7 +1137,6 @@ function renderDonations(q = "") {
         ${customCells}
       `;
       row.addEventListener("contextmenu", e => { e.preventDefault(); openCtx(e, "don", d); });
-      row.addEventListener("touchstart", startLp(row, "don", d), {passive:true});
       row.addEventListener("dblclick", e => { openCtx(e, "don", d); });
       
       // Double tap simulation
@@ -1072,11 +1165,11 @@ function renderDonations(q = "") {
   }
 
   // 3. Render New Entry Row
-  if (isOrganizer || (!isOrganizer && isActive)) {
+  if (!isVisitor && (isOrganizer || (!isOrganizer && isActive))) {
     const nr = document.createElement("div");
     nr.className = "tr new-row";
     nr.onclick = () => openEntryForm("don");
-    nr.innerHTML = `<span style="margin-right:8px; font-size:16px;">+</span> New entry`;
+    nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
     tblBody.appendChild(nr);
   }
 }
@@ -1135,7 +1228,6 @@ function renderExpenses(q = "") {
         ${customCells}
       `;
       row.addEventListener("contextmenu", ev => { ev.preventDefault(); openCtx(ev, "exp", e); });
-      row.addEventListener("touchstart", startLp(row, "exp", e), {passive:true});
       row.addEventListener("dblclick", ev => { openCtx(ev, "exp", e); });
 
       // Double tap simulation
@@ -1164,11 +1256,11 @@ function renderExpenses(q = "") {
   }
 
   // 3. Render New Entry Row
-  if (isOrganizer || (!isOrganizer && isActive)) {
+  if (!isVisitor && (isOrganizer || (!isOrganizer && isActive))) {
     const nr = document.createElement("div");
     nr.className = "tr new-row";
     nr.onclick = () => openEntryForm("exp");
-    nr.innerHTML = `<span style="margin-right:8px; font-size:16px;">+</span> New entry`;
+    nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
     tblBody.appendChild(nr);
   }
 }
@@ -1324,6 +1416,7 @@ async function saveEntry(skipDupCheck = false) {
     }
     summaryData = null; // Invalidate cache
     updateTheaterStats();
+    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
     closeEntryForm();
     showToast("Saved!");
   } catch(e) {
@@ -1349,21 +1442,11 @@ function openDupPop(onConfirm, name, amount, type) {
 function closeDupPop() { document.getElementById("duplicate-pop").style.display = "none"; }
 
 // ── Context menu ──
-let lpTimer = null;
-function startLp(el, type, entry) {
-  return function(e) {
-    lpTimer = setTimeout(() => {
-      lpTimer = null;
-      const touch = e.touches[0];
-      openCtx({clientX:touch.clientX,clientY:touch.clientY}, type, entry);
-    }, 480);
-    el.addEventListener("touchend",  () => { if(lpTimer){clearTimeout(lpTimer);lpTimer=null;} }, {once:true});
-    el.addEventListener("touchmove", () => { if(lpTimer){clearTimeout(lpTimer);lpTimer=null;} }, {once:true});
-  };
-}
+// Long press logic removed. Double tap works cleanly.
 
 let ctxEntry = null, ctxType = null;
 function openCtx(e, type, entry) {
+  if (isVisitor) return;
   ctxType  = type;
   ctxEntry = entry;
   const ov = document.createElement("div");
@@ -1455,6 +1538,7 @@ async function saveEdit(skipDupCheck = false) {
       expenses = expenses.map(x => x.id===e.id ? e : x);
       renderExpenses();
     }
+    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
     closeEditForm();
     showToast("Changes saved!");
   } catch(e) { showToast(e.message||"Failed.","error"); }
@@ -1488,6 +1572,7 @@ async function confirmDeleteColumn() {
     const res = await updateEvent(eventId, data);
     eventData[key] = res[key];
     if (activeColType === "don") renderDonations(); else renderExpenses();
+    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
     closeCustomColSheet();
     closeDelColPop();
     showToast("Column deleted.");
@@ -1502,6 +1587,7 @@ async function confirmDelete() {
     if (ctxType==="don") { await deleteDonation(eventId, ctxEntry.id); donations=donations.filter(d=>d.id!==ctxEntry.id); renderDonations(); }
     else { await deleteExpense(eventId, ctxEntry.id); expenses=expenses.filter(e=>e.id!==ctxEntry.id); renderExpenses(); }
     summaryData = null; // Invalidate cache
+    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
     closeDelPop(); showToast("Entry deleted.");
   } catch(e) { showToast(e.message||"Failed.","error"); closeDelPop(); }
 }
@@ -1532,6 +1618,92 @@ async function confirmExit() {
     if (lp) lp.style.display = "none";
     showToast(e.message || "Error leaving event.", "error");
   }
+}
+
+function openRemovePop() {
+  document.getElementById("remove-event-name").textContent = eventData ? eventData.name : "";
+  document.getElementById("remove-pop").style.display = "flex";
+}
+function closeRemovePop() {
+  document.getElementById("remove-pop").style.display = "none";
+}
+async function confirmRemove() {
+  const lp = document.getElementById("loading-pane");
+  try {
+    if (lp) lp.style.display = "flex";
+    document.getElementById("remove-pop").style.display = "none";
+    await unwatchEvent(eventId);
+    window.location.replace("dashboard.html");
+  } catch(e) {
+    if (lp) lp.style.display = "none";
+    showToast(e.message || "Error removing event.", "error");
+  }
+}
+
+async function revokeCode() {
+  if (!confirm("Are you sure you want to revoke this code? Existing members keep access, but no one new can join.")) return;
+  await apiCall(`/events/${eventId}/generate_code`, "POST");
+  loadAll();
+}
+
+// ── Privacy / Public Access ──
+function handlePrivacyToggleClick() {
+  closeDD();
+  if (eventData.is_public) {
+    // If turning OFF, do it immediately
+    togglePrivacy(false);
+  } else {
+    // If turning ON, show confirmation
+    document.getElementById("privacy-event-name").textContent = eventData.name;
+    document.getElementById("privacy-pop").style.display = "flex";
+  }
+}
+function closePrivacyPop() { document.getElementById("privacy-pop").style.display = "none"; }
+async function confirmPrivacyToggle() {
+  closePrivacyPop();
+  await togglePrivacy(true);
+}
+async function togglePrivacy(val) {
+  try {
+    await apiFetch("PATCH", `/events/${eventId}/privacy?is_public=${val}`);
+    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
+    loadAll();
+  } catch(e) {
+    showToast("Failed to update privacy settings","error");
+  }
+}
+function sharePublicLink() {
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: `Notepay — ${eventData.name}`, url: url }).catch(()=>{});
+  } else {
+    copyToClipboard(url, "Link copied to clipboard!");
+  }
+}
+
+/** Robust copy to clipboard (handles non-secure contexts/HTTP) */
+function copyToClipboard(text, successMsg = "Copied!") {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showToast(successMsg)).catch(() => fallbackCopy(text, successMsg));
+  } else {
+    fallbackCopy(text, successMsg);
+  }
+}
+
+function fallbackCopy(text, successMsg) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed"; // avoid scrolling to bottom
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showToast(successMsg);
+  } catch (err) {
+    alert("Please copy this manually: " + text);
+  }
+  document.body.removeChild(textArea);
 }
 
 async function toggleDeactivate() {
@@ -1586,13 +1758,16 @@ async function doDeleteEvent() {
 
 function openCodeSheet() { document.getElementById("sheet-code").textContent=eventData.invite_code||"—"; document.getElementById("code-sheet").style.display="flex"; }
 function closeCodeSheet(){ document.getElementById("code-sheet").style.display="none"; }
-function copyCode()  { navigator.clipboard.writeText(eventData.invite_code||""); showToast("Code copied!"); }
-function shareCode() { if(navigator.share){navigator.share({title:"Join "+eventData.name,text:"Use code: "+eventData.invite_code}).catch(()=>{}); }else{ copyCode(); showToast("Share blocked on HTTP - Code copied!","default"); } }
-async function revokeCode() {
-  try { const ev=await generateCode(eventId); eventData.invite_code=ev.invite_code; showToast("New code generated!"); }
-  catch(e) { showToast(e.message||"Failed.","error"); }
+function copyCode()  { copyToClipboard(eventData.invite_code||"", "Code copied!"); }
+function shareCode() { 
+  const code = eventData.invite_code || "";
+  if(navigator.share){
+    navigator.share({title:"Join "+eventData.name, text:"Use code: "+code}).catch(()=>{}); 
+  } else { 
+    copyCode(); 
+    showToast("Share blocked on HTTP - Code copied!","default"); 
+  } 
 }
-
 // ── Members Sheet ──
 let memTarget = null;
 async function openMembersSheet() {
@@ -1745,7 +1920,6 @@ function updateCCPreview(w) {
   preview.textContent = "Column Width";
 }
 
-function highlightPreset(w) { }
 function highlightPreset(w) {
   const v = parseInt(w);
   document.querySelectorAll(".w-btn").forEach(b => b.classList.remove("active"));
@@ -1824,6 +1998,7 @@ async function saveCustomColumn() {
     const res = await updateEvent(eventId, data);
     eventData[key] = res[key];
     if (activeColType === "don") renderDonations(); else renderExpenses();
+    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
     closeCustomColSheet();
     showToast("Column added!");
   } catch(e) { showToast(e.message || "Failed.", "error"); }
@@ -1858,6 +2033,7 @@ async function renameCustomColumn() {
     eventData[key] = res[key];
     
     if (activeColType === "don") renderDonations(); else renderExpenses();
+    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
     closeCustomColSheet();
     showToast("Column renamed!");
   } catch(e) { showToast(e.message || "Failed.", "error"); }
@@ -1867,15 +2043,11 @@ async function deleteCustomColumn() {
   openDelColPop();
 }
 
-const tabRotations = { don: 0, exp: 0, sum: 0 };
-let activeTheaterTab = null;
-let theaterRotation = 0;
-
 function renderTable(type, isTheater = false) {
   const container = document.createElement("div");
   container.className = "tbl-inner" + (isTheater ? " is-theater-table" : "");
   
-  const role = isOrganizer ? "organizer" : "collector";
+  const role = isOrganizer ? "organizer" : (isVisitor ? "visitor" : "collector");
   const list = type === "don" ? donations : expenses;
   const customCols = type === "don" ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
@@ -1922,7 +2094,7 @@ function renderTable(type, isTheater = false) {
   list.forEach((entry, i) => {
     const tr = document.createElement("div");
     tr.className = "tr" + (i % 2 !== 0 ? " alt" : "");
-    tr.onclick = () => openEditForm(entry, type);
+    tr.onclick = (e) => openCtx(e, type, entry);
 
     const cName = document.createElement("div");
     cName.className = "fc sticky-col";
@@ -1962,11 +2134,11 @@ function renderTable(type, isTheater = false) {
   });
 
   // New Entry Row
-  if (role === "organizer" || role === "collector") {
+  if (!isVisitor && (role === "organizer" || role === "collector")) {
     const nr = document.createElement("div");
     nr.className = "tr new-row";
     nr.onclick = () => openEntryForm(type);
-    nr.innerHTML = `<span style="margin-right:8px; font-size:16px;">+</span> New entry`;
+    nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
     container.appendChild(nr);
   }
 
@@ -2020,8 +2192,8 @@ function updateTheaterStats() {
   }
   
   const roleEl = document.getElementById("rot-stat-role");
-  roleEl.textContent = isOrganizer ? "Organizer" : "Collector";
-  roleEl.className = "rot-role " + (isOrganizer ? "org" : "col");
+  roleEl.textContent = isOrganizer ? "Organizer" : (isVisitor ? "Visitor" : "Collector");
+  roleEl.className = "rot-role " + (isOrganizer ? "org" : (isVisitor ? "vis" : "col"));
   
   document.getElementById("rot-tab-don").classList.toggle("active", tab === "don");
   document.getElementById("rot-tab-exp").classList.toggle("active", tab === "exp");
@@ -2035,6 +2207,10 @@ function switchTheaterTab(tab) {
 
 function enterTheater(tab) {
   activeTheaterTab = tab;
+  const up = new URLSearchParams(window.location.search);
+  up.set("theater", tab);
+  history.replaceState(null, "", "?" + up.toString());
+
   const overlay = document.getElementById("rot-overlay");
   const main = document.getElementById("rot-main");
   const body = document.getElementById("rot-ov-body");
@@ -2148,6 +2324,10 @@ function enterTheater(tab) {
 
 function exitTheater() {
   if (!activeTheaterTab) return;
+  activeTheaterTab = null;
+  const upEx = new URLSearchParams(window.location.search);
+  upEx.delete("theater");
+  history.replaceState(null, "", "?" + upEx.toString());
   
   const overlay = document.getElementById("rot-overlay");
   const main = document.getElementById("rot-main");
@@ -2165,7 +2345,7 @@ function exitTheater() {
   const popups = ["entry-form-ov", "edit-form-ov", "duplicate-pop", "custom-col-sheet", "code-sheet", "members-sheet", "del-pop"];
   popups.forEach(id => {
     const p = document.getElementById(id);
-    if (p) document.body.appendChild(p);
+    if (p) document.getElementById("main-page").appendChild(p);
   });
 
   body.innerHTML = "";

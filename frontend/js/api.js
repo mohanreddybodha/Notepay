@@ -10,11 +10,10 @@ const API_BASE = `http://${window.location.hostname}:8000`;
 async function apiFetch(method, path, body = null) {
   const token = await getIdToken();
   if (!token) {
-    // Not authenticated — redirect to login
     window.location.href = "login.html";
     throw new Error("Not authenticated");
   }
-
+  
   const opts = {
     method,
     headers: {
@@ -27,18 +26,15 @@ async function apiFetch(method, path, body = null) {
   const res = await fetch(`${API_BASE}${path}`, opts);
 
   if (res.status === 401) {
-    // Token expired or invalid — back to login
     window.location.href = "login.html";
     throw new Error("Session expired");
   }
 
-  const data = res.headers.get("content-type")?.includes("application/json")
-    ? await res.json()
-    : null;
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const data = isJson ? await res.json() : null;
 
   if (!res.ok && res.status !== 304) {
     const msg = data?.detail || `HTTP ${res.status}`;
-    // If the backend says user is not registered in DB, redirect to profile setup
     if (res.status === 404 && msg.includes("User not registered")) {
       window.location.replace("profile-setup.html");
       throw new Error("Redirecting to profile setup...");
@@ -147,6 +143,21 @@ async function generateCode(eventId) {
 /** Fetch a single event's details */
 async function getEvent(eventId) {
   return apiFetch("GET", `/events/${eventId}`);
+}
+
+/** Update event privacy (Public/Private) */
+async function updateEventPrivacy(eventId, isPublic) {
+  return apiFetch("PATCH", `/events/${eventId}/privacy?is_public=${isPublic}`);
+}
+
+/** Get public events recently viewed (Discover tab) */
+async function getWatchedEvents() {
+  return apiFetch("GET", "/events/watched");
+}
+
+/** Remove event from watched history (Discover tab) */
+async function unwatchEvent(eventId) {
+  return apiFetch("DELETE", `/events/${eventId}/watched`);
 }
 
 // ══════════════════════════════════════════════

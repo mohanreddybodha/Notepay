@@ -30,6 +30,7 @@ class EventCreate(BaseModel):
     name: str
     description: str
     event_date: datetime
+    is_public: bool = False
 
 class EventResponse(EventCreate):
     id: int
@@ -39,8 +40,8 @@ class EventResponse(EventCreate):
     created_at: datetime
     my_role: Optional[UserRole] = None
     is_restricted: bool = False
-    donation_custom_columns: List[Any] = []
-    expense_custom_columns: List[Any] = []
+    donation_custom_columns: Any = []
+    expense_custom_columns: Any = []
     class Config:
         from_attributes = True
 
@@ -110,6 +111,7 @@ class EventUpdate(BaseModel):
     event_date: Optional[datetime] = None
     donation_custom_columns: Optional[List[Any]] = None
     expense_custom_columns: Optional[List[Any]] = None
+    is_public: Optional[bool] = None
 
 class DonationUpdate(BaseModel):
     donor_name: Optional[str] = None
@@ -125,3 +127,12 @@ class ExpenseUpdate(BaseModel):
 class MemberRoleUpdate(BaseModel):
     role: UserRole
     custom_fields: Optional[Dict[str, Any]] = None
+
+class WatchedEventResponse(BaseModel):
+    id: int
+    user_id: int
+    event_id: int
+    last_viewed_at: datetime
+    event: EventResponse
+    class Config:
+        from_attributes = True
