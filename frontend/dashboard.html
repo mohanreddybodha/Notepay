@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=6"/>
+  <link rel="stylesheet" href="css/global.css?v=7"/>
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -67,7 +67,7 @@
     .loader{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg)}}
     /* FAB */
-    .fab{position:fixed;bottom:22px;right:50%;transform:translateX(calc(50% + 20px));background:var(--primary-dk);border-radius:24px;padding:12px 20px;display:flex;align-items:center;gap:8px;color:white;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(13,43,85,.45);transition:transform .15s;z-index:20;border:none;max-width:200px;}
+    .fab{position:fixed;bottom:22px;right:50%;transform:translateX(calc(50% + 20px));background:var(--primary-dk);border-radius:24px;padding:12px 20px;display:flex;align-items:center;gap:8px;color:white !important;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(13,43,85,.45);transition:transform .15s;z-index:20;border:none;max-width:200px;}
     @media(min-width:480px){.fab{right:calc(50% - 220px);transform:none;}}
     .fab:hover{transform:translateX(calc(50% + 20px)) scale(1.04);}
     @media(min-width:480px){.fab:hover{transform:scale(1.04);}}
@@ -83,6 +83,11 @@
     .ch-t{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--primary);}
     .ch-s{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5;}
     .btn-cancel{width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;}
+    /* Smooth Slider */
+    .main-view { flex:1; overflow:hidden; display:flex; flex-direction:column; position:relative; min-height:0; }
+    .panes-wrapper { display:flex; flex:1; width:300%; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); min-height:0; }
+    .pane { width:33.333333%; height:100%; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+
   </style>
 </head>
 <body>
@@ -121,22 +126,26 @@
     <span class="clear-btn" id="clear-btn" onclick="clearSearch()">✕</span>
   </div>
 
-  <!-- My Events Pane -->
-  <div id="pane-my" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
-    <div class="hint">Events you created · You are the organizer</div>
-    <div class="scr" id="list-my"><div class="loading-state"><div class="loader"></div></div></div>
-  </div>
+  <div class="main-view">
+    <div class="panes-wrapper" id="panes-wrapper">
+      <!-- My Events Pane -->
+      <div id="pane-my" class="pane">
+        <div class="hint">Events you created · You are the organizer</div>
+        <div class="scr" id="list-my"><div class="loading-state"><div class="loader"></div></div></div>
+      </div>
 
-  <!-- Shared Events Pane -->
-  <div id="pane-shared" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
-    <div class="hint">Events you joined via code · You are a collector</div>
-    <div class="scr" id="list-shared"><div class="loading-state"><div class="loader"></div></div></div>
-  </div>
+      <!-- Shared Events Pane -->
+      <div id="pane-shared" class="pane">
+        <div class="hint">Events you joined via code · You are a collector</div>
+        <div class="scr" id="list-shared"><div class="loading-state"><div class="loader"></div></div></div>
+      </div>
 
-  <!-- Discover Pane -->
-  <div id="pane-discover" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
-    <div class="hint">Public events you visited recently</div>
-    <div class="scr" id="list-discover"><div class="loading-state"><div class="loader"></div></div></div>
+      <!-- Discover Pane -->
+      <div id="pane-discover" class="pane">
+        <div class="hint">Public events you visited recently</div>
+        <div class="scr" id="list-discover"><div class="loading-state"><div class="loader"></div></div></div>
+      </div>
+    </div>
   </div>
 
   <!-- FAB -->
@@ -234,7 +243,7 @@
   function renderList(events, role) {
     if (!events.length) {
       return `<div class="empty-state">
-        <div class="es-icon">${role==="organizer"?"📋":role==="visitor"?"👁️":"📌"}</div>
+        <div class="es-icon">${role==="organizer"?"📋":role==="visitor"?"":"📌"}</div>
         <div class="es-title">${role==="visitor"?"No public events":"No events yet"}</div>
         <div class="es-sub">${role==="organizer"?"Create your first event using the + button.":role==="visitor"?"Public events you view will appear here.":"Join an event using an invite code."}</div>
       </div>`;
@@ -307,9 +316,8 @@
     document.getElementById("tab-shared").classList.toggle("active", idx===1);
     document.getElementById("tab-discover").classList.toggle("active", idx===2);
     
-    document.getElementById("pane-my").style.display       = idx===0 ? "flex" : "none";
-    document.getElementById("pane-shared").style.display   = idx===1 ? "flex" : "none";
-    document.getElementById("pane-discover").style.display = idx===2 ? "flex" : "none";
+    const wrapper = document.getElementById("panes-wrapper");
+    wrapper.style.transform = `translateX(-${(idx * 100) / 3}%)`;
     
     // Render the newly active tab
     renderEvents(document.getElementById("search-input").value);

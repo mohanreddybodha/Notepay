@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=6"/>
+  <link rel="stylesheet" href="css/global.css?v=7"/>
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -26,31 +26,31 @@
     .dots-btn:hover{background:rgba(255,255,255,.1);}
     .dot{width:3.5px;height:3.5px;background:white;border-radius:50%;}
     /* Info bar */
-    .info-bar{background:var(--surf-var);display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1.5px solid var(--border2);flex-shrink:0;}
+    .info-bar{background:var(--surf-var);display:flex;justify-content:space-between;align-items:center;padding:5px 14px;border-bottom:1.5px solid var(--border2);flex-shrink:0;}
     .ib-desc{font-size:12px;color:var(--text2);font-weight:700;}
-    .ib-date{font-size:11px;color:var(--text3);margin-top:1px;}
-    .badge-members{background:var(--primary-lt);color:var(--primary-dk);border:1.5px solid var(--primary);border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;transition:transform .15s;}
+    .ib-date{font-size:11px;color:var(--text3);margin-top:0px;}
+    .badge-members{background:var(--primary-lt);color:var(--primary-dk);border:1.5px solid var(--primary);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;transition:transform .15s;}
     .badge-members:hover{transform:scale(1.03);}
-    .badge-col{background:var(--surface);color:var(--teal);border:1.5px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:900;font-family:'Nunito',sans-serif;}
+    .badge-col{background:var(--surface);color:var(--teal);border:1.5px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:900;font-family:'Nunito',sans-serif;}
     /* Deact bar */
     .deact-bar{background:var(--deact-bar);padding:7px 16px;font-size:12px;font-weight:800;color:white;display:flex;align-items:center;gap:6px;flex-shrink:0;}
     /* Tabs */
     .tab-heading{display:flex;border-bottom:2px solid var(--border2);flex-shrink:0;background:var(--surface);}
-    .tab-h{flex:1;text-align:center;padding:10px 4px 11px;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:900;color:var(--text3);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;user-select:none;}
+    .tab-h{flex:1;text-align:center;padding:8px 4px 9px;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:900;color:var(--text3);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;user-select:none;}
     .tab-h.active{color:var(--primary);border-bottom-color:var(--teal);}
     /* Table */
     .tbl-section{flex:1;display:flex;flex-direction:column;overflow:hidden;}
     .tbl-top{display:flex;align-items:center;flex-shrink:0;padding:0 14px;}
-    .search-bar{flex:1;margin:10px 0;background:var(--card);border-radius:20px;padding:9px 14px;display:flex;align-items:center;gap:8px;border:1.5px solid var(--border2);transition:border-color .15s;}
+    .search-bar{flex:1;margin:6px 0;background:var(--card);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px;border:1.5px solid var(--border2);transition:border-color .15s;}
     .search-bar.focused{border-color:var(--primary);}
     .search-bar svg{width:14px;height:14px;flex-shrink:0;opacity:.5;}
     .search-input{flex:1;border:none;outline:none;background:transparent;font-size:12.5px;color:var(--text);font-family:'Nunito Sans',sans-serif;font-weight:600;}
     .search-input::placeholder{color:var(--text3);}
-    .sum-strip{display:flex;justify-content:space-between;padding:4px 16px 2px;font-size:12px;font-weight:800;color:var(--text2);font-family:'Nunito',sans-serif;}
+    .sum-strip{display:flex;justify-content:space-between;padding:0 16px 2px;font-size:12px;font-weight:800;color:var(--text2);font-family:'Nunito',sans-serif;}
     .sum-g{color:var(--green); font-weight: 900;}
     .sum-r{color:var(--red); font-weight: 900;}
     /* Spreadsheet table */
-    .tbl-wrap{margin:4px 14px;border:2px solid var(--border);border-radius:12px;flex:1;background:var(--surface); overflow: hidden; display: flex; flex-direction: column;}
+    .tbl-wrap{margin:2px 14px 6px;border:2px solid var(--border);border-radius:12px;flex:1;background:var(--surface); overflow: hidden; display: flex; flex-direction: column;}
     .tbl-sc{background:var(--card); width: 100%; overflow-x: auto; overflow-y: auto; flex: 1; position: relative; scroll-behavior: smooth; border-radius: 10px; display: block; -webkit-overflow-scrolling: touch;}
     .tbl-sc::-webkit-scrollbar{display:none;}
     .tbl-inner{display: inline-block; min-width: 100%; vertical-align: top; background: var(--card);}
@@ -257,7 +257,7 @@
     .flip-btn svg { width: 14px; height: 14px; color: var(--text2); }
 
     /* Theater Mode Rotation UI */
-    .rot-ov { position: absolute; inset: 0; background: var(--surface); z-index: 11000; display: none; flex-direction: column; }
+    .rot-ov { position: fixed; inset: 0; background: var(--surface); z-index: 11000; display: none; flex-direction: column; width: 100vw; height: 100dvh; }
     .rot-ov-top { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; background: var(--surface); border-bottom: 1.5px solid var(--border2); flex-shrink: 0; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     .rot-ov-top::-webkit-scrollbar { display: none; }
     .rot-top-left { flex: 0 0 auto; display: flex; align-items: center; }
@@ -277,7 +277,9 @@
     .rot-role { font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; border: 1px solid transparent; }
     .rot-role.org { background: var(--primary-lt); color: var(--primary-dk); border-color: var(--primary); }
     .rot-role.col { background: var(--surface); color: var(--teal); border-color: var(--border2); }
-    .rot-add-btn { background: var(--primary-lt); color: var(--primary-dk); border: 1.5px solid var(--primary); border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .rot-add-btn { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 7px 14px; font-size: 11.5px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: transform 0.1s; }
+    .rot-add-btn:active { transform: scale(0.96); }
+    body.dark-mode .rot-add-btn { background: var(--primary); color: white; }
 
     /* Theater Tabs */
     .rot-tabs { display: flex; background: var(--surf-var); border-radius: 10px; padding: 2px; gap: 2px; margin: 0 10px; }
@@ -314,8 +316,12 @@
     <div class="back" onclick="window.location.href='dashboard.html'">←</div>
     <div class="ab-ttl" id="ev-title">Loading…</div>
 
-    <div class="dots-btn" id="dots-btn" onclick="openDD()" style="display:none;font-size:18px;line-height:1;padding:3px 7px;">⚙️</div>
-    <div class="dots-btn" id="dots-btn-col" onclick="openColDD()" style="display:none;font-size:18px;line-height:1;padding:3px 7px;">⋮</div>
+    <div class="dots-btn" id="dots-btn" onclick="openDD()" style="display:none;">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="dots-btn" id="dots-btn-col" onclick="openColDD()" style="display:none;">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
     <div style="width:32px" id="dots-placeholder"></div>
   </div>
   <div class="info-bar" id="info-bar" style="display:none;">
@@ -497,7 +503,7 @@
 </div>
 
 <!-- Confirm Delete Column Popup -->
-<div id="del-col-pop" class="pop-ov" style="display:none; z-index:12000;">
+<div id="del-col-pop" class="pop-ov" style="display:none;">
   <div class="pop-box">
     <div class="pop-ic" style="background:#FFF0EC;border:2px solid #E0A090;">🗑️</div>
     <div class="pop-t" style="color:var(--red);">Delete this column?</div>
@@ -559,7 +565,7 @@
     <div class="dd-item" onclick="closeDD();openRenameSheet()"><div class="dd-ic">✏️</div><div class="dd-lbl">Rename Event</div></div>
     <div class="dd-item" onclick="closeDD();openCodeSheet()"><div class="dd-ic">⚙️</div><div class="dd-lbl">Code Settings</div></div>
     <div class="dd-item" onclick="closeDD();openMembersSheet()"><div class="dd-ic">👥</div><div class="dd-lbl">Members</div></div>
-    <div class="dd-item" id="privacy-toggle-btn" onclick="handlePrivacyToggleClick()"><div class="dd-ic">🌐</div><div class="dd-lbl" id="privacy-lbl">Public Access: OFF</div></div>
+    <div class="dd-item" id="privacy-toggle-btn" onclick="closeDD();handlePrivacyToggleClick()"><div class="dd-ic">🌐</div><div class="dd-lbl" id="privacy-lbl">Public Access: OFF</div></div>
     <div class="dd-item" id="share-link-btn" style="display:none;" onclick="sharePublicLink()"><div class="dd-ic">🔗</div><div class="dd-lbl">Share View Link</div></div>
     <div class="dd-item" id="deact-btn" onclick="closeDD();toggleDeactivate()"><div class="dd-ic">🔒</div><div class="dd-lbl" id="deact-lbl-dd">Deactivate Event</div></div>
     <div class="dd-item dng" onclick="closeDD();showDelEventPop()"><div class="dd-ic">🗑️</div><div class="dd-lbl">Delete Event</div></div>
@@ -596,7 +602,7 @@
 
 <!-- Duplicate Entry Warning Popup -->
 <!-- Privacy Toggle Popup -->
-<div id="privacy-pop" class="pop-ov" style="z-index:1100; display:none;" onclick="closePrivacyPop()">
+<div id="privacy-pop" class="pop-ov" style="display:none;" onclick="closePrivacyPop()">
   <div class="pop-box" onclick="event.stopPropagation()">
     <div class="pop-ic" style="background:#E0F7FA; border:2px solid #80DEEA; color:#006064;">🌐</div>
     <div class="pop-t" style="color:#00838F;">Enable Public Access?</div>
@@ -608,7 +614,7 @@
     </div>
   </div>
 </div>
-<div id="duplicate-pop" class="pop-ov" style="display:none; z-index:13000;">
+<div id="duplicate-pop" class="pop-ov" style="display:none;">
   <div class="pop-box">
     <div class="pop-ic" style="background:#FFF8EC;border:2px solid #E0C090;">⚠️</div>
     <div class="pop-t" style="color:var(--amber-dk);">Duplicate Entry?</div>
@@ -834,6 +840,36 @@ async function init() {
 
 init();
 
+// Re-check access every time visitor returns to this tab (handles organizer turning off public access)
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible" && isVisitor) {
+    try {
+      await getEvent(eventId); // Will throw 403 if no longer public
+    } catch(e) {
+      const msg = (e.message || "").toLowerCase();
+      if (msg.includes("not a member") || msg.includes("403") || msg.includes("forbidden")) {
+        const tabBar = document.getElementById("tab-bar");
+        if (tabBar) tabBar.style.display = "none";
+        ["pane-don","pane-exp","pane-sum"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = "none";
+        });
+        const lp = document.getElementById("pane-locked");
+        if (lp) {
+          lp.style.display = "flex";
+          lp.innerHTML = `
+            <div style="font-size:48px;">🔒</div>
+            <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);">Event is Private</div>
+            <div style="font-size:13px;color:var(--text3);line-height:1.6;max-width:260px;text-align:center;">The organizer has turned off public access for this event. You can no longer view its details.</div>
+            <button onclick="window.location.href='dashboard.html'" style="margin-top:16px;background:var(--primary);color:white;border:none;border-radius:14px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">← Go Back</button>
+          `;
+        }
+      }
+    }
+  }
+});
+
+
 async function loadAll() {
   try {
     [eventData, donations, expenses] = await Promise.all([
@@ -842,9 +878,36 @@ async function loadAll() {
       getExpenses(eventId)
     ]);
   } catch(e) {
+    // Check if it's a "private / not a member" 403 error
+    const msg = (e.message || "").toLowerCase();
+    if (msg.includes("not a member") || msg.includes("403") || msg.includes("forbidden")) {
+      // Show private event screen instead of crashing
+      const loader = document.getElementById("loading-pane");
+      if (loader) loader.style.display = "none";
+      const mainPage = document.getElementById("main-page");
+      if (mainPage) mainPage.style.display = "flex";
+      const tabBar = document.getElementById("tab-bar");
+      if (tabBar) tabBar.style.display = "none";
+      ["pane-don","pane-exp","pane-sum"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+      const lp = document.getElementById("pane-locked");
+      if (lp) {
+        lp.style.display = "flex";
+        lp.innerHTML = `
+          <div style="font-size:48px;">🔒</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);">Event is Private</div>
+          <div style="font-size:13px;color:var(--text3);line-height:1.6;max-width:260px;text-align:center;">The organizer has turned off public access for this event. You can no longer view its details.</div>
+          <button onclick="window.location.href='dashboard.html'" style="margin-top:16px;background:var(--primary);color:white;border:none;border-radius:14px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">← Go Back</button>
+        `;
+      }
+      return;
+    }
+    // For other errors, try to load at least event data
     console.warn("loadAll partially failed:", e);
     if (!eventData) {
-       try { eventData = await getEvent(eventId); } catch(e2) {}
+      try { eventData = await getEvent(eventId); } catch(e2) {}
     }
   }
   renderPage();
@@ -863,6 +926,29 @@ function renderPage() {
     isActive   = eventData.is_active;
     const myRoleStr = (eventData.my_role || "").toLowerCase();
     isVisitor = (!eventData.my_role);
+
+    // SECURITY: If visitor and event is no longer public, block immediately
+    if (isVisitor && !eventData.is_public) {
+      if (loader) loader.style.display = "none";
+      const mainPage = document.getElementById("main-page");
+      if (mainPage) mainPage.style.display = "flex";
+      const tabBar = document.getElementById("tab-bar");
+      if (tabBar) tabBar.style.display = "none";
+      ["pane-don","pane-exp","pane-sum"].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = "none";
+      });
+      const lp = document.getElementById("pane-locked");
+      if (lp) {
+        lp.style.display = "flex";
+        lp.innerHTML = `
+          <div style="font-size:48px;">🔒</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);">Event is Private</div>
+          <div style="font-size:13px;color:var(--text3);line-height:1.6;max-width:260px;text-align:center;">The organizer has turned off public access. You can no longer view this event.</div>
+          <button onclick="window.location.href='dashboard.html'" style="margin-top:16px;background:var(--primary);color:white;border:none;border-radius:14px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">← Go Back</button>
+        `;
+      }
+      return;
+    }
     
     // PRIORITY: Trust the active role.
     if (myRoleStr === "collector") {
@@ -873,6 +959,7 @@ function renderPage() {
         isOrganizer = false; // Visitors are not organizers
     }
     const isRestricted = eventData.is_restricted;
+
 
     // Persistence: Tabs will be switched later if user has access.
 
@@ -1447,6 +1534,11 @@ function closeDupPop() { document.getElementById("duplicate-pop").style.display 
 let ctxEntry = null, ctxType = null;
 function openCtx(e, type, entry) {
   if (isVisitor) return;
+  // SECURITY: Collector can only edit/delete their own entries. Organizer can do anything.
+  if (!isOrganizer && entry.collected_by !== myUserId) {
+    return; 
+  }
+
   ctxType  = type;
   ctxEntry = entry;
   const ov = document.createElement("div");
@@ -1665,11 +1757,17 @@ async function confirmPrivacyToggle() {
 }
 async function togglePrivacy(val) {
   try {
-    await apiFetch("PATCH", `/events/${eventId}/privacy?is_public=${val}`);
-    if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
-    loadAll();
+    await updateEventPrivacy(eventId, val);
+    // Update local state immediately so UI reflects the change
+    eventData.is_public = val;
+    // Update dropdown label
+    const privLbl = document.getElementById("privacy-lbl");
+    const shareBtn = document.getElementById("share-link-btn");
+    if (privLbl) privLbl.textContent = val ? "Public Access: ON 🟢" : "Public Access: OFF";
+    if (shareBtn) shareBtn.style.display = (val) ? "flex" : "none";
+    showToast(val ? "Public access enabled — share the visitor link!" : "Event is now private", val ? "success" : "info");
   } catch(e) {
-    showToast("Failed to update privacy settings","error");
+    showToast("Failed to update privacy settings", "error");
   }
 }
 function sharePublicLink() {
@@ -2321,6 +2419,28 @@ function enterTheater(tab) {
     if (p) overlay.appendChild(p);
   });
 }
+
+// Update theater size on window resize
+window.addEventListener("resize", () => {
+  if (activeTheaterTab) {
+    const main = document.getElementById("rot-main");
+    const body = document.getElementById("rot-ov-body");
+    const rotation = theaterRotation;
+    
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    
+    if (rotation === 90 || rotation === 270) {
+      main.style.width = h + "px";
+      main.style.height = w + "px";
+      body.style.height = (w - 44) + "px";
+    } else {
+      main.style.width = w + "px";
+      main.style.height = h + "px";
+      body.style.height = (h - 44) + "px";
+    }
+  }
+});
 
 function exitTheater() {
   if (!activeTheaterTab) return;

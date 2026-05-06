@@ -272,9 +272,11 @@ def update_event(db: Session, event_id: int, data: schemas.EventUpdate):
     if data.event_date is not None: event.event_date = data.event_date
     if data.donation_custom_columns is not None: event.donation_custom_columns = data.donation_custom_columns
     if data.expense_custom_columns is not None: event.expense_custom_columns = data.expense_custom_columns
+    if data.is_public is not None: event.is_public = data.is_public
     db.commit()
     db.refresh(event)
     return event
+
 
 def delete_event(db: Session, event_id: int):
     event = get_event(db, event_id)
@@ -360,3 +362,46 @@ def update_member_role(db: Session, event_id: int, target_user_id: int, role: mo
     db.commit()
     db.refresh(member)
     return member
+
+# ── Watched Events (Discover Tab) ──────────────────────────────────────────
+
+def get_watched_events(db: Session, user_id: int):
+    """Return watched events for a user, excluding events they are already a member of."""
+    subquery = db.query(models.EventMember.event_id).filter(
+        models.EventMember.user_id == user_id
+    ).scalar_subquery()
+    return db.query(models.WatchedEvent).filter(
+        models.WatchedEvent.user_id == user_id,
+        ~models.WatchedEvent.event_id.in_(subquery)
+    ).order_by(models.WatchedEvent.last_viewed_at.desc()).all()
+
+
+def add_watched_event(db: Session, user_id: int, event_id: int):
+    """Add or update a watched event entry (upsert by last_viewed)."""
+    existing = db.query(models.WatchedEvent).filter(
+        models.WatchedEvent.user_id == user_id,
+        models.WatchedEvent.event_id == event_id
+    ).first()
+    if existing:
+        existing.last_viewed_at = datetime.utcnow()
+        db.commit()
+        db.refresh(existing)
+        return existing
+    entry = models.WatchedEvent(user_id=user_id, event_id=event_id)
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+def remove_watched_event(db: Session, user_id: int, event_id: int):
+    """Remove a watched event entry. Returns True if deleted, False if not found."""
+    entry = db.query(models.WatchedEvent).filter(
+        models.WatchedEvent.user_id == user_id,
+        models.WatchedEvent.event_id == event_id
+    ).first()
+    if not entry:
+        return False
+    db.delete(entry)
+    db.commit()
+    return True

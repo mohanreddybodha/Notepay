@@ -9,7 +9,7 @@
   <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=6"/>
+  <link rel="stylesheet" href="css/global.css?v=7"/>
   <style>
     .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
     .status-bar{background:var(--surf-var);display:flex;justify-content:space-between;padding:10px 20px 8px;font-size:11px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;border-bottom:1px solid var(--border);}
@@ -46,7 +46,7 @@
     .change-link{color:var(--primary);font-weight:800;cursor:pointer;font-size:12.5px;margin-top:2px;align-self:flex-start;}
 
     /* ── Buttons ── */
-    .btn-primary{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;}
+    .btn-primary{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white !important;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;}
     .btn-primary:hover{background:#163f72;transform:translateY(-1px);}
     .btn-primary:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
     .btn-primary:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
@@ -62,7 +62,7 @@
     .resend-link.active{opacity:1;pointer-events:auto;}
 
     /* ── Note box ── */
-    .note-box{background:#EAF4FF;border-radius:10px;padding:10px 12px;font-size:11.5px;color:#1a4a80;line-height:1.6;display:flex;gap:7px;width:100%;margin-top:12px;}
+    .note-box{border-radius:10px;padding:2px 4px;font-size:12px;color:var(--text3);line-height:1.6;display:flex;gap:7px;width:100%;margin-top:12px;font-weight:600;}
 
     /* ── Spacer ── */
     .spacer{flex:1;}
@@ -181,8 +181,8 @@
         <div class="resend-link" id="resend-link" onclick="resendOTP()">Resend OTP</div>
       </div>
 
-      <div class="note-box" style="margin-top:14px;">
-        📱 OTP is valid for 10 minutes. Do not share it with anyone.
+      <div class="note-box" style="margin-top:14px; justify-content:center;">
+        OTP is valid for 10 minutes. Do not share it with anyone.
       </div>
       <div class="footer" style="margin-top:auto;">Notepay v1.0 &middot; Made with ♥ in India</div>
     </div>
