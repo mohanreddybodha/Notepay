@@ -54,22 +54,22 @@ async def get_current_user_id(
     phone = decoded.get("phone_number")
     
     # Log for diagnosis (masking UID)
-    print(f"DEBUG AUTH: UID={uid[:5]}... PHONE={phone}")
+    # Debug logging removed
     
     user = crud.get_user_by_firebase_uid(db, uid)
     if not user and phone:
-        print(f"DEBUG AUTH: UID not found, checking phone: {phone}")
+        # Debug logging removed
         # Check if user exists by phone (UID might have changed)
         user = crud.get_user_by_phone(db, phone)
         if user:
-            print(f"DEBUG AUTH: Found user by phone! ID={user.id}. Linking to new UID.")
+            # User found by phone, updating UID
             # Update UID to the new one
             user.firebase_uid = uid
             db.commit()
             db.refresh(user)
             
     if not user:
-        print("DEBUG AUTH: User not found in DB.")
+        # User not found in DB
         raise HTTPException(status_code=404, detail="User not registered")
     return user.id
 
@@ -130,7 +130,7 @@ async def create_user(
 
     existing = crud.get_user_by_firebase_uid(db, firebase_uid=firebase_uid)
     if existing:
-        print(f"DEBUG: User already exists for UID: {firebase_uid}. Returning existing profile.")
+        # User exists
         return existing
 
     try:
@@ -141,10 +141,10 @@ async def create_user(
             gender=user_data.gender
         ))
     except HTTPException as e:
-        print(f"DEBUG: HTTP Error during registration: {e.detail}")
+        # HTTP Exception during registration
         raise
     except Exception as e:
-        print(f"DEBUG: Unexpected error during registration: {str(e)}")
+        # Unexpected Exception during registration
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/users/me", response_model=schemas.UserResponse, tags=["Profile"])
@@ -286,7 +286,7 @@ def fix_event_json(e_dict):
         if isinstance(val, str) and val.strip():
             try:
                 e_dict[col_name] = json.loads(val)
-            except:
+            except json.JSONDecodeError:
                 e_dict[col_name] = []
         elif val is None:
             e_dict[col_name] = []

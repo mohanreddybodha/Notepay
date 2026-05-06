@@ -43,7 +43,7 @@ let authReadyPromise = null;
 function waitForAuthReady() {
   if (authReadyPromise) return authReadyPromise;
   
-  console.log("Waiting for Firebase Auth...");
+  // Waiting for Firebase Auth...
   authReadyPromise = new Promise(resolve => {
     // Safety timeout: resolve with null if Firebase takes too long
     const timer = setTimeout(() => {
@@ -53,7 +53,7 @@ function waitForAuthReady() {
 
     const unsub = auth.onAuthStateChanged(user => {
       clearTimeout(timer);
-      console.log("Firebase Auth Ready. User:", user ? user.uid : "None");
+      // Firebase Auth Ready
       unsub();
       resolve(user);
     }, err => {
