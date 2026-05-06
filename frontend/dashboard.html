@@ -176,6 +176,13 @@
 <script>
   let myEvents = [], sharedEvents = [], watchedEvents = [], currentTab = 0;
 
+  // Read URL tab parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  if (tabParam !== null) {
+    currentTab = parseInt(tabParam) || 0;
+  }
+
   // ── On load ──
   waitForAuthReady().then(async user => {
     if (!user) return;
@@ -217,7 +224,8 @@
       const bDiscover = document.getElementById("badge-discover");
       if (bDiscover) bDiscover.textContent = watchedEvents.length;
 
-      renderEvents();
+      // Force render of the correct tab on first load
+      switchTab(currentTab);
     } catch(err) {
       console.error("Dashboard init failed:", err);
       renderAllErrors("Failed to load dashboard data.");
@@ -312,6 +320,12 @@
   // ── Tabs ──
   function switchTab(idx) {
     currentTab = idx;
+    
+    // Update URL without reloading to preserve state on refresh
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('tab', idx);
+    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+
     document.getElementById("tab-my").classList.toggle("active", idx===0);
     document.getElementById("tab-shared").classList.toggle("active", idx===1);
     document.getElementById("tab-discover").classList.toggle("active", idx===2);
