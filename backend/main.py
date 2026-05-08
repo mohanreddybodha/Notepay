@@ -257,7 +257,12 @@ async def update_event(event_id: int, data: schemas.EventUpdate, db: Session = D
     event = crud.update_event(db, event_id, data, user_id=user_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    return event
+    
+    # Explicitly map and parse JSON for SQLite compatibility
+    event_dict = {c.name: getattr(event, c.name) for c in event.__table__.columns}
+    # Broadcast layout/column changes to all clients
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    return fix_event_json(event_dict)
 
 @app.delete("/events/{event_id}", tags=["Events"])
 async def delete_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
