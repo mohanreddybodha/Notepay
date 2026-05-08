@@ -85,6 +85,8 @@
     .btn-cancel{width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;}
     /* Smooth Slider */
     .main-view { flex:1; overflow:hidden; display:flex; flex-direction:column; position:relative; min-height:0; }
+    /* Smooth Slider */
+    .main-view { flex:1; overflow:hidden; display:flex; flex-direction:column; position:relative; min-height:0; }
     .panes-wrapper { display:flex; flex:1; width:300%; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); min-height:0; }
     .pane { width:33.333333%; height:100%; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
 
@@ -182,53 +184,70 @@
   if (tabParam !== null) {
     currentTab = parseInt(tabParam) || 0;
   }
+  const msgParam = urlParams.get('msg');
+  if (msgParam) {
+    window.addEventListener('DOMContentLoaded', () => {
+      if (msgParam === 'private') showToast("This event is now private", "info");
+      if (msgParam === 'deactivated') showToast("This event has been deactivated", "warning");
+      if (msgParam === 'restricted') showToast("Your access to that event was restricted", "error");
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    });
+  }
 
   // ── On load ──
-  waitForAuthReady().then(async user => {
-    if (!user) return;
+  let dashboardWs = null;
+  function setupDashboardWS() {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    // Hardcode port 8000 for the backend
+    const host = window.location.hostname + ":8000"; 
     
-    // Start all requests in parallel
-    const p1 = getMyProfile();
-    const p2 = getWatchedEvents();
-    const p3 = getMyEvents();
-    const p4 = getSharedEvents();
+    dashboardWs = new WebSocket(`${protocol}//${host}/ws/0`); 
+    dashboardWs.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === "DASHBOARD_UPDATE") {
+        console.log("🔄 Real-time Dashboard Update Received");
+        refreshDashboard();
+      }
+    };
+    dashboardWs.onclose = () => setTimeout(setupDashboardWS, 5000);
+  }
 
+  async function refreshDashboard() {
     try {
-      const [profile, watched, my, shared] = await Promise.all([p1, p2, p3, p4]);
-      
-      // Update profile UI with safety checks
-      const initials = getInitials(profile.full_name);
-      const avBtn = document.getElementById("av-btn");
-      if (avBtn) avBtn.textContent = initials;
-      
-      const avBtnSide = document.getElementById("av-btn-side");
-      if (avBtnSide) avBtnSide.textContent = initials;
-      
-      const userNameSide = document.getElementById("user-name-side");
-      if (userNameSide) userNameSide.textContent = profile.full_name;
+      console.log("🚀 Fetching Dashboard Data");
+      const res = await apiFetch("GET", "/users/me/full-dashboard");
+      const profile = res.profile;
+      watchedEvents = res.watched_events.map(w => w.event);
+      myEvents = res.my_events;
+      sharedEvents = res.shared_events;
       
       sessionStorage.setItem("np_my_id", profile.id);
-
-      // Store events
-      watchedEvents = watched.map(w => w.event);
-      myEvents = my;
-      sharedEvents = shared;
-
-      // Update badges with safety checks
-      const bMy = document.getElementById("badge-my");
-      if (bMy) bMy.textContent = myEvents.length;
       
-      const bShared = document.getElementById("badge-shared");
-      if (bShared) bShared.textContent = sharedEvents.length;
-      
-      const bDiscover = document.getElementById("badge-discover");
-      if (bDiscover) bDiscover.textContent = watchedEvents.length;
+      // Update profile UI
+      const initials = getInitials(profile.full_name);
+      ["av-btn", "av-btn-side"].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = initials;
+      });
+      const nameSide = document.getElementById("user-name-side");
+      if (nameSide) nameSide.textContent = profile.full_name;
 
-      // Force render of the correct tab on first load
+      // Update badges
+      const badges = { "badge-my": myEvents.length, "badge-shared": sharedEvents.length, "badge-discover": watchedEvents.length };
+      for (const [id, val] of Object.entries(badges)) {
+        const el = document.getElementById(id); if (el) el.textContent = val;
+      }
+      
       switchTab(currentTab);
     } catch(err) {
-      console.error("Dashboard init failed:", err);
-      renderAllErrors("Failed to load dashboard data.");
+      console.error("Dashboard refresh failed:", err);
+    }
+  }
+
+  waitForAuthReady().then(user => {
+    if (user) {
+      refreshDashboard();
+      setupDashboardWS();
     }
   });
 
@@ -267,7 +286,10 @@
     let statusBanner = "";
     let statusNote = "";
 
-    if (!isActive) {
+    if (role === "visitor" && isPublic === false) {
+      statusBanner = `<div class="deact-bar" style="background:var(--text3);">🔒 Private Event</div>`;
+      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">Can't view · Organizer made this event private</div></div>`;
+    } else if (!isActive) {
       statusBanner = `<div class="deact-bar">⚠️ Event Deactivated</div>`;
       if (role === "collector") {
         statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">📵 Contact your organizer</div></div>`;
@@ -279,17 +301,16 @@
     } else if (isRestricted) {
       statusBanner = `<div class="deact-bar" style="background:var(--red);">🚫 You are restricted</div>`;
       statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">📵 Contact your organizer</div></div>`;
-    } else if (role === "visitor" && isPublic === false) {
-      statusBanner = `<div class="deact-bar" style="background:var(--text3);">🔒 Private Event</div>`;
-      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">Can't view · Organizer made this event private</div></div>`;
     }
 
     const badge = role==="organizer"
       ? `<div class="rb rb-o">Organizer</div>`
       : (role === "visitor" ? `<div class="rb rb-c" style="color:var(--primary); background:var(--primary-lt);">Visitor</div>` : `<div class="rb rb-c">Collector</div>`);
 
-    const clickAction = (role === "visitor" && isPublic === false) ? "" : `onclick="openEvent(${e.id})"`;
-    const cursorStyle = (role === "visitor" && isPublic === false) ? "cursor:default;" : "cursor:pointer;";
+    // Organizers can ALWAYS click/manage their events
+    const canClick = role === "organizer" || (role === "visitor" && isPublic !== false) || role === "collector";
+    const clickAction = canClick ? `onclick="openEvent(${e.id})"` : "";
+    const cursorStyle = canClick ? "cursor:pointer;" : "cursor:default;";
 
     return `<div class="ev-card" style="${cursorStyle}" ${clickAction}>
       <div class="ec-body">
@@ -307,6 +328,23 @@
       ${statusBanner}
       ${statusNote}
     </div>`;
+  }
+
+  async function toggleEventStatus(eventId, type, isChecked) {
+    try {
+      const endpoint = type === 'active' 
+        ? `/events/${eventId}/${isChecked?'activate':'deactivate'}`
+        : `/events/${eventId}/${isChecked?'make-public':'make-private'}`;
+      
+      await apiFetch("PUT", endpoint);
+      // Refresh dashboard to reflect changes (and clear dash cache)
+      refreshDashboard();
+      showToast(`${type.charAt(0).toUpperCase()+type.slice(1)} status updated`, "success");
+    } catch(err) {
+      console.error("Status toggle failed:", err);
+      showToast("Failed to update status", "error");
+      refreshDashboard(); // Revert UI
+    }
   }
 
   function renderError(msg) {

@@ -54,8 +54,8 @@ class EventMember(Base):
     __tablename__ = "event_members"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    event_id = Column(Integer, ForeignKey("events.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    event_id = Column(Integer, ForeignKey("events.id"), index=True)
     role = Column(SQLEnum(UserRole))
     joined_at = Column(DateTime, default=datetime.utcnow)
     is_restricted = Column(Boolean, default=False)
@@ -68,7 +68,7 @@ class Donation(Base):
     __tablename__ = "donations"
 
     id = Column(Integer, primary_key=True, index=True)
-    event_id = Column(Integer, ForeignKey("events.id"))
+    event_id = Column(Integer, ForeignKey("events.id"), index=True)
     donor_name = Column(String, index=True)
     amount = Column(Float, nullable=True)
     collected_by = Column(Integer, ForeignKey("users.id"))
@@ -82,7 +82,7 @@ class Expense(Base):
     __tablename__ = "expenses"
 
     id = Column(Integer, primary_key=True, index=True)
-    event_id = Column(Integer, ForeignKey("events.id"))
+    event_id = Column(Integer, ForeignKey("events.id"), index=True)
     description = Column(String, index=True)
     amount = Column(Float, nullable=True)
     collected_by = Column(Integer, ForeignKey("users.id"))

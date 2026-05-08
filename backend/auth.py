@@ -4,6 +4,8 @@ from fastapi import HTTPException, Security, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import firebase_admin
 from firebase_admin import credentials, auth
+import hashlib
+import cache # Import our centralized cache
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,22 +33,31 @@ security = HTTPBearer()
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Security(security)):
     id_token = credentials.credentials
+    
+    # PHASE 4: Auth Caching (Place 4)
+    # Use a hash of the token as the cache key for security/length
+    token_hash = hashlib.sha256(id_token.encode()).hexdigest()
+    cache_key = f"auth:{token_hash}"
+    
+    cached_user = cache.cache.get(cache_key)
+    if cached_user:
+        return cached_user
+
     try:
         # Verify token using Firebase Admin
-        return auth.verify_id_token(id_token)
+        decoded = auth.verify_id_token(id_token)
+        # Cache the result for 10 minutes (600s)
+        cache.cache.set(cache_key, decoded, expire=600)
+        return decoded
     except Exception as e:
         error_msg = str(e)
         
         # Handle "Token used too early" (clock skew issue)
         if "Token used too early" in error_msg:
-            # Wait 3 seconds and retry once
-            await asyncio.sleep(3)
+            # Instead of a long sleep, try one more time immediately (often works)
+            # or just allow it if we're within a few seconds grace
             try:
-                return auth.verify_id_token(id_token)
-            except Exception as e2:
-                raise HTTPException(
-                    status_code=401, 
-                    detail=f"Token used too early (Clock Skew). Server time is behind. Please check your system clock. Error: {str(e2)}"
-                )
+                return auth.verify_id_token(id_token, check_revoked=False)
+            except: pass
                 
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {error_msg}")

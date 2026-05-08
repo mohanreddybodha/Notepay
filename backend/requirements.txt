@@ -6,3 +6,5 @@ pydantic-settings>=2.1.0
 firebase-admin>=6.4.0
 python-dotenv>=1.0.1
 requests>=2.31.0
+redis>=5.0.1
+mangum>=0.17.0

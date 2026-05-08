@@ -1205,13 +1205,16 @@
     }
 
     .locked-state {
-      flex: 1;
+      position: absolute;
+      inset: 0;
+      z-index: 10000;
+      background: var(--surface);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 30px;
-      gap: 10px;
+      gap: 15px;
       text-align: center;
     }
 
@@ -1881,7 +1884,11 @@
         <div class="dot"></div>
         <div class="dot"></div>
       </div>
-      <div style="width:32px" id="dots-placeholder"></div>
+      <div class="dots-btn" id="dots-btn-vis" onclick="openColDD()" style="display:none;">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
     </div>
     <div class="info-bar" id="info-bar" style="display:none;">
       <div>
@@ -1890,8 +1897,13 @@
       </div>
       <div id="members-badge" class="badge-members" onclick="openMembersSheet()">👥 Members</div>
     </div>
-    <div class="deact-bar" id="deact-banner" style="display:none;">⚠️ <span id="deact-lbl-banner">Event Deactivated ·
-        Collectors Locked Out</span></div>
+    <div class="deact-bar" id="deact-banner" style="display:none; justify-content:space-between; padding:8px 16px; background:var(--amber); color:var(--surface);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>⚠️</span>
+        <span id="deact-lbl-banner" style="font-weight:800;">Event Deactivated</span>
+      </div>
+      <button onclick="toggleDeactivate()" style="background:var(--surface); color:var(--amber); border:none; padding:4px 12px; border-radius:8px; font-weight:900; font-size:11px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1);">ACTIVATE NOW</button>
+    </div>
     <div class="tab-heading" id="tab-bar" style="display:none;">
       <div class="tab-h active" id="tab-don" onclick="switchTab('don')">Donations</div>
       <div class="tab-h" id="tab-exp" onclick="switchTab('exp')">Expenses</div>
@@ -1915,20 +1927,20 @@
             oninput="filterTable('don',this.value)" />
         </div>
       </div>
-      <div class="sum-strip">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span id="don-count">0 donors</span>
+      <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="don-count" style="white-space:nowrap; font-weight:900;">0 donors</span>
           <button id="don-add-col-btn" class="add-col-btn" onclick="openAddCol('don')">+ Add Column</button>
         </div>
 
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex; align-items:center; gap:14px;">
           <div class="flip-btn" id="don-flip" onclick="cycleRotation('don')" title="Rotate Table">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
               <path d="M21 3v5h-5" />
             </svg>
           </div>
-          <span id="don-total">Total: ₹ 0</span>
+          <span id="don-total" style="white-space:nowrap; font-weight:900; color:var(--text);">Total: ₹ 0</span>
         </div>
       </div>
       <div class="scroll-list">
@@ -1954,20 +1966,20 @@
             oninput="filterTable('exp',this.value)" />
         </div>
       </div>
-      <div class="sum-strip">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span id="exp-count">0 expenses</span>
+      <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="exp-count" style="white-space:nowrap; font-weight:900;">0 expenses</span>
           <button id="exp-add-col-btn" class="add-col-btn" onclick="openAddCol('exp')">+ Add Column</button>
         </div>
 
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex; align-items:center; gap:14px;">
           <div class="flip-btn" id="exp-flip" onclick="cycleRotation('exp')" title="Rotate Table">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
               <path d="M21 3v5h-5" />
             </svg>
           </div>
-          <span id="exp-total">Total: ₹ 0</span>
+          <span id="exp-total" style="white-space:nowrap; font-weight:900; color:var(--text);">Total: ₹ 0</span>
         </div>
       </div>
       <div class="scroll-list">
@@ -2526,6 +2538,7 @@
     let isActive = true;
     let donations = [];
     let expenses = [];
+    let members = [];
     let currentTab = params.get("tab") || "don";
     let ctxTarget = null; // { type:'don'|'exp', entry, row }
     let editTarget = null;
@@ -2533,6 +2546,9 @@
     let activeTheaterTab = params.get("theater");
     let theaterRotation = 0;
     const tabRotations = { don: 0, exp: 0, sum: 0 };
+    let summaryData = null; // Backend Summary data
+    let ws = null; // WebSocket connection
+    let vTxnsCount = 5; // Global activity count
 
     if (!eventId || isNaN(eventId)) {
       console.error("Invalid or missing eventId:", params.get("id"));
@@ -2553,141 +2569,198 @@
       try {
         const profile = await getMyProfile();
         myUserId = profile.id;
+        // Also set sessionStorage as a backup for other functions
+        sessionStorage.setItem("np_my_id", myUserId);
+        
+        setupWebSocket(); 
         await loadAll();
       } catch (e) {
         console.error("Init failed:", e);
-        renderPage();
+        const loader = document.getElementById("loading-pane");
+        if (loader) {
+          loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">❌</div><div style="font-weight:bold; margin-bottom:5px;">Load Failed</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">${e.message || "Unknown error"}</div><button class="pbk" onclick="location.reload()">Retry</button></div>`;
+        }
       } finally {
         clearTimeout(loadTimeout);
       }
     }
 
+    let sessionAuthorized = false; // Flag to allow active visitors to stay
+
     init();
 
-    // Re-check access every time visitor returns to this tab (handles organizer turning off public access)
+    // Re-check access every time user returns to this tab
     document.addEventListener("visibilitychange", async () => {
-      if (document.visibilityState === "visible" && isVisitor) {
-        try {
-          await getEvent(eventId); // Will throw 403 if no longer public
-        } catch (e) {
-          const msg = (e.message || "").toLowerCase();
-          if (msg.includes("not a member") || msg.includes("403") || msg.includes("forbidden")) {
-            const tabBar = document.getElementById("tab-bar");
-            if (tabBar) tabBar.style.display = "none";
-            ["pane-don", "pane-exp", "pane-sum"].forEach(id => {
-              const el = document.getElementById(id);
-              if (el) el.style.display = "none";
-            });
-            const lp = document.getElementById("pane-locked");
-            if (lp) {
-              lp.style.display = "flex";
-              lp.innerHTML = `
-            <div style="font-size:48px;">🔒</div>
-            <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);">Event is Private</div>
-            <div style="font-size:13px;color:var(--text3);line-height:1.6;max-width:260px;text-align:center;">The organizer has turned off public access for this event. You can no longer view its details.</div>
-            <button onclick="window.location.href='dashboard.html'" style="margin-top:16px;background:var(--primary);color:white;border:none;border-radius:14px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">← Go Back</button>
-          `;
-            }
-          }
-        }
+      if (document.visibilityState === "visible") {
+        // If data changed, force a FRESH fetch to avoid stale cache flickers
+        loadAll(true, true); 
       }
     });
 
 
-    async function loadAll() {
+    function applyData(res) {
+      eventData = res.event;
+      donations = res.donations;
+      expenses = res.expenses;
+      summaryData = res.summary;
+      members = res.members || [];
+      
+      const rawRole = (res.my_role || "visitor").toLowerCase();
+      const myIdStr = sessionStorage.getItem("np_my_id");
+      const myId = myIdStr ? parseInt(myIdStr) : -1;
+
+      // Robust check: Ensure types match for comparison
+      const orgId = parseInt(eventData.organizer_id);
+      isOrganizer = (rawRole === "organizer") || (orgId === myId);
+      isVisitor = (rawRole === "visitor") && !isOrganizer;
+      isRestricted = res.is_restricted || false;
+      
+      renderPage();
+    }
+
+    async function loadAll(isBackground = false, forceFresh = false) {
+      if (!isBackground && !forceFresh) {
+        // RESET GLOBALS
+        isOrganizer = false;
+        isVisitor = true;
+        isRestricted = false;
+
+        // PLACE 2: Hybrid Caching (Frontend)
+        const cacheKey = "ev_cache_" + eventId;
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const cData = JSON.parse(cached);
+            // SAFETY VALVE: Only trust cache if it's ACTIVE. 
+            // If it was deactivated/private, fetch fresh before showing anything to avoid "Ghost Lockout".
+            if (cData.event && cData.event.is_active && (cData.event.is_public || cData.my_role !== 'visitor')) {
+              console.log("⚡️ Hydrating from Cache (Place 2)");
+              applyData(cData);
+            }
+          } catch(e) { console.warn("Cache parse failed", e); }
+        }
+      }
+
+      console.log(isBackground ? "🔄 Background Refreshing..." : "🚀 Fetching Fresh Data");
       try {
-        [eventData, donations, expenses] = await Promise.all([
-          getEvent(eventId),
-          getDonations(eventId),
-          getExpenses(eventId)
-        ]);
+        const res = await apiFetch("GET", `/events/${eventId}/full-details`);
+        if (!res) {
+          if (!isBackground) renderPage();
+          return;
+        }
+
+        // Update Cache
+        sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
+        
+        // Apply Fresh Data
+        applyData(res);
       } catch (e) {
-        // Check if it's a "private / not a member" 403 error
+        console.error("LoadAll failed", e);
         const msg = (e.message || "").toLowerCase();
         if (msg.includes("not a member") || msg.includes("403") || msg.includes("forbidden")) {
-          // Show private event screen instead of crashing
           const loader = document.getElementById("loading-pane");
           if (loader) loader.style.display = "none";
           const mainPage = document.getElementById("main-page");
           if (mainPage) mainPage.style.display = "flex";
-          const tabBar = document.getElementById("tab-bar");
-          if (tabBar) tabBar.style.display = "none";
-          ["pane-don", "pane-exp", "pane-sum"].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = "none";
-          });
           const lp = document.getElementById("pane-locked");
           if (lp) {
             lp.style.display = "flex";
+            lp.style.position = "fixed"; 
+            lp.style.inset = "0";
+            lp.style.zIndex = "9999";
+            lp.style.background = "var(--surface)";
+            lp.style.flexDirection = "column";
+            lp.style.justifyContent = "center";
+            lp.style.alignItems = "center";
+
             lp.innerHTML = `
-          <div style="font-size:48px;">🔒</div>
-          <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);">Event is Private</div>
-          <div style="font-size:13px;color:var(--text3);line-height:1.6;max-width:260px;text-align:center;">The organizer has turned off public access for this event. You can no longer view its details.</div>
-          <button onclick="window.location.href='dashboard.html'" style="margin-top:16px;background:var(--primary);color:white;border:none;border-radius:14px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">← Go Back</button>
-        `;
+              <div style="text-align:center; padding:20px;">
+                <div style="font-size:72px; margin-bottom:20px;">🔒</div>
+                <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Event is Private</div>
+                <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">The organizer has turned off public access.</div>
+                <button onclick="window.location.href='dashboard.html'" class="pbk" 
+                  style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+                  ← Back to Dashboard
+                </button>
+              </div>
+            `;
           }
-          return;
-        }
-        // For other errors, try to load at least event data
-        console.warn("loadAll partially failed:", e);
-        if (!eventData) {
-          try { eventData = await getEvent(eventId); } catch (e2) { }
+        } else {
+          renderPage();
         }
       }
-      renderPage();
+    }
+
+    function setupWebSocket() {
+      if (ws) return;
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      // Hardcode port 8000 for the backend
+      const host = window.location.hostname + ":8000"; 
+      
+      ws = new WebSocket(`${protocol}//${host}/ws/${eventId}`);
+      
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "DATA_CHANGED") {
+          console.log("📢 Real-time update received. Forcing fresh fetch.");
+          loadAll(true, true); 
+        }
+      };
+
+      ws.onclose = () => {
+        ws = null;
+        // Reconnect after 5 seconds if connection lost
+        setTimeout(setupWebSocket, 5000);
+      };
     }
 
     function renderPage() {
+      // Hide loader IMMEDIATELY to prevent stuck UI
+      const loader = document.getElementById("loading-pane");
+      if (loader) loader.style.display = "none";
+
       try {
-        const loader = document.getElementById("loading-pane");
-        if (loader) loader.style.display = "none";
-
         if (!eventData) {
-          window.location.replace("dashboard.html");
+          console.warn("renderPage called without eventData");
           return;
         }
 
-        isActive = eventData.is_active;
-        const myRoleStr = (eventData.my_role || "").toLowerCase();
-        isVisitor = (!eventData.my_role);
+        const tb = document.getElementById("tab-bar");
+        const lp = document.getElementById("pane-locked");
+        const deactLbl = document.getElementById("deact-lbl-dd");
+        const deactBanner = document.getElementById("deact-banner");
+        
+        const isEventActive = eventData.is_active; 
+        if (deactLbl) deactLbl.textContent = isEventActive ? "Deactivate Event" : "Reactivate Event";
 
-        // SECURITY: If visitor and event is no longer public, block immediately
-        if (isVisitor && !eventData.is_public) {
-          if (loader) loader.style.display = "none";
-          const mainPage = document.getElementById("main-page");
-          if (mainPage) mainPage.style.display = "flex";
-          const tabBar = document.getElementById("tab-bar");
-          if (tabBar) tabBar.style.display = "none";
-          ["pane-don", "pane-exp", "pane-sum"].forEach(id => {
-            const el = document.getElementById(id); if (el) el.style.display = "none";
-          });
-          const lp = document.getElementById("pane-locked");
-          if (lp) {
-            lp.style.display = "flex";
-            lp.innerHTML = `
-          <div style="font-size:48px;">🔒</div>
-          <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);">Event is Private</div>
-          <div style="font-size:13px;color:var(--text3);line-height:1.6;max-width:260px;text-align:center;">The organizer has turned off public access. You can no longer view this event.</div>
-          <button onclick="window.location.href='dashboard.html'" style="margin-top:16px;background:var(--primary);color:white;border:none;border-radius:14px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">← Go Back</button>
-        `;
-          }
-          return;
-        }
+        // LOCKOUT LOGIC: (Highest Priority)
+        let canSeeData = isOrganizer || (isEventActive && !isRestricted && (eventData.is_public || !isVisitor));
+        
+        // GRACEFUL LOCKOUT: If they were already in, let them stay until refresh
+        if (sessionAuthorized) canSeeData = true; 
+        else if (canSeeData) sessionAuthorized = true; // First successful load
 
-        // PRIORITY: Trust the active role.
-        if (myRoleStr === "collector") {
-          isOrganizer = false;
-        } else if (myRoleStr === "organizer") {
-          isOrganizer = true;
-        } else {
-          isOrganizer = false; // Visitors are not organizers
-        }
-        const isRestricted = eventData.is_restricted;
+        // Header dots menu
+        const dotsOrg = document.getElementById("dots-btn");
+        const dotsCol = document.getElementById("dots-btn-col");
+        const dotsVis = document.getElementById("dots-btn-vis");
 
+        if (dotsOrg) dotsOrg.style.display = isOrganizer ? "flex" : "none";
+        if (dotsCol) dotsCol.style.display = (!isOrganizer && !isVisitor) ? "flex" : "none";
+        if (dotsVis) dotsVis.style.display = isVisitor ? "flex" : "none";
 
-        // Persistence: Tabs will be switched later if user has access.
+        // Basic info updates
+        document.title = `Notepay — ${eventData.name}`;
+        const ttl = document.getElementById("ev-title");
+        if (ttl) ttl.textContent = eventData.name;
+        const desc = document.getElementById("ev-desc");
+        if (desc) desc.textContent = eventData.description;
+        const date = document.getElementById("ev-date");
+        if (date) date.textContent = "📅 " + formatDate(eventData.event_date);
+        const ib = document.getElementById("info-bar");
+        if (ib) ib.style.display = "flex";
 
-        // Privacy Menu state
+        // Privacy Menu labels
         const privLbl = document.getElementById("privacy-lbl");
         const shareBtn = document.getElementById("share-link-btn");
         const pdfBtn = document.getElementById("pdf-report-btn");
@@ -2695,42 +2768,64 @@
         if (shareBtn) shareBtn.style.display = (isOrganizer && eventData.is_public) ? "flex" : "none";
         if (pdfBtn) pdfBtn.style.display = (eventData.is_public) ? "flex" : "none";
 
-        // Read-only indicator for visitors
-        const placeholder = document.getElementById("dots-placeholder");
-        if (isVisitor) {
-          placeholder.innerHTML = `<div class="badge-role-o" style="font-size:9px; padding:4px 8px; background:var(--primary-lt); color:var(--primary-dk); border:1px solid var(--primary);">👁️ PUBLIC VIEW</div>`;
-          placeholder.style.width = "auto";
+        if (!canSeeData && !isOrganizer) { // Organizer ALWAYS sees data
+          // Hide data panes for visitors
+          ["pane-don", "pane-exp", "pane-sum", "info-bar", "tab-bar", "deact-banner"].forEach(id => {
+            const el = document.getElementById(id); if (el) el.style.display = "none";
+          });
+          
+          if (lp) {
+            lp.style.display = "flex";
+            lp.style.position = "fixed"; 
+            lp.style.inset = "0";
+            lp.style.zIndex = "9000"; // Keep below app-bar (usually 1000+) but above content
+            lp.style.background = "var(--surface)";
+            lp.style.flexDirection = "column";
+            lp.style.justifyContent = "center";
+            lp.style.alignItems = "center";
+
+            const msg = isRestricted ? "Access Restricted" : (!isEventActive ? "Event Deactivated" : "Event is Private");
+            const icon = isRestricted ? "🚫" : "🔒";
+            const sub = isRestricted ? "You have been restricted by the organizer." : (!isEventActive ? "The organizer has deactivated this event." : "The organizer has turned off public access.");
+            
+            lp.innerHTML = `
+              <div style="text-align:center; padding:20px;">
+                <div style="font-size:72px; margin-bottom:20px;">${icon}</div>
+                <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">${msg}</div>
+                <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">${sub}</div>
+                <button onclick="window.location.href='dashboard.html'" class="pbk" 
+                  style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+                  ← Back to Dashboard
+                </button>
+              </div>
+            `;
+          }
+          return;
         } else {
-          placeholder.innerHTML = "";
-          placeholder.style.width = "32px";
+          // ENSURE everything is visible for authorized users
+          ["info-bar", "tab-bar"].forEach(id => {
+            const el = document.getElementById(id); if (el) el.style.display = "flex";
+          });
+          if (lp) {
+            lp.style.display = "none";
+            lp.style.position = "static";
+            lp.style.inset = "auto";
+            lp.style.zIndex = "auto";
+            lp.innerHTML = ""; 
+          }
         }
 
-        // Basic info
-        document.title = `Notepay — ${eventData.name}`;
-        const ttl = document.getElementById("ev-title");
-        if (ttl) ttl.textContent = eventData.name;
-
-        const desc = document.getElementById("ev-desc");
-        if (desc) desc.textContent = eventData.description;
-
-        const date = document.getElementById("ev-date");
-        if (date) date.textContent = "📅 " + formatDate(eventData.event_date);
-
-        const ib = document.getElementById("info-bar");
-        if (ib) ib.style.display = "flex";
-
-        // Header dots menu
-        const dotsOrg = document.getElementById("dots-btn");
-        const dotsCol = document.getElementById("dots-btn-col");
-
-        if (isOrganizer) {
-          if (dotsOrg) dotsOrg.style.display = "flex";
-          if (dotsCol) dotsCol.style.display = "none";
+        // ORGANIZER WARNING BANNER
+        if (isOrganizer && !isEventActive) {
+          if (deactBanner) {
+            deactBanner.style.display = "flex";
+            deactBanner.style.background = "var(--amber)";
+            const dlbl = document.getElementById("deact-lbl-banner");
+            if (dlbl) dlbl.textContent = "Event Deactivated · Collectors & Visitors locked out";
+          }
         } else {
-          if (dotsOrg) dotsOrg.style.display = "none";
-          if (dotsCol) dotsCol.style.display = "flex";
+          if (deactBanner) deactBanner.style.display = "none";
         }
-        if (placeholder) placeholder.style.display = "none";
 
         // Members badge / Role Badge
         const mb = document.getElementById("members-badge");
@@ -2761,93 +2856,9 @@
           }
         }
 
-        const tb = document.getElementById("tab-bar");
-        const lp = document.getElementById("pane-locked");
-        const deactBanner = document.getElementById("deact-banner");
-        const deactBtnLbl = document.getElementById("deact-lbl-dd");
+        // Role visibility logic already handled at top.
 
-        // Case 1: Restricted Member (Priority)
-        if (isRestricted) {
-          if (deactBtnLbl) deactBtnLbl.style.display = "none";
-          if (tb) tb.style.display = "none";
-          document.getElementById("pane-don").style.display = "none";
-          document.getElementById("pane-exp").style.display = "none";
-          document.getElementById("pane-sum").style.display = "none";
-          const tov = document.getElementById("theater-ov");
-          if (tov) tov.style.display = "none";
-
-          if (lp) {
-            lp.style.display = "flex";
-            lp.querySelector("div:nth-child(1)").textContent = "🚫";
-            lp.querySelector("div:nth-child(2)").textContent = "Access Restricted";
-            lp.querySelector("div:nth-child(3)").textContent = "You have been restricted from this event by the organizer.";
-            lp.onclick = null;
-            lp.style.cursor = "default";
-          }
-          return;
-        }
-
-        // Case 2: Deactivated Event
-        if (!isActive) {
-          if (deactBtnLbl) deactBtnLbl.textContent = "Reactivate Event";
-
-          if (isOrganizer && window._viewDataMode) {
-            if (tb) tb.style.display = "flex";
-            if (lp) lp.style.display = "none";
-            if (deactBanner) {
-              deactBanner.style.display = "flex";
-              deactBanner.style.background = "var(--amber)";
-              deactBanner.style.color = "black";
-              const dlbl = document.getElementById("deact-lbl-banner");
-              if (dlbl) dlbl.textContent = "Event Deactivated · Collectors locked out";
-            }
-          } else {
-            if (tb) tb.style.display = "none";
-            document.getElementById("pane-don").style.display = "none";
-            document.getElementById("pane-exp").style.display = "none";
-            document.getElementById("pane-sum").style.display = "none";
-            const tov = document.getElementById("theater-ov");
-            if (tov) tov.style.display = "none";
-
-            if (lp) {
-              lp.style.display = "flex";
-              if (isOrganizer) {
-                lp.querySelector("div:nth-child(1)").textContent = "🔒";
-                lp.querySelector("div:nth-child(2)").textContent = "Event Locked";
-                lp.querySelector("div:nth-child(3)").textContent = "You deactivated this event. Tap to manage.";
-                lp.style.cursor = "pointer";
-                lp.onclick = () => { document.getElementById("deact-manage-pop").style.display = "flex"; };
-
-                if (!window._deactPopupShown) {
-                  document.getElementById("deact-manage-pop").style.display = "flex";
-                  window._deactPopupShown = true;
-                }
-              } else {
-                lp.querySelector("div:nth-child(1)").textContent = "🔒";
-                lp.querySelector("div:nth-child(2)").textContent = "Access Locked";
-                if (isVisitor) {
-                  lp.querySelector("div:nth-child(3)").textContent = "This event has been deactivated by the organizer.";
-                } else {
-                  lp.querySelector("div:nth-child(3)").textContent = "This event has been deactivated by the organizer. Contact them to get a new event code.";
-                }
-                lp.style.cursor = "default";
-                lp.onclick = null;
-              }
-            }
-            return; // STOP HERE if not in viewDataMode
-          }
-        } else {
-          // Active state
-          if (deactBtnLbl) deactBtnLbl.textContent = "Deactivate Event";
-          if (lp) lp.style.display = "none";
-          if (deactBanner) deactBanner.style.display = "none";
-          window._viewDataMode = false;
-          window._deactPopupShown = false;
-        }
-
-        // Normal active view or Organizer "View Data" mode
-        if (tb) tb.style.display = "flex";
-        if (lp) lp.style.display = "none";
+        // Deactivation and visibility logic handled at top.
 
         const dnr = document.getElementById("don-new-row");
         const enr = document.getElementById("exp-new-row");
@@ -3080,66 +3091,51 @@
 
     // ── Summary ──
     // ── Summary ──
-    let summaryData = null;
-    let vTxnsCount = 5;
     async function renderSummary(mode = 0, containerId = "sum-body") { // 1: More, -1: Less
       if (mode === 1) vTxnsCount += 5;
       else if (mode === -1) vTxnsCount = 5;
 
-      const body = document.getElementById(containerId);
-      const loader = `<div style="display:flex;align-items:center;justify-content:center;height:120px;"><div class="loader"></div></div>`;
+      if (summaryData) {
+        renderSummaryUI(summaryData, false, containerId);
+        return;
+      }
+    }
 
-      // Only show loader if we don't have data yet
-      if (!summaryData && body) body.innerHTML = loader;
+    function renderSummaryUI(data, isTheater, containerId) {
+      const body = document.getElementById(containerId || "sum-body");
+      const s = data; 
+      const bal = s.balance;
 
-      try {
-        if (!summaryData) {
-          summaryData = await getSummary(eventId);
-        }
-        const s = summaryData;
-        const bal = s.balance;
+      // Top Donors (Ranked)
+      const donorTotals = {};
+      donations.forEach(d => {
+        const name = d.donor_name;
+        if (!donorTotals[name]) donorTotals[name] = 0;
+        donorTotals[name] += (d.amount || 0);
+      });
+      const topDonors = Object.entries(donorTotals)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
 
-        // Top Collectors (5)
-        const collectorStats = {};
-        donations.forEach(d => {
-          const name = d.collected_by_name || 'System';
-          if (!collectorStats[name]) collectorStats[name] = 0;
-          collectorStats[name] += (d.amount || 0);
-        });
-        const topCollectors = Object.entries(collectorStats)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
+      // Top Expenses (Ranked)
+      const topExpenses = [...expenses]
+        .sort((a, b) => (b.amount || 0) - (a.amount || 0))
+        .slice(0, 5);
 
-        // Top Donors (5)
-        const donorTotals = {};
-        donations.forEach(d => {
-          const name = d.donor_name;
-          if (!donorTotals[name]) donorTotals[name] = 0;
-          donorTotals[name] += (d.amount || 0);
-        });
-        const topDonors = Object.entries(donorTotals)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
+      const spendRatio = s.total_donations > 0 ? (s.total_expenses / s.total_donations) * 100 : 0;
 
-        // Top Expenses (5)
-        const topExpenses = [...expenses]
-          .sort((a, b) => (b.amount || 0) - (a.amount || 0))
-          .slice(0, 5);
+      // Top Collectors (Ranked)
+      const collectorTotals = {};
+      donations.forEach(d => {
+        const name = d.collected_by_name || 'System';
+        if (!collectorTotals[name]) collectorTotals[name] = 0;
+        collectorTotals[name] += (d.amount || 0);
+      });
+      const topCollectors = Object.entries(collectorTotals)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
 
-        // Spending Efficiency
-        const spendRatio = s.total_donations > 0 ? (s.total_expenses / s.total_donations) * 100 : 0;
-        const isDark = document.body.classList.contains("dark-mode");
-        const cardBg = isDark ? "#1e293b" : "#ffffff";
-        const cardBorder = isDark ? "#334155" : "#e2e8f0";
-        const titleColor = isDark ? "#f8fafc" : "#1e293b";
-        const metaColor = isDark ? "#94a3b8" : "#64748b";
-        const blueAmt = isDark ? "#60a5fa" : "#2563eb";
-
-        let txns = s.recent_transactions || [];
-        const hasMore = txns.length > vTxnsCount;
-        const displayedTxns = txns.slice(0, vTxnsCount);
-
-        const html = `
+      const html = `
       <div style="padding: 10px; max-width: 500px; margin: 0 auto;">
         <!-- Available Balance -->
         <div style="background:var(--primary-dk); border-radius:18px; padding:20px; margin-bottom:12px; color:white; box-shadow:0 10px 20px -5px rgba(0,0,0,0.3); text-align:center;">
@@ -3171,37 +3167,19 @@
             </div>
           </div>
 
-          <!-- Top Collectors -->
-          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Collectors</span>
-              <span>🏆</span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              ${topCollectors.length ? topCollectors.map(([name, amt], i) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
-                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
-                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(name)}
-                  </div>
-                  <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(amt)}</div>
-                </div>
-              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
-            </div>
-          </div>
-
           <!-- Top Donors -->
           <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <span style="font-size:14px; font-weight:900; color:var(--text);">Top Donors</span>
-              <span>💎</span>
+              <span>🏆</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              ${topDonors.length ? topDonors.map(([name, amt], i) => `
+              ${topDonors.length ? topDonors.map((d, i) => `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
-                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(name)}
+                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(d[0])}
                   </div>
-                  <div style="font-size:14px; font-weight:900; color:var(--green);">${formatINR(amt)}</div>
+                  <div style="font-size:14px; font-weight:900; color:var(--green);">${formatINR(d[1])}</div>
                 </div>
               `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
             </div>
@@ -3224,15 +3202,33 @@
               `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
             </div>
           </div>
+
+          <!-- Top Collectors -->
+          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Collectors</span>
+              <span>🎖️</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              ${topCollectors.length ? topCollectors.map((c, i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
+                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(c[0])}
+                  </div>
+                  <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(c[1])}</div>
+                </div>
+              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
+            </div>
+          </div>
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px; padding:0 4px;">
           <div style="font-size:15px; font-weight:900; color:var(--text);">Activity Feed</div>
-          <div style="font-size:11px; font-weight:800; color:var(--text3);">LOG: ${txns.length} ITEMS</div>
+          <div style="font-size:11px; font-weight:800; color:var(--text3);">LOG: ${s.recent_transactions.length} ITEMS</div>
         </div>
 
         <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:20px; overflow:hidden; margin-bottom:15px; box-shadow:var(--shadow-sm);">
-          ${displayedTxns.length ? displayedTxns.map((t, i) => `
+          ${s.recent_transactions.slice(0, vTxnsCount).map((t, i) => `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--border2); background:${i % 2 ? 'var(--row-alt)' : 'transparent'}">
               <div style="display:flex; gap:12px; align-items:center;">
                 <div style="width:34px; height:34px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:16px; background:${t.type === 'donation' ? 'var(--primary-lt)' : 'rgba(239, 68, 68, 0.1)'}; color:${t.type === 'donation' ? 'var(--primary-dk)' : 'var(--red)'};">
@@ -3250,10 +3246,10 @@
                 <div style="font-size:9px; font-weight:800; color:var(--text3);">${t.type.toUpperCase()}</div>
               </div>
             </div>
-          `).join("") : `<div style="padding:30px; text-align:center; color:var(--text3); font-size:12px;">No transactions recorded.</div>`}
+          `).join("")}
           
           <div style="display:flex; background:var(--row-alt); border-top:1px solid var(--border2);">
-            ${hasMore ? `
+            ${s.recent_transactions.length > vTxnsCount ? `
               <div style="flex:1; padding:14px; text-align:center; cursor:pointer; font-size:12.5px; font-weight:900; color:var(--primary); border-right:1px solid var(--border2);" onclick="renderSummary(1, '${containerId}')">
                 SHOW MORE ACTIVITY
               </div>
@@ -3265,20 +3261,12 @@
             ` : ""}
           </div>
         </div>
-
-        ${isOrganizer && !isActive ? `<div style="padding:0 4px; margin-bottom:30px;">
-          <button style="width:100%; background:var(--primary); border-radius:14px; padding:12px; font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:900; color:white; cursor:pointer; border:none; box-shadow:0 3px 0 rgba(0,0,0,0.22);" onclick="toggleDeactivate()">🔓 REACTIVATE EVENT</button>
-        </div>` : ""}
         <div style="height:20px;"></div>
       </div>
     `;
-        if (body) body.innerHTML = html;
-      } catch (e) {
-        const err = `<div style="padding:20px;text-align:center;color:var(--text3);">Failed to load summary.</div>`;
-        if (body) body.innerHTML = err;
-        summaryData = null;
-      }
+      if (body) body.innerHTML = html;
     }
+
 
     function filterTable(type, q) { type === "don" ? renderDonations(q) : renderExpenses(q); }
 
@@ -3584,6 +3572,11 @@
       loadAll();
     }
 
+    function clearEventCache() {
+      const myId = sessionStorage.getItem("np_my_id") || "guest";
+      sessionStorage.removeItem(`event_cache_${eventId}_u${myId}`);
+    }
+
     // ── Privacy / Public Access ──
     function handlePrivacyToggleClick() {
       closeDD();
@@ -3604,13 +3597,9 @@
     async function togglePrivacy(val) {
       try {
         await updateEventPrivacy(eventId, val);
-        // Update local state immediately so UI reflects the change
         eventData.is_public = val;
-        // Update dropdown label
-        const privLbl = document.getElementById("privacy-lbl");
-        const shareBtn = document.getElementById("share-link-btn");
-        if (privLbl) privLbl.textContent = val ? "Public Access: ON 🟢" : "Public Access: OFF";
-        if (shareBtn) shareBtn.style.display = (val) ? "flex" : "none";
+        clearEventCache();
+        renderPage();
         showToast(val ? "Public access enabled — share the visitor link!" : "Event is now private", val ? "success" : "info");
       } catch (e) {
         showToast("Failed to update privacy settings", "error");
@@ -3652,18 +3641,17 @@
 
     async function toggleDeactivate() {
       if (isActive) {
+        // Only show confirmation when DEACTIVATING
         document.getElementById("deact-confirm-pop").style.display = "flex";
       } else {
-        // Reactivate flow
+        // Direct reactivation - NO POPUP, ONE CLICK
         try {
           await apiFetch("PUT", `/events/${eventId}/reactivate`);
-          // Always generate new code upon reactivation as per PRD/User req
-          const ev = await apiFetch("POST", `/events/${eventId}/generate_code`);
-          eventData.invite_code = ev.invite_code;
           isActive = true;
           eventData.is_active = true;
+          clearEventCache();
           renderPage();
-          showToast("Event reactivated! New code generated.");
+          showToast("Event reactivated!", "success");
         } catch (e) { showToast(e.message || "Reactivate failed.", "error"); }
       }
     }
@@ -3673,6 +3661,7 @@
         await apiFetch("PUT", `/events/${eventId}/deactivate`);
         isActive = false;
         eventData.is_active = false;
+        clearEventCache();
         document.getElementById("deact-confirm-pop").style.display = "none";
         renderPage();
         showToast("Event deactivated.");
@@ -3717,11 +3706,21 @@
     async function openMembersSheet() {
       document.getElementById("members-sheet").style.display = "flex";
       const list = document.getElementById("members-list");
-      list.innerHTML = `<div style="padding:14px;text-align:center;"><div class="loader" style="width:22px;height:22px;margin:0 auto;"></div></div>`;
-      try {
-        const members = await getMembers(eventId);
-        document.getElementById("members-count").textContent = members.length + " total";
-        list.innerHTML = members.map(m => {
+      
+      // Use cached members if available, otherwise fetch
+      if (!members || members.length === 0) {
+        list.innerHTML = `<div style="padding:14px;text-align:center;"><div class="loader" style="width:22px;height:22px;margin:0 auto;"></div></div>`;
+        try {
+          members = await getMembers(eventId);
+        } catch(e) {
+          list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--red);">Failed to load.</div>`;
+          return;
+        }
+      }
+      
+      const mCount = document.getElementById("members-count");
+      if (mCount) mCount.textContent = members.length + " total";
+      list.innerHTML = members.map(m => {
           const uId = m.user_id;
           const uName = m.user?.full_name || "Unknown";
           const isMe = uId === myUserId;
@@ -3742,7 +3741,6 @@
         ` : ""}
       </div>`;
         }).join("");
-      } catch (e) { list.innerHTML = `<div style="padding:16px;color:var(--red);font-size:12px;">Failed to load members.</div>`; }
     }
     function closeMembersSheet() { document.getElementById("members-sheet").style.display = "none"; }
 
@@ -3786,10 +3784,15 @@
     async function confirmDemote() {
       try {
         await apiFetch("PUT", `/events/${eventId}/members/${memTarget.id}/role`, { role: "Collector" });
+        // Proactively update local members array
+        if (members) {
+          const m = members.find(x => x.user_id === memTarget.id);
+          if (m) m.role = "collector";
+        }
         document.getElementById("demote-pop").style.display = "none";
         showToast(`${memTarget.name} is now a Collector.`);
+        clearEventCache();
         openMembersSheet();
-        // Special case: if demoting yourself (as an organizer other than creator)
         if (memTarget.id === myUserId) loadAll();
       } catch (e) {
         showToast(e.message || "Failed to demote.", "error");
@@ -3799,8 +3802,14 @@
     async function confirmPromote() {
       try {
         await apiFetch("PUT", `/events/${eventId}/members/${memTarget.id}/role`, { role: "Organizer" });
+        // Proactively update local members array
+        if (members) {
+          const m = members.find(x => x.user_id === memTarget.id);
+          if (m) m.role = "organizer";
+        }
         document.getElementById("promote-pop").style.display = "none";
         showToast(`${memTarget.name} is now an Organizer!`);
+        clearEventCache();
         openMembersSheet();
       } catch (e) { showToast(e.message || "Promotion failed.", "error"); }
     }
@@ -3827,14 +3836,29 @@
       try {
         await restrictMember(eventId, restrictUserId);
         showToast("Member restricted.");
+        // Proactively update local members array for instant UI
+        if (members) {
+          const m = members.find(x => x.user_id === restrictUserId);
+          if (m) {
+            m.is_restricted = true;
+            m.role = "collector"; // Promotion logic in backend also demotes restricted orgs
+          }
+        }
+        clearEventCache();
         closeRestrictPop();
-        openMembersSheet();
+        openMembersSheet(); // This will now use the updated 'members' array
       } catch (e) { showToast(e.message || "Failed.", "error"); }
     }
     async function doUnrestrict(uid) {
       try {
         await unrestrictMember(eventId, uid);
         showToast("Member restored.");
+        // Proactively update local members array
+        if (members) {
+          const m = members.find(x => x.user_id === uid);
+          if (m) m.is_restricted = false;
+        }
+        clearEventCache();
         openMembersSheet();
       } catch (e) { showToast(e.message || "Failed.", "error"); }
     }

@@ -38,7 +38,7 @@ class EventResponse(EventCreate):
     is_active: bool
     organizer_id: int
     created_at: datetime
-    my_role: Optional[UserRole] = None
+    my_role: Optional[str] = None
     is_restricted: bool = False
     donation_custom_columns: Any = []
     expense_custom_columns: Any = []
@@ -136,3 +136,18 @@ class WatchedEventResponse(BaseModel):
     event: EventResponse
     class Config:
         from_attributes = True
+
+class EventFullDetailsResponse(BaseModel):
+    event: EventResponse
+    donations: List[DonationResponse]
+    expenses: List[ExpenseResponse]
+    summary: EventSummaryResponse
+    members: List[EventMemberResponse]
+    my_role: Optional[str] = None
+    is_restricted: bool = False
+
+class UserFullDashboardResponse(BaseModel):
+    profile: UserResponse
+    my_events: List[EventResponse]
+    shared_events: List[EventResponse]
+    watched_events: List[WatchedEventResponse]

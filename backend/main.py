@@ -1,13 +1,14 @@
 import os
 import sys
 import json
+import time
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 # Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -34,6 +35,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── WEBSOCKET MANAGER ─────────────────────────────────────────────────────────
+class ConnectionManager:
+    def __init__(self):
+        # event_id -> list of websockets
+        self.active_connections: Dict[int, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, event_id: int):
+        await websocket.accept()
+        if event_id not in self.active_connections:
+            self.active_connections[event_id] = []
+        self.active_connections[event_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, event_id: int):
+        if event_id in self.active_connections:
+            self.active_connections[event_id].remove(websocket)
+            if not self.active_connections[event_id]:
+                del self.active_connections[event_id]
+
+    async def broadcast_change(self, event_id: int, message: dict):
+        if event_id in self.active_connections:
+            for connection in self.active_connections[event_id]:
+                try:
+                    await connection.send_json(message)
+                except Exception:
+                    # Handle dead connections silently
+                    pass
+
+    async def broadcast_dashboard_update(self):
+        # Notify all connected clients to refresh their dashboard data
+        for event_id in self.active_connections:
+            for connection in self.active_connections[event_id]:
+                try:
+                    await connection.send_json({"type": "DASHBOARD_UPDATE"})
+                except Exception: pass
+
+manager = ConnectionManager()
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     # This prevents 500 errors from stripping CORS headers!
@@ -46,10 +84,17 @@ async def get_current_user_id(
     db: Session = Depends(get_db),
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
 ):
-    """Verify Firebase token; raises 401 if missing, 404 if user not in DB."""
+    # Start profiling
+    import time
+    start_t = time.time()
+    
     if not credentials:
         raise HTTPException(status_code=401, detail="Auth header required")
+    
     decoded = await auth.verify_token(credentials)
+    auth_dur = (time.time() - start_t) * 1000
+    print(f"🔑 Auth Verification took {auth_dur:.2f}ms")
+    
     uid = decoded["uid"]
     phone = decoded.get("phone_number")
     
@@ -147,6 +192,11 @@ async def create_user(
         # Unexpected Exception during registration
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.get("/users/me/full-dashboard", response_model=schemas.UserFullDashboardResponse, tags=["Profile"])
+async def get_user_full_dashboard(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """The 'Dashboard Big Bang' request. Returns profile and all event lists in one call."""
+    return crud.get_user_full_dashboard(db, user_id)
+
 @app.get("/users/me", response_model=schemas.UserResponse, tags=["Profile"])
 async def get_my_profile(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View the currently logged-in user's profile."""
@@ -204,7 +254,7 @@ async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), us
 async def update_event(event_id: int, data: schemas.EventUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Rename/edit event details. Organizer only."""
     verify_membership(db, event_id, user_id, require_organizer=True)
-    event = crud.update_event(db, event_id, data)
+    event = crud.update_event(db, event_id, data, user_id=user_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     return event
@@ -216,6 +266,8 @@ async def delete_event(event_id: int, db: Session = Depends(get_db), user_id: in
     success = crud.delete_event(db, event_id)
     if not success:
         raise HTTPException(status_code=404, detail="Event not found")
+    # Invalidate dashboard cache
+    cache.cache.delete(f"dash:{user_id}")
     return {"message": "Event permanently deleted"}
 
 
@@ -224,13 +276,19 @@ async def delete_event(event_id: int, db: Session = Depends(get_db), user_id: in
 async def deactivate_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Lock all collectors out. Organizer retains read-only view."""
     verify_membership(db, event_id, user_id, require_organizer=True)
-    return crud.toggle_event_status(db, event_id, is_active=False)
+    event = crud.toggle_event_status(db, event_id, is_active=False, user_id=user_id)
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
+    return event
 
 @app.put("/events/{event_id}/reactivate", response_model=schemas.EventResponse, tags=["Event Management"])
 async def reactivate_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Reopen event. Organizer must then generate a NEW code and reshare."""
     verify_membership(db, event_id, user_id, require_organizer=True)
-    return crud.toggle_event_status(db, event_id, is_active=True)
+    event = crud.toggle_event_status(db, event_id, is_active=True, user_id=user_id)
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
+    return event
 
 @app.post("/events/{event_id}/generate_code", response_model=schemas.EventResponse, tags=["Event Management"])
 async def regenerate_invite_code(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -323,6 +381,8 @@ async def toggle_event_privacy(event_id: int, is_public: bool, db: Session = Dep
     event = crud.update_event(db, event_id, schemas.EventUpdate(is_public=is_public))
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
     return event
 
 @app.get("/events/{event_id}/members", response_model=List[schemas.EventMemberResponse], tags=["Event Management"])
@@ -343,6 +403,7 @@ async def restrict_member(event_id: int, target_user_id: int, db: Session = Depe
     member = crud.set_member_restriction(db, event_id, target_user_id, is_restricted=True)
     if not member:
         raise HTTPException(status_code=404, detail="Target member not found in this event")
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
     return member
 
 @app.put("/events/{event_id}/members/{target_user_id}/unrestrict", response_model=schemas.EventMemberResponse, tags=["Event Management"])
@@ -357,6 +418,7 @@ async def unrestrict_member(event_id: int, target_user_id: int, db: Session = De
     member = crud.set_member_restriction(db, event_id, target_user_id, is_restricted=False)
     if not member:
         raise HTTPException(status_code=404, detail="Target member not found in this event")
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
     return member
 
 @app.put("/events/{event_id}/members/{target_user_id}/role", response_model=schemas.EventMemberResponse, tags=["Event Management"])
@@ -371,6 +433,7 @@ async def update_member_role(event_id: int, target_user_id: int, data: schemas.M
     member = crud.update_member_role(db, event_id, target_user_id, data.role)
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
     return member
 
 @app.post("/events/{event_id}/exit", tags=["Events"])
@@ -395,7 +458,10 @@ async def get_event_donations(event_id: int, db: Session = Depends(get_db), user
 async def add_donation(event_id: int, donation: schemas.DonationCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new donation row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id)
-    return crud.create_donation(db, event_id, user_id, donation)
+    res = crud.create_donation(db, event_id, user_id, donation)
+    # Broadcast change
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add"})
+    return res
 
 @app.put("/events/{event_id}/donations/{donation_id}", response_model=schemas.DonationResponse, tags=["Donations"])
 async def update_donation(event_id: int, donation_id: int, data: schemas.DonationUpdate,
@@ -408,6 +474,8 @@ async def update_donation(event_id: int, donation_id: int, data: schemas.Donatio
     if member.role != models.UserRole.organizer and donation["collected_by"] != user_id:
         raise HTTPException(status_code=403, detail="You can only edit your own entries")
     result = crud.update_donation(db, donation_id, data)
+    # Broadcast change
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_update"})
     return result
 
 @app.delete("/events/{event_id}/donations/{donation_id}", tags=["Donations"])
@@ -421,6 +489,8 @@ async def delete_donation(event_id: int, donation_id: int,
     if member.role != models.UserRole.organizer and donation["collected_by"] != user_id:
         raise HTTPException(status_code=403, detail="You can only delete your own entries")
     crud.delete_donation(db, donation_id)
+    # Broadcast change
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_delete"})
     return {"message": "Donation deleted"}
 
 
@@ -435,7 +505,10 @@ async def get_event_expenses(event_id: int, db: Session = Depends(get_db), user_
 async def add_expense(event_id: int, expense: schemas.ExpenseCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new expense row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id)
-    return crud.create_expense(db, event_id, user_id, expense)
+    res = crud.create_expense(db, event_id, user_id, expense)
+    # Broadcast change
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_add"})
+    return res
 
 @app.put("/events/{event_id}/expenses/{expense_id}", response_model=schemas.ExpenseResponse, tags=["Expenses"])
 async def update_expense(event_id: int, expense_id: int, data: schemas.ExpenseUpdate,
@@ -447,7 +520,10 @@ async def update_expense(event_id: int, expense_id: int, data: schemas.ExpenseUp
         raise HTTPException(status_code=404, detail="Expense not found in this event")
     if member.role != models.UserRole.organizer and expense["collected_by"] != user_id:
         raise HTTPException(status_code=403, detail="You can only edit your own entries")
-    return crud.update_expense(db, expense_id, data)
+    res = crud.update_expense(db, expense_id, data)
+    # Broadcast change
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_update"})
+    return res
 
 @app.delete("/events/{event_id}/expenses/{expense_id}", tags=["Expenses"])
 async def delete_expense(event_id: int, expense_id: int,
@@ -460,6 +536,8 @@ async def delete_expense(event_id: int, expense_id: int,
     if member.role != models.UserRole.organizer and expense["collected_by"] != user_id:
         raise HTTPException(status_code=403, detail="You can only delete your own entries")
     crud.delete_expense(db, expense_id)
+    # Broadcast change
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_delete"})
     return {"message": "Expense deleted"}
 
 
@@ -469,3 +547,31 @@ async def get_event_summary(event_id: int, db: Session = Depends(get_db), user_i
     """Financial overview. Requires strict auth."""
     verify_membership(db, event_id, user_id)
     return crud.get_event_summary(db, event_id)
+
+@app.get("/events/{event_id}/full-details", response_model=schemas.EventFullDetailsResponse, tags=["Events"])
+async def get_event_full_details(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """The 'Big Bang' request. Returns everything for an event in one call. Highly optimized with caching."""
+    member = verify_membership(db, event_id, user_id)
+    
+    # If visitor, record in history
+    if not member:
+        crud.add_watched_event(db, user_id, event_id)
+    
+    start_fetch = time.time()
+    res = crud.get_event_full_details(db, event_id, user_id)
+    fetch_dur = (time.time() - start_fetch) * 1000
+    print(f"📦 Data Fetch took {fetch_dur:.2f}ms")
+        
+    return res
+
+# ─── WEBSOCKET ENDPOINT ────────────────────────────────────────────────────────
+@app.websocket("/ws/{event_id}")
+async def websocket_endpoint(websocket: WebSocket, event_id: int):
+    # Note: In production, we'd verify the token here too.
+    await manager.connect(websocket, event_id)
+    try:
+        while True:
+            # Keep connection alive
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, event_id)
