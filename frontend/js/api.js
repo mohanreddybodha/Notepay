@@ -102,11 +102,13 @@ async function getSharedEvents() {
 }
 
 /** Create a new event */
-async function createEvent(name, description, eventDate) {
+async function createEvent(name, description, eventDate, showDonations = true, showExpenses = true) {
   return apiFetch("POST", "/events", {
     name,
     description,
-    event_date: new Date(eventDate).toISOString()
+    event_date: new Date(eventDate).toISOString(),
+    show_donations: showDonations,
+    show_expenses: showExpenses
   });
 }
 

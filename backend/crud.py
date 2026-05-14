@@ -35,7 +35,9 @@ def create_event(db: Session, event: schemas.EventCreate, organizer_id: int):
         description=event.description,
         event_date=event.event_date,
         organizer_id=organizer_id,
-        invite_code=invite_code
+        invite_code=invite_code,
+        show_donations=event.show_donations,
+        show_expenses=event.show_expenses
     )
     db.add(db_event)
     db.commit()
@@ -117,6 +119,10 @@ def join_event(db: Session, user_id: int, invite_code: str):
         )
         db.add(db_member)
         db.commit()
+        # Invalidate event cache so organizer sees new member
+        cache.cache.invalidate_event(db_event.id)
+        # Bump global version so joining user's dashboard refreshes
+        cache.cache.bump_global_version()
     
     return db_event
 
@@ -296,6 +302,8 @@ def update_event(db: Session, event_id: int, data: schemas.EventUpdate, user_id:
     if data.event_date is not None: event.event_date = data.event_date
     if data.donation_custom_columns is not None: event.donation_custom_columns = data.donation_custom_columns
     if data.expense_custom_columns is not None: event.expense_custom_columns = data.expense_custom_columns
+    if data.show_donations is not None: event.show_donations = data.show_donations
+    if data.show_expenses is not None: event.show_expenses = data.show_expenses
     if data.is_public is not None: event.is_public = data.is_public
     db.commit()
     db.refresh(event)
@@ -388,6 +396,16 @@ def exit_event(db: Session, event_id: int, user_id: int):
     if not member: return False
     db.delete(member)
     db.commit()
+    # Also remove from watched/discover tab
+    watched = db.query(models.WatchedEvent).filter(
+        models.WatchedEvent.event_id == event_id,
+        models.WatchedEvent.user_id == user_id
+    ).first()
+    if watched:
+        db.delete(watched)
+        db.commit()
+    # Invalidate caches so organizer sees updated member list
+    cache.cache.invalidate_event(event_id)
     cache.cache.bump_global_version()
     return True
 
@@ -547,6 +565,9 @@ def get_user_full_dashboard(db: Session, user_id: int):
     
     watched_fixed = []
     for w in watched_raw:
+        # Skip orphaned records where the event was deleted
+        if not w.event:
+            continue
         # Convert to dict manually to avoid SQLAlchemy relationship errors
         w_dict = {
             "id": w.id,

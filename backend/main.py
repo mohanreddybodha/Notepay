@@ -18,6 +18,27 @@ from database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
 
+# Lightweight migration: add new columns to existing tables if missing
+import sqlite3
+def _migrate_db():
+    db_url = str(engine.url)
+    if "sqlite" not in db_url:
+        return
+    db_path = db_url.replace("sqlite:///", "").replace("sqlite://", "")
+    if not db_path or db_path == ":memory:":
+        return
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(events)")
+    existing_cols = {row[1] for row in cursor.fetchall()}
+    for col_name, col_default in [("show_donations", 1), ("show_expenses", 1)]:
+        if col_name not in existing_cols:
+            cursor.execute(f"ALTER TABLE events ADD COLUMN {col_name} BOOLEAN DEFAULT {col_default}")
+            print(f"🔧 Migration: Added '{col_name}' column to events table")
+    conn.commit()
+    conn.close()
+_migrate_db()
+
 app = FastAPI(
     title="NotePay API",
     description="Backend for NotePay — PRD v12.0",
@@ -248,6 +269,8 @@ async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), us
         raise HTTPException(status_code=404, detail="Invalid invite code")
     if event is False:
         raise HTTPException(status_code=403, detail="This event is currently deactivated. Contact your organizer.")
+    # Broadcast so organizer sees new member in real-time
+    await manager.broadcast_change(event.id, {"type": "DATA_CHANGED"})
     return {"message": "Joined event successfully", "event_id": event.id, "event_name": event.name}
 
 @app.put("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])
@@ -447,6 +470,9 @@ async def exit_event(event_id: int, db: Session = Depends(get_db), user_id: int 
     success = crud.exit_event(db, event_id, user_id)
     if not success:
         raise HTTPException(status_code=404, detail="You are not a member of this event")
+    # Broadcast so organizer's member list updates in real-time
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
     return {"message": "You have left the event"}
 
 

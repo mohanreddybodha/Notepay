@@ -46,6 +46,17 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .btn-create.loading .btn-text{display:none;}
     .btn-create.loading .spinner{display:block;}
+
+    /* Table Toggle Chips */
+    .toggle-section{margin-bottom:18px;}
+    .toggle-chips{display:flex;gap:10px;margin-top:8px;}
+    .tgl-chip{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border-radius:14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;border:2px solid var(--input-border);background:var(--input-bg);color:var(--text3);user-select:none;}
+    .tgl-chip.active{border-color:#0FA3A3;background:rgba(15,163,163,.08);color:#0FA3A3;}
+    .tgl-chip .tgl-icon{font-size:18px;}
+    .tgl-chip .tgl-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--input-border);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+    .tgl-chip.active .tgl-check{border-color:#0FA3A3;background:#0FA3A3;}
+    .tgl-chip.active .tgl-check::after{content:'✓';color:white;font-size:11px;font-weight:900;}
+    .toggle-hint{font-size:11.5px;color:var(--text3);text-align:center;margin-top:8px;font-weight:600;}
   </style>
 </head>
 <body>
@@ -85,6 +96,23 @@
       <div class="field"><input type="date" id="ev-date"/></div>
     </div>
 
+    <div class="toggle-section">
+      <div class="field-label-out">TABLES TO SHOW</div>
+      <div class="toggle-chips">
+        <div class="tgl-chip active" id="tgl-don" onclick="toggleChip('don')">
+          <span class="tgl-check"></span>
+          <span class="tgl-icon">📥</span>
+          <span>Donations</span>
+        </div>
+        <div class="tgl-chip active" id="tgl-exp" onclick="toggleChip('exp')">
+          <span class="tgl-check"></span>
+          <span class="tgl-icon">💸</span>
+          <span>Expenses</span>
+        </div>
+      </div>
+      <div class="toggle-hint">You can change this later from event settings</div>
+    </div>
+
     <div class="organizer-note">You will be the Organizer of this event</div>
 
     <button class="btn-create" id="create-btn" type="button">
@@ -103,8 +131,24 @@
   const urlParams = new URLSearchParams(window.location.search);
   const editId = urlParams.get("edit");
 
+  let showDon = true, showExp = true;
+
+  function toggleChip(type) {
+    const other = type === 'don' ? showExp : showDon;
+    const current = type === 'don' ? showDon : showExp;
+    // At least one must remain enabled
+    if (current && !other) {
+      showToast('At least one table must be enabled', 'error');
+      return;
+    }
+    if (type === 'don') showDon = !showDon;
+    else showExp = !showExp;
+    document.getElementById('tgl-don').classList.toggle('active', showDon);
+    document.getElementById('tgl-exp').classList.toggle('active', showExp);
+  }
+
   if (editId) {
-    document.querySelector(".ab-ttl").textContent = "Rename Event";
+    document.querySelector(".ab-ttl").textContent = "Edit Event";
     document.querySelector(".btn-text").textContent = "Save Changes";
     document.querySelector(".organizer-note").style.display = "none";
     
@@ -118,6 +162,11 @@
           document.getElementById("ev-name").value = ev.name;
           document.getElementById("ev-desc").value = ev.description;
           document.getElementById("ev-date").value = ev.event_date.split("T")[0];
+          // Restore table visibility toggles
+          showDon = ev.show_donations !== false;
+          showExp = ev.show_expenses !== false;
+          document.getElementById('tgl-don').classList.toggle('active', showDon);
+          document.getElementById('tgl-exp').classList.toggle('active', showExp);
         }
       } catch(e) {
         console.error("Failed to load event details", e);
@@ -144,11 +193,14 @@
     btn.classList.add("loading"); btn.disabled = true;
     try {
       if (editId) {
-        await updateEvent(editId, { name, description: desc, event_date: new Date(date).toISOString() });
+        await updateEvent(editId, {
+          name, description: desc, event_date: new Date(date).toISOString(),
+          show_donations: showDon, show_expenses: showExp
+        });
         showToast("Event updated!");
         window.history.back();
       } else {
-        await createEvent(name, desc, date);
+        await createEvent(name, desc, date, showDon, showExp);
         showToast("Event created!");
         window.location.replace("dashboard.html");
       }

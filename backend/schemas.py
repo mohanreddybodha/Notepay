@@ -31,6 +31,8 @@ class EventCreate(BaseModel):
     description: str
     event_date: datetime
     is_public: bool = False
+    show_donations: bool = True
+    show_expenses: bool = True
 
 class EventResponse(EventCreate):
     id: int
@@ -40,6 +42,8 @@ class EventResponse(EventCreate):
     created_at: datetime
     my_role: Optional[str] = None
     is_restricted: bool = False
+    show_donations: bool = True
+    show_expenses: bool = True
     donation_custom_columns: Any = []
     expense_custom_columns: Any = []
     class Config:
@@ -109,6 +113,8 @@ class EventUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     event_date: Optional[datetime] = None
+    show_donations: Optional[bool] = None
+    show_expenses: Optional[bool] = None
     donation_custom_columns: Optional[List[Any]] = None
     expense_custom_columns: Optional[List[Any]] = None
     is_public: Optional[bool] = None

@@ -2203,6 +2203,14 @@
           <div class="dd-ic">📄</div>
           <div class="dd-lbl">Download PDF Report</div>
         </div>
+        <div class="dd-item" id="don-visibility-btn" onclick="closeDD();toggleTableVisibility('don')">
+          <div class="dd-ic">📥</div>
+          <div class="dd-lbl" id="don-vis-lbl">Hide Donations Table</div>
+        </div>
+        <div class="dd-item" id="exp-visibility-btn" onclick="closeDD();toggleTableVisibility('exp')">
+          <div class="dd-ic">💸</div>
+          <div class="dd-lbl" id="exp-vis-lbl">Hide Expenses Table</div>
+        </div>
         <div class="dd-item" id="deact-btn" onclick="closeDD();toggleDeactivate()">
           <div class="dd-ic">🔒</div>
           <div class="dd-lbl" id="deact-lbl-dd">Deactivate Event</div>
@@ -2772,6 +2780,29 @@
         if (shareBtn) shareBtn.style.display = (isOrganizer && eventData.is_public) ? "flex" : "none";
         if (pdfBtn) pdfBtn.style.display = (eventData.is_public) ? "flex" : "none";
 
+        // Table visibility labels
+        const showDon = eventData.show_donations !== false;
+        const showExp = eventData.show_expenses !== false;
+        const donVisLbl = document.getElementById("don-vis-lbl");
+        const expVisLbl = document.getElementById("exp-vis-lbl");
+        if (donVisLbl) donVisLbl.textContent = showDon ? "Hide Donations Table" : "Show Donations Table";
+        if (expVisLbl) expVisLbl.textContent = showExp ? "Hide Expenses Table" : "Show Expenses Table";
+        const donVisBtn = document.getElementById("don-visibility-btn");
+        const expVisBtn = document.getElementById("exp-visibility-btn");
+        if (donVisBtn) donVisBtn.style.display = isOrganizer ? "flex" : "none";
+        if (expVisBtn) expVisBtn.style.display = isOrganizer ? "flex" : "none";
+
+        // Tab visibility based on organizer configuration
+        const tabDon = document.getElementById("tab-don");
+        const tabExp = document.getElementById("tab-exp");
+        if (tabDon) tabDon.style.display = showDon ? "" : "none";
+        if (tabExp) tabExp.style.display = showExp ? "" : "none";
+        // Theater Mode tab visibility
+        const rotTabDon = document.getElementById("rot-tab-don");
+        const rotTabExp = document.getElementById("rot-tab-exp");
+        if (rotTabDon) rotTabDon.style.display = showDon ? "" : "none";
+        if (rotTabExp) rotTabExp.style.display = showExp ? "" : "none";
+
         if (!canSeeData && !isOrganizer) { // Organizer ALWAYS sees data
           // Hide data panes for visitors
           ["pane-don", "pane-exp", "pane-sum", "info-bar", "tab-bar", "deact-banner"].forEach(id => {
@@ -2874,8 +2905,15 @@
         if (dacb) dacb.style.display = isOrganizer ? "block" : "none";
         if (eacb) eacb.style.display = isOrganizer ? "block" : "none";
 
-        switchTab(currentTab || "don", false);
-        if (activeTheaterTab) enterTheater(activeTheaterTab);
+        // Pick the correct default tab based on visibility
+        const defaultTab = (currentTab && ((currentTab === 'don' && showDon) || (currentTab === 'exp' && showExp) || currentTab === 'sum')) ? currentTab : (showDon ? 'don' : (showExp ? 'exp' : 'sum'));
+        switchTab(defaultTab, false);
+        if (activeTheaterTab) {
+          // If the active theater tab was just hidden, switch to the first available
+          const theaterTabValid = (activeTheaterTab === 'don' && showDon) || (activeTheaterTab === 'exp' && showExp) || activeTheaterTab === 'sum';
+          const safeTab = theaterTabValid ? activeTheaterTab : (showDon ? 'don' : (showExp ? 'exp' : 'sum'));
+          enterTheater(safeTab);
+        }
       } catch (e) {
         console.error("renderPage crashed:", e);
         const loader = document.getElementById("loading-pane");
@@ -2887,7 +2925,10 @@
       document.getElementById('deact-manage-pop').style.display = 'none';
       document.getElementById('pane-locked').style.display = 'none';
       document.getElementById('tab-bar').style.display = 'flex';
-      switchTab(currentTab || "don");
+      const showDon = eventData.show_donations !== false;
+      const showExp = eventData.show_expenses !== false;
+      const fallback = showDon ? 'don' : (showExp ? 'exp' : 'sum');
+      switchTab(currentTab || fallback);
     }
 
     // ── Tab switching ──
@@ -3139,6 +3180,10 @@
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
+      // Table visibility flags
+      const showDon = eventData.show_donations !== false;
+      const showExp = eventData.show_expenses !== false;
+
       const html = `
       <div style="padding: 10px; max-width: 500px; margin: 0 auto;">
         <!-- Available Balance -->
@@ -3149,19 +3194,19 @@
         </div>
 
         <div class="stats" style="display:flex; gap:10px; margin-bottom:12px;">
-          <div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
+          ${showDon ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
             <div style="font-size:11px; font-weight:800; color:var(--text3);">COLLECTED</div>
             <div style="font-size:16px; font-weight:900; color:var(--green);">${formatINR(s.total_donations)}</div>
-          </div>
-          <div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
+          </div>` : ''}
+          ${showExp ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
             <div style="font-size:11px; font-weight:800; color:var(--text3);">SPENT</div>
             <div style="font-size:16px; font-weight:900; color:var(--red);">${formatINR(s.total_expenses)}</div>
-          </div>
+          </div>` : ''}
         </div>
 
         <div class="sum-grid" style="display:flex; flex-direction:column; gap:10px;">
-          <!-- Spending Efficiency -->
-          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+          <!-- Spending Efficiency (only if both tables are visible) -->
+          ${(showDon && showExp) ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <span style="font-size:14px; font-weight:900; color:var(--text);">Spending Ratio</span>
               <span style="font-size:12px; font-weight:800; color:var(--primary);">${spendRatio.toFixed(1)}%</span>
@@ -3169,10 +3214,10 @@
             <div style="height:8px; background:var(--surf-var); border-radius:10px; overflow:hidden;">
               <div style="height:100%; width:${Math.min(spendRatio, 100)}%; background:${spendRatio > 90 ? 'var(--red)' : spendRatio > 50 ? 'var(--amber)' : 'var(--green)'}; border-radius:10px;"></div>
             </div>
-          </div>
+          </div>` : ''}
 
-          <!-- Top Donors -->
-          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+          <!-- Top Donors (only if donations visible) -->
+          ${showDon ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <span style="font-size:14px; font-weight:900; color:var(--text);">Top Donors</span>
               <span>🏆</span>
@@ -3187,10 +3232,10 @@
                 </div>
               `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
             </div>
-          </div>
+          </div>` : ''}
 
-          <!-- High Outflows -->
-          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+          <!-- High Outflows (only if expenses visible) -->
+          ${showExp ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <span style="font-size:14px; font-weight:900; color:var(--text);">High Outflows</span>
               <span>💸</span>
@@ -3205,10 +3250,10 @@
                 </div>
               `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
             </div>
-          </div>
+          </div>` : ''}
 
-          <!-- Top Collectors -->
-          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+          <!-- Top Collectors (only if donations visible) -->
+          ${showDon ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <span style="font-size:14px; font-weight:900; color:var(--text);">Top Collectors</span>
               <span>🎖️</span>
@@ -3223,7 +3268,7 @@
                 </div>
               `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
             </div>
-          </div>
+          </div>` : ''}
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px; padding:0 4px;">
@@ -3543,6 +3588,9 @@
         if (lp) lp.style.display = "flex";
         document.getElementById("exit-pop").style.display = "none";
         await apiFetch("POST", `/events/${eventId}/exit`);
+        // Clear all cached state so user loses access immediately
+        clearEventCache();
+        sessionStorage.removeItem("ev_cache_" + eventId);
         window.location.replace("dashboard.html");
       } catch (e) {
         if (lp) lp.style.display = "none";
@@ -3562,7 +3610,13 @@
       try {
         if (lp) lp.style.display = "flex";
         document.getElementById("remove-pop").style.display = "none";
-        await unwatchEvent(eventId);
+        // If user was promoted to member, exit properly first
+        try { await apiFetch("POST", `/events/${eventId}/exit`); } catch(ex) { /* Not a member, that's fine */ }
+        // Then remove from discover/watched tab
+        try { await unwatchEvent(eventId); } catch(ex) { /* Not in watched, that's fine */ }
+        // Clear all cached state
+        clearEventCache();
+        sessionStorage.removeItem("ev_cache_" + eventId);
         window.location.replace("dashboard.html");
       } catch (e) {
         if (lp) lp.style.display = "none";
@@ -3615,6 +3669,26 @@
         navigator.share({ title: `Notepay — ${eventData.name}`, url: url }).catch(() => { });
       } else {
         copyToClipboard(url, "Link copied to clipboard!");
+      }
+    }
+
+    async function toggleTableVisibility(type) {
+      const showDon = eventData.show_donations !== false;
+      const showExp = eventData.show_expenses !== false;
+      const newVal = type === 'don' ? !showDon : !showExp;
+      // At least one table must remain visible
+      if (type === 'don' && !newVal && !showExp) { showToast("At least one table must be enabled", "error"); return; }
+      if (type === 'exp' && !newVal && !showDon) { showToast("At least one table must be enabled", "error"); return; }
+      try {
+        const data = type === 'don' ? { show_donations: newVal } : { show_expenses: newVal };
+        await updateEvent(eventId, data);
+        if (type === 'don') eventData.show_donations = newVal;
+        else eventData.show_expenses = newVal;
+        clearEventCache();
+        renderPage();
+        showToast(newVal ? `${type === 'don' ? 'Donations' : 'Expenses'} table is now visible` : `${type === 'don' ? 'Donations' : 'Expenses'} table hidden`, newVal ? "success" : "info");
+      } catch (e) {
+        showToast("Failed to update table visibility", "error");
       }
     }
 
@@ -4191,6 +4265,11 @@
 
     function switchTheaterTab(tab) {
       if (!activeTheaterTab || activeTheaterTab === tab) return;
+      // Block switching to a hidden tab
+      const showDon = eventData.show_donations !== false;
+      const showExp = eventData.show_expenses !== false;
+      if (tab === 'don' && !showDon) return;
+      if (tab === 'exp' && !showExp) return;
       enterTheater(tab);
     }
 
@@ -4212,6 +4291,14 @@
 
       overlay.style.display = "flex";
       body.innerHTML = ""; // Clear existing
+
+      // Update theater tab button visibility
+      const showDon = eventData.show_donations !== false;
+      const showExp = eventData.show_expenses !== false;
+      const rotTabDon = document.getElementById("rot-tab-don");
+      const rotTabExp = document.getElementById("rot-tab-exp");
+      if (rotTabDon) rotTabDon.style.display = showDon ? "" : "none";
+      if (rotTabExp) rotTabExp.style.display = showExp ? "" : "none";
 
       const rotation = theaterRotation;
       let content;

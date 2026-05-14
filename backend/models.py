@@ -42,6 +42,10 @@ class Event(Base):
     # Who created it
     organizer_id = Column(Integer, ForeignKey("users.id"))
     
+    # Table visibility — organizer can hide Donations or Expenses
+    show_donations = Column(Boolean, default=True)
+    show_expenses = Column(Boolean, default=True)
+    
     # Custom column definitions (Array of names)
     donation_custom_columns = Column(JSON, default=list)
     expense_custom_columns = Column(JSON, default=list)
