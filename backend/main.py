@@ -14,6 +14,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 import models, schemas, crud, auth
+try:
+    from cache import cache
+except ImportError:
+    cache = None
 from database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
@@ -308,11 +312,8 @@ async def delete_event(event_id: int, db: Session = Depends(get_db), user_id: in
     if not success:
         raise HTTPException(status_code=404, detail="Event not found")
     # Invalidate dashboard cache
-    try:
-        from cache import cache
+    if cache:
         cache.delete(f"dash:{user_id}")
-    except ImportError:
-        pass
     return {"message": "Event permanently deleted"}
 
 

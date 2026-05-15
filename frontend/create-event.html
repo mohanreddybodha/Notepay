@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="css/global.css?v=6"/>
+  <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -55,7 +56,6 @@
     .tgl-chip .tgl-icon{font-size:18px;}
     .tgl-chip .tgl-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--input-border);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
     .tgl-chip.active .tgl-check{border-color:#0FA3A3;background:#0FA3A3;}
-    .tgl-chip.active .tgl-check::after{content:'✓';color:white;font-size:11px;font-weight:900;}
     .toggle-hint{font-size:11.5px;color:var(--text3);text-align:center;margin-top:8px;font-weight:600;}
   </style>
 </head>
@@ -75,11 +75,11 @@
       <div class="logo-text">Notepay</div>
     </div>
     <div class="ab-ttl">Create Event</div>
-    <div class="close-btn" onclick="history.back()">✕</div>
+    <div class="close-btn" onclick="history.back()"><span data-np-icon="x" data-np-size="22"></span></div>
   </div>
 
   <div class="scr">
-    <div class="error-msg" id="err-box"><span>⚠️</span><span id="err-txt">Please fill all required fields.</span></div>
+    <div class="error-msg" id="err-box"><span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="err-txt">Please fill all required fields.</span></div>
 
     <div class="field-wrap">
       <div class="field-label-out">Event Name *</div>
@@ -100,13 +100,13 @@
       <div class="field-label-out">TABLES TO SHOW</div>
       <div class="toggle-chips">
         <div class="tgl-chip active" id="tgl-don" onclick="toggleChip('don')">
-          <span class="tgl-check"></span>
-          <span class="tgl-icon">📥</span>
+          <span class="tgl-check"><span data-np-icon="badge-check" data-np-size="12"></span></span>
+          <span class="tgl-icon"><span data-np-icon="download" data-np-size="18"></span></span>
           <span>Donations</span>
         </div>
         <div class="tgl-chip active" id="tgl-exp" onclick="toggleChip('exp')">
-          <span class="tgl-check"></span>
-          <span class="tgl-icon">💸</span>
+          <span class="tgl-check"><span data-np-icon="badge-check" data-np-size="12"></span></span>
+          <span class="tgl-icon"><span data-np-icon="wallet" data-np-size="18"></span></span>
           <span>Expenses</span>
         </div>
       </div>
@@ -120,11 +120,12 @@
       <span class="spinner"></span>
     </button>
     <button class="btn-cancel" onclick="history.back()">Cancel</button>
-    <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+    <div class="footer">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
   </div>
 </div>
 
 <script src="js/firebase-config.js"></script>
+<script src="js/icons.js?v=1"></script>
 <script src="js/api.js"></script>
 <script src="js/auth-guard.js"></script>
 <script>

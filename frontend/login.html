@@ -10,6 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/icons.css?v=1" />
   <style>
     .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
     .status-bar{background:var(--surf-var);display:flex;justify-content:space-between;padding:10px 20px 8px;font-size:11px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;border-bottom:1px solid var(--border);}
@@ -123,7 +124,7 @@
           </div>
         </div>
         <div class="error-msg" id="phone-error">
-          <span>⚠️</span><span id="phone-err-text">Please enter a valid 10-digit mobile number.</span>
+          <span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="phone-err-text">Please enter a valid 10-digit mobile number.</span>
         </div>
       </div>
 
@@ -141,7 +142,7 @@
         <div class="terms-line">By continuing you agree to our</div>
         <a href="#" class="terms-link">Terms of Service &amp; Privacy Policy</a>
       </div>
-      <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+      <div class="footer">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
     </div>
 
     <!-- ═══════════════════════════════════
@@ -151,7 +152,7 @@
       <h1 class="h1">Verify OTP</h1>
       <p class="h1-sub">6-digit code sent to</p>
       <div class="phone-pill" id="otp-phone-pill">+91 XXXXXXXXXX</div>
-      <span class="change-link" onclick="goBackToPhone()">✂️ Change number</span>
+      <span class="change-link" onclick="goBackToPhone()"><span data-np-icon="pencil" data-np-size="14"></span> Change number</span>
 
       <!-- OTP digit boxes (visual) -->
       <div class="otp-row" id="otp-row" onclick="document.getElementById('otp-hidden').focus()">
@@ -168,7 +169,7 @@
         style="position:absolute;opacity:0;width:1px;height:1px;"/>
 
       <div class="error-msg" id="otp-error">
-        <span>⚠️</span><span id="otp-err-text">Invalid OTP. Please try again.</span>
+        <span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="otp-err-text">Invalid OTP. Please try again.</span>
       </div>
 
       <button class="btn-primary" id="verify-btn" type="button" disabled style="margin-top:4px;">
@@ -184,13 +185,14 @@
       <div class="note-box" style="margin-top:14px; justify-content:center;">
         OTP is valid for 10 minutes. Do not share it with anyone.
       </div>
-      <div class="footer" style="margin-top:auto;">Notepay v1.0 &middot; Made with ♥ in India</div>
+      <div class="footer" style="margin-top:auto;">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
     </div>
 
   </div><!-- /form-body -->
 </div><!-- /page -->
 
 <script src="js/firebase-config.js"></script>
+<script src="js/icons.js?v=1"></script>
 <script src="js/api.js"></script>
 <script>
 // ─────────────────────────────────────────────

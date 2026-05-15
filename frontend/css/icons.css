@@ -1,0 +1,24 @@
+/* Notepay Icons Styles */
+[data-np-icon] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: 0;
+}
+
+[data-np-icon] svg {
+    display: block;
+}
+
+/* Helper tones */
+[data-np-tone="green"] { color: var(--green, #10b981); }
+[data-np-tone="red"] { color: var(--red, #ef4444); }
+[data-np-tone="amber"] { color: var(--amber, #f59e0b); }
+[data-np-tone="primary"] { color: var(--primary, #0fa3a3); }
+
+.np-icon-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}

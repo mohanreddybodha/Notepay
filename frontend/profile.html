@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -71,7 +72,7 @@
 <body>
 <div class="page">
   <div class="ab">
-    <div class="back" onclick="history.back()">←</div>
+    <div class="back" onclick="history.back()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
     <div class="ab-ttl">My Profile</div>
     <div style="width:32px"></div>
   </div>
@@ -109,7 +110,7 @@
         </div>
       </div>
 
-      <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+      <div class="footer">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
     </div>
   </div>
 </div>
@@ -117,7 +118,7 @@
 <!-- Logout Popup -->
 <div class="pop-ov" id="logout-pop" style="display:none;">
   <div class="pop-box">
-    <div class="pop-ic" style="background:var(--surf-var);border:2px solid var(--border2);">📱</div>
+    <div class="pop-ic" style="background:var(--surf-var);border:2px solid var(--border2);"><span data-np-icon="smartphone" data-np-size="28"></span></div>
     <div class="pop-t">Logout?</div>
     <div class="pop-m">You will be signed out from this device. Continue?</div>
     <div class="pop-line"></div>
@@ -129,6 +130,7 @@
 </div>
 
 <script src="js/firebase-config.js"></script>
+<script src="js/icons.js?v=1"></script>
 <script src="js/api.js"></script>
 <script src="js/auth-guard.js"></script>
 <script>

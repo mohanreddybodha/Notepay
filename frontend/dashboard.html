@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/icons.css?v=2" />
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -125,7 +126,7 @@
   <div class="search-bar" id="search-bar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <input class="search-input" id="search-input" type="text" placeholder="Search events…" oninput="filterEvents(this.value)"/>
-    <span class="clear-btn" id="clear-btn" onclick="clearSearch()">✕</span>
+    <span class="clear-btn" id="clear-btn" onclick="clearSearch()"><span data-np-icon="x" data-np-size="16"></span></span>
   </div>
 
   <div class="main-view">
@@ -151,7 +152,7 @@
   </div>
 
   <!-- FAB -->
-  <button class="fab" onclick="openSheet()" aria-label="Add new event">＋ New Event</button>
+  <button class="fab" onclick="openSheet()" aria-label="Add new event"><span data-np-icon="plus" data-np-size="20"></span> New Event</button>
 
 <!-- Add Event Sheet -->
 <div class="sheet-ov" id="sheet-add" style="display:none;" onclick="closeSheet()">
@@ -173,6 +174,7 @@
 </div><!-- End main-page -->
 
 <script src="js/firebase-config.js"></script>
+<script src="js/icons.js?v=2"></script>
 <script src="js/api.js?v=2"></script>
 <script src="js/auth-guard.js"></script>
 <script>
@@ -265,12 +267,13 @@
     if (currentTab === 0) document.getElementById("list-my").innerHTML = renderList(myEvents.filter(filterFn), "organizer");
     if (currentTab === 1) document.getElementById("list-shared").innerHTML = renderList(sharedEvents.filter(filterFn), "collector");
     if (currentTab === 2) document.getElementById("list-discover").innerHTML = renderList(watchedEvents.filter(filterFn), "visitor");
+    hydrateNpIcons();
   }
 
   function renderList(events, role) {
     if (!events.length) {
       return `<div class="empty-state">
-        <div class="es-icon">${role==="organizer"?"📋":role==="visitor"?"":"📌"}</div>
+        <div class="es-icon">${role==="organizer"?npIcon("clipboard-list",{size:44}):role==="visitor"?npIcon("pin",{size:44}):npIcon("clipboard-list",{size:44})}</div>
         <div class="es-title">${role==="visitor"?"No public events":"No events yet"}</div>
         <div class="es-sub">${role==="organizer"?"Create your first event using the + button.":role==="visitor"?"Public events you view will appear here.":"Join an event using an invite code."}</div>
       </div>`;
@@ -287,20 +290,20 @@
     let statusNote = "";
 
     if (role === "visitor" && isPublic === false) {
-      statusBanner = `<div class="deact-bar" style="background:var(--text3);">🔒 Private Event</div>`;
+      statusBanner = `<div class="deact-bar" style="background:var(--text3);">${iconLabel("lock", "Private Event", { size: 16 })}</div>`;
       statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">Can't view · Organizer made this event private</div></div>`;
     } else if (!isActive) {
-      statusBanner = `<div class="deact-bar">⚠️ Event Deactivated</div>`;
+      statusBanner = `<div class="deact-bar">${iconLabel("alert-circle", "Event Deactivated", { size: 16, tone: "amber" })}</div>`;
       if (role === "collector") {
-        statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">📵 Contact your organizer</div></div>`;
+        statusNote = `<div class="ec-body" style="padding-top:6px;"><div class="status-note-line" style="font-size:11.5px;color:var(--red);font-weight:700;">${iconLabel("phone-off", "Contact your organizer", { size: 14 })}</div></div>`;
       } else if (role === "visitor") {
-        statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">🔒 Event is closed</div></div>`;
+        statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">${iconLabel("lock", "Event is closed", { size: 14 })}</div></div>`;
       } else {
-        statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">🔒 You deactivated this · Tap to manage</div></div>`;
+        statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">${iconLabel("lock", "You deactivated this · Tap to manage", { size: 14 })}</div></div>`;
       }
     } else if (isRestricted) {
-      statusBanner = `<div class="deact-bar" style="background:var(--red);">🚫 You are restricted</div>`;
-      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">📵 Contact your organizer</div></div>`;
+      statusBanner = `<div class="deact-bar" style="background:var(--red);">${iconLabel("ban", "You are restricted", { size: 16, tone: "danger" })}</div>`;
+      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">${iconLabel("phone-off", "Contact your organizer", { size: 14 })}</div></div>`;
     }
 
     const badge = role==="organizer"
@@ -322,7 +325,7 @@
           ${badge}
         </div>
         <div class="ec-meta">
-          <span>📅 ${formatDate(e.event_date)}</span>
+          <span class="np-icon-label">${npIcon("calendar", { size: 14 })} ${formatDate(e.event_date)}</span>
         </div>
       </div>
       ${statusBanner}
@@ -348,7 +351,7 @@
   }
 
   function renderError(msg) {
-    return `<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Error</div><div class="es-sub">${msg} <span style="color:var(--primary);cursor:pointer;font-weight:700;" onclick="loadEvents()">Retry</span></div></div>`;
+    return `<div class="empty-state"><div class="es-icon">${npIcon("alert-triangle", { size: 44, tone: "amber" })}</div><div class="es-title">Error</div><div class="es-sub">${msg} <span style="color:var(--primary);cursor:pointer;font-weight:700;" onclick="loadEvents()">Retry</span></div></div>`;
   }
 
   function openEvent(id) {

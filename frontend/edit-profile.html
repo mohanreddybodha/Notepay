@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -53,14 +54,14 @@
 <body>
 <div class="page">
   <div class="ab">
-    <div class="back" onclick="history.back()">←</div>
+    <div class="back" onclick="history.back()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
     <div class="ab-ttl">Edit Profile</div>
     <div style="width:32px"></div>
   </div>
   <div class="scr">
     <div class="avatar-wrap"><div class="avatar" id="av">?</div></div>
 
-    <div class="error-msg" id="err-box"><span>⚠️</span><span id="err-txt"></span></div>
+    <div class="error-msg" id="err-box"><span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="err-txt"></span></div>
 
     <div class="field-wrap">
       <div class="field-label-out">Full Name *</div>
@@ -76,7 +77,7 @@
 
     <div class="phone-show">
       <div><div class="ph-lbl">Mobile Number</div><div class="ph-val" id="ph-val">—</div></div>
-      <div class="ph-vrfd">✓ Verified</div>
+      <div class="ph-vrfd"><span data-np-icon="badge-check" data-np-size="14" data-np-tone="green"></span> Verified</div>
     </div>
 
     <button class="btn-save" id="save-btn" type="button">
@@ -87,6 +88,7 @@
 </div>
 
 <script src="js/firebase-config.js"></script>
+<script src="js/icons.js?v=1"></script>
 <script src="js/api.js"></script>
 <script src="js/auth-guard.js"></script>
 <script>

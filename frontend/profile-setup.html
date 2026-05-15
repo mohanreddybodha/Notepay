@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -59,13 +60,13 @@
 <body>
 <div class="page">
   <div class="ab">
-    <div class="back" onclick="history.back()">←</div>
+    <div class="back" onclick="history.back()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
     <div class="ab-ttl">Your Details</div>
     <div style="width:32px"></div>
   </div>
   <div class="form-body">
     <div class="avatar-wrap">
-      <div class="avatar" id="avatar-preview">📒</div>
+      <div class="avatar" id="avatar-preview"><span data-np-icon="user" data-np-size="32"></span></div>
     </div>
 
     <div class="field-wrap">
@@ -85,22 +86,23 @@
       <div class="ph-label">Mobile Number</div>
       <div class="ph-row">
         <div class="ph-val" id="phone-show">—</div>
-        <div class="ph-verified">✓ Verified</div>
+        <div class="ph-verified"><span data-np-icon="badge-check" data-np-size="14" data-np-tone="green"></span> Verified</div>
       </div>
     </div>
 
-    <div class="error-msg" id="err-box"><span>⚠️</span><span id="err-txt">Please fill all fields.</span></div>
+    <div class="error-msg" id="err-box"><span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="err-txt">Please fill all fields.</span></div>
 
     <button class="btn-create" id="create-btn" type="button">
       <span class="btn-text">Create Account</span>
       <span class="spinner"></span>
     </button>
 
-    <div class="footer">Notepay v1.0 &middot; Made with ♥ in India</div>
+    <div class="footer">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
   </div>
 </div>
 
 <script src="js/firebase-config.js"></script>
+<script src="js/icons.js?v=1"></script>
 <script src="js/api.js"></script>
 <script>
   let userPhone = "";
@@ -127,7 +129,9 @@
   // Update avatar initials as user types
   document.getElementById("full-name").addEventListener("input", function () {
     const initials = getInitials(this.value);
-    document.getElementById("avatar-preview").textContent = initials || "📒";
+    const av = document.getElementById("avatar-preview");
+    if (initials) { av.textContent = initials; }
+    else { av.innerHTML = npIcon("user", { size: 32 }); }
   });
 
   document.getElementById("create-btn").addEventListener("click", createAccount);

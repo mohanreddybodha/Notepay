@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <link rel="stylesheet" href="css/global.css?v=6"/>
+  <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
       document.documentElement.classList.add("dark-mode");
@@ -48,7 +49,7 @@
 <body>
 <div class="page">
   <div class="ab">
-    <div class="back" onclick="history.back()">←</div>
+    <div class="back" onclick="history.back()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
     <div class="ab-ttl">Join by Event Code</div>
     <div style="width:32px"></div>
   </div>
@@ -62,8 +63,8 @@
       </div>
     </div>
 
-    <div class="warn-note" id="warn-note" style="display:none;">⚠️ This event is currently deactivated. Contact your organizer.</div>
-    <div class="err-note" id="err-note"><span>⚠️</span><span id="err-txt">Invalid event code. Please check and try again.</span></div>
+    <div class="warn-note" id="warn-note" style="display:none;"><span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span>This event is currently deactivated. Contact your organizer.</span></div>
+    <div class="err-note" id="err-note"><span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="err-txt">Invalid event code. Please check and try again.</span></div>
 
     <button class="btn-join" id="join-btn" type="button">
       <span class="btn-text">Join Event</span>
@@ -74,6 +75,7 @@
 </div>
 
 <script src="js/firebase-config.js"></script>
+<script src="js/icons.js?v=1"></script>
 <script src="js/api.js"></script>
 <script src="js/auth-guard.js"></script>
 <script>
