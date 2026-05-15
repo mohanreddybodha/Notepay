@@ -308,7 +308,11 @@ async def delete_event(event_id: int, db: Session = Depends(get_db), user_id: in
     if not success:
         raise HTTPException(status_code=404, detail="Event not found")
     # Invalidate dashboard cache
-    cache.cache.delete(f"dash:{user_id}")
+    try:
+        from cache import cache
+        cache.delete(f"dash:{user_id}")
+    except ImportError:
+        pass
     return {"message": "Event permanently deleted"}
 
 
