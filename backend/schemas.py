@@ -157,3 +157,27 @@ class UserFullDashboardResponse(BaseModel):
     my_events: List[EventResponse]
     shared_events: List[EventResponse]
     watched_events: List[WatchedEventResponse]
+
+# ── CHAT ──
+class ChatMessageCreate(BaseModel):
+    message: str
+    reply_to_id: Optional[int] = None
+
+class ChatReplySnippet(BaseModel):
+    id: int
+    sender_name: str
+    message: str
+
+class ChatMessageResponse(BaseModel):
+    id: int
+    event_id: int
+    user_id: int
+    sender_name: str
+    message: str
+    reply_to_id: Optional[int] = None
+    reply_snippet: Optional[ChatReplySnippet] = None
+    reactions: Optional[dict] = {}
+    sent_at: datetime
+
+class ChatReactionRequest(BaseModel):
+    emoji: str

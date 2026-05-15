@@ -550,6 +550,110 @@ def fix_event_json(e):
             except: e_dict[col] = []
     return e_dict
 
+# ── Chat ──────────────────────────────────────────────────────────────────────
+
+def _chat_msg_to_dict(db, msg, sender_name):
+    """Convert a ChatMessage ORM object to a response dict with reply snippet."""
+    d = {
+        "id": msg.id,
+        "event_id": msg.event_id,
+        "user_id": msg.user_id,
+        "sender_name": sender_name or "Unknown",
+        "message": msg.message,
+        "reply_to_id": msg.reply_to_id,
+        "reply_snippet": None,
+        "reactions": msg.reactions or {},
+        "sent_at": msg.sent_at.isoformat() + "Z" if msg.sent_at else None
+    }
+    if msg.reply_to_id and msg.reply_to:
+        reply_user = db.query(models.User).filter(models.User.id == msg.reply_to.user_id).first()
+        d["reply_snippet"] = {
+            "id": msg.reply_to.id,
+            "sender_name": reply_user.full_name if reply_user else "Unknown",
+            "message": msg.reply_to.message[:100]  # snippet
+        }
+    return d
+
+def create_chat_message(db: Session, event_id: int, user_id: int, message: str, reply_to_id: int = None):
+    msg = models.ChatMessage(
+        event_id=event_id,
+        user_id=user_id,
+        message=message[:500],
+        reply_to_id=reply_to_id
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    return _chat_msg_to_dict(db, msg, user.full_name if user else "Unknown")
+
+def get_chat_messages(db: Session, event_id: int, limit: int = 50, before_id: int = None):
+    q = db.query(models.ChatMessage, models.User.full_name).join(
+        models.User, models.ChatMessage.user_id == models.User.id
+    ).filter(models.ChatMessage.event_id == event_id)
+    if before_id:
+        q = q.filter(models.ChatMessage.id < before_id)
+    results = q.order_by(models.ChatMessage.id.desc()).limit(limit).all()
+    msgs = []
+    for msg, sender_name in results:
+        msgs.append(_chat_msg_to_dict(db, msg, sender_name))
+    return msgs[::-1]  # Return in chronological order
+
+def toggle_reaction(db: Session, message_id: int, user_id: int, emoji: str):
+    msg = db.query(models.ChatMessage).filter(models.ChatMessage.id == message_id).first()
+    if not msg:
+        return None
+    reactions = dict(msg.reactions or {})
+    # Remove user from all other reactions first
+    for e, users in list(reactions.items()):
+        if user_id in users:
+            users.remove(user_id)
+            if not users:
+                del reactions[e]
+            else:
+                reactions[e] = users
+            
+            # If the user clicked the SAME emoji they already had, we just removed it. We're done (toggle off).
+            if e == emoji:
+                msg.reactions = reactions
+                from sqlalchemy.orm.attributes import flag_modified
+                flag_modified(msg, "reactions")
+                db.commit()
+                sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
+                return _chat_msg_to_dict(db, msg, sender_name)
+
+    # Otherwise, add the new reaction
+    if emoji not in reactions:
+        reactions[emoji] = []
+    reactions[emoji].append(user_id)
+    msg.reactions = reactions
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(msg, "reactions")
+    db.commit()
+    sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
+    return _chat_msg_to_dict(db, msg, sender_name)
+
+def delete_chat_message(db: Session, message_id: int, user_id: int, is_organizer: bool):
+    msg = db.query(models.ChatMessage).filter(models.ChatMessage.id == message_id).first()
+    if not msg:
+        return False
+    if msg.user_id != user_id and not is_organizer:
+        return False
+    msg.message = "🚫 This message was deleted."
+    msg.reactions = {}
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(msg, "reactions")
+    db.commit()
+    sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
+    return _chat_msg_to_dict(db, msg, sender_name)
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(msg, "reactions")
+    db.commit()
+    db.refresh(msg)
+    user = db.query(models.User).filter(models.User.id == msg.user_id).first()
+    return _chat_msg_to_dict(db, msg, user.full_name if user else "Unknown")
+
+
 def get_user_full_dashboard(db: Session, user_id: int):
     # Use global version to ensure real-time sync across all users
     v = cache.cache.get_global_version()

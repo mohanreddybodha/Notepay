@@ -8,6 +8,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap"
     rel="stylesheet" />
+  <!-- FullCalendar -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+  <!-- Emoji Picker Element -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -103,7 +107,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 5px 14px;
+      padding: 2px 14px;
       border-bottom: 1.5px solid var(--border2);
       flex-shrink: 0;
     }
@@ -172,7 +176,7 @@
     .tab-h {
       flex: 1;
       text-align: center;
-      padding: 8px 4px 9px;
+      padding: 4px 4px;
       font-family: 'Nunito', sans-serif;
       font-size: 12.5px;
       font-weight: 900;
@@ -201,14 +205,14 @@
       display: flex;
       align-items: center;
       flex-shrink: 0;
-      padding: 6px 14px 0;
+      padding: 2px 14px 0;
     }
 
     .sum-strip {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 2px 16px 6px;
+      padding: 0 14px 4px;
       font-size: 11px;
       font-weight: 800;
       color: var(--text3);
@@ -217,10 +221,10 @@
 
     .search-bar {
       flex: 1;
-      margin: 4px 0 10px;
+      margin: 2px 0 4px;
       background: var(--card);
       border-radius: 12px;
-      padding: 9px 14px;
+      padding: 5px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -270,7 +274,7 @@
 
     /* Spreadsheet table */
     .tbl-wrap {
-      margin: 2px 14px 6px;
+      margin: 0 14px 4px;
       border: 2px solid var(--border);
       border-radius: 12px;
       flex: 1;
@@ -309,6 +313,8 @@
       height: 32px;
       display: flex;
       align-items: center;
+      justify-content: flex-start !important;
+      text-align: left !important;
       padding: 0 6px;
       font-family: 'Nunito', sans-serif;
       font-size: 10.5px;
@@ -361,6 +367,8 @@
     .sc {
       display: flex;
       align-items: center;
+      justify-content: flex-start !important;
+      text-align: left !important;
       padding: 0 6px;
       font-size: 11.5px;
       font-weight: 700;
@@ -376,6 +384,9 @@
     .fc.sticky-col {
       position: sticky;
       left: 0;
+      padding-left: 2px !important;
+      justify-content: flex-start !important;
+      text-align: left !important;
       z-index: 500;
       width: 130px;
       font-weight: 800;
@@ -1865,6 +1876,638 @@
       border: 3px solid white;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
+    /* ── Chat Feature ── */
+    .chat-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0FA3A3, #0D8B8B);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 6px 20px rgba(15, 163, 163, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+      z-index: 500;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .chat-fab:active {
+      transform: scale(0.92);
+    }
+
+    .chat-fab .chat-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      border-radius: 12px;
+      background: #EF4444;
+      color: white;
+      font-size: 11px;
+      font-weight: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .chat-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 99999;
+      display: none;
+      align-items: flex-end;
+      justify-content: flex-end;
+      /* Align to the right */
+      backdrop-filter: blur(2px);
+    }
+
+    .chat-drawer {
+      width: 75vw;
+      height: 100dvh;
+      background: #efeae2;
+      border-radius: 20px 0 0 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: chatSlideRightIn .3s ease;
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 100000;
+    }
+
+    .dark-mode .chat-drawer {
+      background: #0b141a;
+    }
+
+    /* Reply preview bar */
+    .chat-reply-bar {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--card);
+      border-top: 2px solid var(--primary);
+      flex-shrink: 0;
+    }
+
+    .chat-reply-bar .reply-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-reply-bar .reply-name {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .chat-reply-bar .reply-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-reply-bar .reply-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--text3);
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    /* Reply snippet inside message bubble */
+    .chat-reply-snippet {
+      background: rgba(0, 0, 0, 0.06);
+      border-left: 3px solid var(--primary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .dark-mode .chat-reply-snippet {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .chat-reply-snippet .rsp-name {
+      font-weight: 900;
+      color: var(--primary);
+      font-size: 11px;
+    }
+
+    .chat-reply-snippet .rsp-text {
+      font-weight: 600;
+      color: var(--text3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    /* Reactions */
+    .chat-reactions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 3px;
+    }
+
+    .chat-reactions .rx-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1.5px solid var(--border2);
+      background: var(--card);
+      transition: all .15s;
+    }
+
+    .chat-reactions .rx-pill.rx-mine {
+      border-color: var(--primary);
+      background: rgba(15, 163, 163, 0.08);
+    }
+
+    .chat-reactions .rx-pill .rx-count {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text3);
+    }
+
+    /* Highlight */
+    @keyframes highlightFlash {
+      0% {
+        background-color: rgba(13, 139, 139, 0.3);
+      }
+
+      100% {
+        background-color: transparent;
+      }
+    }
+
+    .highlight-msg {
+      animation: highlightFlash 1.5s ease-out;
+    }
+
+    /* Context Menu */
+    #chat-msg-ctx-ov {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 100005;
+    }
+
+    #chat-msg-ctx {
+      position: absolute;
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border: 1px solid var(--border2);
+    }
+
+    .ctx-emojis {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--surf-var);
+      border-radius: 24px;
+      margin-bottom: 4px;
+    }
+
+    .ctx-emojis span {
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform .1s;
+    }
+
+    .ctx-emojis span:hover {
+      transform: scale(1.2);
+    }
+
+    .ctx-item {
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .ctx-item:hover {
+      background: var(--surf-var);
+    }
+
+    @keyframes chatSlideRightIn {
+      from {
+        transform: translateX(100%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      background: transparent;
+      border-bottom: none;
+      flex-shrink: 0;
+    }
+
+    .chat-header-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-close-btn {
+      background: var(--surf-var);
+      border: 1.5px solid var(--border2);
+      border-radius: 10px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text3);
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .chat-unread-divider {
+      text-align: center;
+      margin: 14px 0 6px;
+      background: rgba(13, 139, 139, 0.1);
+      color: var(--primary);
+      border-radius: 12px;
+      padding: 6px 14px;
+      font-size: 11.5px;
+      font-weight: 900;
+      align-self: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+    }
+
+    .dark-mode .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .chat-msg {
+      max-width: 82%;
+      display: flex;
+      flex-direction: column;
+      animation: chatMsgIn .2s ease;
+    }
+
+    @keyframes chatMsgIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chat-msg-own {
+      align-self: flex-end;
+    }
+
+    .chat-msg-other {
+      align-self: flex-start;
+    }
+
+    .chat-msg-row {
+      display: flex;
+      gap: 8px;
+      align-self: flex-start;
+      max-width: 82%;
+    }
+
+    .chat-msg-row .chat-msg {
+      max-width: 100%;
+    }
+
+    .chat-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .chat-msg-deleted {
+      opacity: 0.6;
+      font-style: italic;
+    }
+
+    .chat-msg-deleted .chat-bubble {
+      cursor: default;
+    }
+
+    .chat-msg-sender {
+      font-size: 11px;
+      font-weight: 800;
+      color: #0D8B8B;
+      margin-bottom: 2px;
+    }
+
+    .dark-mode .chat-msg-sender {
+      color: #53c5c5;
+    }
+
+    .chat-bubble {
+      padding: 6px 8px 6px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+      word-break: break-word;
+      font-family: 'Nunito', sans-serif;
+      box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+    }
+
+    .chat-msg-own .chat-bubble {
+      background: #d9fdd3;
+      color: #111b21;
+      border-top-right-radius: 0;
+    }
+
+    .dark-mode .chat-msg-own .chat-bubble {
+      background: #005c4b;
+      color: #e9edef;
+    }
+
+    .chat-msg-other .chat-bubble {
+      background: #ffffff;
+      color: #111b21;
+      border-top-left-radius: 0;
+    }
+
+    .dark-mode .chat-msg-other .chat-bubble {
+      background: #202c33;
+      color: #e9edef;
+    }
+
+    .chat-bubble-content {
+      position: relative;
+    }
+
+    .chat-msg-text {
+      padding-right: 50px;
+      min-height: 16px;
+    }
+
+    .chat-msg-time {
+      position: absolute;
+      bottom: -2px;
+      right: 0;
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(17, 27, 33, 0.6);
+    }
+
+    .dark-mode .chat-msg-time {
+      color: rgba(233, 237, 239, 0.6);
+    }
+
+    .chat-reactions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: -6px;
+      margin-bottom: 6px;
+      z-index: 2;
+    }
+
+    .chat-reactions .rx-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 11px;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      transition: all .15s;
+    }
+
+    .chat-reactions .rx-pill.rx-mine {
+      border-color: var(--primary);
+      background: rgba(15, 163, 163, 0.08);
+    }
+
+    .chat-reactions .rx-pill .rx-count {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text3);
+    }
+
+    .chat-rx-picker-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.2);
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-rx-box {
+      background: var(--surface);
+      padding: 12px 16px;
+      border-radius: 30px;
+      display: flex;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .chat-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px 14px;
+      border-top: none;
+      flex-shrink: 0;
+      background: transparent;
+    }
+
+    .chat-input-wrapper {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      background: var(--card);
+      border-radius: 24px;
+      border: 1.5px solid var(--border2);
+      padding: 2px 8px;
+      transition: border-color .2s;
+    }
+
+    .chat-input-wrapper:focus-within {
+      border-color: var(--primary);
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+    }
+
+    .chat-input::placeholder {
+      color: var(--text3);
+    }
+
+    .chat-input-emoji-btn {
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text3);
+      padding: 5px;
+      transition: transform .15s;
+      flex-shrink: 0;
+    }
+
+    .chat-input-emoji-btn:active {
+      transform: scale(0.9);
+    }
+
+    .chat-send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0FA3A3, #0D8B8B);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: transform .15s, opacity .15s;
+    }
+
+    .chat-send-btn:active {
+      transform: scale(0.88);
+    }
+
+    .chat-send-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .chat-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text3);
+      gap: 6px;
+    }
+
+    .chat-empty-icon {
+      font-size: 40px;
+      opacity: 0.5;
+    }
+
+    .chat-empty-text {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .chat-empty-sub {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    .chat-load-more {
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .chat-date-divider {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text3);
+      margin: 12px 0 6px;
+      opacity: 0.7;
+    }
   </style>
 </head>
 
@@ -1897,12 +2540,15 @@
       </div>
       <div id="members-badge" class="badge-members" onclick="openMembersSheet()">👥 Members</div>
     </div>
-    <div class="deact-bar" id="deact-banner" style="display:none; justify-content:space-between; padding:8px 16px; background:var(--amber); color:var(--surface);">
+    <div class="deact-bar" id="deact-banner"
+      style="display:none; justify-content:space-between; padding:8px 16px; background:var(--amber); color:var(--surface);">
       <div style="display:flex; align-items:center; gap:8px;">
         <span>⚠️</span>
         <span id="deact-lbl-banner" style="font-weight:800;">Event Deactivated</span>
       </div>
-      <button onclick="toggleDeactivate()" style="background:var(--surface); color:var(--amber); border:none; padding:4px 12px; border-radius:8px; font-weight:900; font-size:11px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1);">ACTIVATE NOW</button>
+      <button onclick="toggleDeactivate()"
+        style="background:var(--surface); color:var(--amber); border:none; padding:4px 12px; border-radius:8px; font-weight:900; font-size:11px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1);">ACTIVATE
+        NOW</button>
     </div>
     <div class="tab-heading" id="tab-bar" style="display:none;">
       <div class="tab-h active" id="tab-don" onclick="switchTab('don')">Donations</div>
@@ -2579,8 +3225,8 @@
         myUserId = profile.id;
         // Also set sessionStorage as a backup for other functions
         sessionStorage.setItem("np_my_id", myUserId);
-        
-        setupWebSocket(); 
+
+        setupWebSocket();
         await loadAll();
       } catch (e) {
         console.error("Init failed:", e);
@@ -2601,7 +3247,7 @@
     document.addEventListener("visibilitychange", async () => {
       if (document.visibilityState === "visible") {
         // If data changed, force a FRESH fetch to avoid stale cache flickers
-        loadAll(true, true); 
+        loadAll(true, true);
       }
     });
 
@@ -2612,7 +3258,7 @@
       expenses = res.expenses;
       summaryData = res.summary;
       members = res.members || [];
-      
+
       const rawRole = (res.my_role || "visitor").toLowerCase();
       const myIdStr = sessionStorage.getItem("np_my_id");
       const myId = myIdStr ? parseInt(myIdStr) : -1;
@@ -2620,13 +3266,19 @@
       // Robust check: Ensure types match for comparison
       const orgId = parseInt(eventData.organizer_id);
       isOrganizer = (rawRole === "organizer") || (orgId === myId);
+      isOrganizerGlobal = isOrganizer;
       isVisitor = (rawRole === "visitor") && !isOrganizer;
       isRestricted = res.is_restricted || false;
-      
+
       renderPage();
       // Real-time update for Theater Mode: If active, re-enter to refresh columns/data
       if (typeof activeTheaterTab !== 'undefined' && activeTheaterTab) {
         enterTheater(activeTheaterTab);
+      }
+
+      // Silently fetch chat history to calculate accurate unread count on page load
+      if (!chatHistoryLoaded) {
+        loadChatHistory(false, true);
       }
     }
 
@@ -2634,6 +3286,7 @@
       if (!isBackground && !forceFresh) {
         // RESET GLOBALS
         isOrganizer = false;
+        isOrganizerGlobal = false;
         isVisitor = true;
         isRestricted = false;
 
@@ -2649,7 +3302,7 @@
               console.log("⚡️ Hydrating from Cache (Place 2)");
               applyData(cData);
             }
-          } catch(e) { console.warn("Cache parse failed", e); }
+          } catch (e) { console.warn("Cache parse failed", e); }
         }
       }
 
@@ -2663,7 +3316,7 @@
 
         // Update Cache
         sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
-        
+
         // Apply Fresh Data
         applyData(res);
       } catch (e) {
@@ -2677,7 +3330,7 @@
           const lp = document.getElementById("pane-locked");
           if (lp) {
             lp.style.display = "flex";
-            lp.style.position = "fixed"; 
+            lp.style.position = "fixed";
             lp.style.inset = "0";
             lp.style.zIndex = "9999";
             lp.style.background = "var(--surface)";
@@ -2707,15 +3360,21 @@
       if (ws) return;
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       // Hardcode port 8000 for the backend
-      const host = window.location.hostname + ":8000"; 
-      
+      const host = window.location.hostname + ":8000";
+
       ws = new WebSocket(`${protocol}//${host}/ws/${eventId}`);
-      
+
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.type === "DATA_CHANGED") {
           console.log("📢 Real-time update received. Forcing fresh fetch.");
-          loadAll(true, true); 
+          loadAll(true, true);
+        }
+        if (msg.type === "NEW_CHAT_MSG" && msg.data) {
+          handleIncomingChatMsg(msg.data);
+        }
+        if (msg.type === "CHAT_REACTION" && msg.data) {
+          handleIncomingChatReaction(msg.data);
         }
       };
 
@@ -2741,15 +3400,15 @@
         const lp = document.getElementById("pane-locked");
         const deactLbl = document.getElementById("deact-lbl-dd");
         const deactBanner = document.getElementById("deact-banner");
-        
-        const isEventActive = eventData.is_active; 
+
+        const isEventActive = eventData.is_active;
         if (deactLbl) deactLbl.textContent = isEventActive ? "Deactivate Event" : "Reactivate Event";
 
         // LOCKOUT LOGIC: (Highest Priority)
         let canSeeData = isOrganizer || (isEventActive && !isRestricted && (eventData.is_public || !isVisitor));
-        
+
         // GRACEFUL LOCKOUT: If they were already in, let them stay until refresh
-        if (sessionAuthorized) canSeeData = true; 
+        if (sessionAuthorized) canSeeData = true;
         else if (canSeeData) sessionAuthorized = true; // First successful load
 
         // Header dots menu
@@ -2765,6 +3424,8 @@
         document.title = `Notepay — ${eventData.name}`;
         const ttl = document.getElementById("ev-title");
         if (ttl) ttl.textContent = eventData.name;
+        const chatTitle = document.getElementById("chat-header-name");
+        if (chatTitle) chatTitle.textContent = `${eventData.name} Chat`;
         const desc = document.getElementById("ev-desc");
         if (desc) desc.textContent = eventData.description;
         const date = document.getElementById("ev-date");
@@ -2808,10 +3469,10 @@
           ["pane-don", "pane-exp", "pane-sum", "info-bar", "tab-bar", "deact-banner"].forEach(id => {
             const el = document.getElementById(id); if (el) el.style.display = "none";
           });
-          
+
           if (lp) {
             lp.style.display = "flex";
-            lp.style.position = "fixed"; 
+            lp.style.position = "fixed";
             lp.style.inset = "0";
             lp.style.zIndex = "9000"; // Keep below app-bar (usually 1000+) but above content
             lp.style.background = "var(--surface)";
@@ -2822,7 +3483,7 @@
             const msg = isRestricted ? "Access Restricted" : (!isEventActive ? "Event Deactivated" : "Event is Private");
             const icon = isRestricted ? "🚫" : "🔒";
             const sub = isRestricted ? "You have been restricted by the organizer." : (!isEventActive ? "The organizer has deactivated this event." : "The organizer has turned off public access.");
-            
+
             lp.innerHTML = `
               <div style="text-align:center; padding:20px;">
                 <div style="font-size:72px; margin-bottom:20px;">${icon}</div>
@@ -2846,7 +3507,7 @@
             lp.style.position = "static";
             lp.style.inset = "auto";
             lp.style.zIndex = "auto";
-            lp.innerHTML = ""; 
+            lp.innerHTML = "";
           }
         }
 
@@ -2913,6 +3574,15 @@
           const theaterTabValid = (activeTheaterTab === 'don' && showDon) || (activeTheaterTab === 'exp' && showExp) || activeTheaterTab === 'sum';
           const safeTab = theaterTabValid ? activeTheaterTab : (showDon ? 'don' : (showExp ? 'exp' : 'sum'));
           enterTheater(safeTab);
+        }
+
+        // Chat FAB visibility (hide for visitors and in theater mode)
+        updateChatFabVisibility();
+
+        // Auto-open chat if URL parameter present
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('chat') && !chatOpen) {
+          openChat();
         }
       } catch (e) {
         console.error("renderPage crashed:", e);
@@ -2999,7 +3669,7 @@
           }).join("");
 
           row.innerHTML = `
-        <div class="fc sticky-col">${escHtml(d.donor_name)}</div>
+        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">${escHtml(d.donor_name)}</div>
         <div class="sc" style="width:90px;"><span class="cg">${d.amount ? formatINR(d.amount) : '<span class="cm">—</span>'}</span></div>
         <div class="sc" style="width:100px;font-size:11px;">${formatDate(d.collected_at)}</div>
         <div class="sc" style="width:130px;font-size:11px;" title="${escHtml(d.collected_by_name || "—")}">${escHtml(d.collected_by_name || "—")}</div>
@@ -3038,7 +3708,7 @@
         const nr = document.createElement("div");
         nr.className = "tr new-row";
         nr.onclick = () => openEntryForm("don");
-        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
+        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none; width: 200px !important; max-width: 200px !important; min-width: 200px !important; display: block !important; text-align: left !important; padding-left: 14px !important; line-height: 38px;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
         tblBody.appendChild(nr);
       }
     }
@@ -3090,7 +3760,7 @@
           }).join("");
 
           row.innerHTML = `
-        <div class="fc sticky-col">${escHtml(e.description)}</div>
+        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">${escHtml(e.description)}</div>
         <div class="sc" style="width:90px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>
         <div class="sc" style="width:100px;font-size:11px;">${formatDate(e.collected_at)}</div>
         <div class="sc" style="width:130px;font-size:11px;" title="${escHtml(e.collected_by_name || "—")}">${escHtml(e.collected_by_name || "—")}</div>
@@ -3129,7 +3799,7 @@
         const nr = document.createElement("div");
         nr.className = "tr new-row";
         nr.onclick = () => openEntryForm("exp");
-        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
+        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none; width: 200px !important; max-width: 200px !important; min-width: 200px !important; display: block !important; text-align: left !important; padding-left: 14px !important; line-height: 38px;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
         tblBody.appendChild(nr);
       }
     }
@@ -3148,7 +3818,7 @@
 
     function renderSummaryUI(data, isTheater, containerId) {
       const body = document.getElementById(containerId || "sum-body");
-      const s = data; 
+      const s = data;
       const bal = s.balance;
 
       // Top Donors (Ranked)
@@ -3611,9 +4281,9 @@
         if (lp) lp.style.display = "flex";
         document.getElementById("remove-pop").style.display = "none";
         // If user was promoted to member, exit properly first
-        try { await apiFetch("POST", `/events/${eventId}/exit`); } catch(ex) { /* Not a member, that's fine */ }
+        try { await apiFetch("POST", `/events/${eventId}/exit`); } catch (ex) { /* Not a member, that's fine */ }
         // Then remove from discover/watched tab
-        try { await unwatchEvent(eventId); } catch(ex) { /* Not in watched, that's fine */ }
+        try { await unwatchEvent(eventId); } catch (ex) { /* Not in watched, that's fine */ }
         // Clear all cached state
         clearEventCache();
         sessionStorage.removeItem("ev_cache_" + eventId);
@@ -3784,31 +4454,31 @@
     async function openMembersSheet() {
       document.getElementById("members-sheet").style.display = "flex";
       const list = document.getElementById("members-list");
-      
+
       // Use cached members if available, otherwise fetch
       if (!members || members.length === 0) {
         list.innerHTML = `<div style="padding:14px;text-align:center;"><div class="loader" style="width:22px;height:22px;margin:0 auto;"></div></div>`;
         try {
           members = await getMembers(eventId);
-        } catch(e) {
+        } catch (e) {
           list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--red);">Failed to load.</div>`;
           return;
         }
       }
-      
+
       const mCount = document.getElementById("members-count");
       if (mCount) mCount.textContent = members.length + " total";
       list.innerHTML = members.map(m => {
-          const uId = m.user_id;
-          const uName = m.user?.full_name || "Unknown";
-          const isMe = uId === myUserId;
-          const roleStr = (m.role || "").toLowerCase();
-          const isRes = m.is_restricted;
-          const isCreator = uId === eventData.organizer_id;
+        const uId = m.user_id;
+        const uName = m.user?.full_name || "Unknown";
+        const isMe = uId === myUserId;
+        const roleStr = (m.role || "").toLowerCase();
+        const isRes = m.is_restricted;
+        const isCreator = uId === eventData.organizer_id;
 
-          const roleTxt = isRes ? '<span style="color:var(--red);font-weight:800;">Restricted</span>' : (isCreator ? '<span style="color:var(--amber);font-weight:800;">👑 Creator</span>' : (m.role === "Organizer" ? "Organizer" : "Collector"));
+        const roleTxt = isRes ? '<span style="color:var(--red);font-weight:800;">Restricted</span>' : (isCreator ? '<span style="color:var(--amber);font-weight:800;">👑 Creator</span>' : (m.role === "Organizer" ? "Organizer" : "Collector"));
 
-          return `<div class="mem-row">
+        return `<div class="mem-row">
         <div class="mem-av">${getInitials(uName)}</div>
         <div style="flex:1;">
           <div class="mem-name">${escHtml(uName)}${isMe ? " <span style='color:var(--teal);font-size:10px;font-weight:900;'>(You)</span>" : ""}</div>
@@ -3818,7 +4488,7 @@
           <div class="mem-dots" onclick="openMCtx(event, ${uId}, '${escHtml(uName)}', '${roleStr}', ${isRes})">⋮</div>
         ` : ""}
       </div>`;
-        }).join("");
+      }).join("");
     }
     function closeMembersSheet() { document.getElementById("members-sheet").style.display = "none"; }
 
@@ -4130,7 +4800,7 @@
         const th = document.createElement("div");
         th.className = "th";
         const colName = typeof c === "string" ? c : c.n;
-        
+
         if (isOrganizer && !isVisitor) {
           th.style.cursor = "pointer";
           th.title = "Click to Edit Column";
@@ -4146,7 +4816,7 @@
         } else {
           th.textContent = colName.toUpperCase();
         }
-        
+
         th.style.width = (typeof c === "string" ? 180 : c.w) + "px";
         hdrRow.appendChild(th);
       });
@@ -4161,6 +4831,7 @@
 
         const cName = document.createElement("div");
         cName.className = "fc sticky-col";
+        cName.style.cssText = "display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;";
         cName.textContent = entry.donor_name || entry.description;
         tr.appendChild(cName);
 
@@ -4201,7 +4872,7 @@
         const nr = document.createElement("div");
         nr.className = "tr new-row";
         nr.onclick = () => openEntryForm(type);
-        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
+        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none; width: 200px !important; max-width: 200px !important; min-width: 200px !important; display: block !important; text-align: left !important; padding-left: 14px !important; line-height: 38px;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
         container.appendChild(nr);
       }
 
@@ -4275,6 +4946,9 @@
 
     function enterTheater(tab) {
       activeTheaterTab = tab;
+      // Hide chat FAB in theater mode
+      const chatFab = document.getElementById('chat-fab');
+      if (chatFab) chatFab.style.display = 'none';
       const up = new URLSearchParams(window.location.search);
       up.set("theater", tab);
       history.replaceState(null, "", "?" + up.toString());
@@ -4452,6 +5126,8 @@
 
       // Re-render main page completely to restore entries
       renderPage();
+      // Restore chat FAB after leaving theater
+      updateChatFabVisibility();
     }
 
     async function exportPDF() {
@@ -4644,6 +5320,552 @@
         tabIdx = 0; // My Events
       }
       window.location.href = `dashboard.html?tab=${tabIdx}`;
+    }
+  </script>
+
+  <!-- ── Chat FAB ── -->
+  <button class="chat-fab" id="chat-fab" onclick="openChat()">
+    💬
+    <span class="chat-badge" id="chat-badge">0</span>
+  </button>
+
+  <!-- ── Chat Drawer Overlay ── -->
+  <div class="chat-overlay" id="chat-overlay" onclick="closeChat()">
+    <div class="chat-drawer" onclick="event.stopPropagation()">
+      <!-- Emoji Picker Container -->
+      <div id="emoji-picker-ov" style="display:none; position:absolute; bottom:60px; right:10px; z-index:100010;"
+        onclick="event.stopPropagation()">
+        <emoji-picker class="light"></emoji-picker>
+      </div>
+      <!-- Chat Context Menu -->
+      <div id="chat-msg-ctx-ov" onclick="closeChatMsgCtx()">
+        <div id="chat-msg-ctx" onclick="event.stopPropagation()">
+          <div class="ctx-emojis">
+            <span onclick="sendReactionInlineCtx('👍')">👍</span>
+            <span onclick="sendReactionInlineCtx('❤️')">❤️</span>
+            <span onclick="sendReactionInlineCtx('😂')">😂</span>
+            <span onclick="sendReactionInlineCtx('😮')">😮</span>
+            <span onclick="sendReactionInlineCtx('😢')">😢</span>
+            <span onclick="sendReactionInlineCtx('🙏')">🙏</span>
+            <span onclick="openFullEmojiPickerCtx()">➕</span>
+          </div>
+          <div class="ctx-menu">
+            <div class="ctx-item" onclick="handleCtxReply()">↩️ Reply</div>
+            <div class="ctx-item" onclick="handleCtxCopy()">📋 Copy</div>
+            <div class="ctx-item" id="ctx-delete-btn" style="display:none; color: #d32f2f;" onclick="handleCtxDelete()">
+              🗑️ Delete</div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-header">
+        <div class="chat-header-title">
+          <span>💬</span>
+          <span id="chat-header-name">Event Chat</span>
+        </div>
+        <button class="chat-close-btn" onclick="closeChat()">Close</button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-empty" id="chat-empty">
+          <div class="chat-empty-icon">💬</div>
+          <div class="chat-empty-text">No messages yet</div>
+          <div class="chat-empty-sub">Start a conversation with your team</div>
+        </div>
+      </div>
+      <div class="chat-reply-bar" id="chat-reply-bar">
+        <div class="reply-content">
+          <div class="reply-name" id="reply-name">Name</div>
+          <div class="reply-text" id="reply-text">Message</div>
+        </div>
+        <button class="reply-close" onclick="cancelReply()">✕</button>
+      </div>
+      <div class="chat-input-bar">
+        <div class="chat-input-wrapper">
+          <span class="chat-input-emoji-btn" onclick="openInputEmojiPicker()">😊</span>
+          <input class="chat-input" id="chat-input" type="text" placeholder="Type a message…" maxlength="500"
+            onkeydown="if(event.key==='Enter')sendChatMessage()" oninput="updateSendBtnVisibility()" />
+        </div>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()" style="display:none;">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── CHAT MODULE ──
+    let chatMessages = [];
+    let chatOpen = false;
+    let chatUnread = 0;
+    let chatOldestId = null;
+    let chatLoading = false;
+    let chatFullyLoaded = false;
+    let chatHistoryLoaded = false;
+    let emojiPickerMode = 'reaction'; // 'reaction' or 'input'
+    let isOrganizerGlobal = false;
+    let unreadDividerId = null;
+
+    function updateSendBtnVisibility() {
+      const val = document.getElementById('chat-input').value.trim();
+      document.getElementById('chat-send-btn').style.display = val.length > 0 ? 'flex' : 'none';
+    }
+
+    function openChat() {
+      chatOpen = true;
+
+      // Set unread divider target before resetting count
+      const lastRead = parseInt(localStorage.getItem(`np_chat_last_read_ev_${eventId}`) || '0');
+      if (chatUnread > 0) unreadDividerId = lastRead;
+
+      chatUnread = 0;
+      updateChatBadge();
+      document.getElementById('chat-overlay').style.display = 'flex';
+      // Update URL to preserve chat open state on reload
+      const urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.has('chat')) {
+        urlParams.set('chat', '1');
+        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+      }
+
+      if (!chatHistoryLoaded) loadChatHistory();
+      else {
+        renderChatMessages('bottom');
+      }
+      markChatAsRead();
+    }
+
+    function markChatAsRead() {
+      if (chatMessages.length > 0) {
+        const lastMsgId = chatMessages[chatMessages.length - 1].id;
+        localStorage.setItem(`np_chat_last_read_ev_${eventId}`, lastMsgId);
+      }
+      chatUnread = 0;
+      updateChatBadge();
+    }
+
+    function closeChat() {
+      chatOpen = false;
+      document.getElementById('chat-overlay').style.display = 'none';
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('chat')) {
+        urlParams.delete('chat');
+        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+      }
+    }
+
+    function updateChatBadge() {
+      const badge = document.getElementById('chat-badge');
+      if (!badge) return;
+      badge.textContent = chatUnread > 99 ? '99+' : chatUnread;
+      badge.style.display = chatUnread > 0 ? 'flex' : 'none';
+    }
+
+    async function loadChatHistory(loadOlder = false, isBackground = false) {
+      if (chatLoading) return;
+      chatLoading = true;
+      try {
+        let url = `/events/${eventId}/chat?limit=50`;
+        if (loadOlder && chatOldestId) url += `&before_id=${chatOldestId}`;
+        const msgs = await apiFetch('GET', url);
+        if (msgs.length === 0 && loadOlder) {
+          chatFullyLoaded = true;
+          chatLoading = false;
+          return;
+        }
+        if (loadOlder) {
+          chatMessages = [...msgs, ...chatMessages];
+        } else {
+          chatMessages = msgs;
+        }
+        if (chatMessages.length > 0) {
+          chatOldestId = chatMessages[0].id;
+        }
+        chatHistoryLoaded = true;
+        if (!isBackground) {
+          renderChatMessages(loadOlder ? 'older' : 'bottom');
+        }
+
+        // Calculate initial unread count on first load
+        if (!loadOlder && (!chatOpen || isBackground)) {
+          const lastRead = parseInt(localStorage.getItem(`np_chat_last_read_ev_${eventId}`) || '0');
+          chatUnread = chatMessages.filter(m => m.id > lastRead).length;
+          updateChatBadge();
+        }
+      } catch (e) {
+        console.error('Failed to load chat:', e);
+      }
+      chatLoading = false;
+    }
+
+    function chatTimeExact(dateStr) {
+      let d = dateStr.endsWith('Z') ? new Date(dateStr) : new Date(dateStr + 'Z');
+      return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+
+    function chatDateLabel(dateStr) {
+      let d = dateStr.endsWith('Z') ? new Date(dateStr) : new Date(dateStr + 'Z');
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const diff = Math.floor((today - msgDay) / 86400000);
+      if (diff === 0) return 'Today';
+      if (diff === 1) return 'Yesterday';
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function buildMessageHTML(m, lastSender, lastDate) {
+      const myId = parseInt(sessionStorage.getItem('np_my_id') || '0');
+      const isOwn = m.user_id === myId;
+      const dateLabel = chatDateLabel(m.sent_at);
+      let html = '';
+
+      if (dateLabel !== lastDate) {
+        html += `<div class="chat-date-divider">${dateLabel}</div>`;
+      }
+
+      const showSender = !isOwn && m.user_id !== lastSender;
+      let replyHtml = '';
+      if (m.reply_snippet) {
+        replyHtml = `<div class="chat-reply-snippet" onclick="scrollToMsg(${m.reply_snippet.id})">
+         <div class="rsp-name">${escHtml(m.reply_snippet.sender_name)}</div>
+         <div class="rsp-text">${escHtml(m.reply_snippet.message)}</div>
+       </div>`;
+      }
+
+      let rxHtml = '';
+      if (m.reactions && Object.keys(m.reactions).length > 0) {
+        rxHtml += `<div class="chat-reactions">`;
+        for (const [emoji, users] of Object.entries(m.reactions)) {
+          const amIMine = users.includes(myId) ? 'rx-mine' : '';
+          rxHtml += `<div class="rx-pill ${amIMine}" onclick="sendReactionInline(${m.id}, '${emoji}')">${emoji} <span class="rx-count">${users.length}</span></div>`;
+        }
+        rxHtml += `</div>`;
+      }
+
+      const isDeleted = m.message === '🚫 This message was deleted.';
+
+      const safeName = escHtml(m.sender_name).replace(/"/g, '&quot;').replace(/\n/g, '&#10;');
+      const safeText = escHtml(m.message).replace(/"/g, '&quot;').replace(/\n/g, '&#10;');
+
+      let avatarHtml = '';
+      if (!isOwn) {
+        if (showSender) {
+          const initial = m.sender_name.charAt(0).toUpperCase();
+          const hue = (m.sender_name.charCodeAt(0) * 137) % 360;
+          avatarHtml = `<div class="chat-avatar" style="background: hsl(${hue}, 60%, 45%)">${initial}</div>`;
+        } else {
+          avatarHtml = `<div style="width:28px; flex-shrink:0;"></div>`;
+        }
+      }
+
+      if (!isOwn) html += `<div class="chat-msg-row">${avatarHtml}`;
+
+      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${isDeleted ? 'chat-msg-deleted' : ''}" id="chat-msg-${m.id}">`;
+      html += `<div class="chat-bubble" ${!isDeleted ? `data-id="${m.id}" data-uid="${m.user_id}" data-sender="${safeName}" data-text="${safeText}"` : ''}>`;
+      html += `<div class="chat-bubble-content">`;
+      if (showSender) {
+        html += `<div class="chat-msg-sender">${escHtml(m.sender_name)}</div>`;
+      }
+      if (replyHtml) html += replyHtml;
+      html += `<div class="chat-msg-text">${escHtml(m.message).replace(/\n/g, '<br/>')}</div>`;
+      html += `<div class="chat-msg-time">${chatTimeExact(m.sent_at)}</div>`;
+      html += `</div>`; // end chat-bubble-content
+      html += `</div>`; // end chat-bubble
+      html += rxHtml;
+      html += `</div>`;
+
+      if (!isOwn) html += `</div>`; // end chat-msg-row
+
+      return { html, dateLabel, newSender: m.user_id };
+    }
+
+    function renderChatMessages(scrollMode = 'bottom') {
+      const container = document.getElementById('chat-messages');
+      const emptyEl = document.getElementById('chat-empty');
+
+      if (chatMessages.length === 0) {
+        if (emptyEl) emptyEl.style.display = 'flex';
+        return;
+      }
+      if (emptyEl) emptyEl.style.display = 'none';
+
+      const prevScrollHeight = container.scrollHeight;
+      const prevScrollTop = container.scrollTop;
+      let html = '';
+
+      if (!chatFullyLoaded && chatMessages.length >= 50) {
+        html += `<div class="chat-load-more" onclick="loadChatHistory(true)">Load older messages ↑</div>`;
+      }
+
+      let lastDate = '';
+      let lastSender = -1;
+      let unreadInserted = false;
+
+      chatMessages.forEach((m) => {
+        if (unreadDividerId && m.id > unreadDividerId && !unreadInserted) {
+          html += `<div class="chat-unread-divider" id="chat-unread-divider">Unread Messages</div>`;
+          unreadInserted = true;
+        }
+        const res = buildMessageHTML(m, lastSender, lastDate);
+        html += res.html;
+        lastDate = res.dateLabel;
+        lastSender = res.newSender;
+      });
+
+      container.innerHTML = html;
+
+      if (scrollMode === 'older') {
+        container.scrollTop = container.scrollHeight - prevScrollHeight;
+      } else if (scrollMode === 'keep') {
+        container.scrollTop = prevScrollTop;
+      } else {
+        const unreadEl = document.getElementById('chat-unread-divider');
+        if (unreadEl && unreadDividerId) {
+          // Auto-scroll to the unread divider if it exists
+          unreadEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          scrollChatToBottom();
+        }
+      }
+
+      // Clear the divider flag after opening so it doesn't persist if they load older messages
+      if (scrollMode !== 'older') unreadDividerId = null;
+    }
+
+    function appendChatMessage(m) {
+      const container = document.getElementById('chat-messages');
+      const emptyEl = document.getElementById('chat-empty');
+      if (emptyEl) emptyEl.style.display = 'none';
+
+      let lastDate = '';
+      let lastSender = -1;
+      if (chatMessages.length > 1) {
+        const prev = chatMessages[chatMessages.length - 2];
+        lastDate = chatDateLabel(prev.sent_at);
+        lastSender = prev.user_id;
+      }
+      const res = buildMessageHTML(m, lastSender, lastDate);
+      container.insertAdjacentHTML('beforeend', res.html);
+    }
+
+    function updateMessageNode(m) {
+      const el = document.getElementById(`chat-msg-${m.id}`);
+      if (!el) return;
+
+      // To properly rebuild, find previous sender/date
+      let lastSender = -1;
+      let lastDate = '';
+      const idx = chatMessages.findIndex(x => x.id === m.id);
+      if (idx > 0) {
+        lastDate = chatDateLabel(chatMessages[idx - 1].sent_at);
+        lastSender = chatMessages[idx - 1].user_id;
+      }
+      const res = buildMessageHTML(m, lastSender, lastDate);
+
+      // Create a dummy container to extract inner elements without breaking the main layout flow
+      const temp = document.createElement('div');
+      temp.innerHTML = res.html;
+      const newMsgEl = temp.querySelector('.chat-msg');
+
+      // Replace the old message div completely
+      el.replaceWith(newMsgEl);
+    }
+
+    function scrollChatToBottom(smooth = false) {
+      const c = document.getElementById('chat-messages');
+      if (c) requestAnimationFrame(() => { c.scrollTo({ top: c.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }); });
+    }
+
+    let activeCtxMsg = null;
+    let replyingToId = null;
+    function startReply(id, name, text) {
+      replyingToId = id;
+      document.getElementById('chat-reply-bar').style.display = 'flex';
+      document.getElementById('reply-name').textContent = name;
+      document.getElementById('reply-text').textContent = text;
+      document.getElementById('chat-input').focus();
+    }
+    function cancelReply() {
+      replyingToId = null;
+      document.getElementById('chat-reply-bar').style.display = 'none';
+    }
+    async function sendReactionInline(mId, emoji) {
+      try {
+        await apiFetch('POST', `/events/${eventId}/chat/${mId}/react`, { emoji: emoji });
+      } catch (e) { console.error('Reaction failed', e); }
+    }
+
+    function openChatMsgCtx(e, id, name, text, senderId) {
+      activeCtxMsg = { id, name, text };
+      const ov = document.getElementById('chat-msg-ctx-ov');
+      const ctx = document.getElementById('chat-msg-ctx');
+
+      // CRITICAL FIX: Ensure the menu is set back to flex (visible),
+      // because opening the full emoji picker sets it to 'none'!
+      ctx.style.display = 'flex';
+
+      // Check delete permission
+      const delBtn = document.getElementById('ctx-delete-btn');
+      const myId = parseInt(sessionStorage.getItem('np_my_id') || '0');
+      if (senderId === myId || isOrganizerGlobal) {
+        delBtn.style.display = 'block';
+      } else {
+        delBtn.style.display = 'none';
+      }
+
+      ov.style.display = 'block';
+
+      let ww = window.innerWidth;
+      let wh = window.innerHeight;
+      let x = e.clientX;
+      let y = e.clientY;
+
+      if (x + 220 > ww) x = ww - 230;
+      if (y + 200 > wh) y = wh - 220;
+
+      ctx.style.left = x + 'px';
+      ctx.style.top = y + 'px';
+    }
+    function closeChatMsgCtx() {
+      document.getElementById('chat-msg-ctx-ov').style.display = 'none';
+      document.getElementById('emoji-picker-ov').style.display = 'none';
+      activeCtxMsg = null;
+    }
+    function handleCtxReply() {
+      if (!activeCtxMsg) return;
+      startReply(activeCtxMsg.id, activeCtxMsg.name, activeCtxMsg.text);
+      closeChatMsgCtx();
+    }
+    function handleCtxCopy() {
+      if (!activeCtxMsg) return;
+      navigator.clipboard.writeText(activeCtxMsg.text);
+      closeChatMsgCtx();
+    }
+    async function handleCtxDelete() {
+      if (!activeCtxMsg) return;
+      try {
+        await apiFetch('DELETE', `/events/${eventId}/chat/${activeCtxMsg.id}`);
+      } catch (e) { console.error('Delete failed', e); }
+      closeChatMsgCtx();
+    }
+    function sendReactionInlineCtx(emoji) {
+      if (!activeCtxMsg) return;
+      sendReactionInline(activeCtxMsg.id, emoji);
+      closeChatMsgCtx();
+    }
+    function openFullEmojiPickerCtx() {
+      emojiPickerMode = 'reaction';
+      document.getElementById('chat-msg-ctx').style.display = 'none';
+      document.getElementById('emoji-picker-ov').style.display = 'block';
+    }
+    function openInputEmojiPicker() {
+      emojiPickerMode = 'input';
+      document.getElementById('emoji-picker-ov').style.display = 'block';
+    }
+
+    async function scrollToMsg(id) {
+      let el = document.getElementById(`chat-msg-${id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const bubble = el.querySelector('.chat-bubble');
+        if (bubble) {
+          bubble.classList.remove('highlight-msg');
+          void bubble.offsetWidth; // force reflow
+          bubble.classList.add('highlight-msg');
+        }
+      } else if (!chatFullyLoaded) {
+        showToast("Loading older messages...", "info");
+        while (!el && !chatFullyLoaded) {
+          await loadChatHistory(true);
+          el = document.getElementById(`chat-msg-${id}`);
+          if (el) {
+            setTimeout(() => scrollToMsg(id), 100);
+            return;
+          }
+        }
+        if (!el) showToast("Message not found", "error");
+      }
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const btn = document.getElementById('chat-send-btn');
+      btn.disabled = true;
+      input.value = '';
+      updateSendBtnVisibility();
+
+      try {
+        const payload = { message: msg };
+        if (replyingToId) payload.reply_to_id = replyingToId;
+        await apiFetch('POST', `/events/${eventId}/chat`, payload);
+        cancelReply();
+      } catch (e) {
+        showToast('Failed to send message', 'error');
+        input.value = msg; // Restore on failure
+      }
+      btn.disabled = false;
+      input.focus();
+    }
+
+    function handleIncomingChatMsg(data) {
+      if (chatMessages.some(m => m.id === data.id)) return;
+      chatMessages.push(data);
+      if (chatOpen) {
+        const container = document.getElementById('chat-messages');
+        const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+        appendChatMessage(data);
+        if (isAtBottom) {
+          scrollChatToBottom(true);
+          markChatAsRead();
+        }
+      } else {
+        chatUnread++;
+        updateChatBadge();
+      }
+    }
+
+    function handleIncomingChatReaction(data) {
+      const idx = chatMessages.findIndex(m => m.id === data.id);
+      if (idx !== -1) {
+        chatMessages[idx] = data;
+        if (chatOpen) updateMessageNode(data);
+      }
+    }
+
+    // Bind emoji picker events once DOM loads
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelector('emoji-picker').addEventListener('emoji-click', event => {
+        if (emojiPickerMode === 'reaction') {
+          sendReactionInlineCtx(event.detail.unicode);
+        } else {
+          const input = document.getElementById('chat-input');
+          input.value += event.detail.unicode;
+          updateSendBtnVisibility();
+          document.getElementById('emoji-picker-ov').style.display = 'none';
+          input.focus();
+        }
+      });
+
+      // Event delegation for context menu to survive DOM updates completely
+      document.getElementById('chat-messages').addEventListener('dblclick', function (e) {
+        const bubble = e.target.closest('.chat-bubble');
+        if (!bubble) return;
+        if (bubble.parentElement.classList.contains('chat-msg-deleted') || bubble.closest('.chat-msg-deleted')) return;
+
+        const id = parseInt(bubble.getAttribute('data-id'));
+        const uid = parseInt(bubble.getAttribute('data-uid'));
+        const name = bubble.getAttribute('data-sender');
+        const text = bubble.getAttribute('data-text');
+        openChatMsgCtx(e, id, name, text, uid);
+      });
+    });
+
+    // Show/hide chat FAB based on role
+    function updateChatFabVisibility() {
+      const fab = document.getElementById('chat-fab');
+      if (!fab) return;
+      const show = typeof isVisitor !== 'undefined' ? !isVisitor : true;
+      fab.style.display = (show && !activeTheaterTab) ? 'flex' : 'none';
     }
   </script>
 </body>

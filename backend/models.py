@@ -106,3 +106,18 @@ class WatchedEvent(Base):
 
     user = relationship("User")
     event = relationship("Event")
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(Integer, ForeignKey("events.id"), index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    message = Column(String, nullable=False)
+    reply_to_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)
+    reactions = Column(JSON, default=dict)  # {"❤️": [1,3], "👍": [2]}
+    sent_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    event = relationship("Event")
+    reply_to = relationship("ChatMessage", remote_side=[id], uselist=False)

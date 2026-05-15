@@ -35,6 +35,19 @@ def _migrate_db():
         if col_name not in existing_cols:
             cursor.execute(f"ALTER TABLE events ADD COLUMN {col_name} BOOLEAN DEFAULT {col_default}")
             print(f"🔧 Migration: Added '{col_name}' column to events table")
+    # Chat messages table migration
+    try:
+        cursor.execute("PRAGMA table_info(chat_messages)")
+        chat_cols = {row[1] for row in cursor.fetchall()}
+        if chat_cols:  # table exists
+            if "reply_to_id" not in chat_cols:
+                cursor.execute("ALTER TABLE chat_messages ADD COLUMN reply_to_id INTEGER")
+                print("🔧 Migration: Added 'reply_to_id' column to chat_messages table")
+            if "reactions" not in chat_cols:
+                cursor.execute("ALTER TABLE chat_messages ADD COLUMN reactions TEXT DEFAULT '{}'")
+                print("🔧 Migration: Added 'reactions' column to chat_messages table")
+    except Exception:
+        pass  # Table doesn't exist yet, create_all will handle it
     conn.commit()
     conn.close()
 _migrate_db()
@@ -593,16 +606,81 @@ async def get_event_full_details(event_id: int, db: Session = Depends(get_db), u
     fetch_dur = (time.time() - start_fetch) * 1000
     print(f"📦 Data Fetch took {fetch_dur:.2f}ms")
         
+        
     return res
+
+# ─── CHAT ──────────────────────────────────────────────────────────────────────
+@app.get("/events/{event_id}/chat", response_model=List[schemas.ChatMessageResponse], tags=["Chat"])
+async def get_chat_history(event_id: int, limit: int = 50, before_id: int = None,
+                           db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Get chat message history for an event. Supports pagination via before_id."""
+    verify_membership(db, event_id, user_id)
+    return crud.get_chat_messages(db, event_id, limit=limit, before_id=before_id)
+
+@app.post("/events/{event_id}/chat", response_model=schemas.ChatMessageResponse, tags=["Chat"])
+async def send_chat_message(event_id: int, data: schemas.ChatMessageCreate,
+                            db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Send a chat message to all members of an event."""
+    verify_membership(db, event_id, user_id)
+    if not data.message or not data.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    msg = crud.create_chat_message(db, event_id, user_id, data.message.strip(), data.reply_to_id)
+    # Broadcast to all connected clients via WebSocket
+    await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": msg})
+    return msg
+
+@app.post("/events/{event_id}/chat/{message_id}/react", tags=["Chat"])
+async def react_to_message(event_id: int, message_id: int, data: schemas.ChatReactionRequest,
+                           db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Toggle an emoji reaction on a chat message."""
+    verify_membership(db, event_id, user_id)
+    if not data.emoji or len(data.emoji) > 10: # Basic length check to prevent abuse
+        raise HTTPException(status_code=400, detail="Invalid emoji length")
+    msg = crud.toggle_reaction(db, message_id, user_id, data.emoji)
+    if not msg:
+        raise HTTPException(status_code=404, detail="Message not found")
+    await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": msg})
+    return {"message": "Reaction toggled"}
+
+@app.delete("/events/{event_id}/chat/{message_id}", tags=["Chat"])
+async def delete_chat_message(event_id: int, message_id: int, 
+                              db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Wipe a chat message (replaces content with 'deleted'). Only sender or organizer can delete."""
+    is_org = False
+    mem = db.query(models.EventMember).filter(models.EventMember.event_id == event_id, models.EventMember.user_id == user_id).first()
+    if mem and mem.role == "organizer":
+        is_org = True
+    ev = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if ev and ev.organizer_id == user_id:
+        is_org = True
+        
+    msg = crud.delete_chat_message(db, message_id, user_id, is_org)
+    if not msg:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this message or message not found")
+    
+    await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": msg}) # Use CHAT_REACTION to update existing msg in place
+    return {"message": "Message deleted"}
 
 # ─── WEBSOCKET ENDPOINT ────────────────────────────────────────────────────────
 @app.websocket("/ws/{event_id}")
-async def websocket_endpoint(websocket: WebSocket, event_id: int):
-    # Note: In production, we'd verify the token here too.
+async def websocket_endpoint(websocket: WebSocket, event_id: int, user_id: int = None):
     await manager.connect(websocket, event_id)
     try:
         while True:
-            # Keep connection alive
-            await websocket.receive_text()
+            raw = await websocket.receive_text()
+            # Try to handle chat messages sent via WebSocket
+            try:
+                import json as _json
+                msg = _json.loads(raw)
+                if msg.get("type") == "CHAT_MSG" and user_id and msg.get("message", "").strip():
+                    db = next(get_db())
+                    try:
+                        reply_id = msg.get("reply_to_id")
+                        saved = crud.create_chat_message(db, event_id, user_id, msg["message"].strip(), reply_id)
+                        await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": saved})
+                    finally:
+                        db.close()
+            except Exception:
+                pass  # Keepalive pings or invalid JSON — ignore
     except WebSocketDisconnect:
         manager.disconnect(websocket, event_id)
