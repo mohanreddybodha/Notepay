@@ -306,8 +306,12 @@
     .tbl-inner {
       display: inline-block;
       min-width: 100%;
-      vertical-align: top;
-      background: var(--card);
+      background: var(--surface);
+      will-change: contents;
+    }
+
+    .tbl-body-rows {
+      will-change: contents;
     }
 
     .th {
@@ -332,13 +336,13 @@
     }
 
     .th.sticky-col {
+      position: sticky;
       left: 0;
-      z-index: 600;
+      z-index: 1100 !important;
       width: 130px;
+      background: var(--primary-dk) !important;
       border-right: 1.5px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px 0 0 0;
-      background-color: var(--primary-dk) !important;
-      box-shadow: 4px 0 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
     }
 
     .tr {
@@ -359,6 +363,10 @@
       background: var(--primary-dk);
       border-bottom: none;
       min-height: 32px !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 2500 !important;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
     }
 
     .tr:last-child {
@@ -386,16 +394,16 @@
     .fc.sticky-col {
       position: sticky;
       left: 0;
-      padding-left: 2px !important;
+      z-index: 500 !important;
+      background-color: var(--card) !important;
+      width: 130px;
+      padding-left: 6px !important;
       justify-content: flex-start !important;
       text-align: left !important;
-      z-index: 500;
-      width: 130px;
       font-weight: 800;
       color: var(--primary-dk);
       border-right: 1.5px solid var(--border2);
-      box-shadow: 4px 0 8px rgba(0, 0, 0, 0.08);
-      background-color: var(--card) !important;
+      box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
       user-select: none;
       -webkit-user-select: none;
       min-height: 38px;
@@ -502,6 +510,18 @@
       display: flex;
       flex-direction: column;
       background: var(--card);
+    }
+
+    .scroll-list.is-empty .tbl-wrap {
+      flex: initial;
+    }
+
+    .scroll-list.is-empty #don-empty-msg,
+    .scroll-list.is-empty #exp-empty-msg {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .scroll-list::-webkit-scrollbar {
@@ -892,11 +912,9 @@
     .pop-ic {
       width: 56px;
       height: 56px;
-      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
       margin: 0 auto 10px;
     }
 
@@ -2754,7 +2772,8 @@
         <div class="ib-desc" id="ev-desc">—</div>
         <div class="ib-date" id="ev-date">—</div>
       </div>
-      <div id="members-badge" class="badge-members" onclick="openMembersSheet()">👥 Members</div>
+      <div id="members-badge" class="badge-members" onclick="openMembersSheet()">
+        <span data-np-icon="user" data-np-size="14" style="margin-right:4px;"></span> Members</div>
     </div>
     <div class="deact-bar" id="deact-banner"
       style="display:none; justify-content:space-between; padding:8px 16px; background:var(--amber); color:var(--surface);">
@@ -2813,7 +2832,7 @@
         </div>
         <div id="don-empty-msg" style="display:none;"></div>
       </div>
-      <div class="read-only-note" id="don-readonly" style="display:none;">🔒 Read-only view. Reactivate the event to
+      <div class="read-only-note" id="don-readonly" style="display:none;"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span>Read-only view. Reactivate the event to
         allow new entries.</div>
     </div>
     <!-- Expenses Tab -->
@@ -2852,7 +2871,7 @@
         </div>
         <div id="exp-empty-msg" style="display:none;"></div>
       </div>
-      <div class="read-only-note" id="exp-readonly" style="display:none;">🔒 Read-only view. Reactivate the event to
+      <div class="read-only-note" id="exp-readonly" style="display:none;"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span>Read-only view. Reactivate the event to
         allow new entries.</div>
     </div>
     <!-- Summary Tab -->
@@ -2899,7 +2918,7 @@
     <!-- Restrict Member Confirmation Popup -->
     <div id="restrict-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF0EC; border:2px solid #E0A090; color:var(--red);">🚫</div>
+        <div class="pop-ic"><span data-np-icon="ban" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Restrict Member?</div>
         <div class="pop-m">Do you want to restrict <strong id="restrict-user-name">this member</strong> from this event?
           They will no longer be able to view or collect data.</div>
@@ -2914,7 +2933,7 @@
     <!-- Reactivate Management Popup (Organizer only) -->
     <div id="deact-manage-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF8E6; border:2px solid #E8C870;">🔑</div>
+        <div class="pop-ic"><span data-np-icon="key" data-np-size="32" data-np-tone="amber"></span></div>
         <div class="pop-t" style="color:var(--amber);">Event Deactivated</div>
         <div class="pop-m">This event has been deactivated by the organizer. Collectors cannot join or access this
           data.<br><br>You can still view summaries. To let collectors back in, reactivate and generate a new code.
@@ -2922,7 +2941,8 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="viewDataOnly()">View Data</button>
-          <button class="pbk b" style="border:none;border-radius:14px;" onclick="toggleDeactivate();closeDeactPop()">🔓
+          <button class="pbk b" style="border:none;border-radius:14px;" onclick="toggleDeactivate();closeDeactPop()">
+            <span data-np-icon="unlock" data-np-size="16" style="vertical-align:middle;margin-right:4px;"></span>
             Reactivate</button>
         </div>
       </div>
@@ -2960,7 +2980,7 @@
     <!-- Confirm Delete Popup -->
     <div id="del-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF0EC;border:2px solid #E0A090;">🗑️</div>
+        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Delete Entry?</div>
         <div class="pop-m">"<span id="del-nm">Entry</span>" will be permanently deleted.</div>
         <div class="pop-line"></div>
@@ -2974,7 +2994,7 @@
     <!-- Confirm Delete Column Popup -->
     <div id="del-col-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF0EC;border:2px solid #E0A090;">🗑️</div>
+        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Delete this column?</div>
         <div class="pop-m">Are you sure you want to delete "<strong id="del-col-nm">Column</strong>"? Existing data in
           this column will no longer be visible.</div>
@@ -3042,43 +3062,43 @@
     <div id="dd-ov" class="dd-ov" style="display:none;" onclick="closeDD()">
       <div class="dd-box" onclick="event.stopPropagation()">
         <div class="dd-item" onclick="closeDD();openRenameSheet()">
-          <div class="dd-ic">✏️</div>
+          <div class="dd-ic"><span data-np-icon="edit" data-np-size="18"></span></div>
           <div class="dd-lbl">Rename Event</div>
         </div>
         <div class="dd-item" onclick="closeDD();openCodeSheet()">
-          <div class="dd-ic">⚙️</div>
+          <div class="dd-ic"><span data-np-icon="settings" data-np-size="18"></span></div>
           <div class="dd-lbl">Code Settings</div>
         </div>
         <div class="dd-item" onclick="closeDD();openMembersSheet()">
-          <div class="dd-ic">👥</div>
+          <div class="dd-ic"><span data-np-icon="users" data-np-size="18"></span></div>
           <div class="dd-lbl">Members</div>
         </div>
         <div class="dd-item" id="privacy-toggle-btn" onclick="closeDD();handlePrivacyToggleClick()">
-          <div class="dd-ic">🌐</div>
+          <div class="dd-ic"><span data-np-icon="globe" data-np-size="18"></span></div>
           <div class="dd-lbl" id="privacy-lbl">Public Access: OFF</div>
         </div>
         <div class="dd-item" id="share-link-btn" style="display:none;" onclick="sharePublicLink()">
-          <div class="dd-ic">🔗</div>
+          <div class="dd-ic"><span data-np-icon="link" data-np-size="18"></span></div>
           <div class="dd-lbl">Share View Link</div>
         </div>
         <div class="dd-item" id="pdf-report-btn" style="display:none;" onclick="closeDD();exportPDF()">
-          <div class="dd-ic">📄</div>
+          <div class="dd-ic"><span data-np-icon="file-text" data-np-size="18"></span></div>
           <div class="dd-lbl">Download PDF Report</div>
         </div>
         <div class="dd-item" id="don-visibility-btn" onclick="closeDD();toggleTableVisibility('don')">
-          <div class="dd-ic">📥</div>
+          <div class="dd-ic"><span data-np-icon="download" data-np-size="18"></span></div>
           <div class="dd-lbl" id="don-vis-lbl">Hide Donations Table</div>
         </div>
         <div class="dd-item" id="exp-visibility-btn" onclick="closeDD();toggleTableVisibility('exp')">
-          <div class="dd-ic">💸</div>
+          <div class="dd-ic"><span data-np-icon="wallet" data-np-size="18"></span></div>
           <div class="dd-lbl" id="exp-vis-lbl">Hide Expenses Table</div>
         </div>
         <div class="dd-item" id="deact-btn" onclick="closeDD();toggleDeactivate()">
-          <div class="dd-ic">🔒</div>
+          <div class="dd-ic"><span data-np-icon="lock" data-np-size="18"></span></div>
           <div class="dd-lbl" id="deact-lbl-dd">Deactivate Event</div>
         </div>
         <div class="dd-item dng" onclick="closeDD();showDelEventPop()">
-          <div class="dd-ic">🗑️</div>
+          <div class="dd-ic"><span data-np-icon="trash" data-np-size="18"></span></div>
           <div class="dd-lbl">Delete Event</div>
         </div>
       </div>
@@ -3087,7 +3107,7 @@
     <!-- Delete Event Popup -->
     <div id="del-ev-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF0EC;border:2px solid #E0A090;">🗑️</div>
+        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Delete Event?</div>
         <div class="pop-m" id="del-ev-msg">All donations, expenses and members will be permanently deleted. This cannot
           be undone.</div>
@@ -3102,7 +3122,7 @@
     <!-- Exit Event Confirmation Popup -->
     <div id="exit-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF0EC;border:2px solid #E0A090;">🚪</div>
+        <div class="pop-ic"><span data-np-icon="log-out" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Exit Event?</div>
         <div class="pop-m">You will no longer have access to this event. You will need a new invite code to re-join.
           Previous entries will not be deleted.</div>
@@ -3118,7 +3138,7 @@
     <!-- Privacy Toggle Popup -->
     <div id="privacy-pop" class="pop-ov" style="display:none;" onclick="closePrivacyPop()">
       <div class="pop-box" onclick="event.stopPropagation()">
-        <div class="pop-ic" style="background:#E0F7FA; border:2px solid #80DEEA; color:#006064;">🌐</div>
+        <div class="pop-ic"><span data-np-icon="globe" data-np-size="32" data-np-tone="primary"></span></div>
         <div class="pop-t" style="color:#00838F;">Enable Public Access?</div>
         <div class="pop-m">Anyone with the share link will have **Read-Only** access to view all donation, expense, and
           summary details of "<strong id="privacy-event-name">Event</strong>". They will need to log in to NotePay to
@@ -3133,7 +3153,7 @@
     </div>
     <div id="duplicate-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF8EC;border:2px solid #E0C090;">⚠️</div>
+        <div class="pop-ic"><span data-np-icon="alert-triangle" data-np-size="32" data-np-tone="amber"></span></div>
         <div class="pop-t" style="color:var(--amber-dk);">Duplicate Entry?</div>
         <div class="pop-m" id="dup-msg">An entry with this name and amount already exists. Do you want to add it again?
         </div>
@@ -3207,7 +3227,7 @@
       <div class="sbox" onclick="event.stopPropagation()">
         <div class="sbox-header">
           <div class="sh-handle"></div>
-          <div class="sh-title">⚙️ Code Settings</div>
+          <div class="sh-title"><span data-np-icon="settings" data-np-size="20" style="vertical-align:text-bottom;margin-right:6px;"></span>Code Settings</div>
           <div class="sh-sub">Share this code with collectors to let them join the event.</div>
         </div>
         <div class="sbox-body">
@@ -3229,10 +3249,10 @@
           <div style="display:flex;gap:8px;margin-top:12px;">
             <button
               style="flex:1;background:var(--primary);border-radius:14px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:900;color:white;cursor:pointer;border:none;"
-              onclick="shareCode()">📤 Share Code</button>
+              onclick="shareCode()"><span data-np-icon="share" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Share Code</button>
             <button
               style="flex:1;background:#FFF0EC;border:1.5px solid #E0A090;border-radius:14px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;"
-              onclick="closeCodeSheet();revokeCode()">🔄 Regenerate Code</button>
+              onclick="closeCodeSheet();revokeCode()"><span data-np-icon="refresh" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
           </div>
           <button
             style="width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;margin-top:6px;"
@@ -3271,7 +3291,7 @@
     <div id="dd-col-ov" class="sov" style="display:none;background:rgba(0,0,0,.1);" onclick="closeColDD()">
       <div class="dd-box" onclick="event.stopPropagation()">
         <div class="dd-item" id="col-action-item" onclick="closeColDD();openExitPop()" style="color:var(--red);">
-          <div class="dd-ic">🚪</div>
+          <div class="dd-ic"><span data-np-icon="log-out" data-np-size="18"></span></div>
           <div class="dd-lbl" id="col-action-lbl">Exit Event</div>
         </div>
       </div>
@@ -3280,7 +3300,7 @@
     <!-- Remove Event Confirmation Popup -->
     <div id="remove-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
-        <div class="pop-ic" style="background:#FFF0EC;border:2px solid #E0A090;">🗑️</div>
+        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Remove Event?</div>
         <div class="pop-m">Do you want remove event <strong id="remove-event-name"></strong> from discovery tap, you
           need visit link if remove.</div>
@@ -3295,7 +3315,7 @@
     <!-- Demote Organizer Confirmation Popup -->
     <div id="demote-pop" class="pop-ov" style="display:none;">
       <div class="pop-box" style="border:2px solid var(--red);">
-        <div class="pop-ic" style="background:#FFF0EC; border:2px solid #E0A090; color:var(--red);">⚠️</div>
+        <div class="pop-ic"><span data-np-icon="alert-triangle" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Demote Organizer?</div>
         <div class="pop-m">This will remove all management rights from <strong id="demote-user-name">this user</strong>.
           They will become a collector again.</div>
@@ -3318,7 +3338,7 @@
           <button class="pbc"
             onclick="document.getElementById('deact-confirm-pop').style.display = 'none'">Cancel</button>
           <button class="pbk" style="background:var(--amber);color:black;border:none;border-radius:14px;"
-            onclick="confirmDeactivate()">🔒 Lock Event</button>
+            onclick="confirmDeactivate()"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Lock Event</button>
         </div>
       </div>
     </div>
@@ -3326,7 +3346,7 @@
     <!-- Promote to Organizer Popup -->
     <div id="promote-pop" class="pop-ov" style="display:none;">
       <div class="pop-box" style="border:2px solid var(--amber);">
-        <div class="pop-t" style="color:var(--amber);">👑 Make Organizer?</div>
+        <div class="pop-t" style="color:var(--amber);">Make Organizer?</div>
         <div class="pop-m" style="text-align:left;">
           <p><b>WARNING:</b> This action gives <span id="promote-user-name" style="font-weight:900;">User</span> <b>full
               organizer rights</b>.</p>
@@ -3340,7 +3360,7 @@
         <div class="pop-btns">
           <button class="pbc" onclick="document.getElementById('promote-pop').style.display = 'none'">Go Back</button>
           <button class="pbk" style="background:var(--amber);color:black;border:none;border-radius:14px;"
-            onclick="confirmPromote()">👑 Confirm Promotion</button>
+            onclick="confirmPromote()"><span data-np-icon="crown" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Confirm Promotion</button>
         </div>
       </div>
     </div>
@@ -3389,8 +3409,8 @@
     <div id="mctx-ov" style="display:none;position:fixed;inset:0;background:transparent;z-index:25000;"
       onclick="closeMCtx()">
       <div id="mctx-box" class="mctx" onclick="event.stopPropagation()">
-        <div class="dd-item" id="mctx-promote" onclick="handlePromoteClick()">👑 Make Organizer</div>
-        <div class="dd-item" id="mctx-restrict" onclick="handleRestrictClick()">🚫 Restrict User</div>
+        <div class="dd-item" id="mctx-promote" onclick="handlePromoteClick()"><span data-np-icon="crown" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>Make Organizer</div>
+        <div class="dd-item" id="mctx-restrict" onclick="handleRestrictClick()"><span data-np-icon="ban" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>Restrict User</div>
       </div>
     </div>
   </div><!-- End main-page -->
@@ -3487,17 +3507,25 @@
       isVisitor = (rawRole === "visitor") && !isOrganizer;
       isRestricted = res.is_restricted || false;
 
-      renderPage();
-      // Real-time update for Theater Mode: If active, re-enter to refresh columns/data
-      if (typeof activeTheaterTab !== 'undefined' && activeTheaterTab) {
-        enterTheater(activeTheaterTab);
-      }
-
       // Silently fetch chat history to calculate accurate unread count on page load
       if (!chatHistoryLoaded) {
         loadChatHistory(false, true);
       }
       updateChatFabVisibility();
+
+      // Smooth Refresh for Theater Mode (PRIORITY)
+      // Isolated at the end to ensure all state variables (roles, etc) are set first
+      if (typeof activeTheaterTab !== 'undefined' && activeTheaterTab) {
+        const overlay = document.getElementById("rot-overlay");
+        // If not already visible, we must "Enter" it (initial load case)
+        if (overlay && overlay.style.display !== "flex") {
+          enterTheater(activeTheaterTab);
+        } else {
+          refreshTheaterTable();
+        }
+        return; 
+      }
+      renderPage();
     }
 
     async function loadAll(isBackground = false, forceFresh = false) {
@@ -3647,7 +3675,7 @@
         const desc = document.getElementById("ev-desc");
         if (desc) desc.textContent = eventData.description;
         const date = document.getElementById("ev-date");
-        if (date) date.textContent = "📅 " + formatDate(eventData.event_date);
+        if (date) date.innerHTML = npIcon("calendar", { size: 12, tone: "muted" }) + " " + formatDate(eventData.event_date);
         const ib = document.getElementById("info-bar");
         if (ib) ib.style.display = "flex";
 
@@ -3699,12 +3727,12 @@
             lp.style.alignItems = "center";
 
             const msg = isRestricted ? "Access Restricted" : (!isEventActive ? "Event Deactivated" : "Event is Private");
-            const icon = isRestricted ? "🚫" : "🔒";
+            const icon = isRestricted ? npIcon("ban", { size: 72, tone: "red" }) : npIcon("lock", { size: 72, tone: "amber" });
             const sub = isRestricted ? "You have been restricted by the organizer." : (!isEventActive ? "The organizer has deactivated this event." : "The organizer has turned off public access.");
 
             lp.innerHTML = `
               <div style="text-align:center; padding:20px;">
-                <div style="font-size:72px; margin-bottom:20px;">${icon}</div>
+                <div style="margin-bottom:20px;">${icon}</div>
                 <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">${msg}</div>
                 <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">${sub}</div>
                 <button onclick="window.location.href='dashboard.html'" class="pbk" 
@@ -3747,7 +3775,7 @@
           mb.style.display = "flex";
           if (isOrganizer) {
             mb.className = "badge-members";
-            mb.textContent = "👥 Members";
+            mb.innerHTML = npIcon("user", { size: 14 }) + " Members";
             mb.onclick = openMembersSheet;
             mb.style.cursor = "pointer";
           } else {
@@ -3843,7 +3871,25 @@
     // ── Donations ──
     function renderDonations(q = "") {
       const q2 = q.trim().toLowerCase();
-      const filtered = q2 ? donations.filter(d => d.donor_name.toLowerCase().includes(q2)) : donations;
+      
+      // Combined Pinned List (Local only)
+      const storageKey = `np_pinned_${eventId}_don`;
+      const pD = JSON.parse(localStorage.getItem(storageKey) || "[]").map(id => String(id));
+
+      // Sort: Pinned first (by sequence), then by date asc (oldest first)
+      const sorted = [...donations].sort((a, b) => {
+        const aid = String(a.id || a._id);
+        const bid = String(b.id || b._id);
+        const ap = pD.indexOf(aid);
+        const bp = pD.indexOf(bid);
+        
+        if (ap !== -1 && bp !== -1) return ap - bp;
+        if (ap !== -1) return -1;
+        if (bp !== -1) return 1;
+        
+        return new Date(a.collected_at) - new Date(b.collected_at);
+      });
+      const filtered = q2 ? sorted.filter(d => d.donor_name.toLowerCase().includes(q2)) : sorted;
       const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
       document.getElementById("don-count").textContent = `${filtered.length} donor${filtered.length !== 1 ? "s" : ""}`;
       document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
@@ -3875,6 +3921,7 @@
       // 2. Render Data Rows
       if (filtered.length) {
         document.getElementById("don-empty-msg").style.display = "none";
+        document.getElementById("don-tbl-rot").closest('.scroll-list').classList.remove('is-empty');
         filtered.forEach((d, i) => {
           const row = document.createElement("div");
           row.className = "tr" + (i % 2 ? " alt" : "");
@@ -3886,8 +3933,11 @@
             return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
           }).join("");
 
+          const pinned = isPinned("don", d.id || d._id);
           row.innerHTML = `
-        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">${escHtml(d.donor_name)}</div>
+        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">
+          ${pinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(d.donor_name)}
+        </div>
         <div class="sc" style="width:90px;"><span class="cg">${d.amount ? formatINR(d.amount) : '<span class="cm">—</span>'}</span></div>
         <div class="sc" style="width:100px;font-size:11px;">${formatDate(d.collected_at)}</div>
         <div class="sc" style="width:130px;font-size:11px;" title="${escHtml(d.collected_by_name || "—")}">${escHtml(d.collected_by_name || "—")}</div>
@@ -3912,9 +3962,10 @@
       } else {
         const emptyMsg = document.getElementById("don-empty-msg");
         emptyMsg.style.display = "block";
+        document.getElementById("don-tbl-rot").closest('.scroll-list').classList.add('is-empty');
         const btnHtml = isOrganizer && !q ? `<button class="ef-save" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('don')">+ Add First Donation</button>` : "";
-        emptyMsg.innerHTML = `<div class="empty-state" style="padding:40px 24px; border-top:1px solid var(--border2);">
-      <div class="es-icon" style="font-size:32px; margin-bottom:8px;">${q ? '🔍' : '📋'}</div>
+        emptyMsg.innerHTML = `<div class="empty-state" style="padding:40px 24px;">
+      <div class="es-icon" style="margin-bottom:8px;">${q ? npIcon("search", { size: 32, tone: "muted" }) : npIcon("file-text", { size: 32, tone: "muted" })}</div>
       <div class="es-title" style="font-size:15px; font-weight:900;">${q ? 'No results found' : 'No donations yet'}</div>
       <div class="es-sub" style="font-size:12px; opacity:0.7; max-width:220px; line-height:1.5;">${q ? 'Try a different search term.' : 'Start tracking now — add your first donation!'}</div>
       ${btnHtml}
@@ -3926,7 +3977,9 @@
         const nr = document.createElement("div");
         nr.className = "tr new-row";
         nr.onclick = () => openEntryForm("don");
-        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none; width: 200px !important; max-width: 200px !important; min-width: 200px !important; display: block !important; text-align: left !important; padding-left: 14px !important; line-height: 38px;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
+        // Clear children column structure
+        nr.innerHTML = `<span style="position:sticky; left:14px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); font-family:'Nunito',sans-serif; display:flex; align-items:center; height:100%;"><span style="margin-right:8px; font-size:18px; font-weight:900;">+</span> New entry</span>`;
+        nr.style.cssText = "background:var(--row-new); border:none; width:max-content; min-width:100%; min-height:46px; cursor:pointer;";
         tblBody.appendChild(nr);
       }
     }
@@ -3934,7 +3987,23 @@
     // ── Expenses ──
     function renderExpenses(q = "") {
       const q2 = q.trim().toLowerCase();
-      const filtered = q2 ? expenses.filter(e => e.description.toLowerCase().includes(q2)) : expenses;
+
+      const storageKey = `np_pinned_${eventId}_exp`;
+      const pE = JSON.parse(localStorage.getItem(storageKey) || "[]").map(id => String(id));
+
+      const sorted = [...expenses].sort((a, b) => {
+        const aid = String(a.id || a._id);
+        const bid = String(b.id || b._id);
+        const ap = pE.indexOf(aid);
+        const bp = pE.indexOf(bid);
+        
+        if (ap !== -1 && bp !== -1) return ap - bp;
+        if (ap !== -1) return -1;
+        if (bp !== -1) return 1;
+        
+        return new Date(a.collected_at) - new Date(b.collected_at);
+      });
+      const filtered = q2 ? sorted.filter(e => e.description.toLowerCase().includes(q2)) : sorted;
       const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
       document.getElementById("exp-count").textContent = `${filtered.length} expense${filtered.length !== 1 ? "s" : ""}`;
       document.getElementById("exp-total").innerHTML = `Total: <span class="sum-r">${formatINR(total)}</span>`;
@@ -3966,6 +4035,7 @@
       // 2. Render Data Rows
       if (filtered.length) {
         document.getElementById("exp-empty-msg").style.display = "none";
+        document.getElementById("exp-tbl-rot").closest('.scroll-list').classList.remove('is-empty');
         filtered.forEach((e, i) => {
           const row = document.createElement("div");
           row.className = "tr" + (i % 2 ? " alt" : "");
@@ -3977,8 +4047,11 @@
             return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
           }).join("");
 
+          const pinned = isPinned("exp", e.id || e._id);
           row.innerHTML = `
-        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">${escHtml(e.description)}</div>
+        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">
+          ${pinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(e.description)}
+        </div>
         <div class="sc" style="width:90px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>
         <div class="sc" style="width:100px;font-size:11px;">${formatDate(e.collected_at)}</div>
         <div class="sc" style="width:130px;font-size:11px;" title="${escHtml(e.collected_by_name || "—")}">${escHtml(e.collected_by_name || "—")}</div>
@@ -4003,9 +4076,10 @@
       } else {
         const emptyMsg = document.getElementById("exp-empty-msg");
         emptyMsg.style.display = "block";
+        document.getElementById("exp-tbl-rot").closest('.scroll-list').classList.add('is-empty');
         const btnHtml = isOrganizer && !q ? `<button class="ef-save" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('exp')">+ Add First Expense</button>` : "";
-        emptyMsg.innerHTML = `<div class="empty-state" style="padding:40px 24px; border-top:1px solid var(--border2);">
-      <div class="es-icon" style="font-size:32px; margin-bottom:8px;">${q ? '🔍' : '📋'}</div>
+        emptyMsg.innerHTML = `<div class="empty-state" style="padding:40px 24px;">
+      <div class="es-icon" style="margin-bottom:8px;">${q ? npIcon("search", { size: 32, tone: "muted" }) : npIcon("wallet", { size: 32, tone: "muted" })}</div>
       <div class="es-title" style="font-size:15px; font-weight:900;">${q ? 'No results found' : 'No expenses yet'}</div>
       <div class="es-sub" style="font-size:12px; opacity:0.7; max-width:220px; line-height:1.5;">${q ? 'Try a different search term.' : 'Stay on top of spending — add your first expense!'}</div>
       ${btnHtml}
@@ -4017,7 +4091,9 @@
         const nr = document.createElement("div");
         nr.className = "tr new-row";
         nr.onclick = () => openEntryForm("exp");
-        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none; width: 200px !important; max-width: 200px !important; min-width: 200px !important; display: block !important; text-align: left !important; padding-left: 14px !important; line-height: 38px;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
+        // Clear children column structure
+        nr.innerHTML = `<span style="position:sticky; left:14px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); font-family:'Nunito',sans-serif; display:flex; align-items:center; height:100%;"><span style="margin-right:8px; font-size:18px; font-weight:900;">+</span> New entry</span>`;
+        nr.style.cssText = "background:var(--row-new); border:none; width:max-content; min-width:100%; min-height:46px; cursor:pointer;";
         tblBody.appendChild(nr);
       }
     }
@@ -4078,7 +4154,7 @@
         <div style="background:var(--primary-dk); border-radius:18px; padding:20px; margin-bottom:12px; color:white; box-shadow:0 10px 20px -5px rgba(0,0,0,0.3); text-align:center;">
           <div style="font-size:12px; font-weight:800; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Available Balance</div>
           <div style="font-size:32px; font-weight:900; margin:4px 0;">${formatINR(Math.abs(bal))}</div>
-          <div style="font-size:11px; font-weight:700; opacity:0.9;">${bal >= 0 ? "🟢 SURPLUS STATUS" : "🔴 DEFICIT ALERT"} · REAL-TIME</div>
+          <div style="font-size:11px; font-weight:700; opacity:0.9; display:flex; align-items:center; gap:4px; justify-content:center;">${bal >= 0 ? npIcon("check", { size: 12, tone: "green" }) + " SURPLUS STATUS" : npIcon("alert-triangle", { size: 12, tone: "red" }) + " DEFICIT ALERT"} · REAL-TIME</div>
         </div>
 
         <div class="stats" style="display:flex; gap:10px; margin-bottom:12px;">
@@ -4104,11 +4180,29 @@
             </div>
           </div>` : ''}
 
+          <!-- Top Collectors (only if donations visible) -->
+          ${showDon ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Collectors</span>
+              <span>${npIcon("users", { size: 14 })}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              ${topCollectors.length ? topCollectors.map((c, i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
+                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(c[0])}
+                  </div>
+                  <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(c[1])}</div>
+                </div>
+              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
+            </div>
+          </div>` : ''}
+
           <!-- Top Donors (only if donations visible) -->
           ${showDon ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <span style="font-size:14px; font-weight:900; color:var(--text);">Top Donors</span>
-              <span>🏆</span>
+              <span>${npIcon("heart", { size: 14 })}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
               ${topDonors.length ? topDonors.map((d, i) => `
@@ -4126,7 +4220,7 @@
           ${showExp ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <span style="font-size:14px; font-weight:900; color:var(--text);">High Outflows</span>
-              <span>💸</span>
+              <span>${npIcon("wallet", { size: 14 })}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
               ${topExpenses.length ? topExpenses.map((exp, i) => `
@@ -4137,24 +4231,6 @@
                   <div style="font-size:14px; font-weight:900; color:var(--red);">${formatINR(exp.amount)}</div>
                 </div>
               `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
-            </div>
-          </div>` : ''}
-
-          <!-- Top Collectors (only if donations visible) -->
-          ${showDon ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Collectors</span>
-              <span>🎖️</span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              ${topCollectors.length ? topCollectors.map((c, i) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
-                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
-                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(c[0])}
-                  </div>
-                  <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(c[1])}</div>
-                </div>
-              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
             </div>
           </div>` : ''}
         </div>
@@ -4306,8 +4382,9 @@
     function openCtx(e, type, entry) {
       if (isVisitor) return;
       // SECURITY: Collector can only edit/delete their own entries. Organizer can do anything.
-      if (!isOrganizer && entry.collected_by !== myUserId) {
-        return;
+      if (!isOrganizer && entry.collected_by !== myUserId && !isVisitor) {
+        // Collectors can see the menu even if they didn't collect it, but ONLY for pinning
+        // Modify/Delete are still gated by ownership in openEditForm/openDelPop
       }
 
       ctxType = type;
@@ -4319,14 +4396,40 @@
       const ctx = document.createElement("div");
       ctx.className = "ctx";
       const name = type === "don" ? entry.donor_name : entry.description;
+      const pinned = isPinned(type, entry.id || entry._id);
+      const canModify = isOrganizer || entry.collected_by === myUserId;
+
       ctx.innerHTML = `
-    <div class="ctx-lbl">${escHtml(name)}</div>
-    <div class="ctx-item" onclick="closeCtx();openEditForm()">✏️ Modify</div>
-    <div class="ctx-item dng" onclick="closeCtx();openDelPop()">🗑️ Delete</div>
-  `;
-      ctx.style.cssText = `left:${Math.min(e.clientX, window.innerWidth - 190)}px;top:${e.clientY - 10}px;`;
-      ov.appendChild(ctx);
+        <div class="ctx-lbl">${escHtml(name)}</div>
+        <div class="ctx-item" onclick="closeCtx();togglePin('${type}', '${ctxEntry.id || ctxEntry._id}')">
+          <span data-np-icon="pin" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
+          ${pinned ? 'Unpin Entry' : 'Pin Entry'}
+        </div>
+        ${canModify ? `
+          <div class="ctx-item" onclick="closeCtx();openEditForm()">
+            <span data-np-icon="edit" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
+            Modify
+          </div>
+          <div class="ctx-item dng" onclick="closeCtx();openDelPop()">
+            <span data-np-icon="trash" data-np-size="16" data-np-tone="red" style="vertical-align:text-bottom;margin-right:8px;"></span>
+            Delete
+          </div>
+        ` : ''}
+      `;
       document.body.appendChild(ov);
+      ov.appendChild(ctx);
+
+      // Smart Positioning
+      const menuWidth = 190;
+      const menuHeight = ctx.offsetHeight || 160;
+      let left = e.clientX;
+      let top = e.clientY - 10;
+
+      if (left + menuWidth > window.innerWidth) left = window.innerWidth - menuWidth - 10;
+      if (top + menuHeight > window.innerHeight) top = e.clientY - menuHeight + 10;
+      
+      ctx.style.left = left + "px";
+      ctx.style.top = top + "px";
     }
     function closeCtx() { const ov = document.getElementById("ctx-ov"); if (ov) ov.remove(); }
 
@@ -4455,7 +4558,76 @@
       } catch (e) { showToast(e.message || "Failed.", "error"); closeDelPop(); }
     }
 
-    // ── Organizer/Collector Dropdowns ──
+    function isPinned(type, id) {
+      if (!id) return false;
+      const sid = String(id);
+      
+      // Pinning is now strictly local and user-independent
+      const storageKey = `np_pinned_${eventId}_${type}`;
+      const local = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      return local.map(x => String(x)).includes(sid);
+    }
+
+    async function togglePin(type, id) {
+      if (!id) return;
+      const sid = String(id);
+      const storageKey = `np_pinned_${eventId}_${type}`;
+      let pinned = JSON.parse(localStorage.getItem(storageKey) || "[]").map(x => String(x));
+      
+      if (pinned.includes(sid)) {
+        pinned = pinned.filter(x => x !== sid);
+      } else {
+        pinned.push(sid);
+      }
+      
+      // Save locally only
+      localStorage.setItem(storageKey, JSON.stringify(pinned));
+      
+      // Re-render views
+      if (type === "don") renderDonations(); else renderExpenses();
+      if (activeTheaterTab) refreshTheaterTable();
+      showToast(pinned.includes(sid) ? "Entry pinned to top" : "Entry unpinned");
+    }
+
+    // Perfect Silent Update: Adopts the exact Event Page strategy
+    function refreshTheaterTable() {
+      if (!activeTheaterTab) return;
+      const body = document.getElementById("rot-ov-body");
+      if (!body) return;
+      const tblSc = body.querySelector(".theater-scroll-area");
+      if (!tblSc) return;
+
+      const tblInner = tblSc.querySelector(".tbl-inner");
+      if (!tblInner) {
+        tblSc.appendChild(renderTable(activeTheaterTab, true));
+        return;
+      }
+
+      const rowsCont = tblInner.querySelector(".tbl-body-rows");
+      if (!rowsCont) {
+        tblInner.appendChild(renderTable(activeTheaterTab, true).querySelector(".tbl-body-rows"));
+        return;
+      }
+
+      // 1. Capture scroll state and "At Bottom" status
+      const sX = tblSc.scrollLeft;
+      const sY = tblSc.scrollTop;
+      const isAtBottom = (tblSc.scrollTop + tblSc.clientHeight) >= (tblSc.scrollHeight - 20);
+
+      // 2. Perform the exact Event Page strategy: Clear and Fill
+      fillTableRows(rowsCont, activeTheaterTab);
+
+      // 3. Restore scroll with "Sticky Bottom" intelligence
+      if (isAtBottom) {
+        // If user was at the bottom, lock them to the NEW bottom to prevent jitter
+        tblSc.scrollTop = tblSc.scrollHeight;
+      } else {
+        tblSc.scrollTop = sY;
+      }
+      tblSc.scrollLeft = sX;
+      
+      updateTheaterStats();
+    }
     function openDD() { document.getElementById("dd-ov").style.display = "block"; }
     function closeDD() { document.getElementById("dd-ov").style.display = "none"; }
 
@@ -4694,7 +4866,7 @@
         const isRes = m.is_restricted;
         const isCreator = uId === eventData.organizer_id;
 
-        const roleTxt = isRes ? '<span style="color:var(--red);font-weight:800;">Restricted</span>' : (isCreator ? '<span style="color:var(--amber);font-weight:800;">👑 Creator</span>' : (m.role === "Organizer" ? "Organizer" : "Collector"));
+        const roleTxt = isRes ? '<span style="color:var(--red);font-weight:800;">Restricted</span>' : (isCreator ? `<span style="color:var(--amber);font-weight:800;">${npIcon("crown", { size: 12, tone: "amber" })} Creator</span>` : (m.role === "Organizer" ? "Organizer" : "Collector"));
 
         return `<div class="mem-row">
         <div class="mem-av">${getInitials(uName)}</div>
@@ -4718,8 +4890,8 @@
       const ov = document.getElementById("mctx-ov");
 
       // Update menu labels
-      document.getElementById("mctx-promote").textContent = role.toLowerCase() === "organizer" ? "Demote to Collector" : "👑 Make Organizer";
-      document.getElementById("mctx-restrict").textContent = res ? "✅ Unrestrict User" : "🚫 Restrict User";
+      document.getElementById("mctx-promote").innerHTML = role.toLowerCase() === "organizer" ? "Demote to Collector" : npIcon("crown", { size: 14, tone: "amber" }) + " Make Organizer";
+      document.getElementById("mctx-restrict").innerHTML = res ? npIcon("check", { size: 14, tone: "green" }) + " Unrestrict User" : npIcon("ban", { size: 14, tone: "red" }) + " Restrict User";
 
       ov.style.display = "block";
       ov.style.background = "transparent";
@@ -4967,7 +5139,7 @@
         eventData[key] = res[key];
 
         if (activeColType === "don") renderDonations(); else renderExpenses();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
+        if (activeTheaterTab) refreshTheaterTable(activeTheaterTab);
         closeCustomColSheet();
         showToast("Column renamed!");
       } catch (e) { showToast(e.message || "Failed.", "error"); }
@@ -4977,17 +5149,78 @@
       openDelColPop();
     }
 
+    function fillTableRows(container, type) {
+      container.innerHTML = "";
+      if (!eventData) return; // Safety check
+      const isTheater = container.parentElement ? container.parentElement.classList.contains("is-theater-table") : true;
+      const role = isOrganizer ? "organizer" : (isVisitor ? "visitor" : "collector");
+      const storageKey = `np_pinned_${eventId}_${type}`;
+      const pList = JSON.parse(localStorage.getItem(storageKey) || "[]").map(id => String(id));
+      const rawList = type === "don" ? donations : expenses;
+      const q = (window.theaterSearchQuery || "").toLowerCase();
+      const filtered = q ? rawList.filter(x => (x.donor_name || x.description).toLowerCase().includes(q)) : rawList;
+
+      const list = [...filtered].sort((a, b) => {
+        const ap = pList.indexOf(String(a.id || a._id));
+        const bp = pList.indexOf(String(b.id || b._id));
+        if (ap !== -1 && bp !== -1) return ap - bp;
+        if (ap !== -1) return -1;
+        if (bp !== -1) return 1;
+        return new Date(a.collected_at) - new Date(b.collected_at);
+      });
+      const customCols = type === "don" ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
+
+      list.forEach((entry, i) => {
+        const tr = document.createElement("div");
+        tr.className = "tr" + (i % 2 !== 0 ? " alt" : "");
+        tr.onclick = (e) => openCtx(e, type, entry);
+
+        const isPinned = pList.includes(String(entry.id || entry._id));
+        const customCells = customCols.map(c => {
+          const n = typeof c === "string" ? c : c.n;
+          const w = (typeof c === "string" ? 180 : c.w);
+          const val = (entry.custom_fields && entry.custom_fields[n]) || "-";
+          return `<div class="sc" style="width:${w}px;">${escHtml(val)}</div>`;
+        }).join("");
+
+        tr.innerHTML = `
+          <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">
+            ${isPinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(entry.donor_name || entry.description)}
+          </div>
+          <div class="sc" style="width:90px;">
+            <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>
+          </div>
+          <div class="sc" style="width:100px;">${formatDate(entry.collected_at)}</div>
+          <div class="sc" style="width:130px;">${escHtml(entry.collected_by_name || "-")}</div>
+          ${customCells}
+        `;
+        container.appendChild(tr);
+      });
+
+      if (!isVisitor && (role === "organizer" || role === "collector")) {
+        const nr = document.createElement("div");
+        nr.className = "tr new-row";
+        nr.onclick = () => openEntryForm(type);
+        nr.style.cssText = "background:var(--row-new); border:none; width:max-content; min-width:100%; min-height:48px; cursor:pointer; display:flex; align-items:center;";
+        nr.innerHTML = `<span style="position:sticky; left:16px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); display:flex; align-items:center;"><span style="margin-right:12px; font-size:20px; font-weight:900;">+</span> New entry</span>`;
+        container.appendChild(nr);
+      }
+    }
+
+
     function renderTable(type, isTheater = false) {
       const container = document.createElement("div");
       container.className = "tbl-inner" + (isTheater ? " is-theater-table" : "");
-
-      const role = isOrganizer ? "organizer" : (isVisitor ? "visitor" : "collector");
-      const list = type === "don" ? donations : expenses;
       const customCols = type === "don" ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
-      // Header
       const hdrRow = document.createElement("div");
       hdrRow.className = "hdr-row";
+      hdrRow.style.background = "var(--primary-dk)";
+      if (isTheater) {
+        hdrRow.style.position = "sticky";
+        hdrRow.style.top = "0";
+        hdrRow.style.zIndex = "2500";
+      }
 
       const hName = document.createElement("div");
       hName.className = "th sticky-col";
@@ -4997,102 +5230,41 @@
       const hAmt = document.createElement("div");
       hAmt.className = "th";
       hAmt.textContent = "AMOUNT";
-      hAmt.style.width = "100px";
+      hAmt.style.width = "90px";
       hdrRow.appendChild(hAmt);
 
       const hDate = document.createElement("div");
       hDate.className = "th";
       hDate.textContent = "DATE";
-      hDate.style.width = "110px";
+      hDate.style.width = "100px";
       hdrRow.appendChild(hDate);
 
-      if (type === "don") {
-        const hCol = document.createElement("div");
-        hCol.className = "th";
-        hCol.textContent = "COLLECTED BY";
-        hCol.style.width = "140px";
-        hdrRow.appendChild(hCol);
-      }
+      const hAdded = document.createElement("div");
+      hAdded.className = "th";
+      hAdded.textContent = type === "don" ? "COLLECTED BY" : "ADDED BY";
+      hAdded.style.width = "130px";
+      hdrRow.appendChild(hAdded);
 
-      customCols.forEach((c, idx) => {
+      customCols.forEach((c) => {
         const th = document.createElement("div");
         th.className = "th";
         const colName = typeof c === "string" ? c : c.n;
-
         if (isOrganizer && !isVisitor) {
           th.style.cursor = "pointer";
-          th.title = "Click to Edit Column";
           th.onclick = (e) => { e.stopPropagation(); openEditCol(colName, type); };
-          th.innerHTML = `
-            <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-              <span>${colName.toUpperCase()}</span>
-              <div style="display:flex; gap:4px; opacity:0.6;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-              </div>
-            </div>
-          `;
+          th.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between; width:100%;"><span>${colName.toUpperCase()}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div>`;
         } else {
           th.textContent = colName.toUpperCase();
         }
-
         th.style.width = (typeof c === "string" ? 180 : c.w) + "px";
         hdrRow.appendChild(th);
       });
-
       container.appendChild(hdrRow);
 
-      // Rows
-      list.forEach((entry, i) => {
-        const tr = document.createElement("div");
-        tr.className = "tr" + (i % 2 !== 0 ? " alt" : "");
-        tr.onclick = (e) => openCtx(e, type, entry);
-
-        const cName = document.createElement("div");
-        cName.className = "fc sticky-col";
-        cName.style.cssText = "display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;";
-        cName.textContent = entry.donor_name || entry.description;
-        tr.appendChild(cName);
-
-        const cAmt = document.createElement("div");
-        cAmt.className = "sc";
-        cAmt.style.width = "100px";
-        cAmt.innerHTML = `<span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>`;
-        tr.appendChild(cAmt);
-
-        const cDate = document.createElement("div");
-        cDate.className = "sc";
-        cDate.style.width = "110px";
-        cDate.textContent = formatDate(entry.collected_at);
-        tr.appendChild(cDate);
-
-        if (type === "don") {
-          const cCol = document.createElement("div");
-          cCol.className = "sc";
-          cCol.style.width = "140px";
-          cCol.textContent = entry.collected_by_name || "-";
-          tr.appendChild(cCol);
-        }
-
-        customCols.forEach(c => {
-          const n = typeof c === "string" ? c : c.n;
-          const sc = document.createElement("div");
-          sc.className = "sc";
-          sc.style.width = (typeof c === "string" ? 180 : c.w) + "px";
-          sc.textContent = (entry.custom_fields && entry.custom_fields[n]) || "-";
-          tr.appendChild(sc);
-        });
-
-        container.appendChild(tr);
-      });
-
-      // New Entry Row
-      if (!isVisitor && (role === "organizer" || role === "collector")) {
-        const nr = document.createElement("div");
-        nr.className = "tr new-row";
-        nr.onclick = () => openEntryForm(type);
-        nr.innerHTML = `<div class="fc sticky-col" style="background:transparent!important; border:none; box-shadow:none; width: 200px !important; max-width: 200px !important; min-width: 200px !important; display: block !important; text-align: left !important; padding-left: 14px !important; line-height: 38px;"><span style="margin-right:8px; font-size:16px;">+</span> New entry</div>`;
-        container.appendChild(nr);
-      }
+      const rowsCont = document.createElement("div");
+      rowsCont.className = "tbl-body-rows";
+      fillTableRows(rowsCont, type);
+      container.appendChild(rowsCont);
 
       return container;
     }
@@ -5174,7 +5346,10 @@
       const overlay = document.getElementById("rot-overlay");
       const main = document.getElementById("rot-main");
       const body = document.getElementById("rot-ov-body");
-      body.style.overflowY = "hidden";
+      
+      // Summary tab needs body-level scrolling; Tables have their own scroll areas.
+      body.style.overflowY = (tab === "sum") ? "auto" : "hidden";
+      
       // Remove any previous touch handler
       if (body._scrollHandler) {
         body.removeEventListener('touchmove', body._scrollHandler);
@@ -5204,53 +5379,58 @@
         renderSummary(0, "sum-body-theater");
         content = sumDiv;
       } else {
-        // Isolated Table Render for Theater Mode
+        // Outer Wrapper for rounded corners and layout
+        const theaterWrapper = document.createElement("div");
+        theaterWrapper.style.cssText = "height:100%; width:100%; display:flex; flex-direction:column; border-radius:24px; overflow:hidden; border:1.5px solid var(--border2); background:var(--card); box-shadow:var(--shadow-lg);";
+
+        // Theater Search Bar (Ultra-Compact + Opaque)
+        const sBar = document.createElement("div");
+        sBar.style.cssText = "padding:0; background:var(--surface); border-bottom:1.5px solid var(--border2); flex-shrink:0; z-index:200; position:relative;";
+        sBar.innerHTML = `
+          <div style="position:relative; display:flex; align-items:center; width:100%; background:var(--surface);">
+            <div style="position:absolute; left:12px; opacity:0.6;">${npIcon("search", { size: 13 })}</div>
+            <input type="text" id="theater-search" placeholder="Search entries..." 
+              value="${window.theaterSearchQuery || ''}"
+              style="width:100%; padding:8px 12px 8px 38px; border:none; background:var(--surface); color:var(--text); font-size:12px; font-weight:800; outline:none; height:36px;">
+          </div>
+        `;
+
+        // Scrollable Table Container
         const tableContainer = document.createElement("div");
-        tableContainer.className = "tbl-sc";
-        tableContainer.style.height = "100%";
-        tableContainer.style.width = "100%";
+        tableContainer.className = "tbl-sc theater-scroll-area";
+        tableContainer.style.cssText = "flex:1; width:100%; overflow-y:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0; padding:0;";
+
+        const sInp = sBar.querySelector("input");
+        sInp.oninput = (e) => {
+          window.theaterSearchQuery = e.target.value;
+          const oldTbl = tableContainer.querySelector(".tbl-inner");
+          if (oldTbl) oldTbl.remove();
+          tableContainer.appendChild(renderTable(tab, true));
+        };
 
         const table = renderTable(tab, true);
         tableContainer.appendChild(table);
-        body.appendChild(tableContainer);
-        content = tableContainer;
-      }
-
-      if (tab !== "sum") {
-        body.classList.remove("sum-mode");
-        body.style.overflowY = "hidden";
-      } else {
-        body.style.overflowY = "auto";
-        // On mobile the body is rotated 90°, so physical up/down swipes
-        // register as left/right in DOM coords. We intercept touch and
-        // manually redirect the movement to scrollTop.
-        let _ts = null;
-        body._scrollHandler = null;
-        const isRotated = (rotation === 90 || rotation === 270);
-        if (isRotated) {
+        
+        theaterWrapper.appendChild(sBar);
+        theaterWrapper.appendChild(tableContainer);
+        body.appendChild(theaterWrapper);
+        content = theaterWrapper;
+        
+        // Touch Scroll Handler for rotated state
+        if (rotation === 90 || rotation === 270) {
           let startX = 0, startScrollTop = 0;
           body._scrollHandler = (e) => {
             if (e.touches.length !== 1) return;
-            if (_ts === null) {
-              startX = e.touches[0].clientX;
-              startScrollTop = body.scrollTop;
-              _ts = startX;
-              return;
-            }
             const dx = e.touches[0].clientX - startX;
-            // rotated 90°: swipe down = finger moves right (+dx) = scroll down (+scrollTop)
-            body.scrollTop = startScrollTop + dx;
+            tableContainer.scrollTop = startScrollTop + dx;
             e.preventDefault();
           };
-          const onEnd = () => { _ts = null; };
           body.addEventListener('touchstart', (e) => {
             if (e.touches.length !== 1) return;
             startX = e.touches[0].clientX;
-            startScrollTop = body.scrollTop;
-            _ts = startX;
+            startScrollTop = tableContainer.scrollTop;
           }, { passive: true });
           body.addEventListener('touchmove', body._scrollHandler, { passive: false });
-          body.addEventListener('touchend', onEnd, { passive: true });
         }
       }
       main.classList.remove("rot-0", "rot-90", "rot-180", "rot-270");
@@ -5543,7 +5723,7 @@
 
   <!-- ── Chat FAB ── -->
   <button class="chat-fab" id="chat-fab" onclick="openChat()">
-    💬
+    <span data-np-icon="message-square" data-np-size="20"></span>
     <span class="chat-badge" id="chat-badge">0</span>
   </button>
 
@@ -5565,19 +5745,19 @@
             <span onclick="sendReactionInlineCtx('😮')">😮</span>
             <span onclick="sendReactionInlineCtx('😢')">😢</span>
             <span onclick="sendReactionInlineCtx('🙏')">🙏</span>
-            <span onclick="openFullEmojiPickerCtx()">➕</span>
+            <span onclick="openFullEmojiPickerCtx()"><span data-np-icon="plus" data-np-size="16"></span></span>
           </div>
           <div class="ctx-menu">
-            <div class="ctx-item" onclick="handleCtxReply()">↩️ Reply</div>
-            <div class="ctx-item" onclick="handleCtxCopy()">📋 Copy</div>
+            <div class="ctx-item" onclick="handleCtxReply()"><span data-np-icon="reply" data-np-size="16"></span> Reply</div>
+            <div class="ctx-item" onclick="handleCtxCopy()"><span data-np-icon="copy" data-np-size="16"></span> Copy</div>
             <div class="ctx-item" id="ctx-delete-btn" style="display:none; color: #d32f2f;" onclick="handleCtxDelete()">
-              🗑️ Delete</div>
+              <span data-np-icon="trash" data-np-size="16" data-np-tone="red"></span> Delete</div>
           </div>
         </div>
       </div>
       <div class="chat-header">
         <div class="chat-header-title">
-          <span>💬</span>
+          <span data-np-icon="message-square" data-np-size="18"></span>
           <span id="chat-header-name">Event Chat</span>
         </div>
         <div class="chat-header-actions">
@@ -5593,7 +5773,7 @@
       </div>
       <div class="chat-messages" id="chat-messages">
         <div class="chat-empty" id="chat-empty">
-          <div class="chat-empty-icon">💬</div>
+          <div class="chat-empty-icon"><span data-np-icon="message-square" data-np-size="44" style="opacity:0.2;"></span></div>
           <div class="chat-empty-text">No messages yet</div>
           <div class="chat-empty-sub">Start a conversation with your team</div>
         </div>
@@ -6151,7 +6331,7 @@
     function getMemberRoleLabel(m) {
       if (!m) return 'Member';
       if (m.is_restricted) return 'Restricted';
-      if (m.user_id === eventData?.organizer_id) return '👑 Creator';
+      if (m.user_id === eventData?.organizer_id) return npIcon("crown", { size: 14, tone: "amber" }) + ' Creator';
       if ((m.role || '').toLowerCase() === 'organizer') return 'Organizer';
       return 'Collector';
     }
