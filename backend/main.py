@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import time
+import asyncio
 from datetime import datetime
 from typing import List, Optional, Dict
 
@@ -64,10 +65,15 @@ app = FastAPI(
 
 from fastapi.responses import JSONResponse
 
-# ─── CORS — allow browser frontend to call the API ──────────────────────────────
+# ─── CORS — named production origins + localhost regex for dev ───────────────
+_DEFAULT_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000"
+_ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", _DEFAULT_ORIGINS).split(",") if o.strip()]
+# Local dev servers use many ports (Live Server, Vite, etc.) — regex avoids OPTIONS 400
+_LOCAL_ORIGIN_REGEX = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
+    allow_origin_regex=_LOCAL_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -78,9 +84,14 @@ class ConnectionManager:
     def __init__(self):
         # event_id -> list of websockets
         self.active_connections: Dict[int, List[WebSocket]] = {}
+        self.dashboard_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket, event_id: int):
         await websocket.accept()
+        self.register(websocket, event_id)
+
+    def register(self, websocket: WebSocket, event_id: int):
+        """Track an already-accepted WebSocket connection."""
         if event_id not in self.active_connections:
             self.active_connections[event_id] = []
         self.active_connections[event_id].append(websocket)
@@ -100,20 +111,34 @@ class ConnectionManager:
                     # Handle dead connections silently
                     pass
 
+    def register_dashboard(self, websocket: WebSocket):
+        self.dashboard_connections.append(websocket)
+
+    def disconnect_dashboard(self, websocket: WebSocket):
+        if websocket in self.dashboard_connections:
+            self.dashboard_connections.remove(websocket)
+
     async def broadcast_dashboard_update(self):
-        # Notify all connected clients to refresh their dashboard data
-        for event_id in self.active_connections:
-            for connection in self.active_connections[event_id]:
-                try:
-                    await connection.send_json({"type": "DASHBOARD_UPDATE"})
-                except Exception: pass
+        for connection in list(self.dashboard_connections):
+            try:
+                await connection.send_json({"type": "DASHBOARD_UPDATE"})
+            except Exception:
+                if connection in self.dashboard_connections:
+                    self.dashboard_connections.remove(connection)
 
 manager = ConnectionManager()
+
+_DEBUG_MODE = os.getenv("DEBUG", "false").lower() in ("1", "true", "yes")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     # This prevents 500 errors from stripping CORS headers!
-    return JSONResponse(status_code=500, content={"detail": f"Internal Server Error: {repr(exc)}"})
+    if _DEBUG_MODE:
+        detail = f"Internal Server Error: {repr(exc)}"
+    else:
+        print(f"Unhandled error on {request.url.path}: {exc!r}")
+        detail = "Internal server error"
+    return JSONResponse(status_code=500, content={"detail": detail})
 
 # Firebase Bearer token scheme
 _bearer = HTTPBearer(auto_error=False)
@@ -162,12 +187,15 @@ async def get_current_user_id(
 # ─── HELPER: Membership Gatekeeper ─────────────────────────────────────────────
 def verify_membership(db: Session, event_id: int, user_id: int,
                       require_organizer: bool = False,
-                      require_unrestricted: bool = False):
+                      require_unrestricted: bool = False,
+                      require_member: bool = False):
     member = crud.get_member(db, event_id, user_id)
     if not member:
         event = crud.get_event(db, event_id)
-        if event and event.is_public and not require_organizer and not require_unrestricted:
-            return None # Visitor mode
+        if require_member or require_organizer or require_unrestricted:
+            raise HTTPException(status_code=403, detail="You are not a member of this event")
+        if event and event.is_public:
+            return None  # Visitor read-only on public events
         raise HTTPException(status_code=403, detail="You are not a member of this event")
     if require_organizer and member.role != models.UserRole.organizer:
         raise HTTPException(status_code=403, detail="Only the organizer can perform this action")
@@ -175,10 +203,17 @@ def verify_membership(db: Session, event_id: int, user_id: int,
         raise HTTPException(status_code=403, detail="Your access has been restricted by the organizer")
     return member
 
-def verify_event_active_for_collector(db: Session, event_id: int, user_id: int):
-    """Collectors/Visitors are blocked from data access when event is deactivated. Organizers always pass."""
-    member = verify_membership(db, event_id, user_id, require_unrestricted=False)
+def verify_event_active_for_collector(db: Session, event_id: int, user_id: int, *, for_write: bool = False):
+    """Gate event access. Writes require membership + unrestricted; reads allow public visitors."""
+    if for_write:
+        member = verify_membership(
+            db, event_id, user_id, require_member=True, require_unrestricted=True
+        )
+    else:
+        member = verify_membership(db, event_id, user_id)
     event = crud.get_event(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
     if not event.is_active and (not member or member.role != models.UserRole.organizer):
         raise HTTPException(status_code=403, detail="This event is deactivated. Contact your organizer.")
     return member
@@ -437,6 +472,17 @@ async def get_event_members(event_id: int, db: Session = Depends(get_db), user_i
     verify_membership(db, event_id, user_id, require_organizer=True)
     return crud.get_event_members(db, event_id)
 
+@app.get("/events/{event_id}/members/{target_user_id}/contact",
+         response_model=schemas.MemberContactResponse, tags=["Event Management"])
+async def get_member_contact(event_id: int, target_user_id: int,
+                             db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Phone number for 1:1 call — fellow event members only (not public visitors)."""
+    verify_membership(db, event_id, user_id, require_member=True)
+    contact = crud.get_member_contact(db, event_id, target_user_id)
+    if not contact:
+        raise HTTPException(status_code=404, detail="Member not found or no phone on file")
+    return contact
+
 @app.put("/events/{event_id}/members/{target_user_id}/restrict", response_model=schemas.EventMemberResponse, tags=["Event Management"])
 async def restrict_member(event_id: int, target_user_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Block a collector from reading or writing anything in this event."""
@@ -450,6 +496,7 @@ async def restrict_member(event_id: int, target_user_id: int, db: Session = Depe
     if not member:
         raise HTTPException(status_code=404, detail="Target member not found in this event")
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
     return member
 
 @app.put("/events/{event_id}/members/{target_user_id}/unrestrict", response_model=schemas.EventMemberResponse, tags=["Event Management"])
@@ -465,6 +512,7 @@ async def unrestrict_member(event_id: int, target_user_id: int, db: Session = De
     if not member:
         raise HTTPException(status_code=404, detail="Target member not found in this event")
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
     return member
 
 @app.put("/events/{event_id}/members/{target_user_id}/role", response_model=schemas.EventMemberResponse, tags=["Event Management"])
@@ -506,7 +554,7 @@ async def get_event_donations(event_id: int, db: Session = Depends(get_db), user
 @app.post("/events/{event_id}/donations", response_model=schemas.DonationResponse, tags=["Donations"])
 async def add_donation(event_id: int, donation: schemas.DonationCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new donation row. Blocked if restricted or event deactivated."""
-    verify_event_active_for_collector(db, event_id, user_id)
+    verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     res = crud.create_donation(db, event_id, user_id, donation)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add"})
@@ -516,7 +564,7 @@ async def add_donation(event_id: int, donation: schemas.DonationCreate, db: Sess
 async def update_donation(event_id: int, donation_id: int, data: schemas.DonationUpdate,
                     db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Edit a donation row. Organizer can edit any row. Collector can only edit their own."""
-    member = verify_event_active_for_collector(db, event_id, user_id)
+    member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     donation = crud.get_donation(db, donation_id)
     if not donation or donation["event_id"] != event_id:
         raise HTTPException(status_code=404, detail="Donation not found in this event")
@@ -531,7 +579,7 @@ async def update_donation(event_id: int, donation_id: int, data: schemas.Donatio
 async def delete_donation(event_id: int, donation_id: int,
                     db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Delete a donation row. Organizer can delete any. Collector can only delete their own."""
-    member = verify_event_active_for_collector(db, event_id, user_id)
+    member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     donation = crud.get_donation(db, donation_id)
     if not donation or donation["event_id"] != event_id:
         raise HTTPException(status_code=404, detail="Donation not found in this event")
@@ -553,7 +601,7 @@ async def get_event_expenses(event_id: int, db: Session = Depends(get_db), user_
 @app.post("/events/{event_id}/expenses", response_model=schemas.ExpenseResponse, tags=["Expenses"])
 async def add_expense(event_id: int, expense: schemas.ExpenseCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new expense row. Blocked if restricted or event deactivated."""
-    verify_event_active_for_collector(db, event_id, user_id)
+    verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     res = crud.create_expense(db, event_id, user_id, expense)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_add"})
@@ -563,7 +611,7 @@ async def add_expense(event_id: int, expense: schemas.ExpenseCreate, db: Session
 async def update_expense(event_id: int, expense_id: int, data: schemas.ExpenseUpdate,
                    db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Edit an expense row. Organizer can edit any. Collector can only edit their own."""
-    member = verify_event_active_for_collector(db, event_id, user_id)
+    member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     expense = crud.get_expense(db, expense_id)
     if not expense or expense["event_id"] != event_id:
         raise HTTPException(status_code=404, detail="Expense not found in this event")
@@ -578,7 +626,7 @@ async def update_expense(event_id: int, expense_id: int, data: schemas.ExpenseUp
 async def delete_expense(event_id: int, expense_id: int,
                    db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Delete an expense row. Organizer can delete any. Collector can only delete their own."""
-    member = verify_event_active_for_collector(db, event_id, user_id)
+    member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     expense = crud.get_expense(db, expense_id)
     if not expense or expense["event_id"] != event_id:
         raise HTTPException(status_code=404, detail="Expense not found in this event")
@@ -626,7 +674,7 @@ async def get_chat_history(event_id: int, limit: int = 50, before_id: int = None
 async def send_chat_message(event_id: int, data: schemas.ChatMessageCreate,
                             db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Send a chat message to all members of an event."""
-    verify_membership(db, event_id, user_id)
+    verify_membership(db, event_id, user_id, require_member=True, require_unrestricted=True)
     if not data.message or not data.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     msg = crud.create_chat_message(db, event_id, user_id, data.message.strip(), data.reply_to_id)
@@ -638,10 +686,10 @@ async def send_chat_message(event_id: int, data: schemas.ChatMessageCreate,
 async def react_to_message(event_id: int, message_id: int, data: schemas.ChatReactionRequest,
                            db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Toggle an emoji reaction on a chat message."""
-    verify_membership(db, event_id, user_id)
+    verify_membership(db, event_id, user_id, require_member=True, require_unrestricted=True)
     if not data.emoji or len(data.emoji) > 10: # Basic length check to prevent abuse
         raise HTTPException(status_code=400, detail="Invalid emoji length")
-    msg = crud.toggle_reaction(db, message_id, user_id, data.emoji)
+    msg = crud.toggle_reaction(db, message_id, event_id, user_id, data.emoji)
     if not msg:
         raise HTTPException(status_code=404, detail="Message not found")
     await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": msg})
@@ -651,15 +699,14 @@ async def react_to_message(event_id: int, message_id: int, data: schemas.ChatRea
 async def delete_chat_message(event_id: int, message_id: int, 
                               db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Wipe a chat message (replaces content with 'deleted'). Only sender or organizer can delete."""
-    is_org = False
-    mem = db.query(models.EventMember).filter(models.EventMember.event_id == event_id, models.EventMember.user_id == user_id).first()
-    if mem and mem.role == "organizer":
-        is_org = True
-    ev = db.query(models.Event).filter(models.Event.id == event_id).first()
-    if ev and ev.organizer_id == user_id:
-        is_org = True
-        
-    msg = crud.delete_chat_message(db, message_id, user_id, is_org)
+    verify_membership(db, event_id, user_id, require_member=True)
+    mem = crud.get_member(db, event_id, user_id)
+    ev = crud.get_event(db, event_id)
+    is_org = bool(
+        mem and mem.role == models.UserRole.organizer
+    ) or bool(ev and ev.organizer_id == user_id)
+
+    msg = crud.delete_chat_message(db, message_id, event_id, user_id, is_org)
     if not msg:
         raise HTTPException(status_code=403, detail="Not authorized to delete this message or message not found")
     
@@ -667,25 +714,122 @@ async def delete_chat_message(event_id: int, message_id: int,
     return {"message": "Message deleted"}
 
 # ─── WEBSOCKET ENDPOINT ────────────────────────────────────────────────────────
-@app.websocket("/ws/{event_id}")
-async def websocket_endpoint(websocket: WebSocket, event_id: int, user_id: int = None):
-    await manager.connect(websocket, event_id)
+async def _authenticate_ws_user(db: Session, token: str) -> int:
+    """Verify Firebase token and return internal user id."""
+    if not token:
+        raise HTTPException(status_code=401, detail="Token required")
+    creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+    decoded = await auth.verify_token(creds)
+    user = crud.get_user_by_firebase_uid(db, decoded["uid"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not registered")
+    return user.id
+
+
+async def _ws_send_auth_ok(websocket: WebSocket) -> bool:
+    """Send AUTH_OK; return False if the client already disconnected."""
     try:
-        while True:
-            raw = await websocket.receive_text()
-            # Try to handle chat messages sent via WebSocket
-            try:
-                import json as _json
-                msg = _json.loads(raw)
-                if msg.get("type") == "CHAT_MSG" and user_id and msg.get("message", "").strip():
-                    db = next(get_db())
-                    try:
-                        reply_id = msg.get("reply_to_id")
-                        saved = crud.create_chat_message(db, event_id, user_id, msg["message"].strip(), reply_id)
-                        await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": saved})
-                    finally:
-                        db.close()
-            except Exception:
-                pass  # Keepalive pings or invalid JSON — ignore
+        await websocket.send_json({"type": "AUTH_OK"})
+        return True
+    except WebSocketDisconnect:
+        return False
+
+@app.websocket("/ws/dashboard")
+async def websocket_dashboard(websocket: WebSocket):
+    """Authenticated dashboard channel for DASHBOARD_UPDATE broadcasts (no event membership)."""
+    await websocket.accept()
+    db = next(get_db())
+    try:
+        try:
+            raw = await asyncio.wait_for(websocket.receive_text(), timeout=20.0)
+            auth_msg = json.loads(raw)
+        except (asyncio.TimeoutError, json.JSONDecodeError):
+            await websocket.close(code=4401, reason="Auth required")
+            return
+
+        if auth_msg.get("type") != "AUTH" or not auth_msg.get("token"):
+            await websocket.close(code=4401, reason="Auth required")
+            return
+
+        await _authenticate_ws_user(db, auth_msg["token"])
+        manager.register_dashboard(websocket)
+        if not await _ws_send_auth_ok(websocket):
+            manager.disconnect_dashboard(websocket)
+            return
+
+        try:
+            while True:
+                await websocket.receive_text()
+        except WebSocketDisconnect:
+            manager.disconnect_dashboard(websocket)
+    except HTTPException:
+        try:
+            await websocket.close(code=4401, reason="Invalid token")
+        except WebSocketDisconnect:
+            pass
+    except WebSocketDisconnect:
+        manager.disconnect_dashboard(websocket)
+    finally:
+        db.close()
+
+
+@app.websocket("/ws/{event_id}")
+async def websocket_endpoint(websocket: WebSocket, event_id: int):
+    """Authenticate via first JSON message {type:AUTH, token} — avoids huge JWT in query string."""
+    if event_id <= 0:
+        await websocket.accept()
+        await websocket.close(code=4400, reason="Invalid event")
+        return
+
+    await websocket.accept()
+    db = next(get_db())
+    try:
+        try:
+            raw = await asyncio.wait_for(websocket.receive_text(), timeout=20.0)
+            auth_msg = json.loads(raw)
+        except asyncio.TimeoutError:
+            await websocket.close(code=4401, reason="Auth timeout")
+            return
+        except json.JSONDecodeError:
+            await websocket.close(code=4401, reason="Invalid auth payload")
+            return
+
+        if auth_msg.get("type") != "AUTH":
+            await websocket.close(code=4401, reason="Auth message required")
+            return
+
+        token = auth_msg.get("token")
+        if not token:
+            await websocket.close(code=4401, reason="Token required")
+            return
+
+        ws_user_id = await _authenticate_ws_user(db, token)
+        # We allow visitors and restricted users to stay connected 
+        # so they can receive DATA_CHANGED signals in real-time.
+        # Security is still enforced during actual data fetching.
+        
+        manager.register(websocket, event_id)
+        if not await _ws_send_auth_ok(websocket):
+            manager.disconnect(websocket, event_id)
+            return
+
+        try:
+            while True:
+                await websocket.receive_text()
+        except WebSocketDisconnect:
+            manager.disconnect(websocket, event_id)
+    except HTTPException:
+        try:
+            await websocket.close(code=4401, reason="Invalid token")
+        except WebSocketDisconnect:
+            pass
     except WebSocketDisconnect:
         manager.disconnect(websocket, event_id)
+    except Exception as exc:
+        print(f"WebSocket error event={event_id}: {exc!r}")
+        try:
+            await websocket.close(code=1011, reason="Server error")
+        except WebSocketDisconnect:
+            pass
+    finally:
+        db.close()

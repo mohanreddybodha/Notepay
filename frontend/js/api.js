@@ -171,6 +171,11 @@ async function getMembers(eventId) {
   return apiFetch("GET", `/events/${eventId}/members`);
 }
 
+/** Phone contact for a member (1:1 call) — same-event members only */
+async function getMemberContact(eventId, userId) {
+  return apiFetch("GET", `/events/${eventId}/members/${userId}/contact`);
+}
+
 /** Restrict a collector */
 async function restrictMember(eventId, userId) {
   return apiFetch("PUT", `/events/${eventId}/members/${userId}/restrict`);

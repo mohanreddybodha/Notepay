@@ -158,7 +158,9 @@
         const params = new URLSearchParams(window.location.search);
         const returnUrl = params.get("return");
         if (returnUrl) {
-          window.location.replace(decodeURIComponent(returnUrl));
+          const decoded = decodeURIComponent(returnUrl);
+          const safe = decoded.startsWith("/") && !decoded.startsWith("//") ? decoded : "dashboard.html";
+          window.location.replace(safe.startsWith("/") ? safe.slice(1) : safe);
         } else {
           window.location.replace("dashboard.html");
         }

@@ -199,20 +199,48 @@
 
   // ── On load ──
   let dashboardWs = null;
-  function setupDashboardWS() {
+  let dashboardWsReady = false;
+
+  async function setupDashboardWS() {
+    if (dashboardWs) return;
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // Hardcode port 8000 for the backend
-    const host = window.location.hostname + ":8000"; 
-    
-    dashboardWs = new WebSocket(`${protocol}//${host}/ws/0`); 
+    const host = window.location.hostname + ":8000";
+
+    dashboardWsReady = false;
+    dashboardWs = new WebSocket(`${protocol}//${host}/ws/dashboard`);
+
+    dashboardWs.onopen = async () => {
+      try {
+        const token = await getIdToken();
+        if (!token) {
+          dashboardWs.close();
+          return;
+        }
+        dashboardWs.send(JSON.stringify({ type: "AUTH", token }));
+      } catch (e) {
+        console.error("Dashboard WebSocket auth failed:", e);
+        dashboardWs.close();
+      }
+    };
+
     dashboardWs.onmessage = (e) => {
       const msg = JSON.parse(e.data);
+      if (msg.type === "AUTH_OK") {
+        dashboardWsReady = true;
+        return;
+      }
+      if (!dashboardWsReady) return;
       if (msg.type === "DASHBOARD_UPDATE") {
         console.log("🔄 Real-time Dashboard Update Received");
         refreshDashboard();
       }
     };
-    dashboardWs.onclose = () => setTimeout(setupDashboardWS, 5000);
+
+    dashboardWs.onclose = () => {
+      dashboardWs = null;
+      dashboardWsReady = false;
+      setTimeout(() => setupDashboardWS().catch(() => {}), 5000);
+    };
   }
 
   async function refreshDashboard() {
@@ -249,7 +277,7 @@
   waitForAuthReady().then(user => {
     if (user) {
       refreshDashboard();
-      setupDashboardWS();
+      setupDashboardWS().catch(() => {});
     }
   });
 
@@ -289,9 +317,9 @@
     let statusBanner = "";
     let statusNote = "";
 
-    if (role === "visitor" && isPublic === false) {
-      statusBanner = `<div class="deact-bar" style="background:var(--text3);">${iconLabel("lock", "Private Event", { size: 16 })}</div>`;
-      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">Can't view · Organizer made this event private</div></div>`;
+    if (isRestricted) {
+      statusBanner = `<div class="deact-bar" style="background:var(--red);">${iconLabel("ban", "You are restricted", { size: 16, tone: "danger" })}</div>`;
+      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">${iconLabel("phone-off", "Contact your organizer", { size: 14 })}</div></div>`;
     } else if (!isActive) {
       statusBanner = `<div class="deact-bar">${iconLabel("alert-circle", "Event Deactivated", { size: 16, tone: "amber" })}</div>`;
       if (role === "collector") {
@@ -301,9 +329,9 @@
       } else {
         statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">${iconLabel("lock", "You deactivated this · Tap to manage", { size: 14 })}</div></div>`;
       }
-    } else if (isRestricted) {
-      statusBanner = `<div class="deact-bar" style="background:var(--red);">${iconLabel("ban", "You are restricted", { size: 16, tone: "danger" })}</div>`;
-      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--red);font-weight:700;">${iconLabel("phone-off", "Contact your organizer", { size: 14 })}</div></div>`;
+    } else if (role === "visitor" && isPublic === false) {
+      statusBanner = `<div class="deact-bar" style="background:var(--text3);">${iconLabel("lock", "Private Event", { size: 16 })}</div>`;
+      statusNote = `<div class="ec-body" style="padding-top:6px;"><div style="font-size:11.5px;color:var(--text3);font-weight:700;">Can't view · Organizer made this event private</div></div>`;
     }
 
     const badge = role==="organizer"

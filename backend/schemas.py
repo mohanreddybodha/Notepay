@@ -26,6 +26,20 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class UserPublicResponse(BaseModel):
+    """User fields safe to expose to other event members (no phone)."""
+    id: int
+    full_name: str
+    gender: GenderEnum
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class MemberContactResponse(BaseModel):
+    user_id: int
+    full_name: str
+    phone_number: str
+
 class EventCreate(BaseModel):
     name: str
     description: str
@@ -85,6 +99,17 @@ class EventMemberResponse(BaseModel):
     is_restricted: bool
     restricted_at: Optional[datetime] = None
     user: UserResponse
+    class Config:
+        from_attributes = True
+
+class EventMemberPublicResponse(BaseModel):
+    id: int
+    user_id: int
+    role: UserRole
+    joined_at: datetime
+    is_restricted: bool
+    restricted_at: Optional[datetime] = None
+    user: UserPublicResponse
     class Config:
         from_attributes = True
 
@@ -148,7 +173,7 @@ class EventFullDetailsResponse(BaseModel):
     donations: List[DonationResponse]
     expenses: List[ExpenseResponse]
     summary: EventSummaryResponse
-    members: List[EventMemberResponse]
+    members: List[EventMemberPublicResponse]
     my_role: Optional[str] = None
     is_restricted: bool = False
 

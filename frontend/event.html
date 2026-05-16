@@ -3252,7 +3252,7 @@
               onclick="shareCode()"><span data-np-icon="share" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Share Code</button>
             <button
               style="flex:1;background:#FFF0EC;border:1.5px solid #E0A090;border-radius:14px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;"
-              onclick="closeCodeSheet();revokeCode()"><span data-np-icon="refresh" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
+              onclick="revokeCode()"><span data-np-icon="refresh" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
           </div>
           <button
             style="width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;margin-top:6px;"
@@ -3276,7 +3276,7 @@
             style="background:var(--card);border-radius:12px;border:1.5px solid var(--border2);overflow:hidden;padding:0 14px;margin-bottom:12px;">
           </div>
           <div
-            style="font-size:10.5px;color:var(--text3);text-align:center;margin-top:4px;opacity:0.65;font-family:'Nunito',sans-serif;">
+            style="font-size:12px;color:var(--text);text-align:center;margin-top:10px;font-weight:700;padding:8px;background:var(--row-alt);border-radius:8px;font-family:'Nunito',sans-serif;">
             Restricted members cannot view or add entries.</div>
         </div>
         <div class="sbox-footer" style="padding-bottom:16px;">
@@ -3339,6 +3339,21 @@
             onclick="document.getElementById('deact-confirm-pop').style.display = 'none'">Cancel</button>
           <button class="pbk" style="background:var(--amber);color:black;border:none;border-radius:14px;"
             onclick="confirmDeactivate()"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Lock Event</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Regenerate Code Confirmation Popup -->
+    <div id="regenerate-code-pop" class="pop-ov" style="display:none;">
+      <div class="pop-box" style="border:2px solid var(--primary);">
+        <div class="pop-ic"><span data-np-icon="refresh" data-np-size="32" data-np-tone="primary"></span></div>
+        <div class="pop-t" style="color:var(--primary);">Regenerate Code?</div>
+        <div class="pop-m">Existing members keep access, but the old code will stop working. Anyone new must use the new code to join.</div>
+        <div class="pop-line"></div>
+        <div class="pop-btns">
+          <button class="pbc" onclick="document.getElementById('regenerate-code-pop').style.display = 'none'">Cancel</button>
+          <button class="pbk" style="background:var(--primary);color:white;border:none;border-radius:14px;"
+            onclick="confirmRegenerateCode()">Regenerate</button>
         </div>
       </div>
     </div>
@@ -3439,6 +3454,7 @@
     const tabRotations = { don: 0, exp: 0, sum: 0 };
     let summaryData = null; // Backend Summary data
     let ws = null; // WebSocket connection
+    let wsAuthenticated = false;
     let vTxnsCount = 5; // Global activity count
 
     if (!eventId || isNaN(eventId)) {
@@ -3463,7 +3479,7 @@
         // Also set sessionStorage as a backup for other functions
         sessionStorage.setItem("np_my_id", myUserId);
 
-        setupWebSocket();
+        setupWebSocket().catch(() => {});
         await loadAll();
       } catch (e) {
         console.error("Init failed:", e);
@@ -3476,9 +3492,12 @@
       }
     }
 
-    let sessionAuthorized = false; // Flag to allow active visitors to stay
-
-    init();
+    init().then(() => {
+      // Auto-reopen chat if ?chat=1 is in URL
+      if (params.get("chat") === "1") {
+        openChat();
+      }
+    });
 
     // Re-check access every time user returns to this tab
     document.addEventListener("visibilitychange", async () => {
@@ -3521,6 +3540,8 @@
         if (overlay && overlay.style.display !== "flex") {
           enterTheater(activeTheaterTab);
         } else {
+          // Re-render core UI state (visibility, etc) before refreshing table
+          renderPage();
           refreshTheaterTable();
         }
         return; 
@@ -3602,16 +3623,35 @@
       }
     }
 
-    function setupWebSocket() {
-      if (ws) return;
+    async function setupWebSocket() {
+      if (ws || !eventId || isNaN(eventId)) return;
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      // Hardcode port 8000 for the backend
       const host = window.location.hostname + ":8000";
 
+      wsAuthenticated = false;
       ws = new WebSocket(`${protocol}//${host}/ws/${eventId}`);
+
+      ws.onopen = async () => {
+        try {
+          const token = await getIdToken();
+          if (!token) {
+            ws.close();
+            return;
+          }
+          ws.send(JSON.stringify({ type: "AUTH", token }));
+        } catch (e) {
+          console.error("WebSocket auth failed:", e);
+          ws.close();
+        }
+      };
 
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
+        if (msg.type === "AUTH_OK") {
+          wsAuthenticated = true;
+          return;
+        }
+        if (!wsAuthenticated) return;
         if (msg.type === "DATA_CHANGED") {
           console.log("📢 Real-time update received. Forcing fresh fetch.");
           loadAll(true, true);
@@ -3626,8 +3666,8 @@
 
       ws.onclose = () => {
         ws = null;
-        // Reconnect after 5 seconds if connection lost
-        setTimeout(setupWebSocket, 5000);
+        wsAuthenticated = false;
+        setTimeout(() => setupWebSocket().catch(() => {}), 5000);
       };
     }
 
@@ -3652,10 +3692,6 @@
 
         // LOCKOUT LOGIC: (Highest Priority)
         let canSeeData = isOrganizer || (isEventActive && !isRestricted && (eventData.is_public || !isVisitor));
-
-        // GRACEFUL LOCKOUT: If they were already in, let them stay until refresh
-        if (sessionAuthorized) canSeeData = true;
-        else if (canSeeData) sessionAuthorized = true; // First successful load
 
         // Header dots menu
         const dotsOrg = document.getElementById("dots-btn");
@@ -4684,10 +4720,21 @@
       }
     }
 
-    async function revokeCode() {
-      if (!confirm("Are you sure you want to revoke this code? Existing members keep access, but no one new can join.")) return;
-      await apiCall(`/events/${eventId}/generate_code`, "POST");
-      loadAll();
+    function revokeCode() {
+      document.getElementById('regenerate-code-pop').style.display = 'flex';
+    }
+    async function confirmRegenerateCode() {
+      try {
+        document.getElementById('regenerate-code-pop').style.display = 'none';
+        const res = await apiFetch("POST", `/events/${eventId}/generate_code`);
+        // Proactively update local state for instant sheet refresh
+        if (res && res.invite_code) eventData.invite_code = res.invite_code;
+        await loadAll();
+        openCodeSheet(); // Re-open the sheet so user can copy the new code
+        showToast("Invite code regenerated!", "success");
+      } catch (e) {
+        showToast(e.message || "Failed to regenerate code.", "error");
+      }
     }
 
     function clearEventCache() {
@@ -4925,7 +4972,7 @@
         // Proactively update local members array
         if (members) {
           const m = members.find(x => x.user_id === memTarget.id);
-          if (m) m.role = "collector";
+          if (m) m.role = "Collector";
         }
         document.getElementById("demote-pop").style.display = "none";
         showToast(`${memTarget.name} is now a Collector.`);
@@ -4943,7 +4990,7 @@
         // Proactively update local members array
         if (members) {
           const m = members.find(x => x.user_id === memTarget.id);
-          if (m) m.role = "organizer";
+          if (m) m.role = "Organizer";
         }
         document.getElementById("promote-pop").style.display = "none";
         showToast(`${memTarget.name} is now an Organizer!`);
@@ -5793,24 +5840,7 @@
         </div>
         <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()" style="display:none;">➤</button>
       </div>
-      <!-- Member profile (above chat content, inside drawer) -->
-      <div id="member-profile-modal" class="member-profile-ov" style="display:none;" onclick="closeMemberProfile()">
-        <div class="pop-box member-profile-box" onclick="event.stopPropagation()">
-          <div class="mp-avatar" id="mp-avatar">?</div>
-          <div class="mp-name" id="mp-name">Member</div>
-          <div class="mp-role" id="mp-role">Collector</div>
-          <div class="mp-phone" id="mp-phone"></div>
-          <a id="mp-call-btn" class="mp-call-btn" href="#">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path fill="currentColor"
-                d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-            </svg>
-            Call
-          </a>
-          <button type="button" class="mp-close-btn" onclick="closeMemberProfile()">Close</button>
-        </div>
       </div>
-    </div>
   </div>
 
   <script>
@@ -5902,7 +5932,10 @@
           chatOldestId = chatMessages[0].id;
         }
         chatHistoryLoaded = true;
-        if (!isBackground) {
+        
+        // If chat is currently open, we MUST render the messages even if this is a background load
+        // (to ensure newly arrived messages appear instantly if the user is already looking at the chat)
+        if (!isBackground || chatOpen) {
           renderChatMessages(loadOlder ? 'older' : 'bottom');
         }
 
@@ -6342,42 +6375,48 @@
 
     async function showMemberProfile(userId) {
       let mem = members.find(x => x.user_id === userId);
-      if (!mem) {
-        try {
-          const fetched = await getMembers(eventId);
-          members = fetched || [];
-          mem = members.find(x => x.user_id === userId);
-        } catch (e) {
-          showToast('Could not load member info', 'error');
-          return;
+      let name = mem?.user?.full_name || 'Unknown';
+      let role = mem ? (mem.role === 'Organizer' ? 'Organizer' : 'Collector') : 'Member';
+      if (mem?.is_restricted) role = 'Restricted';
+
+      try {
+        // Reset and show loader/partial data immediately
+        document.getElementById('mp-avatar').textContent = name.charAt(0).toUpperCase();
+        const hue = (name.charCodeAt(0) * 137) % 360;
+        document.getElementById('mp-avatar').style.background = `hsl(${hue}, 60%, 45%)`;
+        document.getElementById('mp-name').textContent = name;
+        document.getElementById('mp-role').textContent = "Loading contact...";
+        document.getElementById('mp-phone').textContent = "Fetching phone number...";
+        document.getElementById('mp-call-btn').style.display = "none";
+        document.getElementById('member-profile-modal').style.display = 'flex';
+
+        const contact = await getMemberContact(eventId, userId);
+        
+        // Update with full data
+        const finalName = contact.full_name || name;
+        const phone = contact.phone_number || '';
+        const roleLabel = getMemberRoleLabel(mem);
+        
+        document.getElementById('mp-avatar').textContent = getInitials(finalName);
+        document.getElementById('mp-name').textContent = finalName;
+        document.getElementById('mp-role').innerHTML = roleLabel;
+        document.getElementById('mp-phone').textContent = phone || 'No phone number on file';
+        
+        const callBtn = document.getElementById('mp-call-btn');
+        if (phone) {
+          callBtn.href = `tel:${phone}`;
+          callBtn.style.display = "flex";
+          callBtn.classList.remove('mp-call-disabled');
+          callBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> Call`;
+        } else {
+          callBtn.style.display = "none";
         }
+      } catch (e) {
+        console.error("Profile load failed:", e);
+        document.getElementById('mp-role').innerHTML = getMemberRoleLabel(mem);
+        document.getElementById('mp-phone').textContent = "Contact info unavailable";
+        document.getElementById('mp-call-btn').style.display = "none";
       }
-      if (!mem) {
-        showToast('Member not found', 'error');
-        return;
-      }
-
-      const name = mem.user?.full_name || 'Unknown';
-      const phone = mem.user?.phone_number || '';
-      const roleLabel = getMemberRoleLabel(mem);
-
-      document.getElementById('mp-avatar').textContent = getInitials(name);
-      document.getElementById('mp-name').textContent = name;
-      document.getElementById('mp-role').textContent = roleLabel;
-      document.getElementById('mp-phone').textContent = phone || 'No phone number on file';
-
-      const callBtn = document.getElementById('mp-call-btn');
-      if (phone) {
-        callBtn.href = telHref(phone);
-        callBtn.classList.remove('mp-call-disabled');
-        callBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> Call`;
-      } else {
-        callBtn.href = '#';
-        callBtn.classList.add('mp-call-disabled');
-        callBtn.textContent = 'No phone on file';
-      }
-
-      document.getElementById('member-profile-modal').style.display = 'flex';
     }
 
     function closeMemberProfile() {

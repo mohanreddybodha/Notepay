@@ -472,6 +472,43 @@ def remove_watched_event(db: Session, user_id: int, event_id: int):
     return True
 
 
+def members_to_public_response(members) -> list:
+    """Strip phone numbers from member list for API responses."""
+    out = []
+    for m in members:
+        u = m.user
+        out.append(schemas.EventMemberPublicResponse(
+            id=m.id,
+            user_id=m.user_id,
+            role=m.role,
+            joined_at=m.joined_at,
+            is_restricted=m.is_restricted,
+            restricted_at=m.restricted_at,
+            user=schemas.UserPublicResponse(
+                id=u.id,
+                full_name=u.full_name,
+                gender=u.gender,
+                created_at=u.created_at,
+            ),
+        ))
+    return out
+
+
+def get_member_contact(db: Session, event_id: int, target_user_id: int):
+    """Return phone for a fellow event member (for 1:1 call)."""
+    target = get_member(db, event_id, target_user_id)
+    if not target:
+        return None
+    user = db.query(models.User).filter(models.User.id == target_user_id).first()
+    if not user or not user.phone_number:
+        return None
+    return schemas.MemberContactResponse(
+        user_id=user.id,
+        full_name=user.full_name,
+        phone_number=user.phone_number,
+    )
+
+
 def get_event_full_details(db: Session, event_id: int, user_id: int):
     # PHASE 2: Try cache first (Place 1)
     cache_key = f"full:{event_id}:{user_id}"
@@ -516,14 +553,15 @@ def get_event_full_details(db: Session, event_id: int, user_id: int):
     donations = get_donations(db, event_id)
     expenses = get_expenses(db, event_id)
     summary = get_event_summary(db, event_id)
-    members = get_event_members(db, event_id)
+    members_raw = get_event_members(db, event_id)
+    members_public = members_to_public_response(members_raw)
 
     resp = schemas.EventFullDetailsResponse(
         event=schemas.EventResponse(**event_dict),
         donations=donations,
         expenses=expenses,
         summary=summary,
-        members=members,
+        members=members_public,
         my_role=actual_role,
         is_restricted=is_restricted
     )
@@ -599,8 +637,11 @@ def get_chat_messages(db: Session, event_id: int, limit: int = 50, before_id: in
         msgs.append(_chat_msg_to_dict(db, msg, sender_name))
     return msgs[::-1]  # Return in chronological order
 
-def toggle_reaction(db: Session, message_id: int, user_id: int, emoji: str):
-    msg = db.query(models.ChatMessage).filter(models.ChatMessage.id == message_id).first()
+def toggle_reaction(db: Session, message_id: int, event_id: int, user_id: int, emoji: str):
+    msg = db.query(models.ChatMessage).filter(
+        models.ChatMessage.id == message_id,
+        models.ChatMessage.event_id == event_id,
+    ).first()
     if not msg:
         return None
     reactions = dict(msg.reactions or {})
@@ -633,12 +674,15 @@ def toggle_reaction(db: Session, message_id: int, user_id: int, emoji: str):
     sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
     return _chat_msg_to_dict(db, msg, sender_name)
 
-def delete_chat_message(db: Session, message_id: int, user_id: int, is_organizer: bool):
-    msg = db.query(models.ChatMessage).filter(models.ChatMessage.id == message_id).first()
+def delete_chat_message(db: Session, message_id: int, event_id: int, user_id: int, is_organizer: bool):
+    msg = db.query(models.ChatMessage).filter(
+        models.ChatMessage.id == message_id,
+        models.ChatMessage.event_id == event_id,
+    ).first()
     if not msg:
-        return False
+        return None
     if msg.user_id != user_id and not is_organizer:
-        return False
+        return None
     msg.message = "🚫 This message was deleted."
     msg.reactions = {}
     from sqlalchemy.orm.attributes import flag_modified
@@ -646,12 +690,6 @@ def delete_chat_message(db: Session, message_id: int, user_id: int, is_organizer
     db.commit()
     sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
     return _chat_msg_to_dict(db, msg, sender_name)
-    from sqlalchemy.orm.attributes import flag_modified
-    flag_modified(msg, "reactions")
-    db.commit()
-    db.refresh(msg)
-    user = db.query(models.User).filter(models.User.id == msg.user_id).first()
-    return _chat_msg_to_dict(db, msg, user.full_name if user else "Unknown")
 
 
 def get_user_full_dashboard(db: Session, user_id: int):
