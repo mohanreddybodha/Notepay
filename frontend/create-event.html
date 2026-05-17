@@ -79,21 +79,22 @@
   </div>
 
   <div class="scr">
-    <div class="error-msg" id="err-box"><span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="err-txt">Please fill all required fields.</span></div>
-
     <div class="field-wrap">
       <div class="field-label-out">Event Name *</div>
-      <div class="field"><input type="text" id="ev-name" placeholder="e.g. Ganesh Festival 2025" maxlength="100"/></div>
+      <div class="field"><input type="text" id="ev-name" placeholder="e.g. Ganesh Festival 2025" maxlength="100" oninput="document.getElementById('ev-name-error').style.display='none';"/></div>
+      <div id="ev-name-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>
 
     <div class="field-wrap">
       <div class="field-label-out">Short Description *</div>
-      <div class="field"><textarea id="ev-desc" placeholder="e.g. Annual colony donations" rows="2" maxlength="200"></textarea></div>
+      <div class="field"><textarea id="ev-desc" placeholder="e.g. Annual colony donations" rows="2" maxlength="200" oninput="document.getElementById('ev-desc-error').style.display='none';"></textarea></div>
+      <div id="ev-desc-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>
 
     <div class="field-wrap">
       <div class="field-label-out">Event Date *</div>
-      <div class="field"><input type="date" id="ev-date"/></div>
+      <div class="field"><input type="date" id="ev-date" onchange="document.getElementById('ev-date-error').style.display='none';"/></div>
+      <div id="ev-date-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>
 
     <div class="toggle-section">
@@ -182,14 +183,34 @@
     const name  = document.getElementById("ev-name").value.trim();
     const desc  = document.getElementById("ev-desc").value.trim();
     const date  = document.getElementById("ev-date").value;
-    const errBox = document.getElementById("err-box");
-    const errTxt = document.getElementById("err-txt");
     const btn   = document.getElementById("create-btn");
 
-    if (!name) { errTxt.textContent="Event name is required."; errBox.classList.add("visible"); return; }
-    if (!desc) { errTxt.textContent="Description is required."; errBox.classList.add("visible"); return; }
-    if (!date) { errTxt.textContent="Event date is required."; errBox.classList.add("visible"); return; }
-    errBox.classList.remove("visible");
+    // Hide all previous errors
+    document.getElementById("ev-name-error").style.display = "none";
+    document.getElementById("ev-desc-error").style.display = "none";
+    document.getElementById("ev-date-error").style.display = "none";
+
+    if (!name) {
+      const err = document.getElementById("ev-name-error");
+      err.textContent = "Event name is required.";
+      err.style.display = "block";
+      document.getElementById("ev-name").focus();
+      return;
+    }
+    if (!desc) {
+      const err = document.getElementById("ev-desc-error");
+      err.textContent = "Description is required.";
+      err.style.display = "block";
+      document.getElementById("ev-desc").focus();
+      return;
+    }
+    if (!date) {
+      const err = document.getElementById("ev-date-error");
+      err.textContent = "Event date is required.";
+      err.style.display = "block";
+      document.getElementById("ev-date").focus();
+      return;
+    }
 
     btn.classList.add("loading"); btn.disabled = true;
     try {
@@ -206,8 +227,7 @@
         window.location.replace("dashboard.html");
       }
     } catch(err) {
-      errTxt.textContent = err.message || "Failed to save event. Please try again.";
-      errBox.classList.add("visible");
+      showToast(err.message || "Failed to save event. Please try again.", "error");
       btn.classList.remove("loading"); btn.disabled = false;
     }
   });

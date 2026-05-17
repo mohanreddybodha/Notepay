@@ -524,10 +524,18 @@ async def update_member_role(event_id: int, target_user_id: int, data: schemas.M
     if target_user_id == event.organizer_id:
         raise HTTPException(status_code=403, detail="The original creator's role cannot be changed.")
 
+    # Security: Prevent promoting restricted members to organizer
+    target_member = crud.get_member(db, event_id, target_user_id)
+    if target_member and target_member.is_restricted and data.role == models.UserRole.organizer:
+        target_user = crud.get_user(db, target_user_id)
+        target_name = target_user.full_name if target_user else "Member"
+        raise HTTPException(status_code=403, detail=f"Restricted member can't be promoted to organizer. Unrestrict {target_name} before promotion.")
+
     member = crud.update_member_role(db, event_id, target_user_id, data.role)
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
     return member
 
 @app.post("/events/{event_id}/exit", tags=["Events"])

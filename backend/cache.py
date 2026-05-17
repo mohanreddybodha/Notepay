@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from typing import Any, Optional
 
 try:
@@ -33,7 +34,15 @@ class CacheManager:
             except Exception as e:
                 print(f"Cache get error: {e}")
                 return None
-        return self._local_cache.get(key)
+        
+        # Local fallback with proper expiration check
+        if key in self._local_cache:
+            val, expire_at = self._local_cache[key]
+            if time.time() < expire_at:
+                return val
+            else:
+                del self._local_cache[key]
+        return None
 
     def set(self, key: str, value: Any, expire: int = 3600):
         """Save a value to the cache with an expiration time (default 1 hour)."""
@@ -43,7 +52,10 @@ class CacheManager:
             except Exception as e:
                 print(f"Cache set error: {e}")
         else:
-            self._local_cache[key] = value
+            # Skip real-time full details cache when running in-memory fallback to prevent multi-worker split-brain issues
+            if key.startswith("full:"):
+                return
+            self._local_cache[key] = (value, time.time() + expire)
 
     def delete(self, key: str):
         """Remove a specific key from the cache."""

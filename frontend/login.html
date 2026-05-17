@@ -53,8 +53,8 @@
     .btn-primary:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
 
     /* ── Error box ── */
-    .error-msg{display:none;align-items:center;gap:6px;background:#FFF0EC;border:1.5px solid #D4906A;border-radius:10px;padding:9px 12px;font-size:12px;color:var(--red);font-weight:700;width:100%;margin-top:8px;line-height:1.5;}
-    .error-msg.visible{display:flex;}
+    .error-msg{display:none;font-size:12px;color:var(--red);font-weight:700;margin-top:6px;line-height:1.5;}
+    .error-msg.visible{display:block;}
 
     /* ── Resend ── */
     .resend-row{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:10px;}
@@ -123,9 +123,7 @@
               aria-label="Mobile number"/>
           </div>
         </div>
-        <div class="error-msg" id="phone-error">
-          <span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="phone-err-text">Please enter a valid 10-digit mobile number.</span>
-        </div>
+        <div class="error-msg" id="phone-error"><span id="phone-err-text">Please enter a valid 10-digit mobile number.</span></div>
       </div>
 
       <!-- Invisible reCAPTCHA anchor -->
@@ -168,9 +166,7 @@
         autocomplete="one-time-code"
         style="position:absolute;opacity:0;width:1px;height:1px;"/>
 
-      <div class="error-msg" id="otp-error">
-        <span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="otp-err-text">Invalid OTP. Please try again.</span>
-      </div>
+      <div class="error-msg" id="otp-error"><span id="otp-err-text">Invalid OTP. Please try again.</span></div>
 
       <button class="btn-primary" id="verify-btn" type="button" disabled style="margin-top:4px;">
         <span class="btn-text">Verify &amp; Continue</span>

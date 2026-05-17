@@ -2897,7 +2897,8 @@
           <div style="display:flex;flex-direction:column;gap:4px;">
             <div class="ef-field">
               <div class="ef-label" id="ef-name-label">Donor Name *</div>
-              <input class="ef-input" id="ef-name" type="text" placeholder="Enter name" autocomplete="off" />
+              <input class="ef-input" id="ef-name" type="text" placeholder="Enter name" autocomplete="off" oninput="document.getElementById('ef-error').style.display='none'" />
+              <div id="ef-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
             </div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
@@ -2959,7 +2960,8 @@
           <div style="display:flex;flex-direction:column;gap:4px;">
             <div class="ef-field">
               <div class="ef-label" id="edit-name-label">Donor Name</div>
-              <input class="ef-input" id="edit-name" type="text" />
+              <input class="ef-input" id="edit-name" type="text" oninput="document.getElementById('edit-error').style.display='none'" />
+              <div id="edit-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
             </div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
@@ -3380,6 +3382,19 @@
       </div>
     </div>
 
+    <!-- Restricted Promotion Popup -->
+    <div id="restricted-promo-pop" class="pop-ov" style="display:none; z-index:100100;">
+      <div class="pop-box" style="border:2px solid var(--red);">
+        <div class="pop-ic"><span data-np-icon="alert-triangle" data-np-size="32" data-np-tone="red"></span></div>
+        <div class="pop-t" style="color:var(--red);">Restricted Member</div>
+        <div class="pop-m">Restricted member can't be promoted to organizer.</div>
+        <div class="pop-line"></div>
+        <div class="pop-btns">
+          <button class="pbc" onclick="document.getElementById('restricted-promo-pop').style.display = 'none'">OK</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Extra CSS for DD and Member Menu -->
     <style>
       .dd-item {
@@ -3436,7 +3451,7 @@
   <script>
     // ── State ──
     const params = new URLSearchParams(location.search);
-    const eventId = parseInt(params.get("id"));
+    const eventId = Number(params.get("id") || params.get("eventId"));
     let eventData = null;
     let myUserId = null;
     let isOrganizer = false;
@@ -3457,9 +3472,24 @@
     let wsAuthenticated = false;
     let vTxnsCount = 5; // Global activity count
 
-    if (!eventId || isNaN(eventId)) {
+    function showInvalidEventId() {
       console.error("Invalid or missing eventId:", params.get("id"));
-      window.location.replace("dashboard.html");
+      const loader = document.getElementById("loading-pane");
+      if (loader) {
+        loader.style.display = "flex";
+        loader.innerHTML = `
+          <div style="text-align:center; padding:20px; max-width:380px;">
+            <div style="font-size:48px; margin-bottom:20px;">❌</div>
+            <div style="font-weight:900; font-size:22px; margin-bottom:10px;">Invalid event link</div>
+            <div style="color:var(--text3); line-height:1.6; margin-bottom:20px;">This event could not be opened because the page URL is missing a valid event ID.</div>
+            <button class="pbk" onclick="window.location.href='dashboard.html'" style="padding:12px 28px; border-radius:14px;">Back to Dashboard</button>
+          </div>
+        `;
+      }
+    }
+
+    if (!Number.isInteger(eventId) || eventId <= 0) {
+      showInvalidEventId();
     }
 
     async function init() {
@@ -3526,6 +3556,26 @@
       isVisitor = (rawRole === "visitor") && !isOrganizer;
       isRestricted = res.is_restricted || false;
 
+      // Gate access for Theater Mode: If restricted, deactivated, or private visitor, exit theater mode immediately to show lock screen
+      if (activeTheaterTab) {
+        const isEventActive = eventData.is_active;
+        const canSeeData = isOrganizer || (isEventActive && !isRestricted && (eventData.is_public || !isVisitor));
+        
+        if (!canSeeData && !isOrganizer) {
+          activeTheaterTab = null;
+          const overlay = document.getElementById("rot-overlay");
+          if (overlay) overlay.style.display = "none";
+          
+          let reason = "Your access to this event has been restricted.";
+          if (!isEventActive) {
+            reason = "This event has been deactivated by the organizer.";
+          } else if (!eventData.is_public && isVisitor) {
+            reason = "This event is now private.";
+          }
+          showToast(`⚠️ ${reason}`, "error");
+        }
+      }
+
       // Silently fetch chat history to calculate accurate unread count on page load
       if (!chatHistoryLoaded) {
         loadChatHistory(false, true);
@@ -3540,9 +3590,13 @@
         if (overlay && overlay.style.display !== "flex") {
           enterTheater(activeTheaterTab);
         } else {
-          // Re-render core UI state (visibility, etc) before refreshing table
-          renderPage();
+          // ONLY refresh theater table without full page re-render to prevent scroll issues
           refreshTheaterTable();
+          updateTheaterStats();
+          const membersSheet = document.getElementById("members-sheet");
+          if (membersSheet && membersSheet.style.display === "flex") {
+            openMembersSheet();
+          }
         }
         return; 
       }
@@ -4140,10 +4194,20 @@
       if (mode === 1) vTxnsCount += 5;
       else if (mode === -1) vTxnsCount = 5;
 
-      if (summaryData) {
-        renderSummaryUI(summaryData, false, containerId);
-        return;
+      if (!summaryData) {
+        const totalDonations = donations.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
+        const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+        summaryData = {
+          total_donations: totalDonations,
+          total_expenses: totalExpenses,
+          balance: totalDonations - totalExpenses,
+          donations_count: donations.length,
+          expenses_count: expenses.length,
+          recent_transactions: []
+        };
       }
+
+      renderSummaryUI(summaryData, false, containerId);
     }
 
     function renderSummaryUI(data, isTheater, containerId) {
@@ -4327,6 +4391,7 @@
       document.getElementById("ef-name-label").textContent = type === "don" ? "Donor Name *" : "Description *";
       document.getElementById("ef-name").value = "";
       document.getElementById("ef-amount").value = "";
+      document.getElementById("ef-error").style.display = "none";
 
       const customDiv = document.getElementById("ef-custom-fields");
       customDiv.innerHTML = "";
@@ -4350,7 +4415,13 @@
       const name = document.getElementById("ef-name").value.trim();
       const amount = document.getElementById("ef-amount").value;
       const btn = document.getElementById("ef-save-btn");
-      if (!name) { showToast("Name is required.", "error"); return; }
+      if (!name) {
+        const err = document.getElementById("ef-error");
+        err.textContent = entryType === "don" ? "Donor name is required." : "Description is required.";
+        err.style.display = "block";
+        document.getElementById("ef-name").focus();
+        return;
+      }
 
       const customFields = {};
       document.querySelectorAll("#ef-custom-fields .dynamic-cf").forEach(inp => {
@@ -4385,8 +4456,9 @@
           renderExpenses();
         }
         summaryData = null; // Invalidate cache
+        clearEventCache();
         updateTheaterStats();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
+        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeEntryForm();
         showToast("Saved!");
       } catch (e) {
@@ -4498,7 +4570,13 @@
       const name = document.getElementById("edit-name").value.trim();
       const amount = document.getElementById("edit-amount").value;
       const btn = document.getElementById("edit-save-btn");
-      if (!name) { showToast("Name is required.", "error"); return; }
+      if (!name) {
+        const err = document.getElementById("edit-error");
+        err.textContent = editTarget.type === "don" ? "Donor name is required." : "Description is required.";
+        err.style.display = "block";
+        document.getElementById("edit-name").focus();
+        return;
+      }
 
       const customFields = {};
       document.querySelectorAll("#edit-custom-fields .dynamic-edit-cf").forEach(inp => {
@@ -4540,7 +4618,8 @@
           expenses = expenses.map(x => x.id === e.id ? e : x);
           renderExpenses();
         }
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
+        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
+        clearEventCache();
         closeEditForm();
         showToast("Changes saved!");
       } catch (e) { showToast(e.message || "Failed.", "error"); }
@@ -4573,8 +4652,9 @@
         const data = {}; data[key] = updated;
         const res = await updateEvent(eventId, data);
         eventData[key] = res[key];
+        clearEventCache();
         if (activeColType === "don") renderDonations(); else renderExpenses();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
+        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeCustomColSheet();
         closeDelColPop();
         showToast("Column deleted.");
@@ -4588,8 +4668,9 @@
       try {
         if (ctxType === "don") { await deleteDonation(eventId, ctxEntry.id); donations = donations.filter(d => d.id !== ctxEntry.id); renderDonations(); }
         else { await deleteExpense(eventId, ctxEntry.id); expenses = expenses.filter(e => e.id !== ctxEntry.id); renderExpenses(); }
+        clearEventCache();
         summaryData = null; // Invalidate cache
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
+        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeDelPop(); showToast("Entry deleted.");
       } catch (e) { showToast(e.message || "Failed.", "error"); closeDelPop(); }
     }
@@ -4630,6 +4711,13 @@
       if (!activeTheaterTab) return;
       const body = document.getElementById("rot-ov-body");
       if (!body) return;
+
+      if (activeTheaterTab === "sum") {
+        renderSummary(0, "sum-body-theater");
+        updateTheaterStats();
+        return;
+      }
+
       const tblSc = body.querySelector(".theater-scroll-area");
       if (!tblSc) return;
 
@@ -4740,6 +4828,7 @@
     function clearEventCache() {
       const myId = sessionStorage.getItem("np_my_id") || "guest";
       sessionStorage.removeItem(`event_cache_${eventId}_u${myId}`);
+      sessionStorage.removeItem("ev_cache_" + eventId);
     }
 
     // ── Privacy / Public Access ──
@@ -4955,12 +5044,22 @@
     }
     function closeMCtx() { document.getElementById("mctx-ov").style.display = "none"; }
 
+    function openRestrictedPromotionPopup() {
+      const popup = document.getElementById("restricted-promo-pop");
+      if (!popup) return;
+      popup.style.display = "flex";
+    }
+
     function handlePromoteClick() {
       closeMCtx();
       if (memTarget.role.toLowerCase() === "organizer") {
         document.getElementById("demote-user-name").textContent = memTarget.name;
         document.getElementById("demote-pop").style.display = "flex";
       } else {
+        if (memTarget.res) {
+          openRestrictedPromotionPopup();
+          return;
+        }
         document.getElementById("promote-user-name").textContent = memTarget.name;
         document.getElementById("promote-pop").style.display = "flex";
       }
@@ -4977,8 +5076,10 @@
         document.getElementById("demote-pop").style.display = "none";
         showToast(`${memTarget.name} is now a Collector.`);
         clearEventCache();
+        // Broadcast to dashboard for instant update
+        await loadAll(true, true);
         openMembersSheet();
-        if (memTarget.id === myUserId) loadAll();
+        if (memTarget.id === myUserId) location.reload();
       } catch (e) {
         showToast(e.message || "Failed to demote.", "error");
       }
@@ -4986,8 +5087,12 @@
 
     async function confirmPromote() {
       try {
+        if (memTarget.res) {
+          openRestrictedPromotionPopup();
+          document.getElementById("promote-pop").style.display = "none";
+          return;
+        }
         await apiFetch("PUT", `/events/${eventId}/members/${memTarget.id}/role`, { role: "Organizer" });
-        // Proactively update local members array
         if (members) {
           const m = members.find(x => x.user_id === memTarget.id);
           if (m) m.role = "Organizer";
@@ -4995,6 +5100,7 @@
         document.getElementById("promote-pop").style.display = "none";
         showToast(`${memTarget.name} is now an Organizer!`);
         clearEventCache();
+        await loadAll(true, true);
         openMembersSheet();
       } catch (e) { showToast(e.message || "Promotion failed.", "error"); }
     }
@@ -5030,6 +5136,14 @@
           }
         }
         clearEventCache();
+        // If restricted member was the current user, show restricted page
+        if (restrictUserId === myUserId) {
+          isRestricted = true;
+          renderPage();
+        } else {
+          // Broadcast to other members' dashboards for instant update
+          await loadAll(true, true);
+        }
         closeRestrictPop();
         openMembersSheet(); // This will now use the updated 'members' array
       } catch (e) { showToast(e.message || "Failed.", "error"); }
@@ -5044,6 +5158,8 @@
           if (m) m.is_restricted = false;
         }
         clearEventCache();
+        // Broadcast to dashboard for instant update
+        await loadAll(true, true);
         openMembersSheet();
       } catch (e) { showToast(e.message || "Failed.", "error"); }
     }
@@ -5131,12 +5247,17 @@
     async function saveCustomColumn() {
       const newName = document.getElementById("cc-name").value.trim();
       const width = parseInt(document.getElementById("cc-width").value) || 180;
-      if (!newName) return;
+      const errorEl = document.getElementById("cc-error");
+      if (!newName) {
+        errorEl.textContent = "Column name is required.";
+        errorEl.style.display = "block";
+        document.getElementById("cc-name").focus();
+        return;
+      }
 
       const key = activeColType === "don" ? "donation_custom_columns" : "expense_custom_columns";
       const existingRecords = eventData[key] || [];
       const existingNames = existingRecords.map(c => (typeof c === 'string' ? c : c.n).toLowerCase());
-      const errorEl = document.getElementById("cc-error");
 
       if (existingNames.includes(newName.toLowerCase())) {
         errorEl.textContent = `A column named "${newName}" already exists in this table.`;
@@ -5150,8 +5271,9 @@
         const data = {}; data[key] = updated;
         const res = await updateEvent(eventId, data);
         eventData[key] = res[key];
+        clearEventCache();
         if (activeColType === "don") renderDonations(); else renderExpenses();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab);
+        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeCustomColSheet();
         showToast("Column added!");
       } catch (e) { showToast(e.message || "Failed.", "error"); }
@@ -5159,11 +5281,17 @@
     async function renameCustomColumn() {
       const newName = document.getElementById("cc-name").value.trim();
       const width = parseInt(document.getElementById("cc-width").value) || 180;
-      if (!newName || !editingColName) return;
+      const errorEl = document.getElementById("cc-error");
+      if (!newName) {
+        errorEl.textContent = "Column name is required.";
+        errorEl.style.display = "block";
+        document.getElementById("cc-name").focus();
+        return;
+      }
+      if (!editingColName) return;
 
       const key = activeColType === "don" ? "donation_custom_columns" : "expense_custom_columns";
       const existing = eventData[key] || [];
-      const errorEl = document.getElementById("cc-error");
 
       if (existing.some(c => {
         const n = typeof c === "string" ? c : c.n;
@@ -5184,9 +5312,10 @@
         const data = {}; data[key] = updated;
         const res = await updateEvent(eventId, data);
         eventData[key] = res[key];
+        clearEventCache();
 
         if (activeColType === "don") renderDonations(); else renderExpenses();
-        if (activeTheaterTab) refreshTheaterTable(activeTheaterTab);
+        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeCustomColSheet();
         showToast("Column renamed!");
       } catch (e) { showToast(e.message || "Failed.", "error"); }
@@ -5371,8 +5500,8 @@
       document.getElementById("rot-tab-sum").classList.toggle("active", tab === "sum");
     }
 
-    function switchTheaterTab(tab) {
-      if (!activeTheaterTab || activeTheaterTab === tab) return;
+    function switchTheaterTab(tab, force = false) {
+      if (!force && (!activeTheaterTab || activeTheaterTab === tab)) return;
       // Block switching to a hidden tab
       const showDon = eventData.show_donations !== false;
       const showExp = eventData.show_expenses !== false;

@@ -43,8 +43,8 @@
     .btn-save:hover{transform:translateY(-1px);}
     .btn-save:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
     .btn-save:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
-    .error-msg{display:none;align-items:center;gap:6px;background:#FFF0EC;border:1.5px solid #D4906A;border-radius:10px;padding:9px 12px;font-size:12px;color:var(--red);font-weight:700;width:100%;margin-bottom:12px;}
-    .error-msg.visible{display:flex;}
+    .error-msg{display:none;font-size:12px;color:var(--red);font-weight:700;margin-bottom:12px;line-height:1.5;}
+    .error-msg.visible{display:block;}
     .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
     @keyframes spin{to{transform:rotate(360deg)}}
     .btn-save.loading .btn-text{display:none;}
@@ -61,7 +61,7 @@
   <div class="scr">
     <div class="avatar-wrap"><div class="avatar" id="av">?</div></div>
 
-    <div class="error-msg" id="err-box"><span data-np-icon="alert-circle" data-np-size="18" data-np-tone="amber"></span><span id="err-txt"></span></div>
+    <div class="error-msg" id="err-box"><span id="err-txt"></span></div>
 
     <div class="field-wrap">
       <div class="field-label-out">Full Name *</div>

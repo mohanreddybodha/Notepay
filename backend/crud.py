@@ -29,7 +29,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         raise HTTPException(status_code=400, detail="This phone number is already registered to another account. Please contact support.")
 
 def create_event(db: Session, event: schemas.EventCreate, organizer_id: int):
-    invite_code = str(uuid.uuid4())[:8].upper()
+    invite_code = str(uuid.uuid4())[:12].upper()
     db_event = models.Event(
         name=event.name,
         description=event.description,
@@ -204,7 +204,7 @@ def toggle_event_status(db: Session, event_id: int, is_active: bool, user_id: in
 def regenerate_invite_code(db: Session, event_id: int):
     event = get_event(db, event_id)
     if event:
-        event.invite_code = str(uuid.uuid4())[:8].upper()
+        event.invite_code = str(uuid.uuid4())[:12].upper()
         db.commit()
         db.refresh(event)
         cache.cache.invalidate_event(event_id)
