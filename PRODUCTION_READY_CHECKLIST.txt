@@ -1,0 +1,126 @@
+THIS IS A FRESH START GUIDE: assume none of the production preparation steps are done yet.
+Follow these steps in order and complete each section before moving to the next.
+
+NOTE: This checklist is for pre-deployment actions before you push code to production.
+It covers the required preparation for AWS Lambda + Neon DB deployment, including security, rate limiting, domain, database, configuration, and infrastructure readiness.
+
+1. Confirm deployment architecture and accounts
+- Step 1.1: Create or verify an AWS account.
+- Step 1.2: Create or verify a Neon account and a Postgres project.
+- Step 1.3: Create or verify a Firebase production project and enable Phone Auth.
+- Step 1.4: Buy a production domain and ensure DNS management access.
+
+2. Purchase and configure domain
+- Step 2.1: Buy the domain if not purchased yet (example: notepay.in).
+- Step 2.2: Use a DNS provider you control (Namecheap, Route 53, Cloudflare).
+- Step 2.3: Reserve the domain for your production site and API.
+- Step 2.4: Plan DNS records:
+  * `www.notepay.in` or `notepay.in` → CloudFront distribution
+  * API custom domain or Lambda function URL if using custom API domain
+- Step 2.5: Note the DNS provider login and record editing workflow.
+
+3. Create the Neon database
+- Step 3.1: Create a Neon project in Neon.tech.
+- Step 3.2: Create a serverless Postgres database in Neon.
+- Step 3.3: Locate the Neon pooled endpoint URL in the Neon dashboard.
+- Step 3.4: Record the full connection string: user, password, host, port, db name, sslmode=require.
+- Step 3.5: Test the connection from your local machine with the Neon pooled endpoint.
+- Step 3.6: Save the connection string for the backend secret store.
+
+4. Set up secrets storage
+- Step 4.1: Open AWS Systems Manager Parameter Store.
+- Step 4.2: Create a SecureString parameter for each secret.
+- Required secrets:
+  * `/notepay/database_url` = Neon pooled endpoint URL
+  * `/notepay/firebase_project_id` = Firebase production project ID
+  * `/notepay/jwt_secret` = random strong secret used by backend if needed
+- Step 4.3: If you use any additional secret values, store them here too.
+- Step 4.4: Do not write credentials into code, `.env`, or Git files.
+- Step 4.5: Add `service_account.json` to `.gitignore` if that file exists locally.
+
+5. Update backend configuration for production
+- Step 5.1: Open `backend/database.py`.
+- Step 5.2: Remove the hardcoded SQLite fallback or keep it only for local dev by checking `ENVIRONMENT`.
+- Step 5.3: Ensure the backend uses `DATABASE_URL` from environment variables.
+- Step 5.4: Use the Neon pooled endpoint with sslmode=require and a small pool size (`pool_size=2`).
+- Step 5.5: Verify `backend/cache.py` reads `REDIS_URL` and uses Redis in production.
+- Step 5.6: Set `ALLOWED_ORIGINS` in config to the exact production frontend URL(s) only.
+- Step 5.7: Set `ENVIRONMENT=production` and `DEBUG=false` in production config.
+- Step 5.8: Confirm the backend does not expose dev-only settings or open CORS in production.
+
+6. Add or verify security and rate limiting before deployment
+- Step 6.1: Review all protected endpoints and confirm every one uses auth.
+- Step 6.2: Confirm `/users`, `/events`, `/events/join`, `/events/{id}/donations`, `/events/{id}/expenses` are protected as needed.
+- Step 6.3: Confirm role checks require organizer or collector access where appropriate.
+- Step 6.4: Implement or verify server-side rate limiting in the backend for:
+  * OTP login / registration flows
+  * `/events/join`
+  * high-risk write operations
+- Step 6.5: Ensure invalid or abusive requests return HTTP 400/401/403/429 rather than succeed.
+- Step 6.6: Confirm request input validation exists for string lengths, numeric ranges, and required fields.
+
+7. Add production support packages
+- Step 7.1: Open `backend/requirements.txt`.
+- Step 7.2: Confirm `mangum>=0.17.0` is listed for AWS Lambda compatibility.
+- Step 7.3: Confirm `psycopg2-binary` is listed, not `psycopg2`.
+- Step 7.4: Confirm `redis>=5.0.1` or a compatible Redis client is listed if you use Redis.
+- Step 7.5: Add any AWS-related packages needed for Parameter Store or Lambda support if required.
+
+8. Prepare infrastructure and deployment files
+- Step 8.1: Create `template.yaml` in repo root.
+- Step 8.2: Define the Lambda function, IAM role, permissions, and environment variables.
+- Step 8.3: Define S3 bucket and CloudFront distribution for frontend hosting if your deployment includes Flutter web.
+- Step 8.4: Add Parameter Store references for `DATABASE_URL`, `FIREBASE_PROJECT_ID`, and `JWT_SECRET`.
+- Step 8.5: Create `samconfig.toml` in repo root to store SAM deployment settings.
+- Step 8.6: Create `.github/workflows/deploy.yml` for automated deploys from `main`.
+- Step 8.7: Confirm deployment files use production values and do not include secrets directly.
+
+9. Configure frontend for production
+- Step 9.1: Open `frontend/js/api.js`.
+- Step 9.2: Change `API_BASE` from `http://${window.location.hostname}:8000` to your production HTTPS backend endpoint.
+- Step 9.3: Open `frontend/js/firebase-config.js`.
+- Step 9.4: Replace any dev Firebase config with production Firebase project values.
+- Step 9.5: Confirm no frontend file is pointing to local host or test endpoints.
+- Step 9.6: Plan where Flutter web build output will be stored for S3 upload.
+
+10. SSL and HTTPS readiness
+- Step 10.1: Decide whether to use AWS ACM or another certificate provider.
+- Step 10.2: Request a certificate for your domain and any subdomains used by API.
+- Step 10.3: Validate the certificate via DNS or email.
+- Step 10.4: Confirm the API endpoint and frontend site will be served via HTTPS only.
+- Step 10.5: If using CloudFront, ensure the distribution is configured for HTTPS and redirects HTTP to HTTPS.
+
+11. Pre-deployment verification
+- Step 11.1: Install AWS CLI locally and verify with `aws --version`.
+- Step 11.2: Install AWS SAM CLI locally and verify with `sam --version`.
+- Step 11.3: Verify the IAM deploy user exists and access keys are configured with `aws configure`.
+- Step 11.4: Verify GitHub repository secrets exist for AWS credentials and any deploy parameters.
+- Step 11.5: Verify DNS provider access is available for final domain configuration.
+- Step 11.6: Verify you can connect to Neon and Firebase from your local environment.
+
+12. Database migration readiness
+- Step 12.1: Add Alembic to the backend if not already present.
+- Step 12.2: Initialize Alembic migration environment with the project models.
+- Step 12.3: Write migration scripts for all schema changes before deployment.
+- Step 12.4: Apply migrations to the Neon database and verify table creation.
+- Step 12.5: Do not rely on SQLite automatic migrations in production.
+
+13. Logging and monitoring plan
+- Step 13.1: Decide where Lambda logs will be stored (CloudWatch is the default).
+- Step 13.2: Confirm request and error logs are enabled in the backend.
+- Step 13.3: Plan whether you will use CloudWatch alarms or a third-party service.
+- Step 13.4: Confirm you have visibility into failed requests, Lambda errors, and API health.
+
+14. Final pre-deploy checklist
+- Step 14.1: Confirm domain purchased and DNS settings ready.
+- Step 14.2: Confirm Neon database created and connection URL verified.
+- Step 14.3: Confirm AWS Parameter Store secrets populated.
+- Step 14.4: Confirm backend production configuration is set.
+- Step 14.5: Confirm frontend production config is set.
+- Step 14.6: Confirm rate limiting and security checks are implemented.
+- Step 14.7: Confirm AWS SAM and GitHub Actions deployment files are prepared.
+- Step 14.8: Confirm SSL certificate is requested or ready.
+- Step 14.9: Confirm Alembic migrations are prepared.
+- Step 14.10: Confirm deployment IAM user and secrets are configured.
+
+Use this file as the exact pre-deploy checklist before pushing to production. Follow each numbered step in order, and do not deploy until every item is complete.

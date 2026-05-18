@@ -20,6 +20,7 @@ try:
 except ImportError:
     cache = None
 from database import engine, get_db
+from limiter import verify_rate_limit
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -225,11 +226,16 @@ def read_root():
     return {"message": "NotePay API — PRD v12.0 Complete", "docs": "/docs"}
 
 
+async def register_rate_limit(request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    verify_rate_limit(f"ip:{client_ip}:register", limit=10, window=60)
+
 # ─── USER / PROFILE ────────────────────────────────────────────────────────────
 @app.post("/users", response_model=schemas.UserResponse, tags=["Profile"])
 async def create_user(
     user_data: schemas.UserRegisterInput,
     db: Session = Depends(get_db),
+    _rl = Depends(register_rate_limit),
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
 ):
     """
@@ -293,6 +299,7 @@ async def create_event(event: schemas.EventCreate,
                  db: Session = Depends(get_db),
                  user_id: int = Depends(get_current_user_id)):
     """Create a new event. Creator becomes the Organizer."""
+    verify_rate_limit(f"user:{user_id}:create_event", limit=5, window=60)
     return crud.create_event(db=db, event=event, organizer_id=user_id)
 
 @app.get("/events", response_model=List[schemas.EventResponse], tags=["Events"])
@@ -316,6 +323,7 @@ async def read_shared_events(db: Session = Depends(get_db), user_id: int = Depen
 @app.post("/events/join", tags=["Events"])
 async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Join an event using an invite code (becomes Collector)."""
+    verify_rate_limit(f"user:{user_id}:join", limit=5, window=60)
     event = crud.join_event(db, user_id, invite_code)
     if event is None:
         raise HTTPException(status_code=404, detail="Invalid invite code")
@@ -375,6 +383,7 @@ async def reactivate_event(event_id: int, db: Session = Depends(get_db), user_id
 async def regenerate_invite_code(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Generate a brand new invite code. Old code becomes permanently invalid."""
     verify_membership(db, event_id, user_id, require_organizer=True)
+    verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=60)
     return crud.regenerate_invite_code(db, event_id)
 @app.get("/events/watched", tags=["Events"])
 async def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -563,6 +572,7 @@ async def get_event_donations(event_id: int, db: Session = Depends(get_db), user
 async def add_donation(event_id: int, donation: schemas.DonationCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new donation row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id, for_write=True)
+    verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60)
     res = crud.create_donation(db, event_id, user_id, donation)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add"})
@@ -610,6 +620,7 @@ async def get_event_expenses(event_id: int, db: Session = Depends(get_db), user_
 async def add_expense(event_id: int, expense: schemas.ExpenseCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new expense row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id, for_write=True)
+    verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60)
     res = crud.create_expense(db, event_id, user_id, expense)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_add"})
@@ -683,6 +694,7 @@ async def send_chat_message(event_id: int, data: schemas.ChatMessageCreate,
                             db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Send a chat message to all members of an event."""
     verify_membership(db, event_id, user_id, require_member=True, require_unrestricted=True)
+    verify_rate_limit(f"user:{user_id}:chat", limit=20, window=60)
     if not data.message or not data.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     msg = crud.create_chat_message(db, event_id, user_id, data.message.strip(), data.reply_to_id)
