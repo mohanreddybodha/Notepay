@@ -9,6 +9,9 @@ from sqlalchemy import func
 def get_user_by_firebase_uid(db: Session, firebase_uid: str):
     return db.query(models.User).filter(models.User.firebase_uid == firebase_uid).first()
 
+def get_user_by_phone(db: Session, phone_number: str):
+    return db.query(models.User).filter(models.User.phone_number == phone_number).first()
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 

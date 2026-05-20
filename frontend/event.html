@@ -5526,10 +5526,18 @@
       // Summary tab needs body-level scrolling; Tables have their own scroll areas.
       body.style.overflowY = (tab === "sum") ? "auto" : "hidden";
       
-      // Remove any previous touch handler
+      // Remove any previous touch handlers
       if (body._scrollHandler) {
         body.removeEventListener('touchmove', body._scrollHandler);
         body._scrollHandler = null;
+      }
+      if (body._touchStartHandler) {
+        body.removeEventListener('touchstart', body._touchStartHandler);
+        body._touchStartHandler = null;
+      }
+      if (body._touchEndHandler) {
+        body.removeEventListener('touchend', body._touchEndHandler);
+        body._touchEndHandler = null;
       }
 
       overlay.style.display = "flex";
@@ -5571,10 +5579,10 @@
           </div>
         `;
 
-        // Scrollable Table Container
+        // Scrollable Table Container (Disable native scroll under rotation to prevent double-scroll stutter)
         const tableContainer = document.createElement("div");
         tableContainer.className = "tbl-sc theater-scroll-area";
-        tableContainer.style.cssText = "flex:1; width:100%; overflow-y:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0; padding:0;";
+        tableContainer.style.cssText = `flex:1; width:100%; overflow:${(rotation === 90 || rotation === 270) ? 'hidden' : 'auto'}; -webkit-overflow-scrolling:touch; margin:0; padding:0;`;
 
         const sInp = sBar.querySelector("input");
         sInp.oninput = (e) => {
@@ -5592,21 +5600,87 @@
         body.appendChild(theaterWrapper);
         content = theaterWrapper;
         
-        // Touch Scroll Handler for rotated state
+        // Touch Scroll Handler for rotated state (Buttery-Smooth Momentum Scrolling)
         if (rotation === 90 || rotation === 270) {
-          let startX = 0, startScrollTop = 0;
+          let startX = 0, startY = 0;
+          let startScrollTop = 0, startScrollLeft = 0;
+          let lastX = 0, lastY = 0, lastTime = 0;
+          let velX = 0, velY = 0;
+          let animId = null;
+
+          const dirSign = (rotation === 90) ? 1 : -1;
+
           body._scrollHandler = (e) => {
             if (e.touches.length !== 1) return;
-            const dx = e.touches[0].clientX - startX;
-            tableContainer.scrollTop = startScrollTop + dx;
-            e.preventDefault();
+            const touch = e.touches[0];
+            const now = performance.now();
+            const dt = now - lastTime;
+
+            const dx = touch.clientX - startX;
+            const dy = touch.clientY - startY;
+
+            // Visual vertical scrolling (table's scrollTop)
+            tableContainer.scrollTop = startScrollTop - dx * dirSign;
+            // Visual horizontal scrolling (table's scrollLeft)
+            tableContainer.scrollLeft = startScrollLeft + dy * dirSign;
+
+            if (dt > 0) {
+              // Calculate scroll velocity (px per ms)
+              velX = (touch.clientX - lastX) / dt;
+              velY = (touch.clientY - lastY) / dt;
+            }
+
+            lastX = touch.clientX;
+            lastY = touch.clientY;
+            lastTime = now;
+            
+            if (e.cancelable) e.preventDefault();
           };
-          body.addEventListener('touchstart', (e) => {
+
+          body._touchStartHandler = (e) => {
             if (e.touches.length !== 1) return;
-            startX = e.touches[0].clientX;
+            if (animId) cancelAnimationFrame(animId);
+            
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            lastX = touch.clientX;
+            lastY = touch.clientY;
+            lastTime = performance.now();
+            
             startScrollTop = tableContainer.scrollTop;
-          }, { passive: true });
+            startScrollLeft = tableContainer.scrollLeft;
+            velX = 0;
+            velY = 0;
+          };
+
+          body._touchEndHandler = () => {
+            let momentumX = velX;
+            let momentumY = velY;
+            const friction = 0.94; // Premium iOS-like deceleration factor
+
+            const animateMomentum = () => {
+              if (Math.abs(momentumX) < 0.02 && Math.abs(momentumY) < 0.02) return;
+
+              // Smoothly scroll using velocity (natural directions)
+              tableContainer.scrollTop -= momentumX * 16 * dirSign;
+              tableContainer.scrollLeft += momentumY * 16 * dirSign;
+
+              // Apply friction/decay
+              momentumX *= friction;
+              momentumY *= friction;
+
+              animId = requestAnimationFrame(animateMomentum);
+            };
+
+            if (Math.abs(momentumX) > 0.05 || Math.abs(momentumY) > 0.05) {
+              animId = requestAnimationFrame(animateMomentum);
+            }
+          };
+
+          body.addEventListener('touchstart', body._touchStartHandler, { passive: true });
           body.addEventListener('touchmove', body._scrollHandler, { passive: false });
+          body.addEventListener('touchend', body._touchEndHandler, { passive: true });
         }
       }
       main.classList.remove("rot-0", "rot-90", "rot-180", "rot-270");
@@ -5693,6 +5767,20 @@
         const p = document.getElementById(id);
         if (p) document.getElementById("main-page").appendChild(p);
       });
+
+      // Clean up touch handlers to prevent memory leaks
+      if (body._scrollHandler) {
+        body.removeEventListener('touchmove', body._scrollHandler);
+        body._scrollHandler = null;
+      }
+      if (body._touchStartHandler) {
+        body.removeEventListener('touchstart', body._touchStartHandler);
+        body._touchStartHandler = null;
+      }
+      if (body._touchEndHandler) {
+        body.removeEventListener('touchend', body._touchEndHandler);
+        body._touchEndHandler = null;
+      }
 
       body.innerHTML = "";
       overlay.style.display = "none";
