@@ -11,6 +11,12 @@
   --primary-lt:     #EDF3FF;
   --teal:           #0FA3A3;
 
+  /* Button Variables (Light Mode) */
+  --btn-primary-bg: #1A4E8C;
+  --btn-primary-text: #FFFFFF;
+  --btn-danger-bg: #C0392B;
+  --btn-danger-text: #FFFFFF;
+
   /* Surfaces */
   --surface:        #FFFFFF;
   --surf-var:       #EAF0F6;
@@ -61,6 +67,13 @@ body.dark-mode {
   --primary-dk:   #2A4A72;
   --primary-lt:   #182B47;
   --teal:         #12C5C5;
+
+  /* Button Variables (Dark Mode) */
+  --btn-primary-bg: #5A9BE8;
+  --btn-primary-text: #0A0A0A;
+  --btn-danger-bg: #F87171;
+  --btn-danger-text: #0A0A0A;
+  
   --surface:      #1A1A1A;
   --surf-var:     #242424;
   --surf-var2:    #2C2C2C;
@@ -519,46 +532,54 @@ a {
 .otp-box.filled { border-color: var(--primary); }
 .otp-box.active { border-color: var(--primary); border-width: 2.5px; }
 
-/* ── PRIMARY BUTTON ── */
-.btn-primary {
+/* ── PROFESSIONAL BUTTONS ── */
+.btn {
   width: 100%;
-  background: var(--btn-primary);
-  border-radius: 18px;
+  border-radius: 30px;
   padding: 14px;
   text-align: center;
   font-family: 'Nunito', sans-serif;
   font-size: 15px;
   font-weight: 900;
-  color: white;
   cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: none;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.26);
-  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
-  user-select: none;
+  background: none;
 }
-.btn-primary:hover { background: #163f72; transform: translateY(-1px); }
-.btn-primary:active { transform: translateY(1px); box-shadow: 0 2px 0 rgba(0,0,0,0.26); }
-.btn-primary:disabled {
-  background: var(--input-border);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; background: var(--input-bg) !important; color: var(--text3) !important; box-shadow: none !important; }
+.btn.loading .btn-text { display: none; }
+.btn.loading .spinner { display: block; }
+
+.btn-solid-primary {
+  background-color: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+  box-shadow: 0 4px 12px rgba(26, 78, 140, 0.2);
+}
+.btn-solid-primary:hover { opacity: 0.9; }
+body.dark-mode .btn-solid-primary { box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2); }
+
+.btn-solid-danger {
+  background-color: var(--btn-danger-bg) !important;
+  color: var(--btn-danger-text) !important;
 }
 
-/* ── TEXT BUTTON ── */
-.btn-text {
-  text-align: center;
-  color: var(--text3);
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 9px 0;
-  transition: color 0.15s;
-  background: none;
-  border: none;
-  width: 100%;
+.btn-solid-amber {
+  background-color: var(--amber) !important;
+  color: #0A0A0A !important;
 }
-.btn-text:hover { color: var(--primary); }
+
+.btn-text-secondary {
+  color: var(--text3) !important;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 0;
+}
+.btn-text-secondary:hover { color: var(--text) !important; }
 
 /* ── TOGGLE ── */
 .toggle {

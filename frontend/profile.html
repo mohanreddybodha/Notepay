@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/global.css?v=2"/>
   <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
@@ -123,8 +123,8 @@
     <div class="pop-m">You will be signed out from this device. Continue?</div>
     <div class="pop-line"></div>
     <div class="pop-btns">
-      <div class="pbc" onclick="document.getElementById('logout-pop').style.display='none'">Cancel</div>
-      <div class="pbk r" onclick="doLogout()">Logout</div>
+      <div class="btn btn-text-secondary" onclick="document.getElementById('logout-pop').style.display='none'">Cancel</div>
+      <div class="btn btn-solid-danger" onclick="doLogout()">Logout</div>
     </div>
   </div>
 </div>

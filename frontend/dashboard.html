@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/global.css?v=2"/>
   <link rel="stylesheet" href="css/icons.css?v=2" />
   <script>
     if (localStorage.getItem("np_dark")) {
@@ -68,9 +68,10 @@
     .loader{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg)}}
     /* FAB */
-    .fab{position:fixed;bottom:22px;right:50%;transform:translateX(calc(50% + 20px));background:var(--primary-dk);border-radius:24px;padding:12px 20px;display:flex;align-items:center;gap:8px;color:white !important;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(13,43,85,.45);transition:transform .15s;z-index:20;border:none;max-width:200px;}
+    .fab{position:fixed;bottom:22px;right:50%;transform:translateX(calc(50% + 20px));background:var(--btn-primary-bg);border:none;border-radius:30px;padding:12px 20px;display:flex;align-items:center;gap:8px;color:var(--btn-primary-text) !important;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(26,78,140,.2);transition:all .15s;z-index:20;width:auto;}
+    body.dark-mode .fab{box-shadow:0 6px 24px rgba(96,165,250,.2);}
     @media(min-width:480px){.fab{right:calc(50% - 220px);transform:none;}}
-    .fab:hover{transform:translateX(calc(50% + 20px)) scale(1.04);}
+    .fab:hover{transform:translateX(calc(50% + 20px)) scale(1.04);opacity:0.9;}
     @media(min-width:480px){.fab:hover{transform:scale(1.04);}}
     /* Sheet */
     .sheet-ov{position:fixed;inset:0;background:rgba(13,27,42,.8);display:flex;align-items:flex-end;z-index:100;animation:fi .2s ease;}
@@ -79,6 +80,7 @@
     @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
     .sh-handle{width:44px;height:5px;background:var(--border);border-radius:3px;margin:0 auto 16px;}
     .sh-title{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:var(--text);margin-bottom:14px;}
+    .sheet-title{font-size:18px;font-weight:900;margin-bottom:18px;}
     .choice{background:var(--surf-var);border-radius:13px;border:1.5px solid var(--border2);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .15s;}
     .choice:hover{background:var(--surf-var2);border-color:var(--primary);}
     .ch-t{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--primary);}
@@ -86,11 +88,8 @@
     .btn-cancel{width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;}
     /* Smooth Slider */
     .main-view { flex:1; overflow:hidden; display:flex; flex-direction:column; position:relative; min-height:0; }
-    /* Smooth Slider */
-    .main-view { flex:1; overflow:hidden; display:flex; flex-direction:column; position:relative; min-height:0; }
     .panes-wrapper { display:flex; flex:1; width:300%; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); min-height:0; }
     .pane { width:33.333333%; height:100%; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
-
   </style>
 </head>
 <body>
@@ -109,9 +108,6 @@
       <div class="logo-text">Notepay</div>
     </div>
     <div class="spacer"></div>
-
-
-
     <a href="profile.html" class="av-btn" id="av-btn" aria-label="My Profile">?</a>
   </div>
 
@@ -119,7 +115,7 @@
   <div class="tab-heading">
     <div class="tab-h active" id="tab-my" onclick="switchTab(0)">My Events<span class="badge" id="badge-my">0</span></div>
     <div class="tab-h" id="tab-shared" onclick="switchTab(1)">Shared Events<span class="badge" id="badge-shared">0</span></div>
-    <div class="tab-h" id="tab-discover" onclick="switchTab(2)">Discover<span class="badge" id="badge-discover">0</span></div>
+    <div class="tab-h" id="tab-discover" onclick="switchTab(2)">Visited Events<span class="badge" id="badge-discover">0</span></div>
   </div>
 
   <!-- Search -->
@@ -152,18 +148,20 @@
   </div>
 
   <!-- FAB -->
-  <button class="fab" onclick="openSheet()" aria-label="Add new event"><span data-np-icon="plus" data-np-size="20"></span> New Event</button>
+  <button class="fab" onclick="openSheet()">
+    <span data-np-icon="plus" data-np-size="18"></span> New Event
+  </button>
 
 <!-- Add Event Sheet -->
 <div class="sheet-ov" id="sheet-add" style="display:none;" onclick="closeSheet()">
   <div class="sheet-box" onclick="event.stopPropagation()">
     <div class="sh-handle"></div>
     <div class="sh-title">Add New Event</div>
-    <div class="choice" onclick="closeSheet();window.location.href='create-event.html'">
+    <div class="choice" onclick="navSmooth('create-event.html')">
       <div class="ch-t">Create Event</div>
       <div class="ch-s">Start a new event as organizer · You manage donations and expenses</div>
     </div>
-    <div class="choice" onclick="closeSheet();window.location.href='join-event.html'">
+    <div class="choice" onclick="navSmooth('join-event.html')">
       <div class="ch-t">Join by Event Code</div>
       <div class="ch-s">Enter code shared by organizer · Join as a collector</div>
     </div>
@@ -435,8 +433,12 @@
   }
 
   // ── Sheet ──
-  function openSheet()  { document.getElementById("sheet-add").style.display="flex"; }
+  function openSheet() { document.getElementById("sheet-add").style.display="flex"; }
   function closeSheet() { document.getElementById("sheet-add").style.display="none"; }
+  function navSmooth(url) {
+    closeSheet();
+    setTimeout(() => { window.location.href = url; }, 150);
+  }
 
   // ── Helpers ──
   function getInitials(name) {

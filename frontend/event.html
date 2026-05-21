@@ -16,7 +16,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=7" />
+  <link rel="stylesheet" href="css/global.css?v=2" />
   <link rel="stylesheet" href="css/icons.css?v=2" />
   <script src="js/icons.js?v=2"></script>
   <script>
@@ -337,11 +337,15 @@
     }
 
     .th.sticky-col {
+      display: flex !important;
+      align-items: center !important;
       position: sticky;
       left: 0;
       z-index: 1100 !important;
       width: 130px;
       background: var(--primary-dk) !important;
+      justify-content: flex-start !important;
+      padding-left: 6px !important;
       border-right: 1.5px solid rgba(255, 255, 255, 0.15);
       box-shadow: 2px 0 5px rgba(0,0,0,0.2);
     }
@@ -393,6 +397,8 @@
     }
 
     .fc.sticky-col {
+      display: flex !important;
+      align-items: center !important;
       position: sticky;
       left: 0;
       z-index: 500 !important;
@@ -519,13 +525,25 @@
         gap: 4px;
       }
 
+      /* Show full stats including role */
       #rot-main.is-theater .rot-stat-full {
-        display: none;
+        display: inline;
+      }
+      #rot-main.is-theater .rot-stat-role-wrap {
+        display: inline;
+      }
+      #rot-main.is-theater .rot-stat-info-wrap {
+        display: inline;
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 42vw;
       }
 
       #rot-main.is-theater .rot-stat {
         font-size: 10px;
-        max-width: 28vw;
+        max-width: 42vw;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -723,34 +741,11 @@
       gap: 8px;
     }
 
-    .ef-save {
-      flex: 1;
-      background: var(--primary);
-      border-radius: 13px;
-      padding: 11px;
-      text-align: center;
-      font-family: 'Nunito', sans-serif;
-      font-size: 14px;
-      font-weight: 900;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 3px 0 rgba(0, 0, 0, .22);
-      border: none;
-    }
+    
+    
 
-    .ef-cancel {
-      flex: 1;
-      background: var(--surf-var2);
-      border-radius: 13px;
-      padding: 11px;
-      text-align: center;
-      font-family: 'Nunito', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text2);
-      cursor: pointer;
-      border: 1.5px solid var(--border2);
-    }
+    
+    
 
     /* Summary Dashboard Styles */
     .bal-card {
@@ -1051,28 +1046,23 @@
       cursor: pointer;
       padding: 9px 0;
       background: none;
-      border: none;
+      border: 1.5px solid var(--border2);
+      border-radius: 30px;
+      transition: all 0.15s;
     }
+    .pbc:hover { background: var(--surf-var2); }
 
-    .pbk {
-      border-radius: 14px;
-      text-align: center;
-      padding: 10px 20px;
-      font-size: 13.5px;
-      font-weight: 900;
-      color: white;
-      cursor: pointer;
-      font-family: 'Nunito', sans-serif;
-      box-shadow: 0 3px 0 rgba(0, 0, 0, .22);
-    }
+    
+    
 
-    .pbk.r {
-      background: var(--red);
-    }
+    
+    
 
-    .pbk.b {
-      background: var(--primary);
-    }
+    
+    
+
+    
+    
 
     /* Dropdown */
     .dd-ov {
@@ -1410,11 +1400,7 @@
       border-color: #333;
     }
 
-    body.dark-mode .ef-cancel {
-      background: #2c2c2c;
-      border-color: #444;
-      color: #AAA;
-    }
+    body.dark-mode 
 
     body.dark-mode .ctx {
       background: #222;
@@ -1453,9 +1439,7 @@
       color: #5A9BE8;
     }
 
-    body.dark-mode .pbk.b {
-      background: var(--primary);
-    }
+    body.dark-mode 
 
     body.dark-mode .ef-field {
       background: #1A1A1A;
@@ -1486,19 +1470,21 @@
 
     /* Custom columns UI */
     .add-col-btn {
-      background: var(--teal);
-      color: white;
-      border: none;
-      border-radius: 12px;
+      background: none;
+      color: var(--teal);
+      border: 1.5px solid var(--teal);
+      border-radius: 30px;
       padding: 3px 10px;
       font-size: 10px;
       font-weight: 900;
       text-transform: uppercase;
       cursor: pointer;
       margin-left: 8px;
-      box-shadow: 0 2px 0 rgba(0, 0, 0, .15);
+      box-shadow: none;
       display: none;
+      transition: all .15s;
     }
+    .add-col-btn:hover { background: var(--teal); color: white; }
 
     .add-col-btn:active {
       transform: translateY(1px);
@@ -1518,7 +1504,7 @@
     }
 
     body.dark-mode .add-col-btn {
-      background: #0FA3A3;
+      color: var(--teal);
     }
 
     /* Rotation Styles */
@@ -1726,10 +1712,10 @@
     }
 
     .rot-add-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 10px;
+      background: none;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      border-radius: 30px;
       padding: 7px 14px;
       font-size: 11.5px;
       font-weight: 900;
@@ -1737,17 +1723,18 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      transition: transform 0.1s;
+      box-shadow: none;
+      transition: all 0.15s;
     }
+    .rot-add-btn:hover { background: var(--primary); color: white; }
 
     .rot-add-btn:active {
       transform: scale(0.96);
     }
 
     body.dark-mode .rot-add-btn {
-      background: var(--primary);
-      color: white;
+      color: var(--primary);
+      border-color: var(--primary);
     }
 
     /* Theater Tabs */
@@ -3167,8 +3154,8 @@
         </div>
         <div class="sbox-footer">
           <div class="ef-btns">
-            <button class="ef-cancel" onclick="closeEntryForm()">Cancel</button>
-            <button class="ef-save" id="ef-save-btn" onclick="saveEntry()">Save</button>
+            <button class="btn btn-text-secondary" onclick="closeEntryForm()">Cancel</button>
+            <button class="btn btn-solid-primary" id="ef-save-btn" onclick="saveEntry()">Save</button>
           </div>
         </div>
       </div>
@@ -3184,7 +3171,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeRestrictPop()">Cancel</button>
-          <button class="pbk r" onclick="confirmRestrict()">Restrict</button>
+          <button class="btn btn-solid-danger" onclick="confirmRestrict()">Restrict</button>
         </div>
       </div>
     </div>
@@ -3200,7 +3187,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="viewDataOnly()">View Data</button>
-          <button class="pbk b" style="border:none;border-radius:14px;" onclick="toggleDeactivate();closeDeactPop()">
+          <button class="btn btn-solid-primary" style="border:none;border-radius:14px;" onclick="toggleDeactivate();closeDeactPop()">
             <span data-np-icon="unlock" data-np-size="16" style="vertical-align:middle;margin-right:4px;"></span>
             Reactivate</button>
         </div>
@@ -3230,8 +3217,8 @@
         </div>
         <div class="sbox-footer">
           <div class="ef-btns">
-            <button class="ef-cancel" onclick="closeEditForm()">Cancel</button>
-            <button class="ef-save" id="edit-save-btn" onclick="saveEdit()">Save</button>
+            <button class="btn btn-text-secondary" onclick="closeEditForm()">Cancel</button>
+            <button class="btn btn-solid-primary" id="edit-save-btn" onclick="saveEdit()">Save</button>
           </div>
         </div>
       </div>
@@ -3246,7 +3233,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeDelPop()">Cancel</button>
-          <button class="pbk r" style="border:none;" onclick="confirmDelete()">Delete</button>
+          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmDelete()">Delete</button>
         </div>
       </div>
     </div>
@@ -3261,7 +3248,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeDelColPop()">Cancel</button>
-          <button class="pbk r" style="border:none;" onclick="confirmDeleteColumn()">Delete</button>
+          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmDeleteColumn()">Delete</button>
         </div>
       </div>
     </div>
@@ -3272,11 +3259,13 @@
         <div class="rot-ov-top">
           <div class="rot-top-left">
             <div class="rot-stat">
-              <span id="rot-stat-name" style="font-weight:900; color:var(--text); margin-right:6px;">Notepay</span>
+              <span id="rot-stat-name" style="font-weight:900; color:var(--text); margin-right:6px;"></span>
               <span class="rot-stat-full">
-                <span id="rot-stat-role" class="rot-role"></span>
-                <span style="opacity:0.3; margin: 0 4px;">|</span>
-                <span id="rot-stat-info"></span>
+                <span class="rot-stat-role-wrap">
+                  <span id="rot-stat-role" class="rot-role"></span>
+                  <span style="opacity:0.3; margin: 0 4px;">|</span>
+                </span>
+                <span class="rot-stat-info-wrap"><span id="rot-stat-info"></span></span>
               </span>
             </div>
           </div>
@@ -3370,7 +3359,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="document.getElementById('del-ev-pop').style.display='none'">Cancel</button>
-          <button class="pbk r" onclick="doDeleteEvent()">Delete</button>
+          <button class="btn btn-solid-danger" onclick="doDeleteEvent()">Delete</button>
         </div>
       </div>
     </div>
@@ -3385,7 +3374,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeExitPop()">Cancel</button>
-          <button class="pbk r" style="border:none;" onclick="confirmExit()">Leave</button>
+          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmExit()">Leave</button>
         </div>
       </div>
     </div>
@@ -3402,8 +3391,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closePrivacyPop()">Cancel</button>
-          <button class="pbk" style="background:var(--primary); color:white; border:none;"
-            onclick="confirmPrivacyToggle()">Enable</button>
+          <button class="btn btn-solid-primary" onclick="confirmPrivacyToggle()">Enable</button>
         </div>
       </div>
     </div>
@@ -3416,7 +3404,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeDupPop()">Cancel</button>
-          <button class="pbk" id="dup-confirm-btn" style="background:var(--amber); color:black; border:none;">Add
+          <button class="btn btn-solid-amber" id="dup-confirm-btn">Add
             Anyway</button>
         </div>
       </div>
@@ -3437,6 +3425,7 @@
               <span id="cc-char-count" style="opacity:0.5;font-size:11px;">0/25</span>
             </div>
             <input class="ef-input" id="cc-name" type="text" placeholder="e.g. House No." maxlength="25"
+              autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
               oninput="updateCharCount(this); document.getElementById('cc-error').style.display='none';" />
             <div id="cc-error" style="color:var(--red); font-size:11px; margin-top:4px; font-weight:700; display:none;"></div>
           </div>
@@ -3454,13 +3443,13 @@
         </div>
         <div class="sbox-footer" style="padding:10px 18px 24px;">
           <div class="ef-btns" id="cc-add-btns">
-            <button class="ef-cancel" onclick="closeCustomColSheet()">Cancel</button>
-            <button class="ef-save" id="cc-save-btn" onclick="saveCustomColumn()">Add Column</button>
+            <button class="btn btn-text-secondary" onclick="closeCustomColSheet()">Cancel</button>
+            <button class="btn btn-solid-primary" id="cc-save-btn" onclick="saveCustomColumn()">Add Column</button>
           </div>
           <div class="ef-btns" id="cc-edit-btns" style="display:none;">
-            <button class="ef-cancel" style="background:#FFF0EC; color:var(--red); border-color:#E0A090;"
+            <button class="btn btn-text-secondary" style="border-color:var(--red); color:var(--red);"
               onclick="deleteCustomColumn()">Delete Column</button>
-            <button class="ef-save" id="cc-update-btn" onclick="renameCustomColumn()">Save Changes</button>
+            <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()">Save Changes</button>
           </div>
         </div>
       </div>
@@ -3492,7 +3481,7 @@
         <div class="sbox-footer">
           <div style="display:flex;gap:8px;margin-top:12px;">
             <button
-              style="flex:1;background:#FFF0EC;border:1.5px solid #E0A090;border-radius:14px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;"
+              style="flex:1;background:none;border:1.5px solid var(--red);border-radius:30px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;"
               onclick="revokeCode()"><span data-np-icon="refresh" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
           </div>
           <button
@@ -3543,12 +3532,11 @@
       <div class="pop-box">
         <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Remove Event?</div>
-        <div class="pop-m">Do you want remove event <strong id="remove-event-name"></strong> from discovery tap, you
-          need visit link if remove.</div>
+        <div class="pop-m">Do you want to remove event <strong id="remove-event-name"></strong> from your <strong>Visited Events</strong> tab? You will need to visit the link again to see it.</div>
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeRemovePop()">Cancel</button>
-          <button class="pbk r" style="border:none;" onclick="confirmRemove()">Remove</button>
+          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmRemove()">Remove</button>
         </div>
       </div>
     </div>
@@ -3563,8 +3551,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="document.getElementById('demote-pop').style.display = 'none'">Cancel</button>
-          <button class="pbk" style="background:var(--red);color:white;border:none;border-radius:14px;"
-            onclick="confirmDemote()">Demote</button>
+          <button class="btn btn-solid-danger" onclick="confirmDemote()">Demote</button>
         </div>
       </div>
     </div>
@@ -3578,8 +3565,7 @@
         <div class="pop-btns">
           <button class="pbc"
             onclick="document.getElementById('deact-confirm-pop').style.display = 'none'">Cancel</button>
-          <button class="pbk" style="background:var(--amber);color:black;border:none;border-radius:14px;"
-            onclick="confirmDeactivate()"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Lock Event</button>
+          <button class="btn btn-solid-amber" onclick="confirmDeactivate()"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Lock Event</button>
         </div>
       </div>
     </div>
@@ -3593,8 +3579,7 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="document.getElementById('regenerate-code-pop').style.display = 'none'">Cancel</button>
-          <button class="pbk" style="background:var(--primary);color:white;border:none;border-radius:14px;"
-            onclick="confirmRegenerateCode()">Regenerate</button>
+          <button class="btn btn-solid-primary" onclick="confirmRegenerateCode()">Regenerate</button>
         </div>
       </div>
     </div>
@@ -3615,7 +3600,7 @@
         </div>
         <div class="pop-btns">
           <button class="pbc" onclick="document.getElementById('promote-pop').style.display = 'none'">Go Back</button>
-          <button class="pbk" style="background:var(--amber);color:black;border:none;border-radius:14px;"
+          <button class="btn" style="background:var(--amber);color:black;border:none;border-radius:14px;"
             onclick="confirmPromote()"><span data-np-icon="crown" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Confirm Promotion</button>
         </div>
       </div>
@@ -3721,7 +3706,7 @@
             <div style="font-size:48px; margin-bottom:20px;">❌</div>
             <div style="font-weight:900; font-size:22px; margin-bottom:10px;">Invalid event link</div>
             <div style="color:var(--text3); line-height:1.6; margin-bottom:20px;">This event could not be opened because the page URL is missing a valid event ID.</div>
-            <button class="pbk" onclick="window.location.href='dashboard.html'" style="padding:12px 28px; border-radius:14px;">Back to Dashboard</button>
+            <button class="btn" onclick="window.location.href='dashboard.html'" style="padding:12px 28px; border-radius:14px;">Back to Dashboard</button>
           </div>
         `;
       }
@@ -3738,7 +3723,7 @@
       const loader = document.getElementById("loading-pane");
       const loadTimeout = setTimeout(() => {
         if (loader && loader.style.display !== "none") {
-          loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">⏳</div><div style="font-weight:bold; margin-bottom:5px;">Taking longer than usual...</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">Check your connection or try again.</div><button class="pbk" onclick="location.reload()">Retry Now</button></div>`;
+          loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">⏳</div><div style="font-weight:bold; margin-bottom:5px;">Taking longer than usual...</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">Check your connection or try again.</div><button class="btn" onclick="location.reload()">Retry Now</button></div>`;
         }
       }, 10000);
 
@@ -3754,7 +3739,7 @@
         console.error("Init failed:", e);
         const loader = document.getElementById("loading-pane");
         if (loader) {
-          loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">❌</div><div style="font-weight:bold; margin-bottom:5px;">Load Failed</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">${e.message || "Unknown error"}</div><button class="pbk" onclick="location.reload()">Retry</button></div>`;
+          loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">❌</div><div style="font-weight:bold; margin-bottom:5px;">Load Failed</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">${e.message || "Unknown error"}</div><button class="btn" onclick="location.reload()">Retry</button></div>`;
         }
       } finally {
         clearTimeout(loadTimeout);
@@ -3903,7 +3888,7 @@
                 <div style="font-size:72px; margin-bottom:20px;">🔒</div>
                 <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Event is Private</div>
                 <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">The organizer has turned off public access.</div>
-                <button onclick="window.location.href='dashboard.html'" class="pbk" 
+                <button onclick="window.location.href='dashboard.html'" class="btn" 
                   style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                   ← Back to Dashboard
                 </button>
@@ -4064,7 +4049,7 @@
                 <div style="margin-bottom:20px;">${icon}</div>
                 <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">${msg}</div>
                 <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">${sub}</div>
-                <button onclick="window.location.href='dashboard.html'" class="pbk" 
+                <button onclick="window.location.href='dashboard.html'" class="btn" 
                   style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                   ← Back to Dashboard
                 </button>
@@ -4230,7 +4215,7 @@
       // 1. Render Header Row
       const hdr = document.createElement("div");
       hdr.className = "tr hdr-row";
-      hdr.innerHTML = `<div class="th sticky-col">Name</div>
+      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div style="flex:1; text-align:left;">Name</div></div>
                    <div class="th" style="width:90px;">Amount</div>
                    <div class="th" style="width:100px;">Date</div>
                    <div class="th" style="width:130px;">Collected By</div>`;
@@ -4264,8 +4249,11 @@
 
           const pinned = isPinned("don", d.id || d._id);
           row.innerHTML = `
-        <div class="fc sticky-col">
-          ${pinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(d.donor_name)}
+        <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;">
+          <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+            ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
+          </div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(d.donor_name)}</div>
         </div>
         <div class="sc" style="width:90px;"><span class="cg">${d.amount ? formatINR(d.amount) : '<span class="cm">—</span>'}</span></div>
         <div class="sc" style="width:100px;font-size:11px;">${formatDate(d.collected_at)}</div>
@@ -4292,7 +4280,7 @@
         const emptyMsg = document.getElementById("don-empty-msg");
         emptyMsg.style.display = "block";
         document.getElementById("don-tbl-rot").closest('.scroll-list').classList.add('is-empty');
-        const btnHtml = isOrganizer && !q ? `<button class="ef-save" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('don')">+ Add First Donation</button>` : "";
+        const btnHtml = isOrganizer && !q ? `<button class="btn btn-solid-primary" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('don')">+ Add First Donation</button>` : "";
         emptyMsg.innerHTML = `<div class="empty-state" style="padding:40px 24px;">
       <div class="es-icon" style="margin-bottom:8px;">${q ? npIcon("search", { size: 32, tone: "muted" }) : npIcon("file-text", { size: 32, tone: "muted" })}</div>
       <div class="es-title" style="font-size:15px; font-weight:900;">${q ? 'No results found' : 'No donations yet'}</div>
@@ -4344,7 +4332,7 @@
       // 1. Render Header Row
       const hdr = document.createElement("div");
       hdr.className = "tr hdr-row";
-      hdr.innerHTML = `<div class="th sticky-col">Description</div>
+      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div style="flex:1; text-align:left;">Description</div></div>
                    <div class="th" style="width:90px;">Amount</div>
                    <div class="th" style="width:100px;">Date</div>
                    <div class="th" style="width:130px;">Added By</div>`;
@@ -4378,8 +4366,11 @@
 
           const pinned = isPinned("exp", e.id || e._id);
           row.innerHTML = `
-        <div class="fc sticky-col">
-          ${pinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(e.description)}
+        <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;">
+          <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+            ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
+          </div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(e.description)}</div>
         </div>
         <div class="sc" style="width:90px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>
         <div class="sc" style="width:100px;font-size:11px;">${formatDate(e.collected_at)}</div>
@@ -4406,7 +4397,7 @@
         const emptyMsg = document.getElementById("exp-empty-msg");
         emptyMsg.style.display = "block";
         document.getElementById("exp-tbl-rot").closest('.scroll-list').classList.add('is-empty');
-        const btnHtml = isOrganizer && !q ? `<button class="ef-save" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('exp')">+ Add First Expense</button>` : "";
+        const btnHtml = isOrganizer && !q ? `<button class="btn btn-solid-primary" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('exp')">+ Add First Expense</button>` : "";
         emptyMsg.innerHTML = `<div class="empty-state" style="padding:40px 24px;">
       <div class="es-icon" style="margin-bottom:8px;">${q ? npIcon("search", { size: 32, tone: "muted" }) : npIcon("wallet", { size: 32, tone: "muted" })}</div>
       <div class="es-title" style="font-size:15px; font-weight:900;">${q ? 'No results found' : 'No expenses yet'}</div>
@@ -5593,8 +5584,11 @@
         }).join("");
 
         tr.innerHTML = `
-          <div class="fc sticky-col">
-            ${isPinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(entry.donor_name || entry.description)}
+          <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;">
+            <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+              ${isPinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
+            </div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(entry.donor_name || entry.description)}</div>
           </div>
           <div class="sc" style="width:90px;">
             <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>
@@ -5633,7 +5627,8 @@
 
       const hName = document.createElement("div");
       hName.className = "th sticky-col";
-      hName.textContent = type === "don" ? "NAME" : "DESCRIPTION";
+      hName.style.cssText = "display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;";
+      hName.innerHTML = `<div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div style="flex:1; text-align:left;">${type === "don" ? "NAME" : "DESCRIPTION"}</div>`;
       hdrRow.appendChild(hName);
 
       const hAmt = document.createElement("div");

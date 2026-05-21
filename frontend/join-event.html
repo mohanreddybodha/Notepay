@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=6"/>
+  <link rel="stylesheet" href="css/global.css?v=2"/>
   <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
@@ -35,15 +35,13 @@
     .warn-note{font-size:12px;color:var(--amber);font-weight:700;display:none;margin-top:6px;margin-bottom:14px;line-height:1.5;background:none !important;border:none !important;padding:0 !important;}
     .err-note{font-size:12px;color:var(--red);font-weight:700;display:none;margin-top:6px;margin-bottom:14px;line-height:1.5;background:none !important;border:none !important;padding:0 !important;}
     .err-note.visible{display:block;}
-    .btn-join{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;}
-    .btn-join:hover{transform:translateY(-1px);}
-    .btn-join:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
-    .btn-join:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
-    .btn-cancel{width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;margin-top:8px;}
+    /* Buttons in global.css */
+    /* Spinner */
     .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
     @keyframes spin{to{transform:rotate(360deg)}}
     .btn-join.loading .btn-text{display:none;}
     .btn-join.loading .spinner{display:block;}
+    .footer{text-align:center;font-size:11px;color:var(--text3);font-weight:600;padding:12px 0 0;}
   </style>
 </head>
 <body>
@@ -66,11 +64,13 @@
     <div class="warn-note" id="warn-note" style="display:none;"><span>This event is currently deactivated. Contact your organizer.</span></div>
     <div class="err-note" id="err-note"><span id="err-txt">Invalid event code. Please check and try again.</span></div>
 
-    <button class="btn-join" id="join-btn" type="button">
+    <button class="btn btn-solid-primary" id="join-btn" type="submit">
       <span class="btn-text">Join Event</span>
       <span class="spinner"></span>
     </button>
-    <button class="btn-cancel" onclick="history.back()">Cancel</button>
+    <button type="button" class="btn btn-text-secondary" onclick="window.location.href='dashboard.html'">Cancel</button>
+
+    <div class="footer">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
   </div>
 </div>
 

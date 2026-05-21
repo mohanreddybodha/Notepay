@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=7"/>
+  <link rel="stylesheet" href="css/global.css?v=2">
   <link rel="stylesheet" href="css/icons.css?v=1" />
   <script>
     if (localStorage.getItem("np_dark")) {
@@ -39,16 +39,11 @@
     .ph-lbl{font-size:9.5px;font-weight:800;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:3px;}
     .ph-val{font-size:15px;font-weight:800;color:var(--text2);font-family:'Nunito',sans-serif;}
     .ph-vrfd{font-size:11.5px;font-weight:800;color:var(--green);}
-    .btn-save{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white !important;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;}
-    .btn-save:hover{transform:translateY(-1px);}
-    .btn-save:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
-    .btn-save:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
+    /* Buttons centralized in global.css */
     .error-msg{display:none;font-size:12px;color:var(--red);font-weight:700;margin-bottom:12px;line-height:1.5;}
     .error-msg.visible{display:block;}
     .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .btn-save.loading .btn-text{display:none;}
-    .btn-save.loading .spinner{display:block;}
   </style>
 </head>
 <body>
@@ -80,7 +75,7 @@
       <div class="ph-vrfd"><span data-np-icon="badge-check" data-np-size="14" data-np-tone="green"></span> Verified</div>
     </div>
 
-    <button class="btn-save" id="save-btn" type="button">
+    <button class="btn btn-solid-primary" id="save-btn" type="button">
       <span class="btn-text">Save Changes</span>
       <span class="spinner"></span>
     </button>

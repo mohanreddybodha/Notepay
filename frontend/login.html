@@ -9,8 +9,8 @@
   <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=7"/>
-  <link rel="stylesheet" href="css/icons.css?v=1" />
+  <link rel="stylesheet" href="css/global.css?v=2"/>
+  <link rel="manifest" href="manifest.json" />
   <style>
     .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
     .status-bar{background:var(--surf-var);display:flex;justify-content:space-between;padding:10px 20px 8px;font-size:11px;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;border-bottom:1px solid var(--border);}
@@ -47,10 +47,7 @@
     .change-link{color:var(--primary);font-weight:800;cursor:pointer;font-size:12.5px;margin-top:2px;align-self:flex-start;}
 
     /* ── Buttons ── */
-    .btn-primary{width:100%;background:var(--btn-primary);border-radius:18px;padding:14px;text-align:center;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:white !important;cursor:pointer;border:none;box-shadow:0 4px 0 rgba(0,0,0,.26);transition:transform .12s,box-shadow .12s;}
-    .btn-primary:hover{background:#163f72;transform:translateY(-1px);}
-    .btn-primary:active{transform:translateY(1px);box-shadow:0 2px 0 rgba(0,0,0,.26);}
-    .btn-primary:disabled{background:var(--input-border);box-shadow:none;cursor:not-allowed;transform:none;}
+    /* Button styles moved to global.css (.btn, .btn-solid-primary) */
 
     /* ── Error box ── */
     .error-msg{display:none;font-size:12px;color:var(--red);font-weight:700;margin-top:6px;line-height:1.5;}
@@ -76,8 +73,8 @@
     /* ── Spinner ── */
     .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .btn-primary.loading .btn-text{display:none;}
-    .btn-primary.loading .spinner{display:block;}
+    .btn.loading .btn-text{display:none;}
+    .btn.loading .spinner{display:block;}
 
     /* ── Sections ── */
     #section-phone{display:flex;flex-direction:column;align-items:center;width:100%;}
@@ -129,7 +126,7 @@
       <!-- Invisible reCAPTCHA anchor -->
       <div id="recaptcha-container" style="margin-bottom:8px;"></div>
 
-      <button class="btn-primary" id="send-btn" type="button">
+      <button class="btn btn-solid-primary" id="send-btn" type="button">
         <span class="btn-text">Send OTP</span>
         <span class="spinner"></span>
       </button>
@@ -168,7 +165,7 @@
 
       <div class="error-msg" id="otp-error"><span id="otp-err-text">Invalid OTP. Please try again.</span></div>
 
-      <button class="btn-primary" id="verify-btn" type="button" disabled style="margin-top:4px;">
+      <button class="btn btn-solid-primary" id="verify-btn" type="button" disabled style="margin-top:4px;">
         <span class="btn-text">Verify &amp; Continue</span>
         <span class="spinner"></span>
       </button>
