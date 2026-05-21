@@ -199,11 +199,19 @@ let countdownTimer     = null;
 let recaptchaVerifier  = null;
 
 // ─────────────────────────────────────────────
-//  On page load — check existing session
+//  On page load — always start fresh on the login screen
+//  Clears stale IndexedDB Firebase sessions (wrong OTP / post-logout refresh).
+//  Redirect only if OTP was verified in this browser tab (sessionStorage).
 // ─────────────────────────────────────────────
-waitForAuthReady().then(user => {
-  if (user) window.location.replace("dashboard.html");
-});
+(async () => {
+  resetAuthCache();
+  try {
+    await auth.signOut();
+  } catch (e) { /* ignore */ }
+  resetAuthCache();
+  await waitForAuthReady();
+  // Never auto-redirect from Firebase persistence — only verifyOTP() navigates away.
+})();
 
 // ─────────────────────────────────────────────
 //  Init invisible reCAPTCHA
@@ -345,7 +353,6 @@ async function verifyOTP() {
     const { status, data } = await apiFetchWithToken("GET", "/users/me", token);
 
     if (status === 200) {
-      // Existing user
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get("return");
       if (returnUrl) {
@@ -369,9 +376,9 @@ async function verifyOTP() {
     }
   } catch(err) {
     console.error("verifyOTP error:", err);
+    try { await auth.signOut(); resetAuthCache(); } catch (e) { /* ignore */ }
     showOTPError(getFriendlyError(err));
     verifyBtn.classList.remove("loading"); verifyBtn.disabled = false;
-    // Re-enable re-entry
     otpHidden.value = "";
     updateBoxes("");
   }

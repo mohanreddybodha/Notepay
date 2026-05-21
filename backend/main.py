@@ -226,6 +226,23 @@ def read_root():
     return {"message": "NotePay API — PRD v12.0 Complete", "docs": "/docs"}
 
 
+# ─── AUTH / LOGOUT ─────────────────────────────────────────────────────────────
+@app.post("/auth/logout", tags=["Auth"])
+async def logout_user(
+    credentials: HTTPAuthorizationCredentials = Depends(_bearer)
+):
+    """
+    Immediately invalidates the current user's auth token from the backend cache.
+    Should be called by the frontend during logout to prevent stale token reuse.
+    """
+    if credentials and cache:
+        import hashlib
+        token_hash = hashlib.sha256(credentials.credentials.encode()).hexdigest()
+        cache_key = f"auth:{token_hash}"
+        cache.cache.delete(cache_key)
+    return {"message": "Logged out successfully"}
+
+
 async def register_rate_limit(request: Request):
     client_ip = request.client.host if request.client else "unknown"
     verify_rate_limit(f"ip:{client_ip}:register", limit=10, window=60)
@@ -713,7 +730,7 @@ async def react_to_message(event_id: int, message_id: int, data: schemas.ChatRea
     if not msg:
         raise HTTPException(status_code=404, detail="Message not found")
     await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": msg})
-    return {"message": "Reaction toggled"}
+    return msg
 
 @app.delete("/events/{event_id}/chat/{message_id}", tags=["Chat"])
 async def delete_chat_message(event_id: int, message_id: int, 

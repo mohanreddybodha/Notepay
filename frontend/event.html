@@ -3,14 +3,14 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,interactive-widget=resizes-content,viewport-fit=cover" />
   <title>Notepay — Event</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap"
     rel="stylesheet" />
   <!-- FullCalendar -->
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
-  <!-- Emoji Picker Element -->
+  <!-- Emoji picker (mobile-friendly web component) -->
   <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -26,6 +26,7 @@
     }
   </script>
   <style>
+    .toast { z-index: 999999 !important; position: fixed !important; }
     * {
       box-sizing: border-box;
     }
@@ -482,12 +483,107 @@
     }
 
     #rot-main.is-theater {
-      position: absolute !important;
-      left: 50% !important;
-      top: 50% !important;
-      transform-origin: center center !important;
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      flex: 1;
+      min-height: 0;
+      transform: none !important;
       display: flex !important;
       flex-direction: column !important;
+      overflow: hidden !important;
+    }
+
+    #rot-main.is-theater .theater-scroll-area {
+      flex: 1;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-x pan-y;
+    }
+
+    /* Landscape phone: ultra-compact chrome + rows — maximize visible entries */
+    @media (orientation: landscape) and (max-height: 520px) {
+      .rot-ov {
+        height: 100dvh;
+        height: 100svh;
+      }
+
+      #rot-main.is-theater .rot-ov-top {
+        height: auto;
+        min-height: 0;
+        padding: 2px 8px;
+        flex-wrap: nowrap;
+        gap: 4px;
+      }
+
+      #rot-main.is-theater .rot-stat-full {
+        display: none;
+      }
+
+      #rot-main.is-theater .rot-stat {
+        font-size: 10px;
+        max-width: 28vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #rot-main.is-theater .rot-top-center {
+        margin: 0 4px;
+      }
+
+      #rot-main.is-theater .rtab {
+        padding: 3px 8px !important;
+        font-size: 10px !important;
+      }
+
+      #rot-main.is-theater .rot-add-btn,
+      #rot-main.is-theater .rot-close {
+        padding: 4px 8px !important;
+        font-size: 10px !important;
+      }
+
+      #rot-main.is-theater .tr {
+        min-height: 20px;
+      }
+
+      #rot-main.is-theater .th {
+        height: 20px;
+        font-size: 9px;
+      }
+
+      #rot-main.is-theater .fc,
+      #rot-main.is-theater .sc {
+        min-height: 20px;
+        font-size: 10px;
+        padding: 2px 4px;
+      }
+
+      #rot-main.is-theater .fc.sticky-col,
+      #rot-main.is-theater .th.sticky-col {
+        min-height: 20px;
+        width: 100px;
+      }
+
+      #rot-main.is-theater .sc {
+        width: 72px;
+      }
+
+      #rot-main.is-theater #theater-search {
+        height: 28px !important;
+        font-size: 11px !important;
+      }
+
+      #rot-main.is-theater .theater-scroll-area .tbl-inner > div:first-child .tr.hdr-row {
+        min-height: 20px !important;
+      }
+      
+      #rot-main.is-theater .rot-ov-body {
+        padding: 4px 8px 8px 8px;
+      }
     }
 
     .is-theater.hidden-layer {
@@ -1056,7 +1152,7 @@
       margin: 0 auto;
       transform-origin: bottom center;
       transition: transform 0.4s;
-      max-height: 92vh;
+      max-height: min(92vh, 92dvh);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1830,6 +1926,31 @@
       background: var(--primary-lt);
     }
 
+    .cc-size-chip {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: 12px;
+      border: 2px solid var(--border2);
+      background: var(--surface);
+      color: var(--text2);
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .cc-size-chip.active {
+      border-color: var(--primary);
+      background: var(--primary-lt);
+      color: var(--primary);
+    }
+
+    .dark-mode .cc-size-chip {
+      background: var(--surf-var);
+    }
+
     .w-preview-wrap {
       margin-top: 15px;
       padding: 12px;
@@ -1898,8 +2019,20 @@
     }
 
     /* ── Chat Feature ── */
-    .chat-fab {
+    .chat-fab-wrapper {
       position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      max-width: 480px;
+      height: 0;
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    .chat-fab {
+      position: absolute;
       bottom: 24px;
       right: 20px;
       width: 54px;
@@ -1908,6 +2041,7 @@
       background: linear-gradient(135deg, #0FA3A3, #0D8B8B);
       color: white;
       border: none;
+      pointer-events: auto;
       cursor: pointer;
       display: none;
       align-items: center;
@@ -1941,21 +2075,34 @@
       font-family: 'Nunito', sans-serif;
     }
 
+    html.np-chat-open,
+    html.np-chat-open body {
+      overflow: hidden !important;
+      overscroll-behavior: none;
+    }
+
     .chat-overlay {
       position: fixed;
-      inset: 0;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
       background: rgba(0, 0, 0, 0.45);
       z-index: 99999;
       display: none;
-      align-items: flex-end;
-      justify-content: flex-end;
-      /* Align to the right */
       backdrop-filter: blur(2px);
+      overscroll-behavior: none;
     }
 
     .chat-drawer {
+      position: absolute;
+      right: max(0px, calc(50vw - 240px));
+      top: 0;
+      bottom: 0;
       width: 75vw;
-      height: 100dvh;
+      max-width: 360px;
+      height: 100%;
+      flex-shrink: 0;
       background: #efeae2;
       border-radius: 20px 0 0 20px;
       display: flex;
@@ -1963,8 +2110,56 @@
       overflow: hidden;
       animation: chatSlideRightIn .3s ease;
       box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
-      position: relative;
       z-index: 100000;
+      overscroll-behavior: contain;
+      touch-action: manipulation;
+    }
+
+    @media (max-width: 1024px) {
+      .chat-drawer {
+        width: 75vw;
+        max-width: 360px;
+        left: auto;
+        right: 0;
+        border-radius: 20px 0 0 20px;
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .chat-header {
+        flex-shrink: 0;
+        z-index: 3;
+        background: #efeae2;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      }
+
+      .dark-mode .chat-header {
+        background: #0b141a;
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+      }
+
+      .chat-footer-zone {
+        flex-shrink: 0;
+        z-index: 3;
+        background: #efeae2;
+      }
+
+      .dark-mode .chat-footer-zone {
+        background: #0b141a;
+      }
+
+      .chat-messages {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+      }
+
+      .chat-input-bar {
+        padding: 8px 0 max(10px, env(safe-area-inset-bottom, 0px)) 10px;
+      }
     }
 
     .dark-mode .chat-drawer {
@@ -2145,10 +2340,12 @@
     @keyframes chatSlideRightIn {
       from {
         transform: translateX(100%);
+        opacity: 0;
       }
 
       to {
         transform: translateX(0);
+        opacity: 1;
       }
     }
 
@@ -2160,6 +2357,14 @@
       background: transparent;
       border-bottom: none;
       flex-shrink: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .chat-footer-zone {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .chat-header-title {
@@ -2399,6 +2604,8 @@
 
     .chat-messages {
       flex: 1;
+      /* KEYBOARD FIX: min-height:0 allows flex child to shrink when keyboard opens */
+      min-height: 0;
       overflow-y: auto;
       padding: 16px 16px 8px;
       display: flex;
@@ -2514,18 +2721,23 @@
 
     .chat-bubble {
       padding: 6px 8px 6px 10px;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 14px;
       font-weight: 600;
       line-height: 1.4;
       word-break: break-word;
       font-family: 'Nunito', sans-serif;
       box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .chat-msg-own .chat-bubble {
       background: #d9fdd3;
       color: #111b21;
+    }
+
+    .chat-msg-own.chat-msg-first .chat-bubble {
       border-top-right-radius: 0;
     }
 
@@ -2537,6 +2749,9 @@
     .chat-msg-other .chat-bubble {
       background: #ffffff;
       color: #111b21;
+    }
+
+    .chat-msg-other.chat-msg-first .chat-bubble {
       border-top-left-radius: 0;
     }
 
@@ -2621,23 +2836,26 @@
     }
 
     .chat-input-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px 14px;
+      padding: 8px 10px max(10px, env(safe-area-inset-bottom, 0px)) 10px;
       border-top: none;
       flex-shrink: 0;
       background: transparent;
+      box-sizing: border-box;
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
     }
 
     .chat-input-wrapper {
+      flex: 1;
       display: flex;
       align-items: center;
-      flex: 1;
+      min-width: 0;
       background: var(--card);
       border-radius: 24px;
       border: 1.5px solid var(--border2);
-      padding: 2px 8px;
+      padding: 2px 14px;
       transition: border-color .2s;
     }
 
@@ -2647,7 +2865,7 @@
 
     .chat-input {
       flex: 1;
-      padding: 10px 8px;
+      padding: 10px 0;
       border: none;
       background: transparent;
       color: var(--text);
@@ -2661,33 +2879,36 @@
       color: var(--text3);
     }
 
-    .chat-input-emoji-btn {
-      font-size: 22px;
-      cursor: pointer;
-      color: var(--text3);
-      padding: 5px;
-      transition: transform .15s;
-      flex-shrink: 0;
-    }
-
-    .chat-input-emoji-btn:active {
-      transform: scale(0.9);
-    }
-
     .chat-send-btn {
-      width: 44px;
-      height: 44px;
+      width: 0;
+      height: 42px;
+      min-width: 0;
+      padding: 0;
       border-radius: 50%;
+      display: flex;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
       background: linear-gradient(135deg, #0FA3A3, #0D8B8B);
       color: white;
       border: none;
       cursor: pointer;
-      display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 17px;
       flex-shrink: 0;
-      transition: transform .15s, opacity .15s;
+      transform: scale(0.5);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 3px 10px rgba(15, 163, 163, 0.4);
+    }
+
+    .chat-send-btn.is-visible {
+      width: 42px;
+      min-width: 42px;
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
     }
 
     .chat-send-btn:active {
@@ -2742,6 +2963,43 @@
       margin: 12px 0 6px;
       opacity: 0.7;
     }
+
+    /* Emoji tray for message reactions only (+ in context menu) */
+    #emoji-picker-ov {
+      display: none;
+      flex-shrink: 0;
+      width: 100%;
+      overflow: hidden;
+      background: var(--card);
+      border-top: 1.5px solid var(--border2);
+    }
+
+    #emoji-picker-ov.is-open {
+      display: flex;
+      flex-direction: column;
+      height: min(42dvh, 280px);
+      min-height: 220px;
+    }
+
+    #emoji-picker-ov emoji-picker {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 240px;
+      max-height: none;
+      --num-columns: 9;
+      --emoji-size: 1.55rem;
+      --emoji-padding: 0.35rem;
+      --category-emoji-size: 1.2rem;
+    }
+
+    .dark-mode #emoji-picker-ov emoji-picker {
+      --background: #1e2a32;
+      --border-color: #2d3b44;
+      --indicator-color: #0FA3A3;
+      --input-font-color: #e9edef;
+    }
+
   </style>
 </head>
 
@@ -2815,7 +3073,7 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:14px;">
-          <div class="flip-btn" id="don-flip" onclick="cycleRotation('don')" title="Rotate Table">
+          <div class="flip-btn" id="don-flip" onclick="cycleRotation('don')" title="Theater mode">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
               <path d="M21 3v5h-5" />
@@ -2854,7 +3112,7 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:14px;">
-          <div class="flip-btn" id="exp-flip" onclick="cycleRotation('exp')" title="Rotate Table">
+          <div class="flip-btn" id="exp-flip" onclick="cycleRotation('exp')" title="Theater mode">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
               <path d="M21 3v5h-5" />
@@ -3023,11 +3281,16 @@
             </div>
           </div>
 
-          <div class="rot-top-center">
+          <div class="rot-top-center" style="display:flex; align-items:center; gap:12px;">
             <div class="rot-tabs">
               <button id="rot-tab-don" class="rtab" onclick="switchTheaterTab('don')">Donations</button>
               <button id="rot-tab-exp" class="rtab" onclick="switchTheaterTab('exp')">Expenses</button>
               <button id="rot-tab-sum" class="rtab" onclick="switchTheaterTab('sum')">Summary</button>
+            </div>
+            <div style="position:relative; display:flex; align-items:center;">
+              <span data-np-icon="search" data-np-size="12" style="position:absolute; left:8px; opacity:0.5;"></span>
+              <input type="text" id="theater-top-search" placeholder="Search..." 
+                style="width: 130px; padding: 4px 8px 4px 26px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 11px; outline: none;">
             </div>
           </div>
 
@@ -3041,15 +3304,6 @@
                 </svg>
                 Column
               </button>
-              <div class="rot-close rot-rotate-btn" style="background:var(--surf-var2); border-color:var(--border);"
-                onclick="cycleRotation(activeTheaterTab)">
-                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"
-                  style="width:14px;height:14px;">
-                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-                  <path d="M21 3v5h-5" />
-                </svg>
-                Rotate
-              </div>
               <div class="rot-close" onclick="exitTheater()">Close</div>
             </div>
           </div>
@@ -3170,44 +3424,35 @@
 
     <!-- Custom Column Management Sheet -->
     <div id="custom-col-sheet" class="sov" style="display:none;" onclick="closeCustomColSheet()">
-      <div class="sbox" onclick="event.stopPropagation()">
+      <div class="sbox" onclick="event.stopPropagation()" style="max-height: calc(100vh - env(keyboard-inset-height, 0px));">
         <div class="sbox-header">
           <div class="sh-handle"></div>
           <div class="sh-title" id="cc-sheet-title">Add Custom Column</div>
           <div class="sh-sub" id="cc-sheet-sub">This column will be added to the end of the table for everyone.</div>
         </div>
-        <div class="sbox-body">
-          <div class="ef-field" style="margin-bottom:6px;">
-            <div class="ef-label">Column Name <span id="cc-char-count" style="float:right;opacity:0.6;">0/25</span>
+        <div class="sbox-body" style="padding: 12px 18px 8px;">
+          <div class="ef-field" style="margin-bottom:12px;">
+            <div class="ef-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span>Column Name</span>
+              <span id="cc-char-count" style="opacity:0.5;font-size:11px;">0/25</span>
             </div>
             <input class="ef-input" id="cc-name" type="text" placeholder="e.g. House No." maxlength="25"
               oninput="updateCharCount(this); document.getElementById('cc-error').style.display='none';" />
-            <div id="cc-error" style="color:var(--red); font-size:11px; margin-top:4px; font-weight:700; display:none;">
-            </div>
+            <div id="cc-error" style="color:var(--red); font-size:11px; margin-top:4px; font-weight:700; display:none;"></div>
           </div>
-          <div class="ef-field" style="margin-bottom:6px;">
-            <div id="cc-size-label" class="ef-label" style="margin-bottom:8px; color:var(--primary); font-weight:900;">
-              No.
-              of characters that fit in column: 20</div>
 
-            <div class="w-preview-wrap">
-              <div class="w-preview-box" id="cc-preview" style="width:180px;">
-                <span id="cc-preview-text"></span>
-              </div>
-              <div class="w-slider-wrap">
-                <div
-                  style="display:flex; justify-content:space-between; font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase;">
-                  <span>Small</span>
-                  <span id="cc-width-display">180px</span>
-                  <span>Large</span>
-                </div>
-                <input type="range" id="cc-width" min="50" max="400" value="180" class="w-range"
-                  oninput="updateCCPreview(this.value)" />
-              </div>
+          <!-- Width Selector: compact chips -->
+          <div class="ef-field" style="margin-bottom:4px;">
+            <div class="ef-label" style="margin-bottom:8px;">Column Width</div>
+            <div style="display:flex; gap:8px;">
+              <button id="cc-size-s" onclick="setCCSize(80)" class="cc-size-chip">Narrow</button>
+              <button id="cc-size-m" onclick="setCCSize(160)" class="cc-size-chip active">Medium</button>
+              <button id="cc-size-l" onclick="setCCSize(260)" class="cc-size-chip">Wide</button>
             </div>
+            <input type="hidden" id="cc-width" value="160">
           </div>
         </div>
-        <div class="sbox-footer">
+        <div class="sbox-footer" style="padding:10px 18px 24px;">
           <div class="ef-btns" id="cc-add-btns">
             <button class="ef-cancel" onclick="closeCustomColSheet()">Cancel</button>
             <button class="ef-save" id="cc-save-btn" onclick="saveCustomColumn()">Add Column</button>
@@ -3217,9 +3462,6 @@
               onclick="deleteCustomColumn()">Delete Column</button>
             <button class="ef-save" id="cc-update-btn" onclick="renameCustomColumn()">Save Changes</button>
           </div>
-          <button
-            style="width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;margin-top:12px;"
-            onclick="closeCustomColSheet()">Close</button>
         </div>
       </div>
     </div>
@@ -3237,7 +3479,7 @@
             <div class="cd-lbl">Join Code</div>
             <div class="code-row">
               <div class="code-val" id="sheet-code">—</div>
-              <button class="code-act" onclick="copyCode()" title="Copy">
+              <button class="code-act" id="sheet-copy-btn" onclick="copyCode()" title="Copy">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
                   stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -3249,9 +3491,6 @@
         </div>
         <div class="sbox-footer">
           <div style="display:flex;gap:8px;margin-top:12px;">
-            <button
-              style="flex:1;background:var(--primary);border-radius:14px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:900;color:white;cursor:pointer;border:none;"
-              onclick="shareCode()"><span data-np-icon="share" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Share Code</button>
             <button
               style="flex:1;background:#FFF0EC;border:1.5px solid #E0A090;border-radius:14px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;"
               onclick="revokeCode()"><span data-np-icon="refresh" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
@@ -4025,7 +4264,7 @@
 
           const pinned = isPinned("don", d.id || d._id);
           row.innerHTML = `
-        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">
+        <div class="fc sticky-col">
           ${pinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(d.donor_name)}
         </div>
         <div class="sc" style="width:90px;"><span class="cg">${d.amount ? formatINR(d.amount) : '<span class="cm">—</span>'}</span></div>
@@ -4139,7 +4378,7 @@
 
           const pinned = isPinned("exp", e.id || e._id);
           row.innerHTML = `
-        <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">
+        <div class="fc sticky-col">
           ${pinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(e.description)}
         </div>
         <div class="sc" style="width:90px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>
@@ -4965,14 +5204,15 @@
 
     function openCodeSheet() { document.getElementById("sheet-code").textContent = eventData.invite_code || "—"; document.getElementById("code-sheet").style.display = "flex"; }
     function closeCodeSheet() { document.getElementById("code-sheet").style.display = "none"; }
-    function copyCode() { copyToClipboard(eventData.invite_code || "", "Code copied!"); }
-    function shareCode() {
-      const code = eventData.invite_code || "";
-      if (navigator.share) {
-        navigator.share({ title: "Join " + eventData.name, text: "Use code: " + code }).catch(() => { });
-      } else {
-        copyCode();
-        showToast("Share blocked on HTTP - Code copied!", "default");
+    function copyCode() { 
+      copyToClipboard(eventData.invite_code || "", "Code copied!"); 
+      const btn = document.getElementById("sheet-copy-btn");
+      if (btn) {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+        }, 2000);
       }
     }
     // ── Members Sheet ──
@@ -5174,28 +5414,21 @@
     let activeColType = "don";
     let editingColName = null;
 
-    function setCCWidth(w, id) {
-      const v = parseInt(w);
-      document.getElementById("cc-width").value = v;
-      updateCCPreview(v);
-    }
-    function updateCCPreview(w) {
-      const v = parseInt(w);
-      document.getElementById("cc-size-label").textContent = `Adjust Width`;
-      document.getElementById("cc-width-display").textContent = v + "px";
-      document.getElementById("cc-preview").style.width = v + "px";
-
-      const preview = document.getElementById("cc-preview-text");
-      preview.textContent = "Column Width";
+    function setCCSize(w) {
+      document.getElementById("cc-width").value = w;
+      document.querySelectorAll(".cc-size-chip").forEach(b => b.classList.remove("active"));
+      if (w <= 100) document.getElementById("cc-size-s").classList.add("active");
+      else if (w <= 200) document.getElementById("cc-size-m").classList.add("active");
+      else document.getElementById("cc-size-l").classList.add("active");
     }
 
-    function highlightPreset(w) {
+    // Legacy alias so openEditCol still works
+    function setCCWidth(w) {
+      // Map old pixel values to nearest chip
       const v = parseInt(w);
-      document.querySelectorAll(".w-btn").forEach(b => b.classList.remove("active"));
-      if (v === 70) document.getElementById("w-n").classList.add("active");
-      else if (v === 140) document.getElementById("w-m").classList.add("active");
-      else if (v === 180) document.getElementById("w-s").classList.add("active");
-      else if (v === 250) document.getElementById("w-w").classList.add("active");
+      if (v <= 100) setCCSize(80);
+      else if (v <= 200) setCCSize(160);
+      else setCCSize(260);
     }
 
     function updateCharCount(el) {
@@ -5211,7 +5444,7 @@
       const inp = document.getElementById("cc-name");
       inp.value = "";
       updateCharCount(inp);
-      setCCWidth(180);
+      setCCSize(160); // default Medium
       document.getElementById("cc-add-btns").style.display = "flex";
       document.getElementById("cc-edit-btns").style.display = "none";
       document.getElementById("cc-error").style.display = "none";
@@ -5360,7 +5593,7 @@
         }).join("");
 
         tr.innerHTML = `
-          <div class="fc sticky-col" style="display: block !important; line-height: 38px; text-align: left !important; padding-left: 6px !important;">
+          <div class="fc sticky-col">
             ${isPinned ? `<span style="color:var(--amber); margin-right:4px;">${npIcon("pin", { size: 10 })}</span>` : ''}${escHtml(entry.donor_name || entry.description)}
           </div>
           <div class="sc" style="width:90px;">
@@ -5445,34 +5678,16 @@
       return container;
     }
 
+    /** Open theater fullscreen (portrait only — use device rotation for landscape). */
     function cycleRotation(requestedTab) {
       const tab = requestedTab || activeTheaterTab;
       if (!tab) return;
-
-      const el = document.getElementById("rot-main");
-      if (!el) return;
-
-      const isMobile = window.innerWidth <= 1024;
-
+      theaterRotation = 0;
+      tabRotations[tab] = 0;
+      document.body.classList.remove("is-rotated-90", "is-rotated-180", "is-rotated-270");
       if (!activeTheaterTab) {
-        theaterRotation = isMobile ? 90 : 0;
-        tabRotations[tab] = theaterRotation;
-        document.body.classList.remove("is-rotated-90", "is-rotated-180", "is-rotated-270");
-        if (theaterRotation !== 0) document.body.classList.add("is-rotated-" + theaterRotation);
         enterTheater(tab);
-        return;
       }
-
-      el.style.opacity = "0";
-      setTimeout(() => {
-        theaterRotation = (theaterRotation === 0) ? 90 : 0;
-        tabRotations[tab] = theaterRotation;
-        document.body.classList.remove("is-rotated-90", "is-rotated-180", "is-rotated-270");
-        if (theaterRotation !== 0) document.body.classList.add("is-rotated-" + theaterRotation);
-        el.classList.remove("rot-0", "rot-90", "rot-180", "rot-270");
-        enterTheater(tab);
-        setTimeout(() => { if (el) el.style.opacity = "1"; }, 50);
-      }, 100);
     }
 
     function updateTheaterStats() {
@@ -5498,6 +5713,30 @@
       document.getElementById("rot-tab-don").classList.toggle("active", tab === "don");
       document.getElementById("rot-tab-exp").classList.toggle("active", tab === "exp");
       document.getElementById("rot-tab-sum").classList.toggle("active", tab === "sum");
+    }
+
+    function applyTheaterLayout(main, body) {
+      main.style.position = 'relative';
+      main.style.left = '0';
+      main.style.top = '0';
+      main.style.width = '100%';
+      main.style.height = '100%';
+      main.style.transform = 'none';
+      body.style.flex = '1';
+      body.style.minHeight = '0';
+      body.style.height = '';
+      body.style.width = '100%';
+    }
+
+    function refreshTheaterLayout() {
+      if (!activeTheaterTab) return;
+      const main = document.getElementById('rot-main');
+      const body = document.getElementById('rot-ov-body');
+      if (main && body) {
+        applyTheaterLayout(main, body);
+        const compact = window.matchMedia('(orientation: landscape) and (max-height: 520px)').matches;
+        main.classList.toggle('theater-landscape', compact);
+      }
     }
 
     function switchTheaterTab(tab, force = false) {
@@ -5551,7 +5790,7 @@
       if (rotTabDon) rotTabDon.style.display = showDon ? "" : "none";
       if (rotTabExp) rotTabExp.style.display = showExp ? "" : "none";
 
-      const rotation = theaterRotation;
+      theaterRotation = 0;
       let content;
 
       if (tab === "sum") {
@@ -5565,142 +5804,38 @@
       } else {
         // Outer Wrapper for rounded corners and layout
         const theaterWrapper = document.createElement("div");
-        theaterWrapper.style.cssText = "height:100%; width:100%; display:flex; flex-direction:column; border-radius:24px; overflow:hidden; border:1.5px solid var(--border2); background:var(--card); box-shadow:var(--shadow-lg);";
+        theaterWrapper.style.cssText = "height:100%; width:100%; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; border:1.5px solid var(--border2); background:var(--card); box-shadow:var(--shadow-lg);";
 
-        // Theater Search Bar (Ultra-Compact + Opaque)
-        const sBar = document.createElement("div");
-        sBar.style.cssText = "padding:0; background:var(--surface); border-bottom:1.5px solid var(--border2); flex-shrink:0; z-index:200; position:relative;";
-        sBar.innerHTML = `
-          <div style="position:relative; display:flex; align-items:center; width:100%; background:var(--surface);">
-            <div style="position:absolute; left:12px; opacity:0.6;">${npIcon("search", { size: 13 })}</div>
-            <input type="text" id="theater-search" placeholder="Search entries..." 
-              value="${window.theaterSearchQuery || ''}"
-              style="width:100%; padding:8px 12px 8px 38px; border:none; background:var(--surface); color:var(--text); font-size:12px; font-weight:800; outline:none; height:36px;">
-          </div>
-        `;
-
-        // Scrollable Table Container (Disable native scroll under rotation to prevent double-scroll stutter)
+        // Scrollable table — native overflow (especially for mobile landscape layout)
         const tableContainer = document.createElement("div");
         tableContainer.className = "tbl-sc theater-scroll-area";
-        tableContainer.style.cssText = `flex:1; width:100%; overflow:${(rotation === 90 || rotation === 270) ? 'hidden' : 'auto'}; -webkit-overflow-scrolling:touch; margin:0; padding:0;`;
-
-        const sInp = sBar.querySelector("input");
-        sInp.oninput = (e) => {
-          window.theaterSearchQuery = e.target.value;
-          const oldTbl = tableContainer.querySelector(".tbl-inner");
-          if (oldTbl) oldTbl.remove();
-          tableContainer.appendChild(renderTable(tab, true));
-        };
+        tableContainer.style.cssText = 'flex:1; min-height:0; width:100%; overflow:auto; -webkit-overflow-scrolling:touch; margin:0; padding:0; touch-action:pan-x pan-y; overscroll-behavior:contain;';
 
         const table = renderTable(tab, true);
         tableContainer.appendChild(table);
+
+        // Link the top bar search input to this table container
+        const topSearch = document.getElementById("theater-top-search");
+        if (topSearch) {
+          topSearch.value = window.theaterSearchQuery || '';
+          topSearch.oninput = (e) => {
+            window.theaterSearchQuery = e.target.value;
+            const oldTbl = tableContainer.querySelector(".tbl-inner");
+            if (oldTbl) oldTbl.remove();
+            tableContainer.appendChild(renderTable(tab, true));
+          };
+        }
         
-        theaterWrapper.appendChild(sBar);
         theaterWrapper.appendChild(tableContainer);
         body.appendChild(theaterWrapper);
         content = theaterWrapper;
-        
-        // Touch Scroll Handler for rotated state (Buttery-Smooth Momentum Scrolling)
-        if (rotation === 90 || rotation === 270) {
-          let startX = 0, startY = 0;
-          let startScrollTop = 0, startScrollLeft = 0;
-          let lastX = 0, lastY = 0, lastTime = 0;
-          let velX = 0, velY = 0;
-          let animId = null;
-
-          const dirSign = (rotation === 90) ? 1 : -1;
-
-          body._scrollHandler = (e) => {
-            if (e.touches.length !== 1) return;
-            const touch = e.touches[0];
-            const now = performance.now();
-            const dt = now - lastTime;
-
-            const dx = touch.clientX - startX;
-            const dy = touch.clientY - startY;
-
-            // Visual vertical scrolling (table's scrollTop)
-            tableContainer.scrollTop = startScrollTop - dx * dirSign;
-            // Visual horizontal scrolling (table's scrollLeft)
-            tableContainer.scrollLeft = startScrollLeft + dy * dirSign;
-
-            if (dt > 0) {
-              // Calculate scroll velocity (px per ms)
-              velX = (touch.clientX - lastX) / dt;
-              velY = (touch.clientY - lastY) / dt;
-            }
-
-            lastX = touch.clientX;
-            lastY = touch.clientY;
-            lastTime = now;
-            
-            if (e.cancelable) e.preventDefault();
-          };
-
-          body._touchStartHandler = (e) => {
-            if (e.touches.length !== 1) return;
-            if (animId) cancelAnimationFrame(animId);
-            
-            const touch = e.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
-            lastX = touch.clientX;
-            lastY = touch.clientY;
-            lastTime = performance.now();
-            
-            startScrollTop = tableContainer.scrollTop;
-            startScrollLeft = tableContainer.scrollLeft;
-            velX = 0;
-            velY = 0;
-          };
-
-          body._touchEndHandler = () => {
-            let momentumX = velX;
-            let momentumY = velY;
-            const friction = 0.94; // Premium iOS-like deceleration factor
-
-            const animateMomentum = () => {
-              if (Math.abs(momentumX) < 0.02 && Math.abs(momentumY) < 0.02) return;
-
-              // Smoothly scroll using velocity (natural directions)
-              tableContainer.scrollTop -= momentumX * 16 * dirSign;
-              tableContainer.scrollLeft += momentumY * 16 * dirSign;
-
-              // Apply friction/decay
-              momentumX *= friction;
-              momentumY *= friction;
-
-              animId = requestAnimationFrame(animateMomentum);
-            };
-
-            if (Math.abs(momentumX) > 0.05 || Math.abs(momentumY) > 0.05) {
-              animId = requestAnimationFrame(animateMomentum);
-            }
-          };
-
-          body.addEventListener('touchstart', body._touchStartHandler, { passive: true });
-          body.addEventListener('touchmove', body._scrollHandler, { passive: false });
-          body.addEventListener('touchend', body._touchEndHandler, { passive: true });
-        }
+        body._touchEl = null;
       }
-      main.classList.remove("rot-0", "rot-90", "rot-180", "rot-270");
-      main.classList.add("rot-" + rotation);
-      main.classList.add("is-theater");
+      main.classList.remove("rot-90", "rot-180", "rot-270");
+      main.classList.add("rot-0", "is-theater");
 
-      // Uniform 90-degree sizing
-      const w = overlay.clientWidth;
-      const h = overlay.clientHeight;
-
-      if (rotation === 90 || rotation === 270) {
-        main.style.width = h + "px";
-        main.style.height = w + "px";
-        body.style.height = (w - 44) + "px";
-      } else {
-        main.style.width = w + "px";
-        main.style.height = h + "px";
-        body.style.height = (h - 44) + "px";
-      }
-      main.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+      applyTheaterLayout(main, body);
+      refreshTheaterLayout();
 
       updateTheaterStats();
 
@@ -5718,36 +5853,50 @@
         const p = document.getElementById(id);
         if (p) overlay.appendChild(p);
       });
+
+      // Request fullscreen to hide browser URL bar for maximum table visibility
+      const fsEl = document.documentElement;
+      try {
+        if (fsEl.requestFullscreen) fsEl.requestFullscreen({ navigationUI: 'hide' });
+        else if (fsEl.webkitRequestFullscreen) fsEl.webkitRequestFullscreen();
+      } catch(e) { /* Fullscreen not supported or denied — silent fail */ }
     }
 
-    // Update theater size on window resize
-    window.addEventListener("resize", () => {
-      if (activeTheaterTab) {
-        const main = document.getElementById("rot-main");
-        const body = document.getElementById("rot-ov-body");
-        const rotation = theaterRotation;
+    window.addEventListener("resize", refreshTheaterLayout);
+    window.addEventListener("orientationchange", () => {
+      setTimeout(refreshTheaterLayout, 150);
+    });
+    if (window.screen?.orientation) {
+      window.screen.orientation.addEventListener("change", () => {
+        setTimeout(refreshTheaterLayout, 150);
+      });
+    }
 
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-
-        if (rotation === 90 || rotation === 270) {
-          main.style.width = h + "px";
-          main.style.height = w + "px";
-          body.style.height = (w - 44) + "px";
-        } else {
-          main.style.width = w + "px";
-          main.style.height = h + "px";
-          body.style.height = (h - 44) + "px";
-        }
-      }
+    // If user exits fullscreen via hardware back button, also exit theater mode
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement && activeTheaterTab) exitTheater();
+    });
+    document.addEventListener("webkitfullscreenchange", () => {
+      if (!document.webkitFullscreenElement && activeTheaterTab) exitTheater();
     });
 
     function exitTheater() {
+      // Clear theater search state on exit
+      window.theaterSearchQuery = "";
+      if (document.getElementById("theater-top-search")) document.getElementById("theater-top-search").value = "";
       if (!activeTheaterTab) return;
       activeTheaterTab = null;
       const upEx = new URLSearchParams(window.location.search);
       upEx.delete("theater");
       history.replaceState(null, "", "?" + upEx.toString());
+
+      // Exit fullscreen if active
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+      } catch(e) { /* silent fail */ }
 
       const overlay = document.getElementById("rot-overlay");
       const main = document.getElementById("rot-main");
@@ -5769,18 +5918,21 @@
       });
 
       // Clean up touch handlers to prevent memory leaks
-      if (body._scrollHandler) {
-        body.removeEventListener('touchmove', body._scrollHandler);
-        body._scrollHandler = null;
+      // Listeners are now on theaterWrapper, not body — retrieve via stored ref
+      const touchEl = body._touchEl || body;
+      if (touchEl._scrollHandler) {
+        touchEl.removeEventListener('touchmove', touchEl._scrollHandler);
+        touchEl._scrollHandler = null;
       }
-      if (body._touchStartHandler) {
-        body.removeEventListener('touchstart', body._touchStartHandler);
-        body._touchStartHandler = null;
+      if (touchEl._touchStartHandler) {
+        touchEl.removeEventListener('touchstart', touchEl._touchStartHandler);
+        touchEl._touchStartHandler = null;
       }
-      if (body._touchEndHandler) {
-        body.removeEventListener('touchend', body._touchEndHandler);
-        body._touchEndHandler = null;
+      if (touchEl._touchEndHandler) {
+        touchEl.removeEventListener('touchend', touchEl._touchEndHandler);
+        touchEl._touchEndHandler = null;
       }
+      body._touchEl = null;
 
       body.innerHTML = "";
       overlay.style.display = "none";
@@ -5986,19 +6138,16 @@
   </script>
 
   <!-- ── Chat FAB ── -->
-  <button class="chat-fab" id="chat-fab" onclick="openChat()">
-    <span data-np-icon="message-square" data-np-size="20"></span>
-    <span class="chat-badge" id="chat-badge">0</span>
-  </button>
+  <div class="chat-fab-wrapper">
+    <button class="chat-fab" id="chat-fab" onclick="openChat()">
+      <span data-np-icon="message-square" data-np-size="20"></span>
+      <span class="chat-badge" id="chat-badge">0</span>
+    </button>
+  </div>
 
   <!-- ── Chat Drawer Overlay ── -->
   <div class="chat-overlay" id="chat-overlay" onclick="closeChat()">
     <div class="chat-drawer" onclick="event.stopPropagation()">
-      <!-- Emoji Picker Container -->
-      <div id="emoji-picker-ov" style="display:none; position:absolute; bottom:60px; right:10px; z-index:100010;"
-        onclick="event.stopPropagation()">
-        <emoji-picker class="light"></emoji-picker>
-      </div>
       <!-- Chat Context Menu -->
       <div id="chat-msg-ctx-ov" onclick="closeChatMsgCtx()">
         <div id="chat-msg-ctx" onclick="event.stopPropagation()">
@@ -6042,20 +6191,26 @@
           <div class="chat-empty-sub">Start a conversation with your team</div>
         </div>
       </div>
-      <div class="chat-reply-bar" id="chat-reply-bar">
-        <div class="reply-content">
-          <div class="reply-name" id="reply-name">Name</div>
-          <div class="reply-text" id="reply-text">Message</div>
+      <div class="chat-footer-zone">
+        <div class="chat-reply-bar" id="chat-reply-bar">
+          <div class="reply-content">
+            <div class="reply-name" id="reply-name">Name</div>
+            <div class="reply-text" id="reply-text">Message</div>
+          </div>
+          <button class="reply-close" onclick="cancelReply()">✕</button>
         </div>
-        <button class="reply-close" onclick="cancelReply()">✕</button>
-      </div>
-      <div class="chat-input-bar">
-        <div class="chat-input-wrapper">
-          <span class="chat-input-emoji-btn" onclick="openInputEmojiPicker()">😊</span>
-          <input class="chat-input" id="chat-input" type="text" placeholder="Type a message…" maxlength="500"
-            onkeydown="if(event.key==='Enter')sendChatMessage()" oninput="updateSendBtnVisibility()" />
+        <div class="chat-input-bar">
+          <div class="chat-input-wrapper">
+            <input class="chat-input" id="chat-input" type="text" placeholder="Type a message…" maxlength="500"
+              enterkeyhint="send" autocomplete="off"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}"
+              oninput="updateSendBtnVisibility()" />
+          </div>
+          <button type="button" class="chat-send-btn" id="chat-send-btn" aria-label="Send">➤</button>
         </div>
-        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()" style="display:none;">➤</button>
+        <div id="emoji-picker-ov" onclick="event.stopPropagation()">
+          <emoji-picker id="np-emoji-picker"></emoji-picker>
+        </div>
       </div>
       </div>
   </div>
@@ -6074,12 +6229,80 @@
     let unreadDividerId = null;
 
     function updateSendBtnVisibility() {
-      const val = document.getElementById('chat-input').value.trim();
-      document.getElementById('chat-send-btn').style.display = val.length > 0 ? 'flex' : 'none';
+      const val = document.getElementById('chat-input').value;
+      const btn = document.getElementById('chat-send-btn');
+      btn.classList.toggle('is-visible', val.length > 0);
+    }
+
+    let emojiTrayOpen = false;
+    let pendingReactionMsgId = null;
+
+    function setEmojiTrayOpen(open) {
+      emojiTrayOpen = open;
+      const ov = document.getElementById('emoji-picker-ov');
+      const footer = document.querySelector('.chat-footer-zone');
+      if (ov) ov.classList.toggle('is-open', open);
+      if (footer) footer.classList.toggle('emoji-tray-open', open);
+      if (!open) pendingReactionMsgId = null;
+    }
+
+    function closeEmojiTray() {
+      setEmojiTrayOpen(false);
+    }
+
+    let chatScrollLockY = 0;
+
+    function lockPageScrollForChat(lock) {
+      if (window.matchMedia('(min-width: 1025px)').matches) return;
+      const html = document.documentElement;
+      if (lock) {
+        chatScrollLockY = window.scrollY;
+        html.classList.add('np-chat-open');
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${chatScrollLockY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+      } else {
+        html.classList.remove('np-chat-open');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        window.scrollTo(0, chatScrollLockY);
+      }
+    }
+
+    function applyChatVisualViewport() {
+      if (!chatOpen || !window.visualViewport) return;
+      if (window.matchMedia('(min-width: 1025px)').matches) return;
+      const vv = window.visualViewport;
+      const drawer = document.querySelector('.chat-drawer');
+      const overlay = document.getElementById('chat-overlay');
+      if (!drawer || !overlay) return;
+      overlay.style.top = vv.offsetTop + 'px';
+      overlay.style.height = vv.height + 'px';
+      overlay.style.bottom = 'auto';
+      drawer.style.height = '100%';
+      drawer.style.top = '';
+      drawer.style.width = '';
+      drawer.style.maxWidth = '';
+      drawer.style.left = '';
+      drawer.style.right = '';
+    }
+
+    let chatVvBound = false;
+    function bindChatVisualViewport() {
+      if (!window.visualViewport || chatVvBound) return;
+      chatVvBound = true;
+      window.visualViewport.addEventListener('resize', applyChatVisualViewport);
+      window.visualViewport.addEventListener('scroll', applyChatVisualViewport);
     }
 
     function openChat() {
       chatOpen = true;
+      bindChatVisualViewport();
 
       // Set unread divider target before resetting count
       const lastRead = parseInt(localStorage.getItem(`np_chat_last_read_ev_${eventId}`) || '0');
@@ -6087,7 +6310,9 @@
 
       chatUnread = 0;
       updateChatBadge();
+      lockPageScrollForChat(true);
       document.getElementById('chat-overlay').style.display = 'flex';
+      applyChatVisualViewport();
       // Update URL to preserve chat open state on reload
       const urlParams = new URLSearchParams(window.location.search);
       if (!urlParams.has('chat')) {
@@ -6114,6 +6339,23 @@
     function closeChat() {
       chatOpen = false;
       document.getElementById('chat-overlay').style.display = 'none';
+      closeEmojiTray();
+      lockPageScrollForChat(false);
+      const drawer = document.querySelector('.chat-drawer');
+      const overlay = document.getElementById('chat-overlay');
+      if (drawer) {
+        drawer.style.height = '';
+        drawer.style.top = '';
+        drawer.style.width = '';
+        drawer.style.maxWidth = '';
+        drawer.style.left = '';
+        drawer.style.right = '';
+      }
+      if (overlay) {
+        overlay.style.top = '';
+        overlay.style.height = '';
+        overlay.style.bottom = '';
+      }
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('chat')) {
         urlParams.delete('chat');
@@ -6232,7 +6474,7 @@
 
       if (!isOwn) html += `<div class="chat-msg-row">${avatarHtml}`;
 
-      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${isDeleted ? 'chat-msg-deleted' : ''}" id="chat-msg-${m.id}">`;
+      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${showSender ? 'chat-msg-first' : ''} ${isDeleted ? 'chat-msg-deleted' : ''}" id="chat-msg-${m.id}">`;
       html += `<div class="chat-bubble" ${!isDeleted ? `data-id="${m.id}" data-uid="${m.user_id}" data-sender="${safeName}" data-text="${safeText}"` : ''}>`;
       html += `<div class="chat-bubble-content">`;
       if (showSender) {
@@ -6345,7 +6587,10 @@
 
     function scrollChatToBottom(smooth = false) {
       const c = document.getElementById('chat-messages');
-      if (c) requestAnimationFrame(() => { c.scrollTo({ top: c.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }); });
+      if (c) requestAnimationFrame(() => {
+        c.scrollTo({ top: c.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+        keepChatInputFocused();
+      });
     }
 
     let activeCtxMsg = null;
@@ -6355,16 +6600,28 @@
       document.getElementById('chat-reply-bar').style.display = 'flex';
       document.getElementById('reply-name').textContent = name;
       document.getElementById('reply-text').textContent = text;
-      document.getElementById('chat-input').focus();
+      keepChatInputFocused();
     }
     function cancelReply() {
       replyingToId = null;
       document.getElementById('chat-reply-bar').style.display = 'none';
     }
+    function applyChatReactionFromServer(data) {
+      if (!data || data.id == null) return;
+      const idx = chatMessages.findIndex(m => m.id === data.id);
+      if (idx === -1) return;
+      chatMessages[idx] = data;
+      if (chatOpen) updateMessageNode(data);
+    }
+
     async function sendReactionInline(mId, emoji) {
       try {
-        await apiFetch('POST', `/events/${eventId}/chat/${mId}/react`, { emoji: emoji });
-      } catch (e) { console.error('Reaction failed', e); }
+        const data = await apiFetch('POST', `/events/${eventId}/chat/${mId}/react`, { emoji: emoji });
+        applyChatReactionFromServer(data);
+      } catch (e) {
+        console.error('Reaction failed', e);
+        showToast('Could not add reaction', 'error');
+      }
     }
 
     function openChatMsgCtx(e, id, name, text, senderId) {
@@ -6400,7 +6657,7 @@
     }
     function closeChatMsgCtx() {
       document.getElementById('chat-msg-ctx-ov').style.display = 'none';
-      document.getElementById('emoji-picker-ov').style.display = 'none';
+      closeEmojiTray();
       activeCtxMsg = null;
     }
     function handleCtxReply() {
@@ -6410,29 +6667,40 @@
     }
     function handleCtxCopy() {
       if (!activeCtxMsg) return;
-      navigator.clipboard.writeText(activeCtxMsg.text);
+      copyToClipboard(activeCtxMsg.text, "Message copied");
       closeChatMsgCtx();
     }
     async function handleCtxDelete() {
       if (!activeCtxMsg) return;
+      const mId = activeCtxMsg.id;
+      closeChatMsgCtx();
       try {
-        await apiFetch('DELETE', `/events/${eventId}/chat/${activeCtxMsg.id}`);
-      } catch (e) { console.error('Delete failed', e); }
-      closeChatMsgCtx();
+        await apiFetch('DELETE', `/events/${eventId}/chat/${mId}`);
+        const idx = chatMessages.findIndex(m => m.id === mId);
+        if (idx !== -1) {
+          chatMessages[idx].message = '🚫 This message was deleted.';
+          updateMessageNode(chatMessages[idx]);
+        }
+      } catch (e) {
+        console.error('Delete failed', e);
+        showToast("Delete failed", "error");
+      }
     }
-    function sendReactionInlineCtx(emoji) {
-      if (!activeCtxMsg) return;
-      sendReactionInline(activeCtxMsg.id, emoji);
+    async function sendReactionInlineCtx(emoji) {
+      const mId = pendingReactionMsgId || activeCtxMsg?.id;
+      if (!mId) return;
       closeChatMsgCtx();
+      pendingReactionMsgId = null;
+      await sendReactionInline(mId, emoji);
     }
     function openFullEmojiPickerCtx() {
+      if (!activeCtxMsg) return;
+      pendingReactionMsgId = activeCtxMsg.id;
       emojiPickerMode = 'reaction';
-      document.getElementById('chat-msg-ctx').style.display = 'none';
-      document.getElementById('emoji-picker-ov').style.display = 'block';
-    }
-    function openInputEmojiPicker() {
-      emojiPickerMode = 'input';
-      document.getElementById('emoji-picker-ov').style.display = 'block';
+      document.getElementById('chat-msg-ctx-ov').style.display = 'none';
+      activeCtxMsg = null;
+      document.getElementById('chat-input').blur();
+      setEmojiTrayOpen(true);
     }
 
     async function scrollToMsg(id) {
@@ -6464,10 +6732,9 @@
       const msg = input.value.trim();
       if (!msg) return;
 
-      const btn = document.getElementById('chat-send-btn');
-      btn.disabled = true;
       input.value = '';
       updateSendBtnVisibility();
+      closeEmojiTray();
 
       try {
         const payload = { message: msg };
@@ -6476,10 +6743,18 @@
         cancelReply();
       } catch (e) {
         showToast('Failed to send message', 'error');
-        input.value = msg; // Restore on failure
+        input.value = msg;
+        updateSendBtnVisibility();
       }
-      btn.disabled = false;
-      input.focus();
+      requestAnimationFrame(() => {
+        input.focus({ preventScroll: true });
+        applyChatVisualViewport();
+      });
+    }
+
+    function keepChatInputFocused() {
+      const input = document.getElementById('chat-input');
+      if (input && chatOpen) input.focus({ preventScroll: true });
     }
 
     function handleIncomingChatMsg(data) {
@@ -6507,24 +6782,45 @@
       }
     }
 
-    // Bind emoji picker events once DOM loads
+    // Event delegation for context menu to survive DOM updates completely
     document.addEventListener('DOMContentLoaded', () => {
-      document.querySelector('emoji-picker').addEventListener('emoji-click', event => {
-        if (emojiPickerMode === 'reaction') {
-          sendReactionInlineCtx(event.detail.unicode);
-        } else {
-          const input = document.getElementById('chat-input');
-          input.value += event.detail.unicode;
-          updateSendBtnVisibility();
-          document.getElementById('emoji-picker-ov').style.display = 'none';
-          input.focus();
-        }
-      });
+      const picker = document.getElementById('np-emoji-picker');
+      if (picker) {
+        picker.addEventListener('emoji-click', event => {
+          const unicode = event.detail?.unicode || '';
+          if (!unicode) return;
+          if (emojiPickerMode === 'reaction') {
+            sendReactionInlineCtx(unicode);
+            closeEmojiTray();
+          }
+        });
+      }
 
-      // Event delegation for context menu to survive DOM updates completely
-      document.getElementById('chat-messages').addEventListener('dblclick', function (e) {
+      const sendBtn = document.getElementById('chat-send-btn');
+      if (sendBtn) {
+        sendBtn.addEventListener('pointerdown', e => e.preventDefault());
+        sendBtn.addEventListener('click', e => {
+          e.preventDefault();
+          sendChatMessage();
+        });
+      }
+
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput) {
+        chatInput.addEventListener('focus', () => {
+          if (emojiTrayOpen) closeEmojiTray();
+          applyChatVisualViewport();
+          requestAnimationFrame(applyChatVisualViewport);
+        });
+      }
+
+      function handleCtxMenuOpen(e) {
         const bubble = e.target.closest('.chat-bubble');
         if (!bubble) return;
+        e.preventDefault();
+        const sel = window.getSelection();
+        if (sel) sel.removeAllRanges();
+
         if (bubble.parentElement.classList.contains('chat-msg-deleted') || bubble.closest('.chat-msg-deleted')) return;
 
         const id = parseInt(bubble.getAttribute('data-id'));
@@ -6532,9 +6828,13 @@
         const name = bubble.getAttribute('data-sender');
         const text = bubble.getAttribute('data-text');
         openChatMsgCtx(e, id, name, text, uid);
-      });
-    });
+      }
 
+      document.getElementById('chat-messages').addEventListener('dblclick', handleCtxMenuOpen);
+      document.getElementById('chat-messages').addEventListener('contextmenu', handleCtxMenuOpen);
+    });
+  </script>
+  <script>
     const GROUP_CALL_PREFIX = '[[GROUP_CALL]]';
 
     function generateUniqueMeetUrl() {

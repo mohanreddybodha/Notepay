@@ -166,12 +166,25 @@
 
   async function doLogout() {
     try {
+      // 1. Call backend to immediately invalidate the cached auth token
+      try { await apiFetch("POST", "/auth/logout"); } catch(e) { /* Non-critical */ }
+
+      // 2. Reset the memoized Firebase auth promise so next page load gets a clean check
+      clearAuthCache();
+
+      // 3. Sign out from Firebase
       await auth.signOut();
+
+      // 4. Clear all session/app data, but preserve dark mode preference
+      const darkMode = localStorage.getItem("np_dark");
       sessionStorage.clear();
+      localStorage.clear();
+      if (darkMode) localStorage.setItem("np_dark", darkMode);
+
       window.location.replace("login.html");
     } catch(e) {
-      showToast("Logout failed.","error");
-      document.getElementById("logout-pop").style.display="none";
+      showToast("Logout failed.", "error");
+      document.getElementById("logout-pop").style.display = "none";
     }
   }
 </script>

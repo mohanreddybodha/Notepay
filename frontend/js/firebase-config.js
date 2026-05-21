@@ -42,10 +42,8 @@ let authReadyPromise = null;
 /** Wait for Firebase to restore session (returns Promise<User|null>) */
 function waitForAuthReady() {
   if (authReadyPromise) return authReadyPromise;
-  
-  // Waiting for Firebase Auth...
+
   authReadyPromise = new Promise(resolve => {
-    // Safety timeout: resolve with null if Firebase takes too long
     const timer = setTimeout(() => {
       console.warn("Firebase Auth timed out. Proceeding as unauthenticated.");
       resolve(null);
@@ -53,7 +51,6 @@ function waitForAuthReady() {
 
     const unsub = auth.onAuthStateChanged(user => {
       clearTimeout(timer);
-      // Firebase Auth Ready
       unsub();
       resolve(user);
     }, err => {
@@ -64,3 +61,18 @@ function waitForAuthReady() {
   });
   return authReadyPromise;
 }
+
+/** Reset memoized auth promise so the next waitForAuthReady() is fresh. */
+function resetAuthCache() {
+  authReadyPromise = null;
+}
+
+/** Alias used by logout / login flows. */
+function clearAuthCache() {
+  resetAuthCache();
+}
+
+// When signed out, drop cached promise so login page never reuses a stale user.
+auth.onAuthStateChanged(user => {
+  if (!user) resetAuthCache();
+});
