@@ -103,10 +103,18 @@ body.dark-mode {
 
 /* ── RESET ── */
 *, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+}
+
+/* Mandatory fields red star */
+.required::after {
+    content: " *";
+    color: #ef4444;
+}
+
+body { -webkit-tap-highlight-color: transparent;
 }
 
 /* ── BASE ── */

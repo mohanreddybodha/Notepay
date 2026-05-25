@@ -10,7 +10,8 @@ import boto3
 # Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Request, Query, Header, WebSocket, WebSocketDisconnect
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -35,7 +36,11 @@ from fastapi.responses import JSONResponse
 
 #  CORS  named production origins + localhost regex for dev 
 _DEFAULT_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000"
-_ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", _DEFAULT_ORIGINS).split(",") if o.strip()]
+env_origins = os.getenv("ALLOWED_ORIGINS")
+if os.getenv("ENVIRONMENT") == "production":
+    _ALLOWED_ORIGINS = [o.strip() for o in env_origins.split(",")] if env_origins else []
+else:
+    _ALLOWED_ORIGINS = [o.strip() for o in (env_origins or _DEFAULT_ORIGINS).split(",") if o.strip()]
 
 # Regex to allow localhost and local network IPs (192.168.*.*, 10.*.*.*) for mobile testing
 _LOCAL_IP_REGEX = r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$"
@@ -723,7 +728,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate,
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     msg = crud.create_chat_message(db, event_id, user_id, data.message.strip(), data.reply_to_id)
     # Broadcast to all connected clients via WebSocket
-    await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": msg})
+    await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": jsonable_encoder(msg)})
     return msg
 
 @app.post("/events/{event_id}/chat/{message_id}/react", tags=["Chat"])
@@ -736,7 +741,7 @@ async def react_to_message(event_id: str, message_id: int, data: schemas.ChatRea
     msg = crud.toggle_reaction(db, message_id, event_id, user_id, data.emoji)
     if not msg:
         raise HTTPException(status_code=404, detail="Message not found")
-    await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": msg})
+    await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": jsonable_encoder(msg)})
     return msg
 
 @app.delete("/events/{event_id}/chat/{message_id}", tags=["Chat"])
@@ -754,7 +759,7 @@ async def delete_chat_message(event_id: str, message_id: int,
     if not msg:
         raise HTTPException(status_code=403, detail="Not authorized to delete this message or message not found")
     
-    await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": msg}) # Use CHAT_REACTION to update existing msg in place
+    await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": jsonable_encoder(msg)}) # Use CHAT_REACTION to update existing msg in place
     return {"message": "Message deleted"}
 
 #  WEBSOCKET ENDPOINT 

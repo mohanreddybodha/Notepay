@@ -61,6 +61,15 @@ class CacheManager:
             # Skip real-time full details cache when running in-memory fallback to prevent multi-worker split-brain issues
             if key.startswith("full:"):
                 return
+            if len(self._local_cache) > 5000:
+                # Evict expired keys to prevent memory bloat
+                now = time.time()
+                expired = [k for k, v in self._local_cache.items() if v[1] < now]
+                for k in expired:
+                    del self._local_cache[k]
+                if len(self._local_cache) > 8000:
+                    # Drastic measures to prevent OOM
+                    self._local_cache.clear()
             self._local_cache[key] = (value, time.time() + expire)
 
     def delete(self, key: str):

@@ -11,6 +11,9 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./notepay_dev_v2.
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
+if ENVIRONMENT == "production" and "sqlite" in SQLALCHEMY_DATABASE_URL:
+    raise RuntimeError("FATAL: SQLite fallback is strictly prohibited in production. A valid Postgres DATABASE_URL must be provided.")
+
 if "sqlite" in SQLALCHEMY_DATABASE_URL:
     # Local development uses SQLite
     engine = create_engine(

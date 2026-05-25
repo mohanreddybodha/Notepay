@@ -583,11 +583,9 @@
       #rot-main.is-theater .fc.sticky-col,
       #rot-main.is-theater .th.sticky-col {
         min-height: 20px;
-        width: 100px;
       }
 
       #rot-main.is-theater .sc {
-        width: 72px;
       }
 
       #rot-main.is-theater #theater-search {
@@ -1494,13 +1492,27 @@
     .sth-custom {
       cursor: pointer;
       position: relative;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
     }
 
     .sth-custom:after {
-      content: "▼";
-      font-size: 7px;
-      margin-left: 4px;
-      opacity: 0.5;
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-left: 6px;
+      background-color: currentColor;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'%3E%3C/path%3E%3Cpath d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'%3E%3C/path%3E%3C/svg%3E");
+      -webkit-mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'%3E%3C/path%3E%3Cpath d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'%3E%3C/path%3E%3C/svg%3E");
+      mask-size: contain;
+      mask-repeat: no-repeat;
+      mask-position: center;
+      opacity: 0.6;
     }
 
     body.dark-mode .add-col-btn {
@@ -3141,7 +3153,7 @@
         <div class="sbox-body">
           <div style="display:flex;flex-direction:column;gap:4px;">
             <div class="ef-field">
-              <div class="ef-label required" id="ef-name-label">Donor Name</div>
+              <div class="ef-label" id="ef-name-label">Donor Name <span style="color:var(--red);">*</span></div>
               <input class="ef-input" id="ef-name" type="text" placeholder="Enter name" autocomplete="off" oninput="document.getElementById('ef-error').style.display='none'" />
               <div id="ef-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
             </div>
@@ -3204,7 +3216,7 @@
         <div class="sbox-body">
           <div style="display:flex;flex-direction:column;gap:4px;">
             <div class="ef-field">
-              <div class="ef-label" id="edit-name-label">Donor Name</div>
+              <div class="ef-label" id="edit-name-label">Donor Name <span style="color:var(--red);">*</span></div>
               <input class="ef-input" id="edit-name" type="text" oninput="document.getElementById('edit-error').style.display='none'" />
               <div id="edit-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
             </div>
@@ -3421,7 +3433,7 @@
         <div class="sbox-body" style="padding: 12px 18px 8px;">
           <div class="ef-field" style="margin-bottom:12px;">
             <div class="ef-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <span>Column Name</span>
+              <span>Column Name <span style="color:var(--red);">*</span></span>
               <span id="cc-char-count" style="opacity:0.5;font-size:11px;">0/25</span>
             </div>
             <input class="ef-input" id="cc-name" type="text" placeholder="e.g. House No." maxlength="25"
@@ -3704,7 +3716,7 @@
   <script>
     // ── State ──
     const params = new URLSearchParams(location.search);
-    const eventId = Number(params.get("id") || params.get("eventId"));
+    const eventId = params.get("id") || params.get("eventId");
     let eventData = null;
     let myUserId = null;
     let isOrganizer = false;
@@ -3741,7 +3753,7 @@
       }
     }
 
-    if (!Number.isInteger(eventId) || eventId <= 0) {
+    if (!eventId || typeof eventId !== "string" || eventId.trim() === "") {
       showInvalidEventId();
     }
 
@@ -4366,10 +4378,10 @@
       // 1. Render Header Row
       const hdr = document.createElement("div");
       hdr.className = "tr hdr-row";
-      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div style="flex:1; text-align:left;">Description</div></div>
-                   <div class="th" style="width:90px;">Amount</div>
-                   <div class="th" style="width:100px;">Date</div>
-                   <div class="th" style="width:130px;">Added By</div>`;
+      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="sth-custom" style="flex:1; text-align:left;" onclick="openDefaultColW('Description', 'exp_desc')">Description</div></div>
+                   <div class="th sth-custom" style="width:${getColWidth('exp_amt', 90)}px;" onclick="openDefaultColW('Amount', 'exp_amt')">Amount</div>
+                   <div class="th sth-custom" style="width:${getColWidth('exp_date', 100)}px;" onclick="openDefaultColW('Date', 'exp_date')">Date</div>
+                   <div class="th sth-custom" style="width:${getColWidth('exp_colby', 130)}px;" onclick="openDefaultColW('Added By', 'exp_colby')">Added By</div>`;
 
       customCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
@@ -4400,13 +4412,13 @@
 
           const pinned = isPinned("exp", e.id || e._id);
           row.innerHTML = `
-        <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;">
+        <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;">
           <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
             ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
           </div>
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(e.description)}</div>
         </div>
-        <div class="sc" style="width:${getColWidth('don_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>
+        <div class="sc" style="width:${getColWidth('exp_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>
         <div class="sc" style="width:${getColWidth('exp_date', 100)}px;font-size:11px;">${formatDate(e.collected_at)}</div>
         <div class="sc" style="width:${getColWidth('exp_colby', 130)}px;font-size:11px;" title="${escHtml(e.collected_by_name || "—")}">${escHtml(e.collected_by_name || "—")}</div>
         ${customCells}
@@ -4670,7 +4682,10 @@
       let html = `
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
-            <input type="text" class="inline-input" placeholder="${isDon ? 'Donor Name *' : 'Description *'}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-name">
+            <div style="position:relative; width:100%;">
+              <input type="text" class="inline-input" placeholder="${isDon ? 'Donor Name' : 'Description'}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-name">
+              <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
+            </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
             <input type="number" class="inline-input" placeholder="Amount" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-amt">
@@ -4761,7 +4776,10 @@
       let html = `
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
-            <input type="text" class="inline-input" value="${nm}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-name">
+            <div style="position:relative; width:100%;">
+              <input type="text" class="inline-input" value="${nm}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-name">
+              <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
+            </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
             <input type="number" class="inline-input" value="${am}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-amt">
@@ -4837,14 +4855,14 @@
     }
 
     function openEntryForm(type) {
-      if (activeTheaterTab) {
+      if (activeTheaterTab && window.innerWidth <= 768) {
           renderInlineEntryForm(type);
           return;
       }
 
       entryType = type;
       document.getElementById("ef-title").textContent = type === "don" ? "New Donation" : "New Expense";
-      document.getElementById("ef-name-label").textContent = type === "don" ? "Donor Name" : "Description";
+      document.getElementById("ef-name-label").innerHTML = (type === "don" ? "Donor Name" : "Description") + ' <span style="color:var(--red);">*</span>';
       document.getElementById("ef-name").value = "";
       document.getElementById("ef-amount").value = "";
       document.getElementById("ef-error").style.display = "none";
@@ -4999,7 +5017,7 @@
 
     function openEditForm() {
       const type = ctxType; const entry = ctxEntry;
-      if (activeTheaterTab) {
+      if (activeTheaterTab && window.innerWidth <= 768) {
           // Find the row element
           const tblBody = document.getElementById(type === "don" ? "don-tbl-body" : "exp-tbl-body");
           const arr = type === "don" ? donations : expenses;
@@ -5012,7 +5030,7 @@
       }
 
       const name = ctxType === "don" ? ctxEntry.donor_name : ctxEntry.description;
-      document.getElementById("edit-name-label").textContent = ctxType === "don" ? "Donor Name" : "Description";
+      document.getElementById("edit-name-label").innerHTML = (ctxType === "don" ? "Donor Name" : "Description") + ' <span style="color:var(--red);">*</span>';
       document.getElementById("edit-name").value = name;
       document.getElementById("edit-amount").value = ctxEntry.amount || "";
 
@@ -5730,6 +5748,7 @@
       closeDefColSheet();
       renderDonations();
       renderExpenses();
+      if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
     }
 
     function closeCustomColSheet() {
@@ -5852,17 +5871,17 @@
         }).join("");
 
         tr.innerHTML = `
-          <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;">
+          <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(type === "don" ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
               ${isPinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
             </div>
             <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(entry.donor_name || entry.description)}</div>
           </div>
-          <div class="sc" style="width:${getColWidth('don_amt', 90)}px;">
+          <div class="sc" style="width:${getColWidth(type === "don" ? 'don_amt' : 'exp_amt', 90)}px;">
             <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>
           </div>
-          <div class="sc" style="width:100px;">${formatDate(entry.collected_at)}</div>
-          <div class="sc" style="width:130px;">${escHtml(entry.collected_by_name || "-")}</div>
+          <div class="sc" style="width:${getColWidth(type === "don" ? 'don_date' : 'exp_date', 100)}px;">${formatDate(entry.collected_at)}</div>
+          <div class="sc" style="width:${getColWidth(type === "don" ? 'don_colby' : 'exp_colby', 130)}px;">${escHtml(entry.collected_by_name || "-")}</div>
           ${customCells}
         `;
         container.appendChild(tr);
@@ -5893,41 +5912,26 @@
         hdrRow.style.zIndex = "2500";
       }
 
-      const hName = document.createElement("div");
-      hName.className = "th sticky-col";
-      hName.style.cssText = "display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important;";
-      hName.innerHTML = `<div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div style="flex:1; text-align:left;">${type === "don" ? "NAME" : "DESCRIPTION"}</div>`;
-      hdrRow.appendChild(hName);
-
-      const hAmt = document.createElement("div");
-      hAmt.className = "th";
-      hAmt.textContent = "AMOUNT";
-      hAmt.style.width = "90px";
-      hdrRow.appendChild(hAmt);
-
-      const hDate = document.createElement("div");
-      hDate.className = "th";
-      hDate.textContent = "DATE";
-      hDate.style.width = "100px";
-      hdrRow.appendChild(hDate);
-
-      const hAdded = document.createElement("div");
-      hAdded.className = "th";
-      hAdded.textContent = type === "don" ? "COLLECTED BY" : "ADDED BY";
-      hAdded.style.width = "130px";
-      hdrRow.appendChild(hAdded);
+      if (type === "don") {
+        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="sth-custom" style="flex:1; text-align:left;" onclick="openDefaultColW('Name', 'don_name')">NAME</div></div>
+                     <div class="th sth-custom" style="width:${getColWidth('don_amt', 90)}px;" onclick="openDefaultColW('Amount', 'don_amt')">AMOUNT</div>
+                     <div class="th sth-custom" style="width:${getColWidth('don_date', 100)}px;" onclick="openDefaultColW('Date', 'don_date')">DATE</div>
+                     <div class="th sth-custom" style="width:${getColWidth('don_colby', 130)}px;" onclick="openDefaultColW('Collected By', 'don_colby')">COLLECTED BY</div>`;
+      } else {
+        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="sth-custom" style="flex:1; text-align:left;" onclick="openDefaultColW('Description', 'exp_desc')">DESCRIPTION</div></div>
+                     <div class="th sth-custom" style="width:${getColWidth('exp_amt', 90)}px;" onclick="openDefaultColW('Amount', 'exp_amt')">AMOUNT</div>
+                     <div class="th sth-custom" style="width:${getColWidth('exp_date', 100)}px;" onclick="openDefaultColW('Date', 'exp_date')">DATE</div>
+                     <div class="th sth-custom" style="width:${getColWidth('exp_colby', 130)}px;" onclick="openDefaultColW('Added By', 'exp_colby')">ADDED BY</div>`;
+      }
 
       customCols.forEach((c) => {
         const th = document.createElement("div");
-        th.className = "th";
+        th.className = "th" + (isOrganizer && !isVisitor ? " sth-custom" : "");
         const colName = typeof c === "string" ? c : c.n;
         if (isOrganizer && !isVisitor) {
-          th.style.cursor = "pointer";
           th.onclick = (e) => { e.stopPropagation(); openEditCol(colName, type); };
-          th.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between; width:100%;"><span>${colName.toUpperCase()}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div>`;
-        } else {
-          th.textContent = colName.toUpperCase();
         }
+        th.textContent = colName.toUpperCase();
         th.style.width = (typeof c === "string" ? 180 : c.w) + "px";
         hdrRow.appendChild(th);
       });
