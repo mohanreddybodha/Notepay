@@ -427,7 +427,7 @@ def update_member_role(db: Session, event_id: str, target_user_id: int, role: mo
     cache.cache.bump_global_version()
     return member
 
-# ── Watched Events (Discover Tab) ──────────────────────────────────────────
+#  Watched Events (Discover Tab) 
 
 def get_watched_events(db: Session, user_id: int):
     """Return watched events for a user, excluding events they are already a member of."""
@@ -517,7 +517,7 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     cache_key = f"full:{event_id}:{user_id}"
     cached_data = cache.cache.get(cache_key)
     if cached_data:
-        print(f"🚀 Cache Hit for Event {event_id} (User {user_id})")
+        print(f" Cache Hit for Event {event_id} (User {user_id})")
         # Return as the Pydantic model it expects
         return schemas.EventFullDetailsResponse(**cached_data)
 
@@ -591,7 +591,7 @@ def fix_event_json(e):
             except: e_dict[col] = []
     return e_dict
 
-# ── Chat ──────────────────────────────────────────────────────────────────────
+#  Chat 
 
 def _chat_msg_to_dict(db, msg, sender_name):
     """Convert a ChatMessage ORM object to a response dict with reply snippet."""
@@ -686,7 +686,7 @@ def delete_chat_message(db: Session, message_id: int, event_id: str, user_id: in
         return None
     if msg.user_id != user_id and not is_organizer:
         return None
-    msg.message = "🚫 This message was deleted."
+    msg.message = " This message was deleted."
     msg.reactions = {}
     from sqlalchemy.orm.attributes import flag_modified
     flag_modified(msg, "reactions")

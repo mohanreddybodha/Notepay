@@ -339,7 +339,7 @@
 
     // Organizers can ALWAYS click/manage their events
     const canClick = role === "organizer" || (role === "visitor" && isPublic !== false) || role === "collector";
-    const clickAction = canClick ? `onclick="openEvent(${e.id})"` : "";
+    const clickAction = canClick ? `onclick="openEvent('${e.id}')"` : "";
     const cursorStyle = canClick ? "cursor:pointer;" : "cursor:default;";
 
     return `<div class="ev-card" style="${cursorStyle}" ${clickAction}>

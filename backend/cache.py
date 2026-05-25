@@ -8,7 +8,7 @@ try:
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
-    print("⚠️ Redis module not found. Caching will use in-memory fallback.")
+    print(" Redis module not found. Caching will use in-memory fallback.")
 
 # Cache configuration
 REDIS_URL = os.getenv("REDIS_URL")
@@ -94,7 +94,7 @@ class CacheManager:
             to_del = [k for k in self._local_cache.keys() if k.startswith(prefix)]
             for k in to_del:
                 del self._local_cache[k]
-        print(f"🧹 Cache Fully Cleared for Event {event_id}")
+        print(f" Cache Fully Cleared for Event {event_id}")
 
     def get_global_version(self) -> str:
         """Returns the current global dashboard version (heartbeat)."""
@@ -109,7 +109,7 @@ class CacheManager:
         if self.client:
             try:
                 self.client.incr("dash_v")
-                print("💓 Global Dashboard Version Bumped (Real-time Sync)")
+                print(" Global Dashboard Version Bumped (Real-time Sync)")
             except: pass
         else:
             v = int(self._local_cache.get("dash_v", "1"))

@@ -43,7 +43,7 @@ class Event(Base):
     # Who created it
     organizer_id = Column(Integer, ForeignKey("users.id"))
     
-    # Table visibility — organizer can hide Donations or Expenses
+    # Table visibility  organizer can hide Donations or Expenses
     show_donations = Column(Boolean, default=True)
     show_expenses = Column(Boolean, default=True)
     
@@ -116,7 +116,7 @@ class ChatMessage(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     message = Column(String, nullable=False)
     reply_to_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)
-    reactions = Column(JSON, default=dict)  # {"❤️": [1,3], "👍": [2]}
+    reactions = Column(JSON, default=dict)  # {"": [1,3], "": [2]}
     sent_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User")

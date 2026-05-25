@@ -53,19 +53,19 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Security(secu
         # Firebase issues tokens with an iat (issued-at) slightly in the future relative
         # to the backend's clock. We wait up to 5 seconds for clocks to align and retry.
         if "Token used too early" in error_msg:
-            print(f"⚠️ Clock skew detected: {error_msg}. Retrying after delay...")
+            print(f" Clock skew detected: {error_msg}. Retrying after delay...")
             for attempt in range(3):
                 await asyncio.sleep(2)  # Wait 2 seconds for clocks to align
                 try:
                     decoded = auth.verify_id_token(id_token, check_revoked=False)
                     cache.cache.set(cache_key, decoded, expire=600)
-                    print(f"✅ Clock skew resolved on attempt {attempt + 1}")
+                    print(f" Clock skew resolved on attempt {attempt + 1}")
                     return decoded
                 except Exception as retry_e:
                     if "Token used too early" not in str(retry_e):
-                        # A different error — stop retrying
+                        # A different error  stop retrying
                         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {retry_e}")
-            # All retries exhausted — clock skew is too large
+            # All retries exhausted  clock skew is too large
             raise HTTPException(
                 status_code=401,
                 detail="Authentication failed: server clock is out of sync. Please try again in a few seconds."

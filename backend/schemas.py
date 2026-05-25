@@ -3,20 +3,20 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from models import GenderEnum, UserRole
 
-# ── What the client sends when registering (firebase_uid comes from the JWT token)
+#  What the client sends when registering (firebase_uid comes from the JWT token)
 class UserRegisterInput(BaseModel):
     phone_number: str
     full_name: str
     gender: GenderEnum
 
-# ── Internal-only schema used by CRUD (never exposed in API routes directly)
+#  Internal-only schema used by CRUD (never exposed in API routes directly)
 class UserCreate(BaseModel):
     firebase_uid: str
     phone_number: str
     full_name: str
     gender: GenderEnum
 
-# ── Public response — firebase_uid deliberately excluded
+#  Public response  firebase_uid deliberately excluded
 class UserResponse(BaseModel):
     id: int
     phone_number: str
@@ -129,7 +129,7 @@ class EventSummaryResponse(BaseModel):
     expenses_count: int
     recent_transactions: List[RecentTransaction] = []
 
-# ── UPDATE (PUT) SCHEMAS ──
+#  UPDATE (PUT) SCHEMAS 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     gender: Optional[GenderEnum] = None
@@ -183,7 +183,7 @@ class UserFullDashboardResponse(BaseModel):
     shared_events: List[EventResponse]
     watched_events: List[WatchedEventResponse]
 
-# ── CHAT ──
+#  CHAT 
 class ChatMessageCreate(BaseModel):
     message: str
     reply_to_id: Optional[int] = None

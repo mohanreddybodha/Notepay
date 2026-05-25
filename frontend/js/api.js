@@ -71,6 +71,12 @@ async function apiFetchWithToken(method, path, token, body = null) {
   if (body) opts.body = JSON.stringify(body);
 
   const res = await fetch(`${API_BASE}${path}`, opts);
+  if (res.status === 401) {
+    sessionStorage.removeItem("np_token_tmp");
+    window.location.href = "login.html";
+    throw new Error("Session expired");
+  }
+
   const data = res.headers.get("content-type")?.includes("application/json")
     ? await res.json()
     : null;

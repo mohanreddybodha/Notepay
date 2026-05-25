@@ -27,13 +27,13 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="NotePay API",
-    description="Backend for NotePay — PRD v12.0",
+    description="Backend for NotePay  PRD v12.0",
     version="1.0.0"
 )
 
 from fastapi.responses import JSONResponse
 
-# ─── CORS — named production origins + localhost regex for dev ───────────────
+#  CORS  named production origins + localhost regex for dev 
 _DEFAULT_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000"
 _ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", _DEFAULT_ORIGINS).split(",") if o.strip()]
 
@@ -49,7 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── WEBSOCKET MANAGER ─────────────────────────────────────────────────────────
+#  WEBSOCKET MANAGER 
 class ConnectionManager:
     def __init__(self):
         # event_id -> list of websockets (for local dev)
@@ -164,7 +164,7 @@ async def get_current_user_id(
     
     decoded = await auth.verify_token(credentials)
     auth_dur = (time.time() - start_t) * 1000
-    print(f"🔑 Auth Verification took {auth_dur:.2f}ms")
+    print(f" Auth Verification took {auth_dur:.2f}ms")
     
     uid = decoded["uid"]
     phone = decoded.get("phone_number")
@@ -192,7 +192,7 @@ async def get_current_user_id(
 # Optional user id dependency removed to enforce strict auth.
 
 
-# ─── HELPER: Membership Gatekeeper ─────────────────────────────────────────────
+#  HELPER: Membership Gatekeeper 
 def verify_membership(db: Session, event_id: str, user_id: int,
                       require_organizer: bool = False,
                       require_unrestricted: bool = False,
@@ -227,13 +227,13 @@ def verify_event_active_for_collector(db: Session, event_id: str, user_id: int, 
     return member
 
 
-# ─── ROOT ──────────────────────────────────────────────────────────────────────
+#  ROOT 
 @app.get("/")
 def read_root():
-    return {"message": "NotePay API — PRD v12.0 Complete", "docs": "/docs"}
+    return {"message": "NotePay API  PRD v12.0 Complete", "docs": "/docs"}
 
 
-# ─── AUTH / LOGOUT ─────────────────────────────────────────────────────────────
+#  AUTH / LOGOUT 
 @app.post("/auth/logout", tags=["Auth"])
 async def logout_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
@@ -254,7 +254,7 @@ async def register_rate_limit(request: Request):
     client_ip = request.client.host if request.client else "unknown"
     verify_rate_limit(f"ip:{client_ip}:register", limit=10, window=60)
 
-# ─── USER / PROFILE ────────────────────────────────────────────────────────────
+#  USER / PROFILE 
 @app.post("/users", response_model=schemas.UserResponse, tags=["Profile"])
 async def create_user(
     user_data: schemas.UserRegisterInput,
@@ -310,14 +310,14 @@ async def get_my_profile(db: Session = Depends(get_db), user_id: int = Depends(g
 
 @app.put("/users/me", response_model=schemas.UserResponse, tags=["Profile"])
 async def update_my_profile(data: schemas.UserUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Edit own profile — Full Name and/or Gender."""
+    """Edit own profile  Full Name and/or Gender."""
     user = crud.update_user(db, user_id, data)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
-# ─── EVENTS ────────────────────────────────────────────────────────────────────
+#  EVENTS 
 @app.post("/events", response_model=schemas.EventResponse, tags=["Events"])
 async def create_event(event: schemas.EventCreate,
                  db: Session = Depends(get_db),
@@ -334,13 +334,13 @@ async def read_all_events(db: Session = Depends(get_db), user_id: int = Depends(
 
 @app.get("/events/my", response_model=List[schemas.EventResponse], tags=["Events"])
 async def read_my_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Dashboard — My Events tab: only events where user is Organizer."""
+    """Dashboard  My Events tab: only events where user is Organizer."""
     events = crud.get_my_events(db, user_id=user_id)
     return [fix_event_json(e) for e in events]
 
 @app.get("/events/shared", response_model=List[schemas.EventResponse], tags=["Events"])
 async def read_shared_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Dashboard — Shared Events tab: events joined via code (Collector). Includes deactivated."""
+    """Dashboard  Shared Events tab: events joined via code (Collector). Includes deactivated."""
     events = crud.get_shared_events(db, user_id=user_id)
     return [fix_event_json(e) for e in events]
 
@@ -384,7 +384,7 @@ async def delete_event(event_id: str, db: Session = Depends(get_db), user_id: in
     return {"message": "Event permanently deleted"}
 
 
-# ─── EVENT MANAGEMENT (Organizer Only) ─────────────────────────────────────────
+#  EVENT MANAGEMENT (Organizer Only) 
 @app.put("/events/{event_id}/deactivate", response_model=schemas.EventResponse, tags=["Event Management"])
 async def deactivate_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Lock all collectors out. Organizer retains read-only view."""
@@ -411,7 +411,7 @@ async def regenerate_invite_code(event_id: str, db: Session = Depends(get_db), u
     return crud.regenerate_invite_code(db, event_id)
 @app.get("/events/watched", tags=["Events"])
 async def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Dashboard — Discover tab: public events recently viewed. Optimized with bulk membership check."""
+    """Dashboard  Discover tab: public events recently viewed. Optimized with bulk membership check."""
     watched = crud.get_watched_events(db, user_id)
     if not watched: return []
     
@@ -509,7 +509,7 @@ async def get_event_members(event_id: str, db: Session = Depends(get_db), user_i
          response_model=schemas.MemberContactResponse, tags=["Event Management"])
 async def get_member_contact(event_id: str, target_user_id: int,
                              db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Phone number for 1:1 call — fellow event members only (not public visitors)."""
+    """Phone number for 1:1 call  fellow event members only (not public visitors)."""
     verify_membership(db, event_id, user_id, require_member=True)
     contact = crud.get_member_contact(db, event_id, target_user_id)
     if not contact:
@@ -585,7 +585,7 @@ async def exit_event(event_id: str, db: Session = Depends(get_db), user_id: int 
 
 
 
-# ─── DONATIONS ─────────────────────────────────────────────────────────────────
+#  DONATIONS 
 @app.get("/events/{event_id}/donations", response_model=List[schemas.DonationResponse], tags=["Donations"])
 async def get_event_donations(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all donations. Requires strict auth."""
@@ -633,7 +633,7 @@ async def delete_donation(event_id: str, donation_id: int,
     return {"message": "Donation deleted"}
 
 
-# ─── EXPENSES ──────────────────────────────────────────────────────────────────
+#  EXPENSES 
 @app.get("/events/{event_id}/expenses", response_model=List[schemas.ExpenseResponse], tags=["Expenses"])
 async def get_event_expenses(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all expenses. Requires strict auth."""
@@ -681,7 +681,7 @@ async def delete_expense(event_id: str, expense_id: int,
     return {"message": "Expense deleted"}
 
 
-# ─── SUMMARY ───────────────────────────────────────────────────────────────────
+#  SUMMARY 
 @app.get("/events/{event_id}/summary", response_model=schemas.EventSummaryResponse, tags=["Summary"])
 async def get_event_summary(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Financial overview. Requires strict auth."""
@@ -700,12 +700,12 @@ async def get_event_full_details(event_id: str, db: Session = Depends(get_db), u
     start_fetch = time.time()
     res = crud.get_event_full_details(db, event_id, user_id)
     fetch_dur = (time.time() - start_fetch) * 1000
-    print(f"📦 Data Fetch took {fetch_dur:.2f}ms")
+    print(f" Data Fetch took {fetch_dur:.2f}ms")
         
         
     return res
 
-# ─── CHAT ──────────────────────────────────────────────────────────────────────
+#  CHAT 
 @app.get("/events/{event_id}/chat", response_model=List[schemas.ChatMessageResponse], tags=["Chat"])
 async def get_chat_history(event_id: str, limit: int = 50, before_id: int = None,
                            db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -757,7 +757,7 @@ async def delete_chat_message(event_id: str, message_id: int,
     await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": msg}) # Use CHAT_REACTION to update existing msg in place
     return {"message": "Message deleted"}
 
-# ─── WEBSOCKET ENDPOINT ────────────────────────────────────────────────────────
+#  WEBSOCKET ENDPOINT 
 async def _authenticate_ws_user(db: Session, token: str) -> int:
     """Verify Firebase token and return internal user id."""
     if not token:
@@ -816,7 +816,7 @@ async def websocket_dashboard(websocket: WebSocket):
     finally:
         db.close()
 
-# ─── AWS SERVERLESS HANDLER ───────────────────────────────────────────────────
+#  AWS SERVERLESS HANDLER 
 from mangum import Mangum
 mangum_handler = Mangum(app)
 
@@ -883,7 +883,7 @@ def handler(event, context):
 
 @app.websocket("/ws/{event_id}")
 async def websocket_endpoint(websocket: WebSocket, event_id: str):
-    """Authenticate via first JSON message {type:AUTH, token} — avoids huge JWT in query string."""
+    """Authenticate via first JSON message {type:AUTH, token}  avoids huge JWT in query string."""
     if event_id <= 0:
         await websocket.accept()
         await websocket.close(code=4400, reason="Invalid event")
