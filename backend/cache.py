@@ -74,7 +74,7 @@ class CacheManager:
             if key in self._local_cache:
                 del self._local_cache[key]
 
-    def invalidate_event(self, event_id: int):
+    def invalidate_event(self, event_id: str):
         """Clears all cached data related to a specific event."""
         self.delete(f"sum:{event_id}")
         self.delete(f"all:{event_id}")

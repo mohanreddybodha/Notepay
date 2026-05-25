@@ -73,19 +73,19 @@
 
   <div class="scr">
     <div class="field-wrap">
-      <div class="field-label-out">Event Name *</div>
+      <div class="field-label-out required">Event Name</div>
       <div class="field"><input type="text" id="ev-name" placeholder="e.g. Ganesh Festival 2025" maxlength="100" oninput="document.getElementById('ev-name-error').style.display='none';"/></div>
       <div id="ev-name-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>
 
     <div class="field-wrap">
-      <div class="field-label-out">Short Description *</div>
+      <div class="field-label-out required">Short Description</div>
       <div class="field"><textarea id="ev-desc" placeholder="e.g. Annual colony donations" rows="2" maxlength="200" oninput="document.getElementById('ev-desc-error').style.display='none';"></textarea></div>
       <div id="ev-desc-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>
 
     <div class="field-wrap">
-      <div class="field-label-out">Event Date *</div>
+      <div class="field-label-out required">Event Date</div>
       <div class="field"><input type="date" id="ev-date" onchange="document.getElementById('ev-date-error').style.display='none';"/></div>
       <div id="ev-date-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>

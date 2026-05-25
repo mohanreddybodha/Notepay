@@ -56,22 +56,22 @@ class ConnectionManager:
         self.active_connections: Dict[int, List[WebSocket]] = {}
         self.dashboard_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket, event_id: int):
+    async def connect(self, websocket: WebSocket, event_id: str):
         await websocket.accept()
         self.register(websocket, event_id)
 
-    def register(self, websocket: WebSocket, event_id: int):
+    def register(self, websocket: WebSocket, event_id: str):
         if event_id not in self.active_connections:
             self.active_connections[event_id] = []
         self.active_connections[event_id].append(websocket)
 
-    def disconnect(self, websocket: WebSocket, event_id: int):
+    def disconnect(self, websocket: WebSocket, event_id: str):
         if event_id in self.active_connections:
             self.active_connections[event_id].remove(websocket)
             if not self.active_connections[event_id]:
                 del self.active_connections[event_id]
 
-    async def broadcast_change(self, event_id: int, message: dict):
+    async def broadcast_change(self, event_id: str, message: dict):
         if os.getenv("ENVIRONMENT") == "production" and cache.client:
             # Serverless AWS API Gateway Broadcast
             conns = cache.client.smembers(f"ws:evt:{event_id}")
@@ -193,7 +193,7 @@ async def get_current_user_id(
 
 
 # ─── HELPER: Membership Gatekeeper ─────────────────────────────────────────────
-def verify_membership(db: Session, event_id: int, user_id: int,
+def verify_membership(db: Session, event_id: str, user_id: int,
                       require_organizer: bool = False,
                       require_unrestricted: bool = False,
                       require_member: bool = False):
@@ -211,7 +211,7 @@ def verify_membership(db: Session, event_id: int, user_id: int,
         raise HTTPException(status_code=403, detail="Your access has been restricted by the organizer")
     return member
 
-def verify_event_active_for_collector(db: Session, event_id: int, user_id: int, *, for_write: bool = False):
+def verify_event_active_for_collector(db: Session, event_id: str, user_id: int, *, for_write: bool = False):
     """Gate event access. Writes require membership + unrestricted; reads allow public visitors."""
     if for_write:
         member = verify_membership(
@@ -358,7 +358,7 @@ async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), us
     return {"message": "Joined event successfully", "event_id": event.id, "event_name": event.name}
 
 @app.put("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])
-async def update_event(event_id: int, data: schemas.EventUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def update_event(event_id: str, data: schemas.EventUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Rename/edit event details. Organizer only."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     event = crud.update_event(db, event_id, data, user_id=user_id)
@@ -372,7 +372,7 @@ async def update_event(event_id: int, data: schemas.EventUpdate, db: Session = D
     return fix_event_json(event_dict)
 
 @app.delete("/events/{event_id}", tags=["Events"])
-async def delete_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def delete_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Permanently delete an event and ALL its data. Organizer only."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     success = crud.delete_event(db, event_id)
@@ -386,7 +386,7 @@ async def delete_event(event_id: int, db: Session = Depends(get_db), user_id: in
 
 # ─── EVENT MANAGEMENT (Organizer Only) ─────────────────────────────────────────
 @app.put("/events/{event_id}/deactivate", response_model=schemas.EventResponse, tags=["Event Management"])
-async def deactivate_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def deactivate_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Lock all collectors out. Organizer retains read-only view."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     event = crud.toggle_event_status(db, event_id, is_active=False, user_id=user_id)
@@ -395,7 +395,7 @@ async def deactivate_event(event_id: int, db: Session = Depends(get_db), user_id
     return event
 
 @app.put("/events/{event_id}/reactivate", response_model=schemas.EventResponse, tags=["Event Management"])
-async def reactivate_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def reactivate_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Reopen event. Organizer must then generate a NEW code and reshare."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     event = crud.toggle_event_status(db, event_id, is_active=True, user_id=user_id)
@@ -404,7 +404,7 @@ async def reactivate_event(event_id: int, db: Session = Depends(get_db), user_id
     return event
 
 @app.post("/events/{event_id}/generate_code", response_model=schemas.EventResponse, tags=["Event Management"])
-async def regenerate_invite_code(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def regenerate_invite_code(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Generate a brand new invite code. Old code becomes permanently invalid."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=60)
@@ -444,7 +444,7 @@ async def get_watched_history(db: Session = Depends(get_db), user_id: int = Depe
     return resp
 
 @app.delete("/events/{event_id}/watched", tags=["Events"])
-async def remove_watched_history(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def remove_watched_history(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Remove event from watched history (Discover tab)."""
     success = crud.remove_watched_event(db, user_id, event_id)
     if not success:
@@ -465,7 +465,7 @@ def fix_event_json(e_dict):
     return e_dict
 
 @app.get("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])
-async def read_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def read_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Fetch details for a single event. Requires strict auth."""
     event = crud.get_event(db, event_id)
     if not event:
@@ -489,7 +489,7 @@ async def read_event(event_id: int, db: Session = Depends(get_db), user_id: int 
 
 
 @app.patch("/events/{event_id}/privacy", response_model=schemas.EventResponse, tags=["Event Management"])
-async def toggle_event_privacy(event_id: int, is_public: bool, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def toggle_event_privacy(event_id: str, is_public: bool, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Toggle event between Private and Public (unlisted). Organizer only."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     event = crud.update_event(db, event_id, schemas.EventUpdate(is_public=is_public))
@@ -500,14 +500,14 @@ async def toggle_event_privacy(event_id: int, is_public: bool, db: Session = Dep
     return event
 
 @app.get("/events/{event_id}/members", response_model=List[schemas.EventMemberResponse], tags=["Event Management"])
-async def get_event_members(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def get_event_members(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all members in the event. Organizer only."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     return crud.get_event_members(db, event_id)
 
 @app.get("/events/{event_id}/members/{target_user_id}/contact",
          response_model=schemas.MemberContactResponse, tags=["Event Management"])
-async def get_member_contact(event_id: int, target_user_id: int,
+async def get_member_contact(event_id: str, target_user_id: int,
                              db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Phone number for 1:1 call — fellow event members only (not public visitors)."""
     verify_membership(db, event_id, user_id, require_member=True)
@@ -517,7 +517,7 @@ async def get_member_contact(event_id: int, target_user_id: int,
     return contact
 
 @app.put("/events/{event_id}/members/{target_user_id}/restrict", response_model=schemas.EventMemberResponse, tags=["Event Management"])
-async def restrict_member(event_id: int, target_user_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def restrict_member(event_id: str, target_user_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Block a collector from reading or writing anything in this event."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     
@@ -533,7 +533,7 @@ async def restrict_member(event_id: int, target_user_id: int, db: Session = Depe
     return member
 
 @app.put("/events/{event_id}/members/{target_user_id}/unrestrict", response_model=schemas.EventMemberResponse, tags=["Event Management"])
-async def unrestrict_member(event_id: int, target_user_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def unrestrict_member(event_id: str, target_user_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Restore a restricted collector's full access."""
     verify_membership(db, event_id, user_id, require_organizer=True)
 
@@ -549,7 +549,7 @@ async def unrestrict_member(event_id: int, target_user_id: int, db: Session = De
     return member
 
 @app.put("/events/{event_id}/members/{target_user_id}/role", response_model=schemas.EventMemberResponse, tags=["Event Management"])
-async def update_member_role(event_id: int, target_user_id: int, data: schemas.MemberRoleUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def update_member_role(event_id: str, target_user_id: int, data: schemas.MemberRoleUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Change a member's role (e.g., Promote to Organizer). Organizer only."""
     verify_membership(db, event_id, user_id, require_organizer=True)
 
@@ -572,7 +572,7 @@ async def update_member_role(event_id: int, target_user_id: int, data: schemas.M
     return member
 
 @app.post("/events/{event_id}/exit", tags=["Events"])
-async def exit_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def exit_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Remove yourself from an event. You will need the code to rejoin."""
     success = crud.exit_event(db, event_id, user_id)
     if not success:
@@ -587,13 +587,13 @@ async def exit_event(event_id: int, db: Session = Depends(get_db), user_id: int 
 
 # ─── DONATIONS ─────────────────────────────────────────────────────────────────
 @app.get("/events/{event_id}/donations", response_model=List[schemas.DonationResponse], tags=["Donations"])
-async def get_event_donations(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def get_event_donations(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all donations. Requires strict auth."""
     verify_membership(db, event_id, user_id)
     return crud.get_donations(db, event_id)
 
 @app.post("/events/{event_id}/donations", response_model=schemas.DonationResponse, tags=["Donations"])
-async def add_donation(event_id: int, donation: schemas.DonationCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def add_donation(event_id: str, donation: schemas.DonationCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new donation row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60)
@@ -603,7 +603,7 @@ async def add_donation(event_id: int, donation: schemas.DonationCreate, db: Sess
     return res
 
 @app.put("/events/{event_id}/donations/{donation_id}", response_model=schemas.DonationResponse, tags=["Donations"])
-async def update_donation(event_id: int, donation_id: int, data: schemas.DonationUpdate,
+async def update_donation(event_id: str, donation_id: int, data: schemas.DonationUpdate,
                     db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Edit a donation row. Organizer can edit any row. Collector can only edit their own."""
     member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
@@ -618,7 +618,7 @@ async def update_donation(event_id: int, donation_id: int, data: schemas.Donatio
     return result
 
 @app.delete("/events/{event_id}/donations/{donation_id}", tags=["Donations"])
-async def delete_donation(event_id: int, donation_id: int,
+async def delete_donation(event_id: str, donation_id: int,
                     db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Delete a donation row. Organizer can delete any. Collector can only delete their own."""
     member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
@@ -635,13 +635,13 @@ async def delete_donation(event_id: int, donation_id: int,
 
 # ─── EXPENSES ──────────────────────────────────────────────────────────────────
 @app.get("/events/{event_id}/expenses", response_model=List[schemas.ExpenseResponse], tags=["Expenses"])
-async def get_event_expenses(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def get_event_expenses(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all expenses. Requires strict auth."""
     verify_membership(db, event_id, user_id)
     return crud.get_expenses(db, event_id)
 
 @app.post("/events/{event_id}/expenses", response_model=schemas.ExpenseResponse, tags=["Expenses"])
-async def add_expense(event_id: int, expense: schemas.ExpenseCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def add_expense(event_id: str, expense: schemas.ExpenseCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new expense row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id, for_write=True)
     verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60)
@@ -651,7 +651,7 @@ async def add_expense(event_id: int, expense: schemas.ExpenseCreate, db: Session
     return res
 
 @app.put("/events/{event_id}/expenses/{expense_id}", response_model=schemas.ExpenseResponse, tags=["Expenses"])
-async def update_expense(event_id: int, expense_id: int, data: schemas.ExpenseUpdate,
+async def update_expense(event_id: str, expense_id: int, data: schemas.ExpenseUpdate,
                    db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Edit an expense row. Organizer can edit any. Collector can only edit their own."""
     member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
@@ -666,7 +666,7 @@ async def update_expense(event_id: int, expense_id: int, data: schemas.ExpenseUp
     return res
 
 @app.delete("/events/{event_id}/expenses/{expense_id}", tags=["Expenses"])
-async def delete_expense(event_id: int, expense_id: int,
+async def delete_expense(event_id: str, expense_id: int,
                    db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Delete an expense row. Organizer can delete any. Collector can only delete their own."""
     member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
@@ -683,13 +683,13 @@ async def delete_expense(event_id: int, expense_id: int,
 
 # ─── SUMMARY ───────────────────────────────────────────────────────────────────
 @app.get("/events/{event_id}/summary", response_model=schemas.EventSummaryResponse, tags=["Summary"])
-async def get_event_summary(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def get_event_summary(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Financial overview. Requires strict auth."""
     verify_membership(db, event_id, user_id)
     return crud.get_event_summary(db, event_id)
 
 @app.get("/events/{event_id}/full-details", response_model=schemas.EventFullDetailsResponse, tags=["Events"])
-async def get_event_full_details(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def get_event_full_details(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """The 'Big Bang' request. Returns everything for an event in one call. Highly optimized with caching."""
     member = verify_membership(db, event_id, user_id)
     
@@ -707,14 +707,14 @@ async def get_event_full_details(event_id: int, db: Session = Depends(get_db), u
 
 # ─── CHAT ──────────────────────────────────────────────────────────────────────
 @app.get("/events/{event_id}/chat", response_model=List[schemas.ChatMessageResponse], tags=["Chat"])
-async def get_chat_history(event_id: int, limit: int = 50, before_id: int = None,
+async def get_chat_history(event_id: str, limit: int = 50, before_id: int = None,
                            db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Get chat message history for an event. Supports pagination via before_id."""
     verify_membership(db, event_id, user_id)
     return crud.get_chat_messages(db, event_id, limit=limit, before_id=before_id)
 
 @app.post("/events/{event_id}/chat", response_model=schemas.ChatMessageResponse, tags=["Chat"])
-async def send_chat_message(event_id: int, data: schemas.ChatMessageCreate,
+async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate,
                             db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Send a chat message to all members of an event."""
     verify_membership(db, event_id, user_id, require_member=True, require_unrestricted=True)
@@ -727,7 +727,7 @@ async def send_chat_message(event_id: int, data: schemas.ChatMessageCreate,
     return msg
 
 @app.post("/events/{event_id}/chat/{message_id}/react", tags=["Chat"])
-async def react_to_message(event_id: int, message_id: int, data: schemas.ChatReactionRequest,
+async def react_to_message(event_id: str, message_id: int, data: schemas.ChatReactionRequest,
                            db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Toggle an emoji reaction on a chat message."""
     verify_membership(db, event_id, user_id, require_member=True, require_unrestricted=True)
@@ -740,7 +740,7 @@ async def react_to_message(event_id: int, message_id: int, data: schemas.ChatRea
     return msg
 
 @app.delete("/events/{event_id}/chat/{message_id}", tags=["Chat"])
-async def delete_chat_message(event_id: int, message_id: int, 
+async def delete_chat_message(event_id: str, message_id: int, 
                               db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Wipe a chat message (replaces content with 'deleted'). Only sender or organizer can delete."""
     verify_membership(db, event_id, user_id, require_member=True)
@@ -882,7 +882,7 @@ def handler(event, context):
 
 
 @app.websocket("/ws/{event_id}")
-async def websocket_endpoint(websocket: WebSocket, event_id: int):
+async def websocket_endpoint(websocket: WebSocket, event_id: str):
     """Authenticate via first JSON message {type:AUTH, token} — avoids huge JWT in query string."""
     if event_id <= 0:
         await websocket.accept()

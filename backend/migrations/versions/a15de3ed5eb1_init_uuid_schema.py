@@ -1,8 +1,8 @@
-"""Initial migration
+"""Init UUID schema
 
-Revision ID: c15f2a2d6583
+Revision ID: a15de3ed5eb1
 Revises: 
-Create Date: 2026-05-25 15:31:15.368599
+Create Date: 2026-05-25 17:58:52.593538
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c15f2a2d6583'
+revision: str = 'a15de3ed5eb1'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,7 +33,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_users_firebase_uid'), 'users', ['firebase_uid'], unique=True)
     op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
     op.create_table('events',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.String(length=32), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('event_date', sa.DateTime(), nullable=True),
@@ -54,7 +54,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_events_name'), 'events', ['name'], unique=False)
     op.create_table('chat_messages',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('event_id', sa.Integer(), nullable=True),
+    sa.Column('event_id', sa.String(length=32), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('message', sa.String(), nullable=False),
     sa.Column('reply_to_id', sa.Integer(), nullable=True),
@@ -69,7 +69,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_chat_messages_id'), 'chat_messages', ['id'], unique=False)
     op.create_table('donations',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('event_id', sa.Integer(), nullable=True),
+    sa.Column('event_id', sa.String(length=32), nullable=True),
     sa.Column('donor_name', sa.String(), nullable=True),
     sa.Column('amount', sa.Float(), nullable=True),
     sa.Column('collected_by', sa.Integer(), nullable=True),
@@ -85,7 +85,7 @@ def upgrade() -> None:
     op.create_table('event_members',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('event_id', sa.Integer(), nullable=True),
+    sa.Column('event_id', sa.String(length=32), nullable=True),
     sa.Column('role', sa.Enum('organizer', 'collector', name='userrole'), nullable=True),
     sa.Column('joined_at', sa.DateTime(), nullable=True),
     sa.Column('is_restricted', sa.Boolean(), nullable=True),
@@ -99,7 +99,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_event_members_user_id'), 'event_members', ['user_id'], unique=False)
     op.create_table('expenses',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('event_id', sa.Integer(), nullable=True),
+    sa.Column('event_id', sa.String(length=32), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('amount', sa.Float(), nullable=True),
     sa.Column('collected_by', sa.Integer(), nullable=True),
@@ -115,7 +115,7 @@ def upgrade() -> None:
     op.create_table('watched_events',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('event_id', sa.Integer(), nullable=True),
+    sa.Column('event_id', sa.String(length=32), nullable=True),
     sa.Column('last_viewed_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['event_id'], ['events.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),

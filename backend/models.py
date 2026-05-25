@@ -2,6 +2,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, F
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
+import uuid
 from database import Base
 
 class GenderEnum(str, enum.Enum):
@@ -30,7 +31,7 @@ class User(Base):
 class Event(Base):
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(32), primary_key=True, index=True, default=lambda: uuid.uuid4().hex)
     name = Column(String, index=True)
     description = Column(String)
     event_date = Column(DateTime)
@@ -59,7 +60,7 @@ class EventMember(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    event_id = Column(Integer, ForeignKey("events.id"), index=True)
+    event_id = Column(String(32), ForeignKey("events.id"), index=True)
     role = Column(SQLEnum(UserRole))
     joined_at = Column(DateTime, default=datetime.utcnow)
     is_restricted = Column(Boolean, default=False)
@@ -72,7 +73,7 @@ class Donation(Base):
     __tablename__ = "donations"
 
     id = Column(Integer, primary_key=True, index=True)
-    event_id = Column(Integer, ForeignKey("events.id"), index=True)
+    event_id = Column(String(32), ForeignKey("events.id"), index=True)
     donor_name = Column(String, index=True)
     amount = Column(Float, nullable=True)
     collected_by = Column(Integer, ForeignKey("users.id"))
@@ -86,7 +87,7 @@ class Expense(Base):
     __tablename__ = "expenses"
 
     id = Column(Integer, primary_key=True, index=True)
-    event_id = Column(Integer, ForeignKey("events.id"), index=True)
+    event_id = Column(String(32), ForeignKey("events.id"), index=True)
     description = Column(String, index=True)
     amount = Column(Float, nullable=True)
     collected_by = Column(Integer, ForeignKey("users.id"))
@@ -101,7 +102,7 @@ class WatchedEvent(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    event_id = Column(Integer, ForeignKey("events.id"))
+    event_id = Column(String(32), ForeignKey("events.id"))
     last_viewed_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User")
@@ -111,7 +112,7 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    event_id = Column(Integer, ForeignKey("events.id"), index=True)
+    event_id = Column(String(32), ForeignKey("events.id"), index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     message = Column(String, nullable=False)
     reply_to_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)

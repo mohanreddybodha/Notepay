@@ -49,7 +49,7 @@ class EventCreate(BaseModel):
     show_expenses: bool = True
 
 class EventResponse(EventCreate):
-    id: int
+    id: str
     invite_code: str
     is_active: bool
     organizer_id: int
@@ -70,7 +70,7 @@ class DonationCreate(BaseModel):
 
 class DonationResponse(DonationCreate):
     id: int
-    event_id: int
+    event_id: str
     collected_by: int
     collected_by_name: str
     collected_at: datetime
@@ -84,7 +84,7 @@ class ExpenseCreate(BaseModel):
 
 class ExpenseResponse(ExpenseCreate):
     id: int
-    event_id: int
+    event_id: str
     collected_by: int
     collected_by_name: str
     collected_at: datetime
@@ -162,7 +162,7 @@ class MemberRoleUpdate(BaseModel):
 class WatchedEventResponse(BaseModel):
     id: int
     user_id: int
-    event_id: int
+    event_id: str
     last_viewed_at: datetime
     event: EventResponse
     class Config:
@@ -195,7 +195,7 @@ class ChatReplySnippet(BaseModel):
 
 class ChatMessageResponse(BaseModel):
     id: int
-    event_id: int
+    event_id: str
     user_id: int
     sender_name: str
     message: str

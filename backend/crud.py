@@ -129,7 +129,7 @@ def join_event(db: Session, user_id: int, invite_code: str):
     
     return db_event
 
-def create_donation(db: Session, event_id: int, collector_id: int, donation: schemas.DonationCreate):
+def create_donation(db: Session, event_id: str, collector_id: int, donation: schemas.DonationCreate):
     db_donation = models.Donation(
         event_id=event_id,
         donor_name=donation.donor_name,
@@ -144,7 +144,7 @@ def create_donation(db: Session, event_id: int, collector_id: int, donation: sch
     cache.cache.invalidate_event(event_id)
     return get_donation(db, db_donation.id)
 
-def get_donations(db: Session, event_id: int):
+def get_donations(db: Session, event_id: str):
     results = db.query(models.Donation, models.User.full_name).join(
         models.User, models.Donation.collected_by == models.User.id
     ).filter(models.Donation.event_id == event_id).all()
@@ -155,7 +155,7 @@ def get_donations(db: Session, event_id: int):
         resp.append(d_dict)
     return resp
 
-def create_expense(db: Session, event_id: int, collector_id: int, expense: schemas.ExpenseCreate):
+def create_expense(db: Session, event_id: str, collector_id: int, expense: schemas.ExpenseCreate):
     db_expense = models.Expense(
         event_id=event_id,
         description=expense.description,
@@ -170,7 +170,7 @@ def create_expense(db: Session, event_id: int, collector_id: int, expense: schem
     cache.cache.invalidate_event(event_id)
     return get_expense(db, db_expense.id)
 
-def get_expenses(db: Session, event_id: int):
+def get_expenses(db: Session, event_id: str):
     results = db.query(models.Expense, models.User.full_name).join(
         models.User, models.Expense.collected_by == models.User.id
     ).filter(models.Expense.event_id == event_id).all()
@@ -181,19 +181,19 @@ def get_expenses(db: Session, event_id: int):
         resp.append(e_dict)
     return resp
 
-def get_event(db: Session, event_id: int):
+def get_event(db: Session, event_id: str):
     return db.query(models.Event).filter(models.Event.id == event_id).first()
 
-def get_event_members(db: Session, event_id: int):
+def get_event_members(db: Session, event_id: str):
     return db.query(models.EventMember).filter(models.EventMember.event_id == event_id).all()
 
-def get_member(db: Session, event_id: int, user_id: int):
+def get_member(db: Session, event_id: str, user_id: int):
     return db.query(models.EventMember).filter(
         models.EventMember.event_id == event_id,
         models.EventMember.user_id == user_id
     ).first()
 
-def toggle_event_status(db: Session, event_id: int, is_active: bool, user_id: int = None):
+def toggle_event_status(db: Session, event_id: str, is_active: bool, user_id: int = None):
     event = get_event(db, event_id)
     if event:
         event.is_active = is_active
@@ -204,7 +204,7 @@ def toggle_event_status(db: Session, event_id: int, is_active: bool, user_id: in
         cache.cache.bump_global_version()
     return event
 
-def regenerate_invite_code(db: Session, event_id: int):
+def regenerate_invite_code(db: Session, event_id: str):
     event = get_event(db, event_id)
     if event:
         event.invite_code = str(uuid.uuid4())[:12].upper()
@@ -214,7 +214,7 @@ def regenerate_invite_code(db: Session, event_id: int):
     return event
 
 
-def set_member_restriction(db: Session, event_id: int, user_id: int, is_restricted: bool):
+def set_member_restriction(db: Session, event_id: str, user_id: int, is_restricted: bool):
     member = db.query(models.EventMember).filter(
         models.EventMember.event_id == event_id,
         models.EventMember.user_id == user_id
@@ -234,7 +234,7 @@ def set_member_restriction(db: Session, event_id: int, user_id: int, is_restrict
     cache.cache.bump_global_version()
     return member
 
-def get_event_summary(db: Session, event_id: int):
+def get_event_summary(db: Session, event_id: str):
     # Try to get from cache first
     cached_sum = cache.cache.get(f"sum:{event_id}")
     if cached_sum:
@@ -297,7 +297,7 @@ def update_user(db: Session, user_id: int, data: schemas.UserUpdate):
     db.refresh(user)
     return user
 
-def update_event(db: Session, event_id: int, data: schemas.EventUpdate, user_id: int = None):
+def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id: int = None):
     event = get_event(db, event_id)
     if not event: return None
     if data.name is not None: event.name = data.name
@@ -317,7 +317,7 @@ def update_event(db: Session, event_id: int, data: schemas.EventUpdate, user_id:
     return event
 
 
-def delete_event(db: Session, event_id: int):
+def delete_event(db: Session, event_id: str):
     event = get_event(db, event_id)
     if not event: return False
     db.query(models.EventMember).filter(models.EventMember.event_id == event_id).delete()
@@ -391,7 +391,7 @@ def delete_expense(db: Session, expense_id: int):
     cache.cache.invalidate_event(eid)
     return True
 
-def exit_event(db: Session, event_id: int, user_id: int):
+def exit_event(db: Session, event_id: str, user_id: int):
     member = db.query(models.EventMember).filter(
         models.EventMember.event_id == event_id,
         models.EventMember.user_id == user_id
@@ -414,7 +414,7 @@ def exit_event(db: Session, event_id: int, user_id: int):
 
 
 
-def update_member_role(db: Session, event_id: int, target_user_id: int, role: models.UserRole):
+def update_member_role(db: Session, event_id: str, target_user_id: int, role: models.UserRole):
     member = db.query(models.EventMember).filter(
         models.EventMember.event_id == event_id,
         models.EventMember.user_id == target_user_id
@@ -440,7 +440,7 @@ def get_watched_events(db: Session, user_id: int):
     ).order_by(models.WatchedEvent.last_viewed_at.desc()).all()
 
 
-def add_watched_event(db: Session, user_id: int, event_id: int):
+def add_watched_event(db: Session, user_id: int, event_id: str):
     """Add or update a watched event entry (upsert by last_viewed)."""
     existing = db.query(models.WatchedEvent).filter(
         models.WatchedEvent.user_id == user_id,
@@ -460,7 +460,7 @@ def add_watched_event(db: Session, user_id: int, event_id: int):
     return entry
 
 
-def remove_watched_event(db: Session, user_id: int, event_id: int):
+def remove_watched_event(db: Session, user_id: int, event_id: str):
     """Remove a watched event entry. Returns True if deleted, False if not found."""
     entry = db.query(models.WatchedEvent).filter(
         models.WatchedEvent.user_id == user_id,
@@ -497,7 +497,7 @@ def members_to_public_response(members) -> list:
     return out
 
 
-def get_member_contact(db: Session, event_id: int, target_user_id: int):
+def get_member_contact(db: Session, event_id: str, target_user_id: int):
     """Return phone for a fellow event member (for 1:1 call)."""
     target = get_member(db, event_id, target_user_id)
     if not target:
@@ -512,7 +512,7 @@ def get_member_contact(db: Session, event_id: int, target_user_id: int):
     )
 
 
-def get_event_full_details(db: Session, event_id: int, user_id: int):
+def get_event_full_details(db: Session, event_id: str, user_id: int):
     # PHASE 2: Try cache first (Place 1)
     cache_key = f"full:{event_id}:{user_id}"
     cached_data = cache.cache.get(cache_key)
@@ -615,7 +615,7 @@ def _chat_msg_to_dict(db, msg, sender_name):
         }
     return d
 
-def create_chat_message(db: Session, event_id: int, user_id: int, message: str, reply_to_id: int = None):
+def create_chat_message(db: Session, event_id: str, user_id: int, message: str, reply_to_id: int = None):
     msg = models.ChatMessage(
         event_id=event_id,
         user_id=user_id,
@@ -628,7 +628,7 @@ def create_chat_message(db: Session, event_id: int, user_id: int, message: str, 
     user = db.query(models.User).filter(models.User.id == user_id).first()
     return _chat_msg_to_dict(db, msg, user.full_name if user else "Unknown")
 
-def get_chat_messages(db: Session, event_id: int, limit: int = 50, before_id: int = None):
+def get_chat_messages(db: Session, event_id: str, limit: int = 50, before_id: int = None):
     q = db.query(models.ChatMessage, models.User.full_name).join(
         models.User, models.ChatMessage.user_id == models.User.id
     ).filter(models.ChatMessage.event_id == event_id)
@@ -640,7 +640,7 @@ def get_chat_messages(db: Session, event_id: int, limit: int = 50, before_id: in
         msgs.append(_chat_msg_to_dict(db, msg, sender_name))
     return msgs[::-1]  # Return in chronological order
 
-def toggle_reaction(db: Session, message_id: int, event_id: int, user_id: int, emoji: str):
+def toggle_reaction(db: Session, message_id: int, event_id: str, user_id: int, emoji: str):
     msg = db.query(models.ChatMessage).filter(
         models.ChatMessage.id == message_id,
         models.ChatMessage.event_id == event_id,
@@ -677,7 +677,7 @@ def toggle_reaction(db: Session, message_id: int, event_id: int, user_id: int, e
     sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
     return _chat_msg_to_dict(db, msg, sender_name)
 
-def delete_chat_message(db: Session, message_id: int, event_id: int, user_id: int, is_organizer: bool):
+def delete_chat_message(db: Session, message_id: int, event_id: str, user_id: int, is_organizer: bool):
     msg = db.query(models.ChatMessage).filter(
         models.ChatMessage.id == message_id,
         models.ChatMessage.event_id == event_id,
