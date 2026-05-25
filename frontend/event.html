@@ -3943,7 +3943,7 @@
     }
 
     async function setupWebSocket() {
-      if (ws || !eventId || isNaN(eventId)) return;
+      if (ws || !eventId) return;
       const wsUrl = IS_PRODUCTION ? WS_BASE : `${WS_BASE}/ws/${eventId}`;
       ws = new WebSocket(wsUrl);
       wsAuthenticated = false;
