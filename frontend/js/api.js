@@ -16,8 +16,8 @@ if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.match(/^[0-
 } else {
   IS_PRODUCTION = true;
   // REPLACE THESE with your actual AWS Function URL and API Gateway WebSocket URL after deployment:
-  API_BASE = "https://replace-with-your-function-url.aws.dev";
-  WS_BASE = "wss://replace-with-your-websocket-api.execute-api.ap-south-1.amazonaws.com/prod";
+  API_BASE = "https://replace-with-your-function-url.aws.dev".replace(/\/$/, "");
+  WS_BASE = "wss://replace-with-your-websocket-api.execute-api.ap-south-1.amazonaws.com/prod".replace(/\/$/, "");
 }
 
 // ── Core fetch wrapper — attaches Bearer token automatically ──
