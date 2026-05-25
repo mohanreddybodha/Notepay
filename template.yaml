@@ -92,11 +92,6 @@ Resources:
       # This provides the HTTP endpoint
       FunctionUrlConfig:
         AuthType: NONE
-        Cors:
-          AllowOrigins: ["*"] # API Gateway handles the broad match, FastAPI handles exact origin security
-          AllowHeaders: ["*"]
-          AllowMethods: ["*"]
-          AllowCredentials: true
 
   # Grant API Gateway permission to invoke the Lambda function
   NotePayFunctionPermission:
