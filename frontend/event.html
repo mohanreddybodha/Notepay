@@ -3903,11 +3903,9 @@
 
     async function setupWebSocket() {
       if (ws || !eventId || isNaN(eventId)) return;
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.hostname + ":8000";
-
+      const wsUrl = IS_PRODUCTION ? WS_BASE : `${WS_BASE}/ws/${eventId}`;
+      ws = new WebSocket(wsUrl);
       wsAuthenticated = false;
-      ws = new WebSocket(`${protocol}//${host}/ws/${eventId}`);
 
       ws.onopen = async () => {
         try {
@@ -3916,7 +3914,14 @@
             ws.close();
             return;
           }
-          ws.send(JSON.stringify({ type: "AUTH", token }));
+          ws.send(JSON.stringify({ type: "AUTH", token: token, eventId: eventId }));
+          
+          // Ping heartbeat every 5 minutes (300000 ms) to keep AWS API Gateway connection alive
+          setInterval(() => {
+              if (ws && ws.readyState === WebSocket.OPEN) {
+                  ws.send(" "); // Empty string ping
+              }
+          }, 300000);
         } catch (e) {
           console.error("WebSocket auth failed:", e);
           ws.close();

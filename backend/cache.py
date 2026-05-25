@@ -12,6 +12,7 @@ except ImportError:
 
 # Cache configuration
 REDIS_URL = os.getenv("REDIS_URL")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 class CacheManager:
     def __init__(self):
@@ -20,10 +21,15 @@ class CacheManager:
         
         if REDIS_URL and REDIS_AVAILABLE:
             try:
-                self.client = redis.from_url(REDIS_URL, decode_responses=True, socket_timeout=1.0)
-                print(f"Connected to Redis at {REDIS_URL} (with timeout)")
+                # Support rediss:// which Upstash uses for TLS
+                self.client = redis.from_url(REDIS_URL, decode_responses=True, socket_timeout=3.0)
+                print(f"Connected to Redis at {REDIS_URL[:15]}... (with timeout)")
             except Exception as e:
                 print(f"Redis connection failed: {e}. Falling back to in-memory.")
+                if ENVIRONMENT == "production":
+                    print("CRITICAL: Redis connection failed in production! Split-brain issues will occur.")
+        elif ENVIRONMENT == "production":
+            print("CRITICAL: REDIS_URL not set in production! Falling back to in-memory will cause split-brain.")
 
     def get(self, key: str) -> Optional[Any]:
         """Retrieve a value from the cache."""

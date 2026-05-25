@@ -21,9 +21,11 @@ firebase-adminsdk*.json
 .DS_Store
 Thumbs.db
 
-# IDEs
+# IDEs and Tools
 .vscode/
 .idea/
+.cursor/
+.antigravity/
 
 # Logs
 *.log

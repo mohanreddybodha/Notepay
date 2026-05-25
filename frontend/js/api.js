@@ -3,8 +3,22 @@
 //  Connects to FastAPI backend at localhost:8000
 // ══════════════════════════════════════════════
 
-// Determine API address: Use current hostname (to support mobile access over network)
-const API_BASE = `http://${window.location.hostname}:8000`;
+// Determine API and WebSocket addresses based on environment
+let API_BASE = "";
+let WS_BASE = "";
+let IS_PRODUCTION = false;
+
+const hostname = window.location.hostname;
+// Check if running locally or on a local network IP (e.g., 192.168.x.x)
+if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.match(/^[0-9.]+$/)) {
+  API_BASE = `http://${hostname}:8000`;
+  WS_BASE = `ws://${hostname}:8000`;
+} else {
+  IS_PRODUCTION = true;
+  // REPLACE THESE with your actual AWS Function URL and API Gateway WebSocket URL after deployment:
+  API_BASE = "https://replace-with-your-function-url.aws.dev";
+  WS_BASE = "wss://replace-with-your-websocket-api.execute-api.ap-south-1.amazonaws.com/prod";
+}
 
 // ── Core fetch wrapper — attaches Bearer token automatically ──
 async function apiFetch(method, path, body = null) {

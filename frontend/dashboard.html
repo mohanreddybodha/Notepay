@@ -201,20 +201,21 @@
 
   async function setupDashboardWS() {
     if (dashboardWs) return;
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.hostname + ":8000";
-
-    dashboardWsReady = false;
-    dashboardWs = new WebSocket(`${protocol}//${host}/ws/dashboard`);
+    const wsUrl = IS_PRODUCTION ? WS_BASE : `${WS_BASE}/ws/dashboard`;
+    dashboardWs = new WebSocket(wsUrl);
 
     dashboardWs.onopen = async () => {
       try {
         const token = await getIdToken();
-        if (!token) {
-          dashboardWs.close();
-          return;
-        }
-        dashboardWs.send(JSON.stringify({ type: "AUTH", token }));
+        if (!token) return;
+        dashboardWs.send(JSON.stringify({ type: "AUTH", token: token, dashboard: true }));
+        
+        // Ping heartbeat every 5 minutes (300000 ms) to keep AWS API Gateway connection alive
+        setInterval(() => {
+            if (dashboardWs && dashboardWs.readyState === WebSocket.OPEN) {
+                dashboardWs.send(" "); // Empty string ping
+            }
+        }, 300000);
       } catch (e) {
         console.error("Dashboard WebSocket auth failed:", e);
         dashboardWs.close();

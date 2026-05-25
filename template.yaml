@@ -1,0 +1,183 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: NotePay Serverless API with WebSockets
+
+Resources:
+  # -----------------------------------------------------
+  # 1. API Gateway WebSocket Configuration
+  # -----------------------------------------------------
+  WebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: NotePayWebSocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $connect
+      AuthorizationType: NONE
+      Target: !Join ['/', ['integrations', !Ref WebSocketIntegration]]
+
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      Target: !Join ['/', ['integrations', !Ref WebSocketIntegration]]
+
+  DefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $default
+      AuthorizationType: NONE
+      Target: !Join ['/', ['integrations', !Ref WebSocketIntegration]]
+
+  WebSocketIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      Description: WebSocket Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: 
+        Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NotePayFunction.Arn}/invocations"
+
+  WebSocketDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+      - DefaultRoute
+    Properties:
+      ApiId: !Ref WebSocketApi
+
+  WebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref WebSocketApi
+      DeploymentId: !Ref WebSocketDeployment
+      StageName: prod
+
+  # -----------------------------------------------------
+  # 2. Main Lambda Function
+  # -----------------------------------------------------
+  NotePayFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: main.handler
+      Runtime: python3.11
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          ENVIRONMENT: production
+          # Needed by boto3 to push messages back to clients
+          WEBSOCKET_URL: !Join ['', ['https://', !Ref WebSocketApi, '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com/prod']]
+          # Securely fetch secrets from AWS Parameter Store at deploy time
+          DATABASE_URL: '{{resolve:ssm:/notepay/database_url}}'
+          REDIS_URL: '{{resolve:ssm:/notepay/redis_url}}'
+          ALLOWED_ORIGINS: '{{resolve:ssm:/notepay/allowed_origins}}'
+      Policies:
+        - AmazonSSMReadOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+      # This provides the HTTP endpoint
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: ["*"] # API Gateway handles the broad match, FastAPI handles exact origin security
+          AllowHeaders: ["*"]
+          AllowMethods: ["*"]
+          AllowCredentials: true
+
+  # Grant API Gateway permission to invoke the Lambda function
+  NotePayFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref NotePayFunction
+      Principal: apigateway.amazonaws.com
+
+  # -----------------------------------------------------
+  # 3. Frontend Hosting (S3 + CloudFront)
+  # -----------------------------------------------------
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-OAC"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  FrontendDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: login.html
+        Origins:
+          - DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${FrontendDistribution.Id}"
+
+Outputs:
+  HttpApiUrl:
+    Description: "HTTP API Endpoint URL (Function URL)"
+    Value: !GetAtt NotePayFunctionUrl.FunctionUrl
+  WebSocketUrl:
+    Description: "WebSocket API Endpoint URL"
+    Value: !Join ['', ['wss://', !Ref WebSocketApi, '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com/prod']]
+  FrontendBucketName:
+    Description: "Frontend S3 Bucket Name"
+    Value: !Ref FrontendBucket
+  CloudFrontDomain:
+    Description: "CloudFront URL for Frontend"
+    Value: !Join ['', ['https://', !GetAtt FrontendDistribution.DomainName]]
+  CloudFrontDistributionId:
+    Description: "CloudFront Distribution ID"
+    Value: !Ref FrontendDistribution

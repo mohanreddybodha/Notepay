@@ -1,0 +1,58 @@
+name: Deploy NotePay Serverless Stack
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Install SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: SAM Build
+        run: sam build
+
+      - name: SAM Deploy
+        run: |
+          sam deploy --no-confirm-changeset \
+                     --no-fail-on-empty-changeset \
+                     --stack-name notepay-stack \
+                     --s3-bucket notepay-sam-deploy-bucket \
+                     --capabilities CAPABILITY_IAM \
+                     --region ap-south-1 \
+                     --resolve-s3
+
+      - name: Deploy Frontend to S3 and CloudFront
+        run: |
+          # 1. Get dynamically created URLs and IDs from AWS CloudFormation
+          API_URL=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" --output text)
+          WS_URL=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='WebSocketUrl'].OutputValue" --output text)
+          BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" --output text)
+          CF_ID=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
+          
+          # 2. Inject the real URLs into the frontend code before uploading
+          sed -i "s|https://replace-with-your-function-url.aws.dev|$API_URL|g" frontend/js/api.js
+          sed -i "s|wss://replace-with-your-websocket-api.execute-api.ap-south-1.amazonaws.com/prod|$WS_URL|g" frontend/js/api.js
+          
+          # 3. Upload frontend files to the S3 Bucket
+          aws s3 sync frontend/ s3://$BUCKET_NAME/ --delete
+          
+          # 4. Invalidate CloudFront Cache so users see the new version immediately
+          aws cloudfront create-invalidation --distribution-id $CF_ID --paths "/*"

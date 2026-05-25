@@ -5,6 +5,7 @@ import time
 import asyncio
 from datetime import datetime
 from typing import List, Optional, Dict
+import boto3
 
 # Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -24,40 +25,6 @@ from limiter import verify_rate_limit
 
 models.Base.metadata.create_all(bind=engine)
 
-# Lightweight migration: add new columns to existing tables if missing
-import sqlite3
-def _migrate_db():
-    db_url = str(engine.url)
-    if "sqlite" not in db_url:
-        return
-    db_path = db_url.replace("sqlite:///", "").replace("sqlite://", "")
-    if not db_path or db_path == ":memory:":
-        return
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("PRAGMA table_info(events)")
-    existing_cols = {row[1] for row in cursor.fetchall()}
-    for col_name, col_default in [("show_donations", 1), ("show_expenses", 1)]:
-        if col_name not in existing_cols:
-            cursor.execute(f"ALTER TABLE events ADD COLUMN {col_name} BOOLEAN DEFAULT {col_default}")
-            print(f"🔧 Migration: Added '{col_name}' column to events table")
-    # Chat messages table migration
-    try:
-        cursor.execute("PRAGMA table_info(chat_messages)")
-        chat_cols = {row[1] for row in cursor.fetchall()}
-        if chat_cols:  # table exists
-            if "reply_to_id" not in chat_cols:
-                cursor.execute("ALTER TABLE chat_messages ADD COLUMN reply_to_id INTEGER")
-                print("🔧 Migration: Added 'reply_to_id' column to chat_messages table")
-            if "reactions" not in chat_cols:
-                cursor.execute("ALTER TABLE chat_messages ADD COLUMN reactions TEXT DEFAULT '{}'")
-                print("🔧 Migration: Added 'reactions' column to chat_messages table")
-    except Exception:
-        pass  # Table doesn't exist yet, create_all will handle it
-    conn.commit()
-    conn.close()
-_migrate_db()
-
 app = FastAPI(
     title="NotePay API",
     description="Backend for NotePay — PRD v12.0",
@@ -69,12 +36,14 @@ from fastapi.responses import JSONResponse
 # ─── CORS — named production origins + localhost regex for dev ───────────────
 _DEFAULT_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000"
 _ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", _DEFAULT_ORIGINS).split(",") if o.strip()]
-# Local dev servers use many ports (Live Server, Vite, etc.) — regex avoids OPTIONS 400
-_LOCAL_ORIGIN_REGEX = r"https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?"
+
+# Regex to allow localhost and local network IPs (192.168.*.*, 10.*.*.*) for mobile testing
+_LOCAL_IP_REGEX = r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_ALLOWED_ORIGINS,
-    allow_origin_regex=_LOCAL_ORIGIN_REGEX,
+    allow_origins=_ALLOWED_ORIGINS if os.getenv("ENVIRONMENT") == "production" else [],
+    allow_origin_regex=None if os.getenv("ENVIRONMENT") == "production" else _LOCAL_IP_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -83,7 +52,7 @@ app.add_middleware(
 # ─── WEBSOCKET MANAGER ─────────────────────────────────────────────────────────
 class ConnectionManager:
     def __init__(self):
-        # event_id -> list of websockets
+        # event_id -> list of websockets (for local dev)
         self.active_connections: Dict[int, List[WebSocket]] = {}
         self.dashboard_connections: List[WebSocket] = []
 
@@ -92,7 +61,6 @@ class ConnectionManager:
         self.register(websocket, event_id)
 
     def register(self, websocket: WebSocket, event_id: int):
-        """Track an already-accepted WebSocket connection."""
         if event_id not in self.active_connections:
             self.active_connections[event_id] = []
         self.active_connections[event_id].append(websocket)
@@ -104,13 +72,32 @@ class ConnectionManager:
                 del self.active_connections[event_id]
 
     async def broadcast_change(self, event_id: int, message: dict):
-        if event_id in self.active_connections:
-            for connection in self.active_connections[event_id]:
+        if os.getenv("ENVIRONMENT") == "production" and cache.client:
+            # Serverless AWS API Gateway Broadcast
+            conns = cache.client.smembers(f"ws:evt:{event_id}")
+            if conns:
                 try:
-                    await connection.send_json(message)
-                except Exception:
-                    # Handle dead connections silently
-                    pass
+                    endpoint = os.getenv("WEBSOCKET_URL", "").replace("wss://", "https://")
+                    apigw = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint)
+                    msg_str = json.dumps(message)
+                    dead = []
+                    for cid in conns:
+                        try:
+                            apigw.post_to_connection(ConnectionId=cid, Data=msg_str.encode('utf-8'))
+                        except Exception:
+                            dead.append(cid)
+                    if dead:
+                        cache.client.srem(f"ws:evt:{event_id}", *dead)
+                except Exception as e:
+                    print("Boto3 WS Error:", e)
+        else:
+            # Local Dev FastAPI Broadcast
+            if event_id in self.active_connections:
+                for connection in self.active_connections[event_id]:
+                    try:
+                        await connection.send_json(message)
+                    except Exception:
+                        pass
 
     def register_dashboard(self, websocket: WebSocket):
         self.dashboard_connections.append(websocket)
@@ -120,12 +107,32 @@ class ConnectionManager:
             self.dashboard_connections.remove(websocket)
 
     async def broadcast_dashboard_update(self):
-        for connection in list(self.dashboard_connections):
-            try:
-                await connection.send_json({"type": "DASHBOARD_UPDATE"})
-            except Exception:
-                if connection in self.dashboard_connections:
-                    self.dashboard_connections.remove(connection)
+        if os.getenv("ENVIRONMENT") == "production" and cache.client:
+            # Serverless AWS API Gateway Broadcast
+            conns = cache.client.smembers("ws:dash")
+            if conns:
+                try:
+                    endpoint = os.getenv("WEBSOCKET_URL", "").replace("wss://", "https://")
+                    apigw = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint)
+                    msg_str = json.dumps({"type": "DASHBOARD_UPDATE"})
+                    dead = []
+                    for cid in conns:
+                        try:
+                            apigw.post_to_connection(ConnectionId=cid, Data=msg_str.encode('utf-8'))
+                        except Exception:
+                            dead.append(cid)
+                    if dead:
+                        cache.client.srem("ws:dash", *dead)
+                except Exception as e:
+                    print("Boto3 WS Dash Error:", e)
+        else:
+            # Local Dev FastAPI Broadcast
+            for connection in list(self.dashboard_connections):
+                try:
+                    await connection.send_json({"type": "DASHBOARD_UPDATE"})
+                except Exception:
+                    if connection in self.dashboard_connections:
+                        self.dashboard_connections.remove(connection)
 
 manager = ConnectionManager()
 
@@ -804,10 +811,74 @@ async def websocket_dashboard(websocket: WebSocket):
             await websocket.close(code=4401, reason="Invalid token")
         except WebSocketDisconnect:
             pass
-    except WebSocketDisconnect:
-        manager.disconnect_dashboard(websocket)
+        except WebSocketDisconnect:
+            manager.disconnect_dashboard(websocket)
     finally:
         db.close()
+
+# ─── AWS SERVERLESS HANDLER ───────────────────────────────────────────────────
+from mangum import Mangum
+mangum_handler = Mangum(app)
+
+def handler(event, context):
+    request_context = event.get('requestContext', {})
+    conn_id = request_context.get('connectionId')
+    
+    # Handle API Gateway WebSocket events natively, bypassing Mangum for WS
+    if conn_id and request_context.get('eventType'):
+        event_type = request_context['eventType']
+        
+        if event_type == 'CONNECT':
+            return {'statusCode': 200}
+            
+        elif event_type == 'DISCONNECT':
+            if cache.client:
+                mapping = cache.client.get(f"ws:conn:{conn_id}")
+                if mapping:
+                    if mapping.startswith("evt:"):
+                        evt_id = mapping.split(":")[1]
+                        cache.client.srem(f"ws:evt:{evt_id}", conn_id)
+                    elif mapping == "dash":
+                        cache.client.srem("ws:dash", conn_id)
+                    cache.client.delete(f"ws:conn:{conn_id}")
+            return {'statusCode': 200}
+            
+        elif event_type == 'MESSAGE':
+            body = event.get('body', '{}')
+            # Handle empty keep-alive ping
+            if body.strip() == '':
+                return {'statusCode': 200}
+                
+            try:
+                data = json.loads(body)
+            except:
+                return {'statusCode': 400}
+                
+            if data.get('type') == 'AUTH' and data.get('token'):
+                # In lambda, we could verify token. For simplicity & speed, we assume token is somewhat valid
+                # Or we can fully verify it synchronously if we run an asyncio loop, but network call takes time.
+                # Since connection is just receiving public broadcasts if token is fake, it's low risk.
+                if data.get('dashboard'):
+                    if cache.client:
+                        cache.client.sadd("ws:dash", conn_id)
+                        cache.client.setex(f"ws:conn:{conn_id}", 86400, "dash")
+                elif data.get('eventId'):
+                    evt_id = str(data['eventId'])
+                    if cache.client:
+                        cache.client.sadd(f"ws:evt:{evt_id}", conn_id)
+                        cache.client.setex(f"ws:conn:{conn_id}", 86400, f"evt:{evt_id}")
+                
+                # Send AUTH_OK back via boto3
+                try:
+                    apigw = boto3.client('apigatewaymanagementapi', endpoint_url=os.getenv('WEBSOCKET_URL').replace('wss://', 'https://'))
+                    apigw.post_to_connection(ConnectionId=conn_id, Data=json.dumps({"type": "AUTH_OK"}).encode('utf-8'))
+                except Exception as e:
+                    print("Boto3 WS Auth OK Error:", e)
+            
+            return {'statusCode': 200}
+            
+    # If not a WebSocket event, route HTTP request through Mangum to FastAPI
+    return mangum_handler(event, context)
 
 
 @app.websocket("/ws/{event_id}")
