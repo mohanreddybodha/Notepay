@@ -28,6 +28,10 @@ jobs:
       - name: Install SAM CLI
         uses: aws-actions/setup-sam@v2
 
+      - name: Create Firebase Service Account File
+        run: |
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > backend/service_account.json
+
       - name: SAM Build
         run: sam build
 
