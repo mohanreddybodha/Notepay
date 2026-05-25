@@ -29,8 +29,10 @@ jobs:
         uses: aws-actions/setup-sam@v2
 
       - name: Create Firebase Service Account File
+        env:
+          FIREBASE_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > backend/service_account.json
+          echo "$FIREBASE_SECRET" > backend/service_account.json
 
       - name: SAM Build
         run: sam build
