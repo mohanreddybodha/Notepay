@@ -14,20 +14,16 @@ FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "notepay-de2b0")
 
 # Initialize Firebase app only if not already initialized
 if not firebase_admin._apps:
-    try:
-        # 1. Try using local service account file if it exists
-        base_dir = os.path.dirname(__file__)
-        service_account_path = os.path.join(base_dir, "service_account.json")
-        
-        if os.path.exists(service_account_path):
-            cred = credentials.Certificate(service_account_path)
-            firebase_admin.initialize_app(cred)
-        else:
-            # 2. Fallback to Application Default Credentials (for Cloud environments)
-            cred = credentials.ApplicationDefault()
-            firebase_admin.initialize_app(cred, {'projectId': FIREBASE_PROJECT_ID})
-    except Exception:
-        # 3. Final fallback: initialize with just the project ID (restricted functionality)
+    # 1. Try using local service account file if it exists (Local Development)
+    base_dir = os.path.dirname(__file__)
+    service_account_path = os.path.join(base_dir, "service_account.json")
+    
+    if os.path.exists(service_account_path):
+        cred = credentials.Certificate(service_account_path)
+        firebase_admin.initialize_app(cred)
+    else:
+        # 2. Production AWS Lambda fallback: No credentials needed for verifying tokens!
+        # Just provide the Project ID. Do NOT use ApplicationDefault() as it crashes in AWS.
         firebase_admin.initialize_app(options={'projectId': FIREBASE_PROJECT_ID})
 
 security = HTTPBearer()
