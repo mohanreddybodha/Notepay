@@ -889,10 +889,7 @@ def handler(event, context):
 @app.websocket("/ws/{event_id}")
 async def websocket_endpoint(websocket: WebSocket, event_id: str):
     """Authenticate via first JSON message {type:AUTH, token}  avoids huge JWT in query string."""
-    if event_id <= 0:
-        await websocket.accept()
-        await websocket.close(code=4400, reason="Invalid event")
-        return
+
 
     await websocket.accept()
     db = next(get_db())
