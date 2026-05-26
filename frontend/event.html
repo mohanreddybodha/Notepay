@@ -1193,7 +1193,7 @@
     .sbox-header {
       padding: 8px 18px 6px; /* Compressed padding */
       flex-shrink: 0;
-      background: var(--card);
+      background: transparent;
       border-bottom: 1.5px solid var(--border2);
       z-index: 10;
     }
@@ -4350,6 +4350,9 @@
 
     // ── Tab switching ──
     function switchTab(tab, updateUrl = true) {
+      activeInlineAddType = null;
+      activeInlineEditType = null;
+      activeInlineEditId = null;
       currentTab = tab;
       if (updateUrl) {
         const p = new URLSearchParams(window.location.search);
@@ -4426,6 +4429,7 @@
         filtered.forEach((d, i) => {
           const row = document.createElement("div");
           row.className = "tr" + (i % 2 ? " alt" : "");
+          row.setAttribute('data-id', d.id || d._id);
 
           const customCells = customCols.map(col => {
             const colName = typeof col === "string" ? col : col.n;
@@ -4486,6 +4490,17 @@
         nr.style.cssText = "background:var(--row-new); border:none; width:max-content; min-width:100%; min-height:46px; cursor:pointer;";
         tblBody.appendChild(nr);
       }
+
+      // Auto-trigger active inline entry/edit states
+      if (activeInlineAddType === "don") {
+          renderInlineEntryForm("don");
+      } else if (activeInlineEditType === "don" && activeInlineEditId) {
+          const entry = donations.find(x => String(x.id || x._id) === activeInlineEditId);
+          const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
+          if (entry && origRow) {
+              renderInlineEditForm("don", entry, origRow);
+          }
+      }
     }
 
     // ── Expenses ──
@@ -4543,6 +4558,7 @@
         filtered.forEach((e, i) => {
           const row = document.createElement("div");
           row.className = "tr" + (i % 2 ? " alt" : "");
+          row.setAttribute('data-id', e.id || e._id);
 
           const customCells = customCols.map(col => {
             const colName = typeof col === "string" ? col : col.n;
@@ -4602,6 +4618,17 @@
         nr.innerHTML = `<span style="position:sticky; left:14px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); font-family:'Nunito',sans-serif; display:flex; align-items:center; height:100%;"><span style="margin-right:8px; font-size:18px; font-weight:900;">+</span> New entry</span>`;
         nr.style.cssText = "background:var(--row-new); border:none; width:max-content; min-width:100%; min-height:46px; cursor:pointer;";
         tblBody.appendChild(nr);
+      }
+
+      // Auto-trigger active inline entry/edit states
+      if (activeInlineAddType === "exp") {
+          renderInlineEntryForm("exp");
+      } else if (activeInlineEditType === "exp" && activeInlineEditId) {
+          const entry = expenses.find(x => String(x.id || x._id) === activeInlineEditId);
+          const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
+          if (entry && origRow) {
+              renderInlineEditForm("exp", entry, origRow);
+          }
       }
     }
 
@@ -4802,34 +4829,67 @@
 
     // ── Entry Form ──
     let entryType = "don";
+    let activeInlineAddType = null;
+    let activeInlineEditType = null;
+    let activeInlineEditId = null;
     
+    function restoreNewRowBtn(tblBody, type) {
+      try {
+          const nr = tblBody.querySelector('.new-row');
+          if (nr) {
+              nr.onclick = () => openEntryForm(type);
+              nr.style.cursor = "pointer";
+              nr.style.background = "var(--row-new)";
+              nr.style.border = "none";
+              nr.style.width = "max-content";
+              nr.style.minWidth = "100%";
+              nr.style.minHeight = "46px";
+              nr.innerHTML = `<span style="position:sticky; left:14px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); font-family:'Nunito',sans-serif; display:flex; align-items:center; height:100%;"><span style="margin-right:8px; font-size:18px; font-weight:900;">+</span> New entry</span>`;
+          }
+      } catch (e) {
+          console.error("Error in restoreNewRowBtn:", e);
+      }
+    }
+
     // --- INLINE EDITING FOR THEATER MODE ---
     function renderInlineEntryForm(type) {
+      activeInlineAddType = type;
       const isDon = type === 'don';
-      const tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
+      let tblBody;
+      if (activeTheaterTab) {
+          const rotContainer = document.getElementById('rot-ov-body');
+          if (!rotContainer) return;
+          tblBody = rotContainer.querySelector('.tbl-body-rows');
+          if (!tblBody) return; // fail gracefully if table isn't fully rendered
+      } else {
+          tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
+      }
+      if (!tblBody) return;
+
+      // Prevent duplicate inline forms
+      if (tblBody.querySelector('.inline-entry-row')) {
+          const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
+          if (existingInput) existingInput.focus();
+          return;
+      }
+
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
       
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
       tr.style.position = 'relative';
-      tr.style.overflow = 'visible';
-
-      const saveBtnHtml = `<div style="position:absolute; bottom:-34px; right:10px; z-index:100; display:flex; gap:8px;">
-          <button class="btn btn-text-secondary" onclick="this.closest('.inline-entry-row').remove()" style="padding:4px 10px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px;">Cancel</button>
-          <button class="btn btn-solid-primary" onclick="submitInlineEntry('${type}', this)" style="padding:4px 14px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15);">Save</button>
-      </div>`;
 
       let html = `
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%;">
-              <input type="text" class="inline-input" placeholder="${isDon ? 'Donor Name' : 'Description'}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-name">
+              <input type="text" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor Name' : 'Description'}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" class="inline-input" placeholder="Amount" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-amt">
+            <input type="number" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">Auto</span>
@@ -4847,42 +4907,73 @@
         </div>`;
       });
 
-      html += saveBtnHtml;
       tr.innerHTML = html;
       
+      const newRowBtn = tblBody.querySelector('.new-row');
+      if (newRowBtn) {
+          tblBody.insertBefore(tr, newRowBtn);
+          
+          // Inject actions into the existing newRowBtn!
+          newRowBtn.onclick = null;
+          newRowBtn.style.cursor = "default";
+          newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEntry(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEntry('${type}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+          </span>`;
+      } else {
+          tblBody.appendChild(tr);
+      }
+
       // Bind keydown events for Enter key continuous submission
       tr.querySelectorAll('input').forEach(inp => {
           inp.addEventListener('keydown', function(e) {
               if (e.key === 'Enter') {
                   e.preventDefault();
-                  const saveBtn = tr.querySelector('.btn-solid-primary');
-                  if (saveBtn) submitInlineEntry(type, saveBtn);
+                  if (newRowBtn) {
+                      const saveBtn = newRowBtn.querySelector('.btn-solid-primary');
+                      if (saveBtn) {
+                          e.stopPropagation();
+                          submitInlineEntry(type, saveBtn);
+                      }
+                  }
               }
           });
       });
-      
-      const newRowBtn = tblBody.querySelector('.new-row');
-      if (newRowBtn) {
-          tblBody.insertBefore(tr, newRowBtn);
-      } else {
-          tblBody.appendChild(tr);
-      }
+
       setTimeout(() => {
           tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          const input = tr.querySelector('#inl-name');
+          const input = tr.querySelector('.inl-name-input');
           if (input) input.focus();
       }, 50);
     }
 
-    async function submitInlineEntry(type, btn) {
-      const row = btn.closest('.inline-entry-row');
-      const name = row.querySelector('#inl-name').value.trim();
-      const amt = row.querySelector('#inl-amt').value;
+    async function submitInlineEntry(type, btn, skipDupCheck = false) {
+      const nr = btn.closest('.new-row');
+      const tblBody = nr.parentElement;
+      const row = tblBody.querySelector('.inline-entry-row');
+      if (!row) return;
+      const name = row.querySelector('.inl-name-input').value.trim();
+      const amt = row.querySelector('.inl-amt-input').value;
       const isDon = type === 'don';
       
       if (!name) {
-          row.querySelector('#inl-name').style.borderColor = 'var(--red)';
+          row.querySelector('.inl-name-input').style.borderColor = 'var(--red)';
           return;
+      }
+
+      // Duplicate Check
+      if (!skipDupCheck) {
+        let existing = null;
+        if (isDon) {
+          existing = donations.find(d => d.donor_name.toLowerCase() === name.toLowerCase());
+        } else {
+          existing = expenses.find(e => e.description.toLowerCase() === name.toLowerCase());
+        }
+        if (existing) {
+          const existingName = isDon ? existing.donor_name : existing.description;
+          openDupPop(() => submitInlineEntry(type, btn, true), existingName, existing.amount, type);
+          return;
+        }
       }
       
       const customInputs = row.querySelectorAll('.inl-custom');
@@ -4898,18 +4989,11 @@
       
       try {
           if (isDon) {
-              await addDonation(eventId, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+              await addDonation(eventId, name, amt ? parseFloat(amt) : null, customFields);
           } else {
-              await addExpense(eventId, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+              await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
           }
-          await fetchTransactions(type);
-          if (isDon) renderDonations();
-          else renderExpenses();
-          
-          // Continuous data entry: Immediately trigger the NEXT empty row!
-          setTimeout(() => {
-              renderInlineEntryForm(type);
-          }, 200);
+          await loadAll(true, true);
       } catch (e) {
           alert("Error saving: " + e.message);
           btn.disabled = false;
@@ -4918,19 +5002,29 @@
     }
 
     function renderInlineEditForm(type, d, origRow) {
+      activeInlineEditType = type;
+      activeInlineEditId = String(d.id || d._id);
       const isDon = type === 'don';
+      let tblBody;
+      if (activeTheaterTab) {
+          const rotContainer = document.getElementById('rot-ov-body');
+          if (!rotContainer) return;
+          tblBody = rotContainer.querySelector('.tbl-body-rows');
+      } else {
+          tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
+      }
+      if (tblBody && tblBody.querySelector('.inline-entry-row')) {
+          const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
+          if (existingInput) existingInput.focus();
+          return;
+      }
+
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
       
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
       tr.style.position = 'relative';
-      tr.style.overflow = 'visible';
-
-      const saveBtnHtml = `<div style="position:absolute; bottom:-34px; right:10px; z-index:100; display:flex; gap:8px;">
-          <button class="btn btn-text-secondary" onclick="cancelInlineEdit(this, '${type}')" style="padding:4px 10px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px;">Cancel</button>
-          <button class="btn btn-solid-primary" onclick="submitInlineEdit('${type}', ${d.id || d._id}, this)" style="padding:4px 14px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15);">Save</button>
-      </div>`;
 
       const nm = escHtml(isDon ? d.donor_name : d.description);
       const am = d.amount ? d.amount : '';
@@ -4939,12 +5033,12 @@
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%;">
-              <input type="text" class="inline-input" value="${nm}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-name">
+              <input type="text" class="inline-input inl-name-input" value="${nm}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" class="inline-input" value="${am}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" id="inl-amt">
+            <input type="number" class="inline-input inl-amt-input" value="${am}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">${formatDate(d.collected_at)}</span>
@@ -4963,30 +5057,89 @@
         </div>`;
       });
 
-      html += saveBtnHtml;
       tr.innerHTML = html;
       
       origRow.style.display = 'none';
       tr._origRow = origRow;
-      origRow.parentNode.insertBefore(tr, origRow.nextSibling);
-      setTimeout(() => tr.querySelector('#inl-name').focus(), 50);
+      const newRowBtn = tblBody.querySelector('.new-row');
+      if (newRowBtn) {
+          tblBody.insertBefore(tr, newRowBtn);
+          
+          // Inject actions into newRowBtn!
+          newRowBtn.onclick = null;
+          newRowBtn.style.cursor = "default";
+          newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEdit(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEdit('${type}', '${d.id || d._id}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+          </span>`;
+      } else {
+          tblBody.appendChild(tr);
+      }
+      setTimeout(() => tr.querySelector('.inl-name-input').focus(), 50);
     }
 
     function cancelInlineEdit(btn, type) {
-      const row = btn.closest('.inline-entry-row');
-      if (row._origRow) row._origRow.style.display = 'flex';
-      row.remove();
+      try {
+          const nr = btn.closest('.new-row');
+          if (nr) {
+              const tblBody = nr.parentElement;
+              const row = tblBody.querySelector('.inline-entry-row');
+              if (row) {
+                  if (row._origRow) {
+                      row._origRow.style.display = '';
+                  }
+                  row.remove();
+              }
+              restoreNewRowBtn(tblBody, type);
+          }
+      } catch (e) {
+          console.error("Error in cancelInlineEdit:", e);
+      }
     }
 
-    async function submitInlineEdit(type, id, btn) {
-      const row = btn.closest('.inline-entry-row');
-      const name = row.querySelector('#inl-name').value.trim();
-      const amt = row.querySelector('#inl-amt').value;
+    function cancelInlineEntry(btn, type) {
+      try {
+          const nr = btn.closest('.new-row');
+          if (nr) {
+              const tblBody = nr.parentElement;
+              const row = tblBody.querySelector('.inline-entry-row');
+              if (row) {
+                  row.remove();
+              }
+              restoreNewRowBtn(tblBody, type);
+          }
+      } catch (e) {
+          console.error("Error in cancelInlineEntry:", e);
+      }
+    }
+
+    async function submitInlineEdit(type, id, btn, skipDupCheck = false) {
+      const nr = btn.closest('.new-row');
+      const tblBody = nr.parentElement;
+      const row = tblBody.querySelector('.inline-entry-row');
+      if (!row) return;
+      const name = row.querySelector('.inl-name-input').value.trim();
+      const amt = row.querySelector('.inl-amt-input').value;
       const isDon = type === 'don';
       
       if (!name) {
-          row.querySelector('#inl-name').style.borderColor = 'var(--red)';
+          row.querySelector('.inl-name-input').style.borderColor = 'var(--red)';
           return;
+      }
+
+      // Duplicate Check
+      if (!skipDupCheck) {
+        let existing = null;
+        if (isDon) {
+          existing = donations.find(d => d.donor_name.toLowerCase() === name.toLowerCase() && String(d.id || d._id) !== String(id));
+        } else {
+          existing = expenses.find(e => e.description.toLowerCase() === name.toLowerCase() && String(e.id || e._id) !== String(id));
+        }
+        if (existing) {
+          const existingName = isDon ? existing.donor_name : existing.description;
+          openDupPop(() => submitInlineEdit(type, id, btn, true), existingName, existing.amount, type);
+          return;
+        }
       }
       
       const customInputs = row.querySelectorAll('.inl-custom');
@@ -5006,9 +5159,7 @@
           } else {
               await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
           }
-          await fetchTransactions(type);
-          if (isDon) renderDonations();
-          else renderExpenses();
+          await loadAll(true, true);
       } catch (e) {
           alert("Error saving: " + e.message);
           btn.disabled = false;
@@ -5017,35 +5168,7 @@
     }
 
     function openEntryForm(type) {
-      // Use Inline Editing (Google Sheets Style) ONLY in Mobile Landscape mode.
-      const isMobileLandscape = window.innerWidth <= 900 && window.innerWidth > window.innerHeight;
-      if (activeTheaterTab && isMobileLandscape) {
-          renderInlineEntryForm(type);
-          return;
-      }
-
-      entryType = type;
-      document.getElementById("ef-title").textContent = type === "don" ? "New Donation" : "New Expense";
-      document.getElementById("ef-name-label").innerHTML = (type === "don" ? "Donor Name" : "Description") + ' <span style="color:var(--red);">*</span>';
-      document.getElementById("ef-name").value = "";
-      document.getElementById("ef-amount").value = "";
-      document.getElementById("ef-error").style.display = "none";
-
-      const customDiv = document.getElementById("ef-custom-fields");
-      customDiv.innerHTML = "";
-      const cols = type === "don" ? eventData.donation_custom_columns : eventData.expense_custom_columns;
-      if (cols && cols.length) {
-        cols.forEach(col => {
-          const colName = typeof col === "string" ? col : col.n;
-          customDiv.innerHTML += `<div class="ef-field">
-        <div class="ef-label">${escHtml(colName)}</div>
-        <input class="ef-input dynamic-cf" data-col="${escHtml(colName)}" type="text" placeholder="Enter ${escHtml(colName)}"/>
-      </div>`;
-        });
-      }
-
-      document.getElementById("entry-form-ov").style.display = "flex";
-      setTimeout(() => document.getElementById("ef-name").focus(), 100);
+      renderInlineEntryForm(type);
     }
     function closeEntryForm() { document.getElementById("entry-form-ov").style.display = "none"; }
 
@@ -5190,40 +5313,27 @@
     function closeCtx() { const ov = document.getElementById("ctx-ov"); if (ov) ov.remove(); }
 
     function openEditForm() {
-      const type = ctxType; const entry = ctxEntry;
-      if (activeTheaterTab && window.innerWidth <= 768) {
-          // Find the row element
-          const tblBody = document.getElementById(type === "don" ? "don-tbl-body" : "exp-tbl-body");
-          const arr = type === "don" ? donations : expenses;
-          const idx = arr.findIndex(x => (x.id || x._id) == (entry.id || entry._id));
-          if (idx !== -1 && tblBody.children[idx + 1]) { // +1 for header
-              renderInlineEditForm(type, entry, tblBody.children[idx + 1]);
-              closeCtx();
-              return;
+      const type = ctxType; 
+      const entry = ctxEntry;
+      
+      let tblBody;
+      if (activeTheaterTab) {
+          const rotContainer = document.getElementById('rot-ov-body');
+          if (rotContainer) {
+              tblBody = rotContainer.querySelector('.tbl-body-rows');
           }
+      } else {
+          tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
       }
-
-      const name = ctxType === "don" ? ctxEntry.donor_name : ctxEntry.description;
-      document.getElementById("edit-name-label").innerHTML = (ctxType === "don" ? "Donor Name" : "Description") + ' <span style="color:var(--red);">*</span>';
-      document.getElementById("edit-name").value = name;
-      document.getElementById("edit-amount").value = ctxEntry.amount || "";
-
-      const customDiv = document.getElementById("edit-custom-fields");
-      customDiv.innerHTML = "";
-      const cols = ctxType === "don" ? eventData.donation_custom_columns : eventData.expense_custom_columns;
-      if (cols && cols.length) {
-        cols.forEach(col => {
-          const colName = typeof col === "string" ? col : col.n;
-          const val = (ctxEntry.custom_fields && ctxEntry.custom_fields[colName]) || "";
-          customDiv.innerHTML += `<div class="ef-field">
-        <div class="ef-label">${escHtml(colName)}</div>
-        <input class="ef-input dynamic-edit-cf" data-col="${escHtml(colName)}" type="text" value="${escHtml(val)}"/>
-      </div>`;
-        });
+      
+      if (!tblBody) return;
+      
+      const rowId = String(entry.id || entry._id);
+      const origRow = tblBody.querySelector(`.tr[data-id="${rowId}"]`);
+      if (origRow) {
+          renderInlineEditForm(type, entry, origRow);
       }
-
-      editTarget = { type: ctxType, entry: ctxEntry };
-      document.getElementById("edit-form-ov").style.display = "flex";
+      closeCtx();
     }
     function closeEditForm() { document.getElementById("edit-form-ov").style.display = "none"; }
 
@@ -6034,6 +6144,7 @@
       list.forEach((entry, i) => {
         const tr = document.createElement("div");
         tr.className = "tr" + (i % 2 !== 0 ? " alt" : "");
+        tr.setAttribute('data-id', entry.id || entry._id);
         tr.onclick = (e) => openCtx(e, type, entry);
 
         const isPinned = pList.includes(String(entry.id || entry._id));
@@ -6068,6 +6179,18 @@
         nr.style.cssText = "background:var(--row-new); border:none; width:max-content; min-width:100%; min-height:48px; cursor:pointer; display:flex; align-items:center;";
         nr.innerHTML = `<span style="position:sticky; left:16px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); display:flex; align-items:center;"><span style="margin-right:12px; font-size:20px; font-weight:900;">+</span> New entry</span>`;
         container.appendChild(nr);
+      }
+
+      // Auto-trigger active inline entry/edit states
+      if (activeInlineAddType === type) {
+          renderInlineEntryForm(type);
+      } else if (activeInlineEditType === type && activeInlineEditId) {
+          const arr = type === "don" ? donations : expenses;
+          const entry = arr.find(x => String(x.id || x._id) === activeInlineEditId);
+          const origRow = container.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
+          if (entry && origRow) {
+              renderInlineEditForm(type, entry, origRow);
+          }
       }
     }
 
@@ -6169,6 +6292,10 @@
       body.style.width = '100%';
     }
 
+    function handleOrientationOrResizeChange() {
+      // Simplified as unified inline editor handles transitions naturally within scroll layouts
+    }
+
     function refreshTheaterLayout() {
       if (!activeTheaterTab) return;
       const main = document.getElementById('rot-main');
@@ -6178,9 +6305,13 @@
         const compact = window.matchMedia('(orientation: landscape) and (max-height: 520px)').matches;
         main.classList.toggle('theater-landscape', compact);
       }
+      handleOrientationOrResizeChange();
     }
 
     function switchTheaterTab(tab, force = false) {
+      activeInlineAddType = null;
+      activeInlineEditType = null;
+      activeInlineEditId = null;
       if (!force && (!activeTheaterTab || activeTheaterTab === tab)) return;
       // Block switching to a hidden tab
       const showDon = eventData.show_donations !== false;
@@ -6191,6 +6322,9 @@
     }
 
     function enterTheater(tab) {
+      activeInlineAddType = null;
+      activeInlineEditType = null;
+      activeInlineEditId = null;
       activeTheaterTab = tab;
       // Hide chat FAB in theater mode
       const chatFab = document.getElementById('chat-fab');
@@ -6322,6 +6456,9 @@
     });
 
     function exitTheater() {
+      activeInlineAddType = null;
+      activeInlineEditType = null;
+      activeInlineEditId = null;
       // Clear theater search state on exit
       window.theaterSearchQuery = "";
       if (document.getElementById("theater-top-search")) document.getElementById("theater-top-search").value = "";
