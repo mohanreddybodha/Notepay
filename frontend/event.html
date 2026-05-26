@@ -701,23 +701,12 @@
     .ef-field {
       flex: 1 1 100% !important; /* Stack vertically (full width) in mobile portrait */
       width: 100% !important;
-      background: var(--input-bg);
-      border: 1.5px solid var(--input-border);
-      border-radius: 30px; /* High-premium capsule shape */
-      padding: 0 16px;     /* Premium button-like padding */
-      transition: border-color .18s, box-shadow .18s;
-      margin-bottom: 0;
+      margin-bottom: 4px;
       display: flex !important;
-      flex-direction: row !important;
-      align-items: center !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
       gap: 6px !important;
-      height: 44px !important; /* Match Save & Next button height */
       box-sizing: border-box !important;
-    }
-
-    .ef-field:focus-within {
-      border-color: var(--input-focus);
-      box-shadow: 0 0 0 1px var(--input-focus);
     }
 
     /* Stack vertically by default in mobile portrait */
@@ -747,18 +736,25 @@
     }
 
     .ef-input {
-      flex: 1 !important;
       width: 100% !important;
-      border: none !important;
+      border: 1.5px solid var(--input-border) !important;
+      border-radius: 30px !important;
+      background: var(--input-bg) !important;
       outline: none !important;
-      background: transparent !important;
-      font-size: 12.5px !important;
+      font-size: 13.5px !important;
       font-weight: 800;
       color: var(--text);
       font-family: 'Nunito', sans-serif;
-      height: 100% !important;
-      padding: 0 !important;
+      height: 44px !important;
+      padding: 0 16px !important;
       margin: 0 !important;
+      box-sizing: border-box !important;
+      transition: border-color .18s, box-shadow .18s;
+    }
+
+    .ef-input:focus {
+      border-color: var(--input-focus) !important;
+      box-shadow: 0 0 0 1px var(--input-focus) !important;
     }
 
     .ef-input::placeholder {
@@ -1167,8 +1163,11 @@
 
     /* Sheet */
     .sov {
-      position: absolute;
-      inset: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100dvh;
       background: rgba(13, 27, 42, .8);
       display: flex;
       align-items: flex-end;
@@ -1483,9 +1482,9 @@
 
     body.dark-mode 
 
-    body.dark-mode .ef-field {
-      background: #1A1A1A;
-      border-color: #333;
+    body.dark-mode .ef-input {
+      background: #1A1A1A !important;
+      border-color: #333 !important;
     }
 
     body.dark-mode .ef-input {
@@ -3095,12 +3094,14 @@
       .ef-field {
         flex: 1 1 calc(50% - 6px) !important; /* Side-by-side columns in landscape */
         min-width: 120px !important;
-        height: 36px !important;              /* Compact but readable in landscape */
-        padding: 0 12px !important;
         display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
         gap: 4px !important;
+      }
+      .ef-input {
+        height: 36px !important;
+        padding: 0 12px !important;
       }
       
       #ef-custom-fields,
@@ -7442,16 +7443,13 @@
 <!-- ═══ ENTRY FORM FIELD HEIGHT ENFORCER (last-in-cascade, always wins) ═══ -->
 <style>
   /* This block is intentionally placed LAST so it wins over any cached CSS.
-     ef-field capsules must be the same height as the Save & Next button. */
-  html body .ef-field {
+     ef-input capsules must be the same height as the Save & Next button. */
+  html body .ef-input {
     height: 44px !important;
     min-height: 44px !important;
     max-height: 44px !important;
     padding: 0 16px !important;
     box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
     border-radius: 30px !important;
   }
   html body .sbox-footer .btn {
@@ -7460,7 +7458,7 @@
   }
   /* In landscape (max-height 520px) keep fields at 36px to conserve space */
   @media (max-height: 520px) {
-    html body .ef-field {
+    html body .ef-input {
       height: 36px !important;
       min-height: 36px !important;
       max-height: 36px !important;
@@ -7477,7 +7475,7 @@
     function enforceFieldHeight() {
       var isLandscape = window.innerHeight < 520;
       var h = isLandscape ? '36px' : '44px';
-      document.querySelectorAll('.ef-field').forEach(function(el) {
+      document.querySelectorAll('.ef-input').forEach(function(el) {
         el.style.setProperty('height', h, 'important');
         el.style.setProperty('min-height', h, 'important');
         el.style.setProperty('max-height', h, 'important');
