@@ -4709,12 +4709,17 @@
       html += saveBtnHtml;
       tr.innerHTML = html;
       
-      if (tblBody.firstChild && tblBody.firstChild.nextSibling) {
-          tblBody.insertBefore(tr, tblBody.firstChild.nextSibling);
+      const newRowBtn = tblBody.querySelector('.new-row');
+      if (newRowBtn) {
+          tblBody.insertBefore(tr, newRowBtn);
       } else {
           tblBody.appendChild(tr);
       }
-      setTimeout(() => tr.querySelector('#inl-name').focus(), 50);
+      setTimeout(() => {
+          tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const input = tr.querySelector('#inl-name');
+          if (input) input.focus();
+      }, 50);
     }
 
     async function submitInlineEntry(type, btn) {
@@ -4855,7 +4860,9 @@
     }
 
     function openEntryForm(type) {
-      if (activeTheaterTab && window.innerWidth <= 768) {
+      // Use Inline Editing (Google Sheets Style) ONLY in Mobile Landscape mode.
+      const isMobileLandscape = window.innerWidth <= 900 && window.innerWidth > window.innerHeight;
+      if (activeTheaterTab && isMobileLandscape) {
           renderInlineEntryForm(type);
           return;
       }
