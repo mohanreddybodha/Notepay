@@ -38,6 +38,7 @@ function isLoggedIn() {
 }
 
 let authReadyPromise = null;
+let _authHasSettled = false; // true once the first onAuthStateChanged fires
 
 /** Wait for Firebase to restore session (returns Promise<User|null>) */
 function waitForAuthReady() {
@@ -46,16 +47,19 @@ function waitForAuthReady() {
   authReadyPromise = new Promise(resolve => {
     const timer = setTimeout(() => {
       console.warn("Firebase Auth timed out. Proceeding as unauthenticated.");
+      _authHasSettled = true;
       resolve(null);
-    }, 10000);
+    }, 15000); // 15s — handles slow cold-start DB auth
 
     const unsub = auth.onAuthStateChanged(user => {
       clearTimeout(timer);
       unsub();
+      _authHasSettled = true;
       resolve(user);
     }, err => {
       clearTimeout(timer);
       console.error("Firebase Auth Error:", err);
+      _authHasSettled = true;
       resolve(null);
     });
   });
@@ -65,6 +69,7 @@ function waitForAuthReady() {
 /** Reset memoized auth promise so the next waitForAuthReady() is fresh. */
 function resetAuthCache() {
   authReadyPromise = null;
+  _authHasSettled = false;
 }
 
 /** Alias used by logout / login flows. */
@@ -72,7 +77,9 @@ function clearAuthCache() {
   resetAuthCache();
 }
 
-// When signed out, drop cached promise so login page never reuses a stale user.
+// When signed out, drop cached promise — but ONLY after auth has already settled
+// (the first onAuthStateChanged fires null briefly on page load before Firebase
+// restores the session; we must NOT reset the cache at that point).
 auth.onAuthStateChanged(user => {
-  if (!user) resetAuthCache();
+  if (!user && _authHasSettled) resetAuthCache();
 });

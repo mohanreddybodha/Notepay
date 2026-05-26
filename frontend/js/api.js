@@ -463,6 +463,11 @@ async function syncOfflineQueue() {
       
       const res = await fetch(`${API_BASE}${item.path}`, opts);
       if (!res.ok) {
+        // Discard permanent client failures (4xx errors, except 401 and 429)
+        if (res.status >= 400 && res.status < 500 && res.status !== 401 && res.status !== 429) {
+          console.error(`Permanent client error (${res.status}) for item ${item.id}. Discarding from sync queue.`);
+          continue; // Discard from the queue
+        }
         throw new Error(`HTTP ${res.status}`);
       }
       console.log(`Synced offline item ${item.id} successfully`);

@@ -3,6 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,interactive-widget=resizes-content,viewport-fit=cover" />
   <title>Notepay — Event</title>
   <link
@@ -696,37 +699,66 @@
     }
 
     .ef-field {
-      flex: 1;
+      flex: 1 1 100% !important; /* Stack vertically (full width) in mobile portrait */
+      width: 100% !important;
       background: var(--input-bg);
-      border: 2px solid var(--input-border);
-      border-radius: 12px;
-      padding: 8px 12px;
-      transition: border-color .18s;
-      margin-bottom: 6px;
+      border: 1.5px solid var(--input-border);
+      border-radius: 30px; /* High-premium capsule shape */
+      padding: 0 16px;     /* Premium button-like padding */
+      transition: border-color .18s, box-shadow .18s;
+      margin-bottom: 0;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 6px !important;
+      height: 44px !important; /* Match Save & Next button height */
+      box-sizing: border-box !important;
     }
 
     .ef-field:focus-within {
       border-color: var(--input-focus);
+      box-shadow: 0 0 0 1px var(--input-focus);
     }
 
+    /* Stack vertically by default in mobile portrait */
+    .ef-fields-container,
+    #ef-custom-fields,
+    #edit-custom-fields {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 6px !important;
+      width: 100% !important;
+    }
+
+
+
     .ef-label {
-      font-size: 9px;
+      font-size: 9.5px !important;
       font-weight: 800;
-      color: var(--text3);
+      color: var(--text2);
       letter-spacing: .5px;
       text-transform: uppercase;
-      margin-bottom: 3px;
+      margin-bottom: 0 !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      line-height: 1 !important;
+      display: flex !important;
+      align-items: center !important;
     }
 
     .ef-input {
-      width: 100%;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 14px;
+      flex: 1 !important;
+      width: 100% !important;
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      font-size: 12.5px !important;
       font-weight: 800;
       color: var(--text);
       font-family: 'Nunito', sans-serif;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     .ef-input::placeholder {
@@ -737,6 +769,18 @@
     .ef-btns {
       display: flex;
       gap: 8px;
+    }
+
+    .sbox-footer {
+      padding: 12px 18px 16px !important; /* Compressed bottom padding for sleek visual footprint */
+    }
+
+    .sbox-footer .btn {
+      padding: 8px 16px !important;        /* Sleek, professional height */
+      font-size: 13.5px !important;         /* Balanced, modern font-size */
+      height: 44px !important;              /* Match the 44px input capsules exactly */
+      border-radius: 30px !important;        /* Harmonious capsule shape */
+      box-shadow: none !important;          /* Sleek minimalist look */
     }
 
     
@@ -1148,7 +1192,7 @@
     }
 
     .sbox-header {
-      padding: 12px 18px 6px;
+      padding: 8px 18px 6px; /* Compressed padding */
       flex-shrink: 0;
       background: var(--card);
       border-bottom: 1.5px solid var(--border2);
@@ -1178,15 +1222,15 @@
       height: 5px;
       background: var(--border);
       border-radius: 3px;
-      margin: 0 auto 14px;
+      margin: 0 auto 6px; /* Reduced vertical waste margin */
     }
 
     .sh-title {
       font-family: 'Nunito', sans-serif;
-      font-size: 17px;
+      font-size: 15px; /* Clean, premium title font scale */
       font-weight: 900;
       color: var(--text);
-      margin-bottom: 5px;
+      margin-bottom: 2px; /* Sleek heading margin */
     }
 
     .sh-sub {
@@ -1926,28 +1970,40 @@
     }
 
     .cc-size-chip {
-      flex: 1;
-      padding: 10px 6px;
-      border-radius: 12px;
-      border: 2px solid var(--border2);
-      background: var(--surface);
-      color: var(--text2);
-      font-family: 'Nunito', sans-serif;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      text-align: center;
+      flex: 1 !important;
+      height: 28px !important; /* Small, matching landscape capsule inputs */
+      padding: 0 12px !important;
+      border-radius: 30px !important; /* Fully rounded capsule shape */
+      border: 1.5px solid var(--input-border) !important;
+      background: var(--input-bg) !important;
+      color: var(--text2) !important;
+      font-family: 'Nunito', sans-serif !important;
+      font-size: 11.5px !important;
+      font-weight: 800 !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-shadow: none !important;
     }
 
     .cc-size-chip.active {
-      border-color: var(--primary);
-      background: var(--primary-lt);
-      color: var(--primary);
+      border-color: var(--primary) !important;
+      background: var(--primary-lt) !important;
+      color: var(--primary) !important;
+      box-shadow: 0 0 0 1px var(--primary) !important;
     }
 
-    .dark-mode .cc-size-chip {
-      background: var(--surf-var);
+    body.dark-mode .cc-size-chip {
+      background: var(--input-bg) !important;
+      color: var(--text) !important;
+      border-color: var(--input-border) !important;
+    }
+    body.dark-mode .cc-size-chip.active {
+      border-color: var(--primary) !important;
+      background: rgba(96, 165, 250, 0.15) !important;
+      color: #60a5fa !important;
     }
 
     .w-preview-wrap {
@@ -2999,6 +3055,91 @@
       --input-font-color: #e9edef;
     }
 
+    /* Ultra-compact Sheet overrides for landscape mobile devices (low height) */
+    @media (max-height: 520px) {
+      .sov {
+        align-items: center !important; /* Center vertically in landscape to avoid getting cut off by the keyboard */
+      }
+      
+      .sbox {
+        max-width: 580px !important; /* Make it wider in landscape to use horizontal space */
+        border-radius: 16px !important; /* Fully rounded in landscape */
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+        margin: 0 auto !important;
+        max-height: 96vh !important;
+      }
+      
+      .sh-handle {
+        display: none !important; /* Hide sheet handle to save space */
+      }
+      
+      .sbox-header {
+        padding: 6px 14px !important;
+      }
+      
+      .sh-title {
+        font-size: 14px !important;
+      }
+      
+      .sbox-body {
+        padding: 6px 14px 10px !important;
+      }
+      
+      /* Display form fields horizontally (side-by-side) instead of vertically */
+      .ef-fields-container {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+      
+      .ef-field {
+        flex: 1 1 calc(50% - 6px) !important; /* Side-by-side columns in landscape */
+        min-width: 120px !important;
+        height: 36px !important;              /* Compact but readable in landscape */
+        padding: 0 12px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 4px !important;
+      }
+      
+      #ef-custom-fields,
+      #edit-custom-fields {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+      
+      #ef-custom-fields .ef-field,
+      #edit-custom-fields .ef-field {
+        flex: 1 1 calc(50% - 6px) !important;
+        min-width: 120px !important;
+      }
+      
+      .ef-label {
+        font-size: 8.5px !important;
+        margin-bottom: 0 !important;
+      }
+      
+      .ef-input {
+        font-size: 11.5px !important;
+        padding: 0 !important;
+        height: 100% !important;
+      }
+      
+      .sbox-footer {
+        padding: 6px 14px 8px !important;
+      }
+      
+      .sbox-footer .btn {
+        padding: 4px 12px !important;
+        font-size: 11.5px !important;
+        border-radius: 30px !important; /* Premium capsule matching layout shape */
+        height: 28px !important;        /* Matches the 28px landscape capsule inputs! */
+      }
+    }
+
   </style>
 </head>
 
@@ -3151,12 +3292,12 @@
           <div class="sh-title" id="ef-title">New Donation</div>
         </div>
         <div class="sbox-body">
-          <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;flex-direction:column;gap:4px;" class="ef-fields-container">
             <div class="ef-field">
               <div class="ef-label" id="ef-name-label">Donor Name <span style="color:var(--red);">*</span></div>
               <input class="ef-input" id="ef-name" type="text" placeholder="Enter name" autocomplete="off" oninput="document.getElementById('ef-error').style.display='none'" />
-              <div id="ef-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
             </div>
+            <div id="ef-error" style="color:var(--red); font-size:10px; font-weight:700; display:none; width:100%; margin: -2px 14px 4px;"></div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
               <input class="ef-input" id="ef-amount" type="number" placeholder="Optional" min="0" step="0.01" />
@@ -3165,9 +3306,10 @@
           </div>
         </div>
         <div class="sbox-footer">
-          <div class="ef-btns">
-            <button class="btn btn-text-secondary" onclick="closeEntryForm()">Cancel</button>
-            <button class="btn btn-solid-primary" id="ef-save-btn" onclick="saveEntry()">Save</button>
+          <div class="ef-btns" style="display:flex; gap:8px; width:100%;">
+            <button class="btn btn-text-secondary" onclick="closeEntryForm()" style="flex:1;">Cancel</button>
+            <button class="btn btn-solid-primary" id="ef-save-next-btn" onclick="saveEntry(false, true)" style="flex:1.5; background:var(--teal) !important; box-shadow:none;">Save & Next</button>
+            <button class="btn btn-solid-primary" id="ef-save-btn" onclick="saveEntry()" style="flex:1;">Save</button>
           </div>
         </div>
       </div>
@@ -3214,12 +3356,12 @@
           <div class="sh-title">Edit Entry</div>
         </div>
         <div class="sbox-body">
-          <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;flex-direction:column;gap:4px;" class="ef-fields-container">
             <div class="ef-field">
               <div class="ef-label" id="edit-name-label">Donor Name <span style="color:var(--red);">*</span></div>
               <input class="ef-input" id="edit-name" type="text" oninput="document.getElementById('edit-error').style.display='none'" />
-              <div id="edit-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
             </div>
+            <div id="edit-error" style="color:var(--red); font-size:10px; font-weight:700; display:none; width:100%; margin: -2px 14px 4px;"></div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
               <input class="ef-input" id="edit-amount" type="number" min="0" step="0.01" />
@@ -3428,24 +3570,22 @@
         <div class="sbox-header">
           <div class="sh-handle"></div>
           <div class="sh-title" id="cc-sheet-title">Add Custom Column</div>
-          <div class="sh-sub" id="cc-sheet-sub">This column will be added to the end of the table for everyone.</div>
+          <div class="sh-sub" id="cc-sheet-sub" style="margin-bottom: 6px !important;">This column will be added to the end of the table for everyone.</div>
         </div>
         <div class="sbox-body" style="padding: 12px 18px 8px;">
-          <div class="ef-field" style="margin-bottom:12px;">
-            <div class="ef-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <span>Column Name <span style="color:var(--red);">*</span></span>
-              <span id="cc-char-count" style="opacity:0.5;font-size:11px;">0/25</span>
-            </div>
+          <div class="ef-field">
+            <div class="ef-label">Column Name <span style="color:var(--red);">*</span></div>
             <input class="ef-input" id="cc-name" type="text" placeholder="e.g. House No." maxlength="25"
               autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
               oninput="updateCharCount(this); document.getElementById('cc-error').style.display='none';" />
-            <div id="cc-error" style="color:var(--red); font-size:11px; margin-top:4px; font-weight:700; display:none;"></div>
+            <span id="cc-char-count" style="opacity: 0.5; font-size: 11px; font-weight: 800; font-family: 'Nunito', sans-serif; margin-left: 6px; white-space: nowrap; flex-shrink: 0;">0/25</span>
           </div>
+          <div id="cc-error" style="color:var(--red); font-size:11px; margin: -6px 14px 12px; font-weight:700; display:none; width:100%;"></div>
 
           <!-- Width Selector: compact chips -->
-          <div class="ef-field" style="margin-bottom:4px;">
-            <div class="ef-label" style="margin-bottom:8px;">Column Width</div>
-            <div style="display:flex; gap:8px;">
+          <div style="margin-top: 10px; margin-bottom: 12px; width: 100%;">
+            <div style="font-size: 9.5px; font-weight: 800; color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; padding-left: 12px;">Column Width</div>
+            <div style="display:flex; gap:8px; width: 100%;">
               <button id="cc-size-s" onclick="setCCSize(80)" class="cc-size-chip">Narrow</button>
               <button id="cc-size-m" onclick="setCCSize(160)" class="cc-size-chip active">Medium</button>
               <button id="cc-size-l" onclick="setCCSize(260)" class="cc-size-chip">Wide</button>
@@ -3477,8 +3617,8 @@
           <div class="sh-sub">Adjust the width for this column.</div>
         </div>
         <div class="sbox-body" style="padding: 12px 18px 8px;">
-          <div class="ef-field" style="margin-bottom:4px;">
-            <div style="display:flex; gap:8px;">
+          <div style="margin-bottom: 12px; width: 100%;">
+            <div style="display:flex; gap:8px; width: 100%;">
               <button id="def-size-s" onclick="setDefSize(80)" class="cc-size-chip">Narrow</button>
               <button id="def-size-m" onclick="setDefSize(130)" class="cc-size-chip">Medium</button>
               <button id="def-size-l" onclick="setDefSize(220)" class="cc-size-chip">Wide</button>
@@ -3710,7 +3850,7 @@
     </div>
   </div><!-- End main-page -->
 
-  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-config.js?v=3"></script>
   <script src="js/api.js?v=2"></script>
   <script src="js/auth-guard.js"></script>
   <script>
@@ -4261,10 +4401,10 @@
       // 1. Render Header Row
       const hdr = document.createElement("div");
       hdr.className = "tr hdr-row";
-      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="sth-custom" style="flex:1; text-align:left;" onclick="openDefaultColW('Name', 'don_name')">Name</div></div>
-                   <div class="th sth-custom" style="width:${getColWidth('don_amt', 90)}px;" onclick="openDefaultColW('Amount', 'don_amt')">Amount</div>
-                   <div class="th sth-custom" style="width:${getColWidth('don_date', 100)}px;" onclick="openDefaultColW('Date', 'don_date')">Date</div>
-                   <div class="th sth-custom" style="width:${getColWidth('don_colby', 130)}px;" onclick="openDefaultColW('Collected By', 'don_colby')">Collected By</div>`;
+      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Name', 'don_name')\"" : ''}>Name</div></div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'don_amt')\"" : ''}>Amount</div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'don_date')\"" : ''}>Date</div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>Collected By</div>`;
 
       customCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
@@ -4378,10 +4518,10 @@
       // 1. Render Header Row
       const hdr = document.createElement("div");
       hdr.className = "tr hdr-row";
-      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="sth-custom" style="flex:1; text-align:left;" onclick="openDefaultColW('Description', 'exp_desc')">Description</div></div>
-                   <div class="th sth-custom" style="width:${getColWidth('exp_amt', 90)}px;" onclick="openDefaultColW('Amount', 'exp_amt')">Amount</div>
-                   <div class="th sth-custom" style="width:${getColWidth('exp_date', 100)}px;" onclick="openDefaultColW('Date', 'exp_date')">Date</div>
-                   <div class="th sth-custom" style="width:${getColWidth('exp_colby', 130)}px;" onclick="openDefaultColW('Added By', 'exp_colby')">Added By</div>`;
+      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Description', 'exp_desc')\"" : ''}>Description</div></div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'exp_amt')\"" : ''}>Amount</div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'exp_date')\"" : ''}>Date</div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Added By', 'exp_colby')\"" : ''}>Added By</div>`;
 
       customCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
@@ -4709,6 +4849,17 @@
       html += saveBtnHtml;
       tr.innerHTML = html;
       
+      // Bind keydown events for Enter key continuous submission
+      tr.querySelectorAll('input').forEach(inp => {
+          inp.addEventListener('keydown', function(e) {
+              if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const saveBtn = tr.querySelector('.btn-solid-primary');
+                  if (saveBtn) submitInlineEntry(type, saveBtn);
+              }
+          });
+      });
+      
       const newRowBtn = tblBody.querySelector('.new-row');
       if (newRowBtn) {
           tblBody.insertBefore(tr, newRowBtn);
@@ -4753,6 +4904,11 @@
           await fetchTransactions(type);
           if (isDon) renderDonations();
           else renderExpenses();
+          
+          // Continuous data entry: Immediately trigger the NEXT empty row!
+          setTimeout(() => {
+              renderInlineEntryForm(type);
+          }, 200);
       } catch (e) {
           alert("Error saving: " + e.message);
           btn.disabled = false;
@@ -4892,10 +5048,10 @@
     }
     function closeEntryForm() { document.getElementById("entry-form-ov").style.display = "none"; }
 
-    async function saveEntry(skipDupCheck = false) {
+    async function saveEntry(skipDupCheck = false, keepOpen = false) {
       const name = document.getElementById("ef-name").value.trim();
       const amount = document.getElementById("ef-amount").value;
-      const btn = document.getElementById("ef-save-btn");
+      const btn = keepOpen ? document.getElementById("ef-save-next-btn") : document.getElementById("ef-save-btn");
       if (!name) {
         const err = document.getElementById("ef-error");
         err.textContent = entryType === "don" ? "Donor name is required." : "Description is required.";
@@ -4920,7 +5076,7 @@
         }
         if (existing) {
           const existingName = entryType === "don" ? existing.donor_name : existing.description;
-          openDupPop(() => saveEntry(true), existingName, existing.amount, entryType);
+          openDupPop(() => saveEntry(true, keepOpen), existingName, existing.amount, entryType);
           return;
         }
       }
@@ -4940,12 +5096,22 @@
         clearEventCache();
         updateTheaterStats();
         if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
-        closeEntryForm();
-        showToast("Saved!");
+        
+        if (keepOpen) {
+          // Clear inputs and keep focused
+          document.getElementById("ef-name").value = "";
+          document.getElementById("ef-amount").value = "";
+          document.querySelectorAll("#ef-custom-fields .dynamic-cf").forEach(inp => inp.value = "");
+          document.getElementById("ef-name").focus();
+          showToast("Entry saved! Ready for next.", "success");
+        } else {
+          closeEntryForm();
+          showToast("Saved!");
+        }
       } catch (e) {
         showToast(e.message || "Failed to save.", "error");
       }
-      btn.disabled = false; btn.textContent = "Save";
+      btn.disabled = false; btn.textContent = keepOpen ? "Save & Next" : "Save";
     }
 
     function openDupPop(onConfirm, name, amount, type) {
@@ -5920,15 +6086,15 @@
       }
 
       if (type === "don") {
-        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="sth-custom" style="flex:1; text-align:left;" onclick="openDefaultColW('Name', 'don_name')">NAME</div></div>
-                     <div class="th sth-custom" style="width:${getColWidth('don_amt', 90)}px;" onclick="openDefaultColW('Amount', 'don_amt')">AMOUNT</div>
-                     <div class="th sth-custom" style="width:${getColWidth('don_date', 100)}px;" onclick="openDefaultColW('Date', 'don_date')">DATE</div>
-                     <div class="th sth-custom" style="width:${getColWidth('don_colby', 130)}px;" onclick="openDefaultColW('Collected By', 'don_colby')">COLLECTED BY</div>`;
+        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Name', 'don_name')\"" : ''}>NAME</div></div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'don_amt')\"" : ''}>AMOUNT</div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'don_date')\"" : ''}>DATE</div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>COLLECTED BY</div>`;
       } else {
-        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="sth-custom" style="flex:1; text-align:left;" onclick="openDefaultColW('Description', 'exp_desc')">DESCRIPTION</div></div>
-                     <div class="th sth-custom" style="width:${getColWidth('exp_amt', 90)}px;" onclick="openDefaultColW('Amount', 'exp_amt')">AMOUNT</div>
-                     <div class="th sth-custom" style="width:${getColWidth('exp_date', 100)}px;" onclick="openDefaultColW('Date', 'exp_date')">DATE</div>
-                     <div class="th sth-custom" style="width:${getColWidth('exp_colby', 130)}px;" onclick="openDefaultColW('Added By', 'exp_colby')">ADDED BY</div>`;
+        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Description', 'exp_desc')\"" : ''}>DESCRIPTION</div></div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'exp_amt')\"" : ''}>AMOUNT</div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'exp_date')\"" : ''}>DATE</div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Added By', 'exp_colby')\"" : ''}>ADDED BY</div>`;
       }
 
       customCols.forEach((c) => {
@@ -7272,6 +7438,58 @@
       <button type="button" class="mp-close-btn" onclick="closeMemberProfile()">Close</button>
     </div>
   </div>
+
+<!-- ═══ ENTRY FORM FIELD HEIGHT ENFORCER (last-in-cascade, always wins) ═══ -->
+<style>
+  /* This block is intentionally placed LAST so it wins over any cached CSS.
+     ef-field capsules must be the same height as the Save & Next button. */
+  html body .ef-field {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    padding: 0 16px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    border-radius: 30px !important;
+  }
+  html body .sbox-footer .btn {
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+  /* In landscape (max-height 520px) keep fields at 36px to conserve space */
+  @media (max-height: 520px) {
+    html body .ef-field {
+      height: 36px !important;
+      min-height: 36px !important;
+      max-height: 36px !important;
+    }
+    html body .sbox-footer .btn {
+      height: 36px !important;
+      min-height: 36px !important;
+    }
+  }
+</style>
+<script>
+  /* JS fallback: if CSS is still cached, force height via style attribute */
+  document.addEventListener('DOMContentLoaded', function() {
+    function enforceFieldHeight() {
+      var isLandscape = window.innerHeight < 520;
+      var h = isLandscape ? '36px' : '44px';
+      document.querySelectorAll('.ef-field').forEach(function(el) {
+        el.style.setProperty('height', h, 'important');
+        el.style.setProperty('min-height', h, 'important');
+        el.style.setProperty('max-height', h, 'important');
+      });
+    }
+    enforceFieldHeight();
+    /* Re-run whenever a sheet opens (new fields may be injected dynamically) */
+    var observer = new MutationObserver(enforceFieldHeight);
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+</script>
+
 </body>
 
 </html>

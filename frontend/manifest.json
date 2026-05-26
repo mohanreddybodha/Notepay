@@ -1,0 +1,9 @@
+{
+  "short_name": "NotePay",
+  "name": "NotePay — Event Ledger",
+  "icons": [],
+  "start_url": "dashboard.html",
+  "background_color": "#1A4E8C",
+  "theme_color": "#1A4E8C",
+  "display": "standalone"
+}
