@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, JSON, Enum as SQLEnum
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, JSON, Enum as SQLEnum, Index
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
@@ -110,6 +110,10 @@ class WatchedEvent(Base):
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
+
+    __table_args__ = (
+        Index('idx_chat_messages_event_id_id', 'event_id', 'id'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(String(32), ForeignKey("events.id"), index=True)

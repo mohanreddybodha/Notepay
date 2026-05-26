@@ -37,6 +37,19 @@ jobs:
         run: |
           echo "$FIREBASE_SECRET" > backend/service_account.json
 
+      - name: Install dependencies for migrations
+        run: |
+          pip install -r backend/requirements.txt
+
+      - name: Run Database Migrations
+        run: |
+          # Fetch the pooled Postgres endpoint from SSM Parameter Store securely
+          DATABASE_URL=$(aws ssm get-parameter --name "/notepay/database_url" --with-decryption --query "Parameter.Value" --output text)
+          
+          # Execute migration upgrade head
+          cd backend
+          DATABASE_URL=$DATABASE_URL alembic upgrade head
+
       - name: SAM Build
         run: sam build
 

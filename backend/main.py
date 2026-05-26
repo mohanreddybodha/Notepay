@@ -867,11 +867,13 @@ def handler(event, context):
                     if cache.client:
                         cache.client.sadd("ws:dash", conn_id)
                         cache.client.setex(f"ws:conn:{conn_id}", 86400, "dash")
+                        cache.client.expire("ws:dash", 86400)
                 elif data.get('eventId'):
                     evt_id = str(data['eventId'])
                     if cache.client:
                         cache.client.sadd(f"ws:evt:{evt_id}", conn_id)
                         cache.client.setex(f"ws:conn:{conn_id}", 86400, f"evt:{evt_id}")
+                        cache.client.expire(f"ws:evt:{evt_id}", 86400)
                 
                 # Send AUTH_OK back via boto3
                 try:

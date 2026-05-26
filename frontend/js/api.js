@@ -21,7 +21,48 @@ if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.match(/^[0-
 }
 
 // ── Core fetch wrapper — attaches Bearer token automatically ──
+// ── Core fetch wrapper — attaches Bearer token automatically ──
 async function apiFetch(method, path, body = null) {
+  const isWrite = method === "POST" || method === "PUT" || method === "DELETE";
+
+  // 1. Intercept edits or deletes on temporary offline entries (indicated by a negative ID)
+  if ((method === "PUT" || method === "DELETE") && path.match(/\/-?\d+$/)) {
+    const tempId = parseInt(path.split("/").pop());
+    if (tempId < 0) {
+      const queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+      if (method === "PUT") {
+        const idx = queue.findIndex(item => item.id === tempId);
+        if (idx !== -1) {
+          queue[idx].body = { ...queue[idx].body, ...body };
+          localStorage.setItem("np_offline_queue", JSON.stringify(queue));
+          showToast("Offline update queued locally!", "warning");
+          return {
+            id: tempId,
+            event_id: queue[idx].body.event_id || path.split("/")[2],
+            donor_name: queue[idx].body.donor_name || body.donor_name || "",
+            description: queue[idx].body.description || body.description || "",
+            amount: queue[idx].body.amount || body.amount || null,
+            collected_by: parseInt(sessionStorage.getItem("np_my_id")) || 0,
+            collected_by_name: sessionStorage.getItem("np_my_name") || "You (Offline)",
+            collected_at: new Date().toISOString(),
+            custom_fields: queue[idx].body.custom_fields || body.custom_fields || null,
+            is_offline: true
+          };
+        }
+      } else if (method === "DELETE") {
+        const filtered = queue.filter(item => item.id !== tempId);
+        localStorage.setItem("np_offline_queue", JSON.stringify(filtered));
+        showToast("Offline entry removed locally!", "warning");
+        return { message: "Deleted offline entry" };
+      }
+    }
+  }
+
+  // 2. Intercept write mutations optimistically if navigator is explicitly offline
+  if (isWrite && !navigator.onLine) {
+    return handleOfflineWrite(method, path, body);
+  }
+
   const token = await getIdToken();
   if (!token) {
     window.location.href = "login.html";
@@ -37,7 +78,28 @@ async function apiFetch(method, path, body = null) {
   };
   if (body) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${API_BASE}${path}`, opts);
+  let res;
+  let isNetworkError = false;
+  try {
+    res = await fetch(`${API_BASE}${path}`, opts);
+  } catch (e) {
+    if (isWrite) {
+      isNetworkError = true;
+    } else if (method === "GET") {
+      // Offline cached GET fallback
+      const cached = localStorage.getItem("cache:" + path);
+      if (cached) {
+        showToast("Displaying offline cached data", "warning");
+        return JSON.parse(cached);
+      }
+    }
+    if (!isNetworkError) throw e;
+  }
+
+  // 3. Fallback optimistically if request failed due to a network connection error
+  if (isWrite && isNetworkError) {
+    return handleOfflineWrite(method, path, body);
+  }
 
   if (res.status === 401) {
     window.location.href = "login.html";
@@ -56,7 +118,56 @@ async function apiFetch(method, path, body = null) {
     throw new Error(msg);
   }
 
+  // Cache successful GET data for offline retrieval
+  if (method === "GET" && data) {
+    try {
+      localStorage.setItem("cache:" + path, JSON.stringify(data));
+    } catch (e) {
+      console.warn("Storage quota exceeded, unable to cache GET request");
+    }
+  }
+
   return data;
+}
+
+// ── Helper to queue writes and return optimistic results ──
+function handleOfflineWrite(method, path, body) {
+  const queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+  let mockId = null;
+
+  if (method === "POST") {
+    mockId = -Date.now();
+  } else {
+    mockId = parseInt(path.split("/").pop()) || null;
+  }
+
+  queue.push({
+    id: mockId,
+    method,
+    path,
+    body,
+    timestamp: Date.now()
+  });
+  localStorage.setItem("np_offline_queue", JSON.stringify(queue));
+  showToast("Offline mode: Action queued locally!", "warning");
+
+  if (method === "DELETE") {
+    return { message: "Deleted" };
+  }
+
+  const eventId = path.split("/")[2] || "";
+  return {
+    id: mockId,
+    event_id: eventId,
+    donor_name: body?.donor_name || "",
+    description: body?.description || "",
+    amount: body?.amount || null,
+    collected_by: parseInt(sessionStorage.getItem("np_my_id")) || 0,
+    collected_by_name: sessionStorage.getItem("np_my_name") || "You (Offline)",
+    collected_at: new Date().toISOString(),
+    custom_fields: body?.custom_fields || null,
+    is_offline: true
+  };
 }
 
 // ── Unauthenticated fetch (for registration check) ──
@@ -318,3 +429,82 @@ if (localStorage.getItem("np_dark")) {
   document.documentElement.classList.add("dark-mode");
   if (document.body) document.body.classList.add("dark-mode");
 }
+
+// ══════════════════════════════════════════════
+//  OFFLINE QUEUE SYNCHRONIZER
+// ══════════════════════════════════════════════
+
+let isSyncing = false;
+async function syncOfflineQueue() {
+  if (isSyncing || !navigator.onLine) return;
+  const queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+  if (!queue.length) return;
+
+  isSyncing = true;
+  showToast(`Syncing ${queue.length} offline entries...`, "default");
+
+  const remaining = [];
+  let token = await getIdToken();
+  if (!token) {
+    isSyncing = false;
+    return;
+  }
+
+  for (const item of queue) {
+    try {
+      const opts = {
+        method: item.method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      };
+      if (item.body) opts.body = JSON.stringify(item.body);
+      
+      const res = await fetch(`${API_BASE}${item.path}`, opts);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      console.log(`Synced offline item ${item.id} successfully`);
+    } catch (e) {
+      console.error(`Failed to sync offline item ${item.id}:`, e);
+      remaining.push(item);
+    }
+  }
+
+  localStorage.setItem("np_offline_queue", JSON.stringify(remaining));
+  isSyncing = false;
+
+  if (remaining.length === 0) {
+    showToast("Offline data successfully synced!", "success");
+    // Reload local state to fetch actual server IDs
+    if (typeof loadAll === "function") {
+      loadAll();
+    } else if (typeof loadDashboard === "function") {
+      loadDashboard();
+    } else {
+      window.location.reload();
+    }
+  } else {
+    showToast(`Failed to sync ${remaining.length} entries. Retrying soon.`, "error");
+  }
+}
+
+// Watch network status
+window.addEventListener("online", () => {
+  syncOfflineQueue();
+});
+
+// Periodic sync check every 15 seconds
+setInterval(() => {
+  if (navigator.onLine) {
+    syncOfflineQueue();
+  }
+}, 15000);
+
+// Run initial sync on load after a brief delay
+setTimeout(() => {
+  if (navigator.onLine) {
+    syncOfflineQueue();
+  }
+}, 1500);
