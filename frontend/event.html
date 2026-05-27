@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <meta name="viewport"
-    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,interactive-widget=resizes-content,viewport-fit=cover" />
+    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,interactive-widget=resizes-visual,viewport-fit=cover" />
   <title>Notepay — Event</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap"
@@ -3125,8 +3125,8 @@
     /* Ultra-compact Sheet overrides for landscape mobile devices (low height) */
     @media (max-height: 520px) {
       .sov {
-        align-items: center !important;
-        /* Center vertically in landscape to avoid getting cut off by the keyboard */
+        align-items: flex-end !important;
+        /* Always anchor sheets to bottom even in landscape/theater */
       }
 
       .sbox {
@@ -5328,12 +5328,23 @@
         newRowBtn.onclick = null;
         newRowBtn.style.cursor = "default";
         newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
-              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEdit(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
-              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEdit('${type}', '${d.id || d._id}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+              <button class="btn btn-text-secondary inl-edit-cancel-btn" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary inl-edit-save-btn" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
           </span>`;
+
+        // Attach handlers via JS (inline onclick blocks touchend on mobile)
+        const editSaveBtn = newRowBtn.querySelector('.inl-edit-save-btn');
+        const editCancelBtn = newRowBtn.querySelector('.inl-edit-cancel-btn');
+        const entryId = '${d.id || d._id}';
+        const entryType = '${type}';
+        editSaveBtn.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); submitInlineEdit(entryType, entryId, editSaveBtn); }, { passive: false });
+        editSaveBtn.addEventListener('click', function(e) { e.stopPropagation(); submitInlineEdit(entryType, entryId, editSaveBtn); });
+        editCancelBtn.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); cancelInlineEdit(editSaveBtn, entryType); }, { passive: false });
+        editCancelBtn.addEventListener('click', function(e) { e.stopPropagation(); cancelInlineEdit(editSaveBtn, entryType); });
       } else {
         tblBody.appendChild(tr);
       }
+
       setTimeout(() => {
         tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         const input = tr.querySelector('.inl-name-input');
