@@ -6,7 +6,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,interactive-widget=resizes-content,viewport-fit=cover" />
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,interactive-widget=resizes-content,viewport-fit=cover" />
   <title>Notepay — Event</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap"
@@ -29,7 +30,11 @@
     }
   </script>
   <style>
-    .toast { z-index: 999999 !important; position: fixed !important; }
+    .toast {
+      z-index: 999999 !important;
+      position: fixed !important;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -352,7 +357,7 @@
       justify-content: flex-start !important;
       padding-left: 6px !important;
       border-right: 1.5px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
     }
 
     .tr {
@@ -376,7 +381,7 @@
       position: sticky !important;
       top: 0 !important;
       z-index: 2500 !important;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
     }
 
     .tr:last-child {
@@ -485,11 +490,11 @@
 
     .inline-input {
       box-sizing: border-box !important;
-      height: 28px !important;
-      padding: 4px 8px !important;
+      height: 26px !important;
+      padding: 0 8px !important;
       font-size: 13px !important;
-      display: inline-block !important;
-      vertical-align: middle !important;
+      display: block !important;
+      align-self: center !important;
     }
 
     .new-row {
@@ -579,9 +584,11 @@
       #rot-main.is-theater .rot-stat-full {
         display: inline;
       }
+
       #rot-main.is-theater .rot-stat-role-wrap {
         display: inline;
       }
+
       #rot-main.is-theater .rot-stat-info-wrap {
         display: inline;
         font-size: 10px;
@@ -635,15 +642,11 @@
         min-height: 20px;
       }
 
-      #rot-main.is-theater #theater-search {
-        height: 28px !important;
-        font-size: 11px !important;
-      }
 
-      #rot-main.is-theater .theater-scroll-area .tbl-inner > div:first-child .tr.hdr-row {
+      #rot-main.is-theater .theater-scroll-area .tbl-inner>div:first-child .tr.hdr-row {
         min-height: 20px !important;
       }
-      
+
       #rot-main.is-theater .rot-ov-body {
         padding: 4px 8px 8px 8px;
       }
@@ -743,7 +746,8 @@
     }
 
     .ef-field {
-      flex: 1 1 100% !important; /* Stack vertically (full width) in mobile portrait */
+      flex: 1 1 100% !important;
+      /* Stack vertically (full width) in mobile portrait */
       width: 100% !important;
       margin-bottom: 4px;
       display: flex !important;
@@ -812,22 +816,28 @@
     }
 
     .sbox-footer {
-      padding: 12px 18px 16px !important; /* Compressed bottom padding for sleek visual footprint */
+      padding: 12px 18px 16px !important;
+      /* Compressed bottom padding for sleek visual footprint */
     }
 
     .sbox-footer .btn {
-      padding: 8px 16px !important;        /* Sleek, professional height */
-      font-size: 13.5px !important;         /* Balanced, modern font-size */
-      height: 44px !important;              /* Match the 44px input capsules exactly */
-      border-radius: 30px !important;        /* Harmonious capsule shape */
-      box-shadow: none !important;          /* Sleek minimalist look */
+      padding: 8px 16px !important;
+      /* Sleek, professional height */
+      font-size: 13.5px !important;
+      /* Balanced, modern font-size */
+      height: 44px !important;
+      /* Match the 44px input capsules exactly */
+      border-radius: 30px !important;
+      /* Harmonious capsule shape */
+      box-shadow: none !important;
+      /* Sleek minimalist look */
     }
 
-    
-    
 
-    
-    
+
+
+
+
 
     /* Summary Dashboard Styles */
     .bal-card {
@@ -1132,19 +1142,22 @@
       border-radius: 30px;
       transition: all 0.15s;
     }
-    .pbc:hover { background: var(--surf-var2); }
 
-    
-    
+    .pbc:hover {
+      background: var(--surf-var2);
+    }
 
-    
-    
 
-    
-    
 
-    
-    
+
+
+
+
+
+
+
+
+
 
     /* Dropdown */
     .dd-ov {
@@ -1235,7 +1248,8 @@
     }
 
     .sbox-header {
-      padding: 8px 18px 6px; /* Compressed padding */
+      padding: 8px 18px 6px;
+      /* Compressed padding */
       flex-shrink: 0;
       background: transparent;
       border-bottom: 1.5px solid var(--border2);
@@ -1265,15 +1279,18 @@
       height: 5px;
       background: var(--border);
       border-radius: 3px;
-      margin: 0 auto 6px; /* Reduced vertical waste margin */
+      margin: 0 auto 6px;
+      /* Reduced vertical waste margin */
     }
 
     .sh-title {
       font-family: 'Nunito', sans-serif;
-      font-size: 15px; /* Clean, premium title font scale */
+      font-size: 15px;
+      /* Clean, premium title font scale */
       font-weight: 900;
       color: var(--text);
-      margin-bottom: 2px; /* Sleek heading margin */
+      margin-bottom: 2px;
+      /* Sleek heading margin */
     }
 
     .sh-sub {
@@ -1485,8 +1502,6 @@
       border-color: #333;
     }
 
-    body.dark-mode 
-
     body.dark-mode .ctx {
       background: #222;
       border-color: #333;
@@ -1523,8 +1538,6 @@
       background: rgba(26, 74, 128, 0.15);
       color: #5A9BE8;
     }
-
-    body.dark-mode 
 
     body.dark-mode .ef-input {
       background: #1A1A1A !important;
@@ -1569,7 +1582,11 @@
       display: none;
       transition: all .15s;
     }
-    .add-col-btn:hover { background: var(--teal); color: white; }
+
+    .add-col-btn:hover {
+      background: var(--teal);
+      color: white;
+    }
 
     .add-col-btn:active {
       transform: translateY(1px);
@@ -1825,7 +1842,11 @@
       box-shadow: none;
       transition: all 0.15s;
     }
-    .rot-add-btn:hover { background: var(--primary); color: white; }
+
+    .rot-add-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
 
     .rot-add-btn:active {
       transform: scale(0.96);
@@ -2014,9 +2035,11 @@
 
     .cc-size-chip {
       flex: 1 !important;
-      height: 28px !important; /* Small, matching landscape capsule inputs */
+      height: 28px !important;
+      /* Small, matching landscape capsule inputs */
       padding: 0 12px !important;
-      border-radius: 30px !important; /* Fully rounded capsule shape */
+      border-radius: 30px !important;
+      /* Fully rounded capsule shape */
       border: 1.5px solid var(--input-border) !important;
       background: var(--input-bg) !important;
       color: var(--text2) !important;
@@ -2043,6 +2066,7 @@
       color: var(--text) !important;
       border-color: var(--input-border) !important;
     }
+
     body.dark-mode .cc-size-chip.active {
       border-color: var(--primary) !important;
       background: rgba(96, 165, 250, 0.15) !important;
@@ -3101,53 +3125,59 @@
     /* Ultra-compact Sheet overrides for landscape mobile devices (low height) */
     @media (max-height: 520px) {
       .sov {
-        align-items: center !important; /* Center vertically in landscape to avoid getting cut off by the keyboard */
+        align-items: center !important;
+        /* Center vertically in landscape to avoid getting cut off by the keyboard */
       }
-      
+
       .sbox {
-        max-width: 580px !important; /* Make it wider in landscape to use horizontal space */
-        border-radius: 16px !important; /* Fully rounded in landscape */
+        max-width: 580px !important;
+        /* Make it wider in landscape to use horizontal space */
+        border-radius: 16px !important;
+        /* Fully rounded in landscape */
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
         margin: 0 auto !important;
         max-height: 96vh !important;
       }
-      
+
       .sh-handle {
-        display: none !important; /* Hide sheet handle to save space */
+        display: none !important;
+        /* Hide sheet handle to save space */
       }
-      
+
       .sbox-header {
         padding: 6px 14px !important;
       }
-      
+
       .sh-title {
         font-size: 14px !important;
       }
-      
+
       .sbox-body {
         padding: 6px 14px 10px !important;
       }
-      
+
       /* Display form fields horizontally (side-by-side) instead of vertically */
       .ef-fields-container {
         flex-direction: row !important;
         flex-wrap: wrap !important;
         gap: 8px !important;
       }
-      
+
       .ef-field {
-        flex: 1 1 calc(50% - 6px) !important; /* Side-by-side columns in landscape */
+        flex: 1 1 calc(50% - 6px) !important;
+        /* Side-by-side columns in landscape */
         min-width: 120px !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 4px !important;
       }
+
       .ef-input {
         height: 36px !important;
         padding: 0 12px !important;
       }
-      
+
       #ef-custom-fields,
       #edit-custom-fields {
         flex-direction: row !important;
@@ -3155,43 +3185,45 @@
         gap: 8px !important;
         width: 100% !important;
       }
-      
+
       #ef-custom-fields .ef-field,
       #edit-custom-fields .ef-field {
         flex: 1 1 calc(50% - 6px) !important;
         min-width: 120px !important;
       }
-      
+
       .ef-label {
         font-size: 8.5px !important;
         margin-bottom: 0 !important;
       }
-      
+
       .ef-input {
         font-size: 11.5px !important;
         padding: 0 !important;
         height: 100% !important;
       }
-      
+
       .sbox-footer {
         padding: 6px 14px 8px !important;
       }
-      
+
       .sbox-footer .btn {
         padding: 4px 12px !important;
         font-size: 11.5px !important;
-        border-radius: 30px !important; /* Premium capsule matching layout shape */
-        height: 28px !important;        /* Matches the 28px landscape capsule inputs! */
+        border-radius: 30px !important;
+        /* Premium capsule matching layout shape */
+        height: 28px !important;
+        /* Matches the 28px landscape capsule inputs! */
       }
     }
-
   </style>
 </head>
 
 <body>
   <div class="page" id="main-page">
     <div class="app-bar">
-      <div class="back" onclick="window.location.href='dashboard.html'"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
+      <div class="back" onclick="window.location.href='dashboard.html'"><span data-np-icon="arrow-left"
+          data-np-size="22"></span></div>
       <div class="ab-ttl" id="ev-title">Loading…</div>
 
       <div class="dots-btn" id="dots-btn" onclick="openDD()" style="display:none;">
@@ -3216,7 +3248,8 @@
         <div class="ib-date" id="ev-date">—</div>
       </div>
       <div id="members-badge" class="badge-members" onclick="openMembersSheet()">
-        <span data-np-icon="user" data-np-size="14" style="margin-right:4px;"></span> Members</div>
+        <span data-np-icon="user" data-np-size="14" style="margin-right:4px;"></span> Members
+      </div>
     </div>
     <div class="deact-bar" id="deact-banner"
       style="display:none; justify-content:space-between; padding:8px 16px; background:var(--amber); color:var(--surface);">
@@ -3248,7 +3281,8 @@
             <path d="m21 21-4.35-4.35" />
           </svg>
           <input class="search-input" id="don-search" type="text" placeholder="Search donors…"
-            oninput="filterTable('don',this.value)" />
+            oninput="filterTable('don',this.value)" autocomplete="one-time-code" autocorrect="off" autocapitalize="off"
+            spellcheck="false" />
         </div>
       </div>
       <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
@@ -3275,7 +3309,8 @@
         </div>
         <div id="don-empty-msg" style="display:none;"></div>
       </div>
-      <div class="read-only-note" id="don-readonly" style="display:none;"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span>Read-only view. Reactivate the event to
+      <div class="read-only-note" id="don-readonly" style="display:none;"><span data-np-icon="lock" data-np-size="16"
+          style="vertical-align:middle;margin-right:6px;"></span>Read-only view. Reactivate the event to
         allow new entries.</div>
     </div>
     <!-- Expenses Tab -->
@@ -3287,7 +3322,8 @@
             <path d="m21 21-4.35-4.35" />
           </svg>
           <input class="search-input" id="exp-search" type="text" placeholder="Search expenses…"
-            oninput="filterTable('exp',this.value)" />
+            oninput="filterTable('exp',this.value)" autocomplete="one-time-code" autocorrect="off" autocapitalize="off"
+            spellcheck="false" />
         </div>
       </div>
       <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
@@ -3314,7 +3350,8 @@
         </div>
         <div id="exp-empty-msg" style="display:none;"></div>
       </div>
-      <div class="read-only-note" id="exp-readonly" style="display:none;"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span>Read-only view. Reactivate the event to
+      <div class="read-only-note" id="exp-readonly" style="display:none;"><span data-np-icon="lock" data-np-size="16"
+          style="vertical-align:middle;margin-right:6px;"></span>Read-only view. Reactivate the event to
         allow new entries.</div>
     </div>
     <!-- Summary Tab -->
@@ -3340,12 +3377,17 @@
           <div style="display:flex;flex-direction:column;gap:4px;" class="ef-fields-container">
             <div class="ef-field">
               <div class="ef-label" id="ef-name-label">Donor Name <span style="color:var(--red);">*</span></div>
-              <input class="ef-input" id="ef-name" type="text" placeholder="Enter name" autocomplete="off" oninput="document.getElementById('ef-error').style.display='none'" />
+              <input class="ef-input" id="ef-name" type="text" placeholder="Enter name" autocomplete="one-time-code"
+                autocorrect="off" autocapitalize="off" spellcheck="false"
+                oninput="document.getElementById('ef-error').style.display='none'" />
             </div>
-            <div id="ef-error" style="color:var(--red); font-size:10px; font-weight:700; display:none; width:100%; margin: -2px 14px 4px;"></div>
+            <div id="ef-error"
+              style="color:var(--red); font-size:10px; font-weight:700; display:none; width:100%; margin: -2px 14px 4px;">
+            </div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
-              <input class="ef-input" id="ef-amount" type="number" placeholder="Optional" min="0" step="0.01" />
+              <input class="ef-input" id="ef-amount" type="number" placeholder="Optional" min="0" step="0.01"
+                autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" />
             </div>
             <div id="ef-custom-fields" style="display:flex;flex-direction:column;gap:4px;"></div>
           </div>
@@ -3353,7 +3395,8 @@
         <div class="sbox-footer">
           <div class="ef-btns" style="display:flex; gap:8px; width:100%;">
             <button class="btn btn-text-secondary" onclick="closeEntryForm()" style="flex:1;">Cancel</button>
-            <button class="btn btn-solid-primary" id="ef-save-next-btn" onclick="saveEntry(false, true)" style="flex:1.5; background:var(--teal) !important; box-shadow:none;">Save & Next</button>
+            <button class="btn btn-solid-primary" id="ef-save-next-btn" onclick="saveEntry(false, true)"
+              style="flex:1.5; background:var(--teal) !important; box-shadow:none;">Save & Next</button>
             <button class="btn btn-solid-primary" id="ef-save-btn" onclick="saveEntry()" style="flex:1;">Save</button>
           </div>
         </div>
@@ -3386,7 +3429,8 @@
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="viewDataOnly()">View Data</button>
-          <button class="btn btn-solid-primary" style="border:none;border-radius:14px;" onclick="toggleDeactivate();closeDeactPop()">
+          <button class="btn btn-solid-primary" style="border:none;border-radius:14px;"
+            onclick="toggleDeactivate();closeDeactPop()">
             <span data-np-icon="unlock" data-np-size="16" style="vertical-align:middle;margin-right:4px;"></span>
             Reactivate</button>
         </div>
@@ -3404,12 +3448,17 @@
           <div style="display:flex;flex-direction:column;gap:4px;" class="ef-fields-container">
             <div class="ef-field">
               <div class="ef-label" id="edit-name-label">Donor Name <span style="color:var(--red);">*</span></div>
-              <input class="ef-input" id="edit-name" type="text" oninput="document.getElementById('edit-error').style.display='none'" />
+              <input class="ef-input" id="edit-name" type="text" autocomplete="one-time-code" autocorrect="off"
+                autocapitalize="off" spellcheck="false"
+                oninput="document.getElementById('edit-error').style.display='none'" />
             </div>
-            <div id="edit-error" style="color:var(--red); font-size:10px; font-weight:700; display:none; width:100%; margin: -2px 14px 4px;"></div>
+            <div id="edit-error"
+              style="color:var(--red); font-size:10px; font-weight:700; display:none; width:100%; margin: -2px 14px 4px;">
+            </div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
-              <input class="ef-input" id="edit-amount" type="number" min="0" step="0.01" />
+              <input class="ef-input" id="edit-amount" type="number" min="0" step="0.01" autocomplete="one-time-code"
+                autocorrect="off" autocapitalize="off" spellcheck="false" />
             </div>
             <div id="edit-custom-fields" style="display:flex;flex-direction:column;gap:4px;"></div>
           </div>
@@ -3477,8 +3526,9 @@
             </div>
             <div style="position:relative; display:flex; align-items:center;">
               <span data-np-icon="search" data-np-size="12" style="position:absolute; left:8px; opacity:0.5;"></span>
-              <input type="text" id="theater-top-search" placeholder="Search..." 
-                style="width: 130px; padding: 4px 8px 4px 26px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 11px; outline: none;">
+              <input type="text" id="theater-top-search" placeholder="Search..."
+                style="width: 130px; padding: 4px 8px 4px 26px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 11px; outline: none;"
+                autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
           </div>
 
@@ -3611,25 +3661,32 @@
 
     <!-- Custom Column Management Sheet -->
     <div id="custom-col-sheet" class="sov" style="display:none;" onclick="closeCustomColSheet()">
-      <div class="sbox" onclick="event.stopPropagation()" style="max-height: calc(100vh - env(keyboard-inset-height, 0px));">
+      <div class="sbox" onclick="event.stopPropagation()"
+        style="max-height: calc(100vh - env(keyboard-inset-height, 0px));">
         <div class="sbox-header">
           <div class="sh-handle"></div>
           <div class="sh-title" id="cc-sheet-title">Add Custom Column</div>
-          <div class="sh-sub" id="cc-sheet-sub" style="margin-bottom: 6px !important;">This column will be added to the end of the table for everyone.</div>
+          <div class="sh-sub" id="cc-sheet-sub" style="margin-bottom: 6px !important;">This column will be added to the
+            end of the table for everyone.</div>
         </div>
         <div class="sbox-body" style="padding: 12px 18px 8px;">
           <div class="ef-field">
             <div class="ef-label">Column Name <span style="color:var(--red);">*</span></div>
             <input class="ef-input" id="cc-name" type="text" placeholder="e.g. House No." maxlength="25"
-              autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
+              autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false"
               oninput="updateCharCount(this); document.getElementById('cc-error').style.display='none';" />
-            <span id="cc-char-count" style="opacity: 0.5; font-size: 11px; font-weight: 800; font-family: 'Nunito', sans-serif; margin-left: 6px; white-space: nowrap; flex-shrink: 0;">0/25</span>
+            <span id="cc-char-count"
+              style="opacity: 0.5; font-size: 11px; font-weight: 800; font-family: 'Nunito', sans-serif; margin-left: 6px; white-space: nowrap; flex-shrink: 0;">0/25</span>
           </div>
-          <div id="cc-error" style="color:var(--red); font-size:11px; margin: -6px 14px 12px; font-weight:700; display:none; width:100%;"></div>
+          <div id="cc-error"
+            style="color:var(--red); font-size:11px; margin: -6px 14px 12px; font-weight:700; display:none; width:100%;">
+          </div>
 
           <!-- Width Selector: compact chips -->
           <div style="margin-top: 10px; margin-bottom: 12px; width: 100%;">
-            <div style="font-size: 9.5px; font-weight: 800; color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; padding-left: 12px;">Column Width</div>
+            <div
+              style="font-size: 9.5px; font-weight: 800; color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; padding-left: 12px;">
+              Column Width</div>
             <div style="display:flex; gap:8px; width: 100%;">
               <button id="cc-size-s" onclick="setCCSize(80)" class="cc-size-chip">Narrow</button>
               <button id="cc-size-m" onclick="setCCSize(160)" class="cc-size-chip active">Medium</button>
@@ -3646,13 +3703,14 @@
           <div class="ef-btns" id="cc-edit-btns" style="display:none;">
             <button class="btn btn-text-secondary" style="border-color:var(--red); color:var(--red);"
               onclick="deleteCustomColumn()">Delete Column</button>
-            <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()">Save Changes</button>
+            <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()">Save
+              Changes</button>
           </div>
         </div>
       </div>
     </div>
 
-    
+
     <!-- Default Column Width Sheet -->
     <div id="def-col-sheet" class="sov" style="display:none;" onclick="closeDefColSheet()">
       <div class="sbox" onclick="event.stopPropagation()">
@@ -3686,7 +3744,8 @@
       <div class="sbox" onclick="event.stopPropagation()">
         <div class="sbox-header">
           <div class="sh-handle"></div>
-          <div class="sh-title"><span data-np-icon="settings" data-np-size="20" style="vertical-align:text-bottom;margin-right:6px;"></span>Code Settings</div>
+          <div class="sh-title"><span data-np-icon="settings" data-np-size="20"
+              style="vertical-align:text-bottom;margin-right:6px;"></span>Code Settings</div>
           <div class="sh-sub">Share this code with collectors to let them join the event.</div>
         </div>
         <div class="sbox-body">
@@ -3708,7 +3767,8 @@
           <div style="display:flex;gap:8px;margin-top:12px;">
             <button
               style="flex:1;background:none;border:1.5px solid var(--red);border-radius:30px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;"
-              onclick="revokeCode()"><span data-np-icon="refresh" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
+              onclick="revokeCode()"><span data-np-icon="refresh" data-np-size="16"
+                style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
           </div>
           <button
             style="width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;margin-top:6px;"
@@ -3758,7 +3818,8 @@
       <div class="pop-box">
         <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Remove Event?</div>
-        <div class="pop-m">Do you want to remove event <strong id="remove-event-name"></strong> from your <strong>Visited Events</strong> tab? You will need to visit the link again to see it.</div>
+        <div class="pop-m">Do you want to remove event <strong id="remove-event-name"></strong> from your
+          <strong>Visited Events</strong> tab? You will need to visit the link again to see it.</div>
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeRemovePop()">Cancel</button>
@@ -3791,7 +3852,8 @@
         <div class="pop-btns">
           <button class="pbc"
             onclick="document.getElementById('deact-confirm-pop').style.display = 'none'">Cancel</button>
-          <button class="btn btn-solid-amber" onclick="confirmDeactivate()"><span data-np-icon="lock" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Lock Event</button>
+          <button class="btn btn-solid-amber" onclick="confirmDeactivate()"><span data-np-icon="lock" data-np-size="16"
+              style="vertical-align:middle;margin-right:6px;"></span> Lock Event</button>
         </div>
       </div>
     </div>
@@ -3801,10 +3863,12 @@
       <div class="pop-box" style="border:2px solid var(--primary);">
         <div class="pop-ic"><span data-np-icon="refresh" data-np-size="32" data-np-tone="primary"></span></div>
         <div class="pop-t" style="color:var(--primary);">Regenerate Code?</div>
-        <div class="pop-m">Existing members keep access, but the old code will stop working. Anyone new must use the new code to join.</div>
+        <div class="pop-m">Existing members keep access, but the old code will stop working. Anyone new must use the new
+          code to join.</div>
         <div class="pop-line"></div>
         <div class="pop-btns">
-          <button class="pbc" onclick="document.getElementById('regenerate-code-pop').style.display = 'none'">Cancel</button>
+          <button class="pbc"
+            onclick="document.getElementById('regenerate-code-pop').style.display = 'none'">Cancel</button>
           <button class="btn btn-solid-primary" onclick="confirmRegenerateCode()">Regenerate</button>
         </div>
       </div>
@@ -3827,7 +3891,8 @@
         <div class="pop-btns">
           <button class="pbc" onclick="document.getElementById('promote-pop').style.display = 'none'">Go Back</button>
           <button class="btn" style="background:var(--amber);color:black;border:none;border-radius:14px;"
-            onclick="confirmPromote()"><span data-np-icon="crown" data-np-size="16" style="vertical-align:middle;margin-right:6px;"></span> Confirm Promotion</button>
+            onclick="confirmPromote()"><span data-np-icon="crown" data-np-size="16"
+              style="vertical-align:middle;margin-right:6px;"></span> Confirm Promotion</button>
         </div>
       </div>
     </div>
@@ -3840,7 +3905,8 @@
         <div class="pop-m">Restricted member can't be promoted to organizer.</div>
         <div class="pop-line"></div>
         <div class="pop-btns">
-          <button class="pbc" onclick="document.getElementById('restricted-promo-pop').style.display = 'none'">OK</button>
+          <button class="pbc"
+            onclick="document.getElementById('restricted-promo-pop').style.display = 'none'">OK</button>
         </div>
       </div>
     </div>
@@ -3889,8 +3955,10 @@
     <div id="mctx-ov" style="display:none;position:fixed;inset:0;background:transparent;z-index:25000;"
       onclick="closeMCtx()">
       <div id="mctx-box" class="mctx" onclick="event.stopPropagation()">
-        <div class="dd-item" id="mctx-promote" onclick="handlePromoteClick()"><span data-np-icon="crown" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>Make Organizer</div>
-        <div class="dd-item" id="mctx-restrict" onclick="handleRestrictClick()"><span data-np-icon="ban" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>Restrict User</div>
+        <div class="dd-item" id="mctx-promote" onclick="handlePromoteClick()"><span data-np-icon="crown"
+            data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>Make Organizer</div>
+        <div class="dd-item" id="mctx-restrict" onclick="handleRestrictClick()"><span data-np-icon="ban"
+            data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>Restrict User</div>
       </div>
     </div>
   </div><!-- End main-page -->
@@ -3902,7 +3970,7 @@
     // ── State ──
     const params = new URLSearchParams(location.search);
     const origLog = console.log;
-    console.log = function(...args) {
+    console.log = function (...args) {
       origLog.apply(console, args);
       const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
       if (msg.includes('[debug]')) {
@@ -3910,7 +3978,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
-        }).catch(() => {});
+        }).catch(() => { });
       }
     };
     const eventId = params.get("id") || params.get("eventId");
@@ -3971,7 +4039,7 @@
         // Also set sessionStorage as a backup for other functions
         sessionStorage.setItem("np_my_id", myUserId);
 
-        setupWebSocket().catch(() => {});
+        setupWebSocket().catch(() => { });
         await loadAll();
       } catch (e) {
         console.error("Init failed:", e);
@@ -4022,12 +4090,12 @@
       if (activeTheaterTab) {
         const isEventActive = eventData.is_active;
         const canSeeData = isOrganizer || (isEventActive && !isRestricted && (eventData.is_public || !isVisitor));
-        
+
         if (!canSeeData && !isOrganizer) {
           activeTheaterTab = null;
           const overlay = document.getElementById("rot-overlay");
           if (overlay) overlay.style.display = "none";
-          
+
           let reason = "Your access to this event has been restricted.";
           if (!isEventActive) {
             reason = "This event has been deactivated by the organizer.";
@@ -4060,7 +4128,7 @@
             openMembersSheet();
           }
         }
-        return; 
+        return;
       }
       renderPage();
     }
@@ -4153,12 +4221,12 @@
             return;
           }
           ws.send(JSON.stringify({ type: "AUTH", token: token, eventId: eventId }));
-          
+
           // Ping heartbeat every 5 minutes (300000 ms) to keep AWS API Gateway connection alive
           setInterval(() => {
-              if (ws && ws.readyState === WebSocket.OPEN) {
-                  ws.send(" "); // Empty string ping
-              }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(" "); // Empty string ping
+            }
           }, 300000);
         } catch (e) {
           console.error("WebSocket auth failed:", e);
@@ -4188,7 +4256,7 @@
       ws.onclose = () => {
         ws = null;
         wsAuthenticated = false;
-        setTimeout(() => setupWebSocket().catch(() => {}), 5000);
+        setTimeout(() => setupWebSocket().catch(() => { }), 5000);
       };
     }
 
@@ -4434,8 +4502,13 @@
     // ── Donations ──
     function renderDonations(q = "") {
       console.log(`[debug] renderDonations: q="${q}", activeInlineAddType=${activeInlineAddType}`);
+      const tblBody = document.getElementById("don-tbl-body");
+      if (tblBody && activeInlineAddType === "don" && tblBody.querySelector('.inline-entry-row')) {
+        console.log("[debug] renderDonations: inline add active. Skipping full rebuild to preserve input focus.");
+        return;
+      }
       const q2 = q.trim().toLowerCase();
-      
+
       // Combined Pinned List (Local only)
       const storageKey = `np_pinned_${eventId}_don`;
       const pD = JSON.parse(localStorage.getItem(storageKey) || "[]").map(id => String(id));
@@ -4446,11 +4519,11 @@
         const bid = String(b.id || b._id);
         const ap = pD.indexOf(aid);
         const bp = pD.indexOf(bid);
-        
+
         if (ap !== -1 && bp !== -1) return ap - bp;
         if (ap !== -1) return -1;
         if (bp !== -1) return 1;
-        
+
         return new Date(a.collected_at) - new Date(b.collected_at);
       });
       const filtered = q2 ? sorted.filter(d => d.donor_name.toLowerCase().includes(q2)) : sorted;
@@ -4458,7 +4531,7 @@
       document.getElementById("don-count").textContent = `${filtered.length} donor${filtered.length !== 1 ? "s" : ""}`;
       document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
 
-      const tblBody = document.getElementById("don-tbl-body");
+      if (!tblBody) return;
       tblBody.innerHTML = "";
       const customCols = eventData.donation_custom_columns || [];
 
@@ -4554,19 +4627,24 @@
       // Auto-trigger active inline entry/edit states
       console.log(`[debug] renderDonations end check: activeInlineAddType=${activeInlineAddType}`);
       if (activeInlineAddType === "don") {
-          renderInlineEntryForm("don", false);
+        renderInlineEntryForm("don", false);
       } else if (activeInlineEditType === "don" && activeInlineEditId) {
-          const entry = donations.find(x => String(x.id || x._id) === activeInlineEditId);
-          const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
-          if (entry && origRow) {
-              renderInlineEditForm("don", entry, origRow);
-          }
+        const entry = donations.find(x => String(x.id || x._id) === activeInlineEditId);
+        const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
+        if (entry && origRow) {
+          renderInlineEditForm("don", entry, origRow);
+        }
       }
     }
 
     // ── Expenses ──
     function renderExpenses(q = "") {
       console.log(`[debug] renderExpenses: q="${q}", activeInlineAddType=${activeInlineAddType}`);
+      const tblBody = document.getElementById("exp-tbl-body");
+      if (tblBody && activeInlineAddType === "exp" && tblBody.querySelector('.inline-entry-row')) {
+        console.log("[debug] renderExpenses: inline add active. Skipping full rebuild to preserve input focus.");
+        return;
+      }
       const q2 = q.trim().toLowerCase();
 
       const storageKey = `np_pinned_${eventId}_exp`;
@@ -4577,11 +4655,11 @@
         const bid = String(b.id || b._id);
         const ap = pE.indexOf(aid);
         const bp = pE.indexOf(bid);
-        
+
         if (ap !== -1 && bp !== -1) return ap - bp;
         if (ap !== -1) return -1;
         if (bp !== -1) return 1;
-        
+
         return new Date(a.collected_at) - new Date(b.collected_at);
       });
       const filtered = q2 ? sorted.filter(e => e.description.toLowerCase().includes(q2)) : sorted;
@@ -4589,7 +4667,7 @@
       document.getElementById("exp-count").textContent = `${filtered.length} expense${filtered.length !== 1 ? "s" : ""}`;
       document.getElementById("exp-total").innerHTML = `Total: <span class="sum-r">${formatINR(total)}</span>`;
 
-      const tblBody = document.getElementById("exp-tbl-body");
+      if (!tblBody) return;
       tblBody.innerHTML = "";
       const customCols = eventData.expense_custom_columns || [];
 
@@ -4685,13 +4763,13 @@
       // Auto-trigger active inline entry/edit states
       console.log(`[debug] renderExpenses end check: activeInlineAddType=${activeInlineAddType}`);
       if (activeInlineAddType === "exp") {
-          renderInlineEntryForm("exp", false);
+        renderInlineEntryForm("exp", false);
       } else if (activeInlineEditType === "exp" && activeInlineEditId) {
-          const entry = expenses.find(x => String(x.id || x._id) === activeInlineEditId);
-          const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
-          if (entry && origRow) {
-              renderInlineEditForm("exp", entry, origRow);
-          }
+        const entry = expenses.find(x => String(x.id || x._id) === activeInlineEditId);
+        const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
+        if (entry && origRow) {
+          renderInlineEditForm("exp", entry, origRow);
+        }
       }
     }
 
@@ -4895,22 +4973,22 @@
     let activeInlineAddType = null;
     let activeInlineEditType = null;
     let activeInlineEditId = null;
-    
+
     function restoreNewRowBtn(tblBody, type) {
       try {
-          const nr = tblBody.querySelector('.new-row');
-          if (nr) {
-              nr.onclick = () => openEntryForm(type);
-              nr.style.cursor = "pointer";
-              nr.style.background = "var(--row-new)";
-              nr.style.border = "none";
-              nr.style.width = "max-content";
-              nr.style.minWidth = "100%";
-              nr.style.minHeight = "46px";
-              nr.innerHTML = `<span style="position:sticky; left:14px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); font-family:'Nunito',sans-serif; display:flex; align-items:center; height:100%;"><span style="margin-right:8px; font-size:18px; font-weight:900;">+</span> New entry</span>`;
-          }
+        const nr = tblBody.querySelector('.new-row');
+        if (nr) {
+          nr.onclick = () => openEntryForm(type);
+          nr.style.cursor = "pointer";
+          nr.style.background = "var(--row-new)";
+          nr.style.border = "none";
+          nr.style.width = "max-content";
+          nr.style.minWidth = "100%";
+          nr.style.minHeight = "46px";
+          nr.innerHTML = `<span style="position:sticky; left:14px; white-space:nowrap; z-index:10; font-weight:800; color:var(--teal); font-family:'Nunito',sans-serif; display:flex; align-items:center; height:100%;"><span style="margin-right:8px; font-size:18px; font-weight:900;">+</span> New entry</span>`;
+        }
       } catch (e) {
-          console.error("Error in restoreNewRowBtn:", e);
+        console.error("Error in restoreNewRowBtn:", e);
       }
     }
 
@@ -4921,32 +4999,32 @@
       const isDon = type === 'don';
       let tblBody;
       if (activeTheaterTab) {
-          const rotContainer = document.getElementById('rot-ov-body');
-          if (!rotContainer) return;
-          tblBody = rotContainer.querySelector('.tbl-body-rows');
-          if (!tblBody) return; // fail gracefully if table isn't fully rendered
+        const rotContainer = document.getElementById('rot-ov-body');
+        if (!rotContainer) return;
+        tblBody = rotContainer.querySelector('.tbl-body-rows');
+        if (!tblBody) return; // fail gracefully if table isn't fully rendered
       } else {
-          tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
+        tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
       }
       if (!tblBody) return;
 
       // Hide empty state overlay when editing/adding inline
       const scrollList = tblBody.closest('.scroll-list');
       if (scrollList) {
-          scrollList.classList.remove('is-empty');
-          const emptyMsg = scrollList.querySelector(isDon ? '#don-empty-msg' : '#exp-empty-msg');
-          if (emptyMsg) emptyMsg.style.display = 'none';
+        scrollList.classList.remove('is-empty');
+        const emptyMsg = scrollList.querySelector(isDon ? '#don-empty-msg' : '#exp-empty-msg');
+        if (emptyMsg) emptyMsg.style.display = 'none';
       }
 
       // Prevent duplicate inline forms
       if (tblBody.querySelector('.inline-entry-row')) {
-          const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
-          if (existingInput) existingInput.focus();
-          return;
+        const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
+        if (existingInput) existingInput.focus();
+        return;
       }
 
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
-      
+
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
@@ -4980,44 +5058,44 @@
       });
 
       tr.innerHTML = html;
-      
+
       const newRowBtn = tblBody.querySelector('.new-row');
       if (newRowBtn) {
-          tblBody.insertBefore(tr, newRowBtn);
-          
-          // Inject actions into the existing newRowBtn!
-          newRowBtn.onclick = null;
-          newRowBtn.style.cursor = "default";
-          newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+        tblBody.insertBefore(tr, newRowBtn);
+
+        // Inject actions into the existing newRowBtn!
+        newRowBtn.onclick = null;
+        newRowBtn.style.cursor = "default";
+        newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
               <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEntry(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
               <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEntry('${type}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
           </span>`;
       } else {
-          tblBody.appendChild(tr);
+        tblBody.appendChild(tr);
       }
 
       // Bind keydown events for Enter key continuous submission
       tr.querySelectorAll('input').forEach(inp => {
-          inp.addEventListener('keydown', function(e) {
-              if (e.key === 'Enter') {
-                  e.preventDefault();
-                  if (newRowBtn) {
-                      const saveBtn = newRowBtn.querySelector('.btn-solid-primary');
-                      if (saveBtn) {
-                          e.stopPropagation();
-                          submitInlineEntry(type, saveBtn);
-                      }
-                  }
+        inp.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (newRowBtn) {
+              const saveBtn = newRowBtn.querySelector('.btn-solid-primary');
+              if (saveBtn) {
+                e.stopPropagation();
+                submitInlineEntry(type, saveBtn);
               }
-          });
+            }
+          }
+        });
       });
 
       setTimeout(() => {
-          if (scroll) {
-              tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-          const input = tr.querySelector('.inl-name-input');
-          if (input) input.focus();
+        if (scroll) {
+          tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        const input = tr.querySelector('.inl-name-input');
+        if (input) input.focus();
       }, 50);
     }
 
@@ -5027,13 +5105,16 @@
       const tblBody = nr.parentElement;
       const row = tblBody.querySelector('.inline-entry-row');
       if (!row) return;
-      const name = row.querySelector('.inl-name-input').value.trim();
-      const amt = row.querySelector('.inl-amt-input').value;
+
+      const nameInput = row.querySelector('.inl-name-input');
+      const amtInput = row.querySelector('.inl-amt-input');
+      const name = nameInput.value.trim();
+      const amt = amtInput.value;
       const isDon = type === 'don';
-      
+
       if (!name) {
-          row.querySelector('.inl-name-input').style.borderColor = 'var(--red)';
-          return;
+        nameInput.style.borderColor = 'var(--red)';
+        return;
       }
 
       // Duplicate Check
@@ -5050,31 +5131,108 @@
           return;
         }
       }
-      
+
       const customInputs = row.querySelectorAll('.inl-custom');
       const customFields = {};
       customInputs.forEach(inp => {
-          if (inp.value.trim()) {
-              customFields[inp.getAttribute('data-col')] = inp.value.trim();
-          }
+        if (inp.value.trim()) {
+          customFields[inp.getAttribute('data-col')] = inp.value.trim();
+        }
       });
 
       btn.disabled = true;
       btn.textContent = 'Saving...';
-      
+
       try {
-          if (isDon) {
-              await addDonation(eventId, name, amt ? parseFloat(amt) : null, customFields);
-          } else {
-              await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
+        let newEntry;
+        if (isDon) {
+          newEntry = await addDonation(eventId, name, amt ? parseFloat(amt) : null, customFields);
+          donations.push(newEntry);
+
+          // Silent Update Totals & Counts
+          const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
+          document.getElementById("don-count").textContent = `${donations.length} donor${donations.length !== 1 ? "s" : ""}`;
+          document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
+        } else {
+          newEntry = await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
+          expenses.push(newEntry);
+
+          // Silent Update Totals & Counts
+          const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+          document.getElementById("exp-count").textContent = `${expenses.length} expense${expenses.length !== 1 ? "s" : ""}`;
+          document.getElementById("exp-total").innerHTML = `Total: <span class="sum-r">${formatINR(total)}</span>`;
+        }
+
+        // 1. Build and insert the new read-only row immediately above the input form row!
+        const newRowDom = document.createElement("div");
+        newRowDom.className = "tr" + ((isDon ? donations.length : expenses.length) % 2 ? " alt" : "");
+        newRowDom.setAttribute('data-id', newEntry.id || newEntry._id);
+
+        const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
+        const customCells = customCols.map(col => {
+          const colName = typeof col === "string" ? col : col.n;
+          const colWidth = typeof col === "string" ? 180 : (col.w || 180);
+          const val = (newEntry.custom_fields && newEntry.custom_fields[colName]) || "";
+          return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
+        }).join("");
+
+        newRowDom.innerHTML = `
+            <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
+              <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"></div>
+              <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(isDon ? newEntry.donor_name : newEntry.description)}</div>
+            </div>
+            <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px;"><span class="${isDon ? 'cg' : 'cr'}">${newEntry.amount ? formatINR(newEntry.amount) : '<span class="cm">—</span>'}</span></div>
+            <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px;font-size:11px;">${formatDate(newEntry.collected_at)}</div>
+            <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px;font-size:11px;" title="${escHtml(newEntry.collected_by_name || "—")}">${escHtml(newEntry.collected_by_name || "—")}</div>
+            ${customCells}
+          `;
+        newRowDom.addEventListener("contextmenu", ev => { ev.preventDefault(); openCtx(ev, type, newEntry); });
+        newRowDom.addEventListener("dblclick", ev => { openCtx(ev, type, newEntry); });
+
+        let lastTap = 0;
+        newRowDom.addEventListener("touchend", ev => {
+          const now = Date.now();
+          if (now - lastTap < 300) {
+            ev.preventDefault();
+            const t = ev.changedTouches[0];
+            openCtx({ clientX: t.clientX, clientY: t.clientY }, type, newEntry);
           }
-          console.log(`[debug] submitInlineEntry API success. activeInlineAddType=${activeInlineAddType}`);
-          await loadAll(true, true);
-          console.log(`[debug] submitInlineEntry loadAll finished. activeInlineAddType=${activeInlineAddType}`);
+          lastTap = now;
+        });
+
+        // Insert directly above the input form row!
+        tblBody.insertBefore(newRowDom, row);
+
+        // 2. Clear inputs in the active row to prepare for next consecutive add
+        nameInput.value = "";
+        amtInput.value = "";
+        customInputs.forEach(inp => inp.value = "");
+
+        // 3. Re-enable Save button
+        btn.disabled = false;
+        btn.textContent = 'Save';
+
+        // 4. Force focus retention on name input to keep virtual keyboard active!
+        nameInput.focus();
+
+        // 5. Invalidate caches and silently sync in background
+        summaryData = null;
+        updateTheaterStats();
+
+        apiFetch("GET", `/events/${eventId}/full-details`).then(res => {
+          if (res) {
+            sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
+            donations = res.donations;
+            expenses = res.expenses;
+            summaryData = res.summary;
+            members = res.members || [];
+          }
+        }).catch(err => console.warn("Silent sync failed", err));
+
       } catch (e) {
-          alert("Error saving: " + e.message);
-          btn.disabled = false;
-          btn.textContent = 'Save';
+        alert("Error saving: " + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Save';
       }
     }
 
@@ -5084,20 +5242,20 @@
       const isDon = type === 'don';
       let tblBody;
       if (activeTheaterTab) {
-          const rotContainer = document.getElementById('rot-ov-body');
-          if (!rotContainer) return;
-          tblBody = rotContainer.querySelector('.tbl-body-rows');
+        const rotContainer = document.getElementById('rot-ov-body');
+        if (!rotContainer) return;
+        tblBody = rotContainer.querySelector('.tbl-body-rows');
       } else {
-          tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
+        tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
       }
       if (tblBody && tblBody.querySelector('.inline-entry-row')) {
-          const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
-          if (existingInput) existingInput.focus();
-          return;
+        const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
+        if (existingInput) existingInput.focus();
+        return;
       }
 
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
-      
+
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
@@ -5135,77 +5293,77 @@
       });
 
       tr.innerHTML = html;
-      
+
       origRow.style.display = 'none';
       tr._origRow = origRow;
       const newRowBtn = tblBody.querySelector('.new-row');
       if (newRowBtn) {
-          tblBody.insertBefore(tr, newRowBtn);
-          
-          // Inject actions into newRowBtn!
-          newRowBtn.onclick = null;
-          newRowBtn.style.cursor = "default";
-          newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+        tblBody.insertBefore(tr, newRowBtn);
+
+        // Inject actions into newRowBtn!
+        newRowBtn.onclick = null;
+        newRowBtn.style.cursor = "default";
+        newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
               <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEdit(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
               <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEdit('${type}', '${d.id || d._id}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
           </span>`;
       } else {
-          tblBody.appendChild(tr);
+        tblBody.appendChild(tr);
       }
       setTimeout(() => {
-          tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          const input = tr.querySelector('.inl-name-input');
-          if (input) input.focus();
+        tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const input = tr.querySelector('.inl-name-input');
+        if (input) input.focus();
       }, 50);
     }
 
     function cancelInlineEdit(btn, type) {
       try {
-          const nr = btn.closest('.new-row');
-          if (nr) {
-              const tblBody = nr.parentElement;
-              const row = tblBody.querySelector('.inline-entry-row');
-              if (row) {
-                  if (row._origRow) {
-                      row._origRow.style.display = '';
-                  }
-                  row.remove();
-              }
-              restoreNewRowBtn(tblBody, type);
+        const nr = btn.closest('.new-row');
+        if (nr) {
+          const tblBody = nr.parentElement;
+          const row = tblBody.querySelector('.inline-entry-row');
+          if (row) {
+            if (row._origRow) {
+              row._origRow.style.display = '';
+            }
+            row.remove();
           }
-          activeInlineEditType = null;
-          activeInlineEditId = null;
+          restoreNewRowBtn(tblBody, type);
+        }
+        activeInlineEditType = null;
+        activeInlineEditId = null;
       } catch (e) {
-          console.error("Error in cancelInlineEdit:", e);
+        console.error("Error in cancelInlineEdit:", e);
       }
     }
 
     function cancelInlineEntry(btn, type) {
       try {
-          const nr = btn.closest('.new-row');
-          if (nr) {
-              const tblBody = nr.parentElement;
-              const row = tblBody.querySelector('.inline-entry-row');
-              if (row) {
-                  row.remove();
-              }
-              restoreNewRowBtn(tblBody, type);
-
-              // If the list is empty, restore empty state overlay
-              const isDon = type === 'don';
-              const items = isDon ? donations : expenses;
-              if (items.length === 0) {
-                  const scrollList = tblBody.closest('.scroll-list');
-                  if (scrollList) {
-                      scrollList.classList.add('is-empty');
-                      const emptyMsg = scrollList.querySelector(isDon ? '#don-empty-msg' : '#exp-empty-msg');
-                      if (emptyMsg) emptyMsg.style.display = 'block';
-                  }
-              }
+        const nr = btn.closest('.new-row');
+        if (nr) {
+          const tblBody = nr.parentElement;
+          const row = tblBody.querySelector('.inline-entry-row');
+          if (row) {
+            row.remove();
           }
-          activeInlineAddType = null;
+          restoreNewRowBtn(tblBody, type);
+
+          // If the list is empty, restore empty state overlay
+          const isDon = type === 'don';
+          const items = isDon ? donations : expenses;
+          if (items.length === 0) {
+            const scrollList = tblBody.closest('.scroll-list');
+            if (scrollList) {
+              scrollList.classList.add('is-empty');
+              const emptyMsg = scrollList.querySelector(isDon ? '#don-empty-msg' : '#exp-empty-msg');
+              if (emptyMsg) emptyMsg.style.display = 'block';
+            }
+          }
+        }
+        activeInlineAddType = null;
       } catch (e) {
-          console.error("Error in cancelInlineEntry:", e);
+        console.error("Error in cancelInlineEntry:", e);
       }
     }
 
@@ -5217,49 +5375,49 @@
       const name = row.querySelector('.inl-name-input').value.trim();
       const amt = row.querySelector('.inl-amt-input').value;
       const isDon = type === 'don';
-      
+
       if (!name) {
-          row.querySelector('.inl-name-input').style.borderColor = 'var(--red)';
-          return;
+        row.querySelector('.inl-name-input').style.borderColor = 'var(--red)';
+        return;
       }
 
-      // Duplicate Check
+      // Duplicate Check (excluding current entry)
       if (!skipDupCheck) {
         let existing = null;
         if (isDon) {
-          existing = donations.find(d => d.donor_name.toLowerCase() === name.toLowerCase() && String(d.id || d._id) !== String(id));
+          existing = donations.find(d => d.id !== editTarget.entry.id && d.donor_name.toLowerCase() === name.toLowerCase());
         } else {
-          existing = expenses.find(e => e.description.toLowerCase() === name.toLowerCase() && String(e.id || e._id) !== String(id));
+          existing = expenses.find(e => e.id !== editTarget.entry.id && e.description.toLowerCase() === name.toLowerCase());
         }
         if (existing) {
-          const existingName = isDon ? existing.donor_name : existing.description;
-          openDupPop(() => submitInlineEdit(type, id, btn, true), existingName, existing.amount, type);
+          const existingName = editTarget.type === "don" ? existing.donor_name : existing.description;
+          openDupPop(() => submitInlineEdit(type, id, btn, true), existingName, existing.amount, editTarget.type);
           return;
         }
       }
-      
+
       const customInputs = row.querySelectorAll('.inl-custom');
       const customFields = {};
       customInputs.forEach(inp => {
-          if (inp.value.trim()) {
-              customFields[inp.getAttribute('data-col')] = inp.value.trim();
-          }
+        if (inp.value.trim()) {
+          customFields[inp.getAttribute('data-col')] = inp.value.trim();
+        }
       });
 
       btn.disabled = true;
       btn.textContent = 'Saving...';
-      
+
       try {
-          if (isDon) {
-              await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
-          } else {
-              await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
-          }
-          await loadAll(true, true);
+        if (isDon) {
+          await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+        } else {
+          await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+        }
+        await loadAll(true, true);
       } catch (e) {
-          alert("Error saving: " + e.message);
-          btn.disabled = false;
-          btn.textContent = 'Save';
+        alert("Error saving: " + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Save';
       }
     }
 
@@ -5316,7 +5474,7 @@
         clearEventCache();
         updateTheaterStats();
         if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
-        
+
         if (keepOpen) {
           // Clear inputs and keep focused
           document.getElementById("ef-name").value = "";
@@ -5402,32 +5560,32 @@
 
       if (left + menuWidth > window.innerWidth) left = window.innerWidth - menuWidth - 10;
       if (top + menuHeight > window.innerHeight) top = e.clientY - menuHeight + 10;
-      
+
       ctx.style.left = left + "px";
       ctx.style.top = top + "px";
     }
     function closeCtx() { const ov = document.getElementById("ctx-ov"); if (ov) ov.remove(); }
 
     function openEditForm() {
-      const type = ctxType; 
+      const type = ctxType;
       const entry = ctxEntry;
-      
+
       let tblBody;
       if (activeTheaterTab) {
-          const rotContainer = document.getElementById('rot-ov-body');
-          if (rotContainer) {
-              tblBody = rotContainer.querySelector('.tbl-body-rows');
-          }
+        const rotContainer = document.getElementById('rot-ov-body');
+        if (rotContainer) {
+          tblBody = rotContainer.querySelector('.tbl-body-rows');
+        }
       } else {
-          tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+        tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
       }
-      
+
       if (!tblBody) return;
-      
+
       const rowId = String(entry.id || entry._id);
       const origRow = tblBody.querySelector(`.tr[data-id="${rowId}"]`);
       if (origRow) {
-          renderInlineEditForm(type, entry, origRow);
+        renderInlineEditForm(type, entry, origRow);
       }
       closeCtx();
     }
@@ -5545,7 +5703,7 @@
     function isPinned(type, id) {
       if (!id) return false;
       const sid = String(id);
-      
+
       // Pinning is now strictly local and user-independent
       const storageKey = `np_pinned_${eventId}_${type}`;
       const local = JSON.parse(localStorage.getItem(storageKey) || "[]");
@@ -5557,16 +5715,16 @@
       const sid = String(id);
       const storageKey = `np_pinned_${eventId}_${type}`;
       let pinned = JSON.parse(localStorage.getItem(storageKey) || "[]").map(x => String(x));
-      
+
       if (pinned.includes(sid)) {
         pinned = pinned.filter(x => x !== sid);
       } else {
         pinned.push(sid);
       }
-      
+
       // Save locally only
       localStorage.setItem(storageKey, JSON.stringify(pinned));
-      
+
       // Re-render views
       if (type === "don") renderDonations(); else renderExpenses();
       if (activeTheaterTab) refreshTheaterTable();
@@ -5616,7 +5774,7 @@
         tblSc.scrollTop = sY;
       }
       tblSc.scrollLeft = sX;
-      
+
       updateTheaterStats();
     }
     function openDD() { document.getElementById("dd-ov").style.display = "block"; }
@@ -5832,8 +5990,8 @@
 
     function openCodeSheet() { document.getElementById("sheet-code").textContent = eventData.invite_code || "—"; document.getElementById("code-sheet").style.display = "flex"; }
     function closeCodeSheet() { document.getElementById("code-sheet").style.display = "none"; }
-    function copyCode() { 
-      copyToClipboard(eventData.invite_code || "", "Code copied!"); 
+    function copyCode() {
+      copyToClipboard(eventData.invite_code || "", "Code copied!");
       const btn = document.getElementById("sheet-copy-btn");
       if (btn) {
         const originalHtml = btn.innerHTML;
@@ -6101,7 +6259,7 @@
       document.getElementById("custom-col-sheet").style.display = "flex";
     }
 
-    
+
     function getColWidth(key, defaultWidth) {
       return localStorage.getItem('np_col_' + key) || defaultWidth;
     }
@@ -6217,6 +6375,10 @@
     }
 
     function fillTableRows(container, type) {
+      if (container && activeInlineAddType === type && container.querySelector('.inline-entry-row')) {
+        console.log("[debug] fillTableRows: inline add active. Skipping full rebuild to preserve input focus.");
+        return;
+      }
       container.innerHTML = "";
       if (!eventData) return; // Safety check
       const isTheater = container.parentElement ? container.parentElement.classList.contains("is-theater-table") : true;
@@ -6279,14 +6441,14 @@
 
       // Auto-trigger active inline entry/edit states
       if (activeInlineAddType === type) {
-          renderInlineEntryForm(type, false);
+        renderInlineEntryForm(type, false);
       } else if (activeInlineEditType === type && activeInlineEditId) {
-          const arr = type === "don" ? donations : expenses;
-          const entry = arr.find(x => String(x.id || x._id) === activeInlineEditId);
-          const origRow = container.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
-          if (entry && origRow) {
-              renderInlineEditForm(type, entry, origRow);
-          }
+        const arr = type === "don" ? donations : expenses;
+        const entry = arr.find(x => String(x.id || x._id) === activeInlineEditId);
+        const origRow = container.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
+        if (entry && origRow) {
+          renderInlineEditForm(type, entry, origRow);
+        }
       }
     }
 
@@ -6432,10 +6594,10 @@
       const overlay = document.getElementById("rot-overlay");
       const main = document.getElementById("rot-main");
       const body = document.getElementById("rot-ov-body");
-      
+
       // Summary tab needs body-level scrolling; Tables have their own scroll areas.
       body.style.overflowY = (tab === "sum") ? "auto" : "hidden";
-      
+
       // Remove any previous touch handlers
       if (body._scrollHandler) {
         body.removeEventListener('touchmove', body._scrollHandler);
@@ -6496,7 +6658,7 @@
             tableContainer.appendChild(renderTable(tab, true));
           };
         }
-        
+
         theaterWrapper.appendChild(tableContainer);
         body.appendChild(theaterWrapper);
         content = theaterWrapper;
@@ -6530,7 +6692,7 @@
       try {
         if (fsEl.requestFullscreen) fsEl.requestFullscreen({ navigationUI: 'hide' });
         else if (fsEl.webkitRequestFullscreen) fsEl.webkitRequestFullscreen();
-      } catch(e) { /* Fullscreen not supported or denied — silent fail */ }
+      } catch (e) { /* Fullscreen not supported or denied — silent fail */ }
     }
 
     window.addEventListener("resize", refreshTheaterLayout);
@@ -6570,7 +6732,7 @@
           if (document.exitFullscreen) document.exitFullscreen();
           else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
         }
-      } catch(e) { /* silent fail */ }
+      } catch (e) { /* silent fail */ }
 
       const overlay = document.getElementById("rot-overlay");
       const main = document.getElementById("rot-main");
@@ -6835,10 +6997,13 @@
             <span onclick="openFullEmojiPickerCtx()"><span data-np-icon="plus" data-np-size="16"></span></span>
           </div>
           <div class="ctx-menu">
-            <div class="ctx-item" onclick="handleCtxReply()"><span data-np-icon="reply" data-np-size="16"></span> Reply</div>
-            <div class="ctx-item" onclick="handleCtxCopy()"><span data-np-icon="copy" data-np-size="16"></span> Copy</div>
+            <div class="ctx-item" onclick="handleCtxReply()"><span data-np-icon="reply" data-np-size="16"></span> Reply
+            </div>
+            <div class="ctx-item" onclick="handleCtxCopy()"><span data-np-icon="copy" data-np-size="16"></span> Copy
+            </div>
             <div class="ctx-item" id="ctx-delete-btn" style="display:none; color: #d32f2f;" onclick="handleCtxDelete()">
-              <span data-np-icon="trash" data-np-size="16" data-np-tone="red"></span> Delete</div>
+              <span data-np-icon="trash" data-np-size="16" data-np-tone="red"></span> Delete
+            </div>
           </div>
         </div>
       </div>
@@ -6860,7 +7025,8 @@
       </div>
       <div class="chat-messages" id="chat-messages">
         <div class="chat-empty" id="chat-empty">
-          <div class="chat-empty-icon"><span data-np-icon="message-square" data-np-size="44" style="opacity:0.2;"></span></div>
+          <div class="chat-empty-icon"><span data-np-icon="message-square" data-np-size="44"
+              style="opacity:0.2;"></span></div>
           <div class="chat-empty-text">No messages yet</div>
           <div class="chat-empty-sub">Start a conversation with your team</div>
         </div>
@@ -6876,7 +7042,7 @@
         <div class="chat-input-bar">
           <div class="chat-input-wrapper">
             <input class="chat-input" id="chat-input" type="text" placeholder="Type a message…" maxlength="500"
-              enterkeyhint="send" autocomplete="off"
+              enterkeyhint="send" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false"
               onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}"
               oninput="updateSendBtnVisibility()" />
           </div>
@@ -6886,7 +7052,7 @@
           <emoji-picker id="np-emoji-picker"></emoji-picker>
         </div>
       </div>
-      </div>
+    </div>
   </div>
 
   <script>
@@ -7067,7 +7233,7 @@
           chatOldestId = chatMessages[0].id;
         }
         chatHistoryLoaded = true;
-        
+
         // If chat is currently open, we MUST render the messages even if this is a background load
         // (to ensure newly arrived messages appear instantly if the user is already looking at the chat)
         if (!isBackground || chatOpen) {
@@ -7588,17 +7754,17 @@
         document.getElementById('member-profile-modal').style.display = 'flex';
 
         const contact = await getMemberContact(eventId, userId);
-        
+
         // Update with full data
         const finalName = contact.full_name || name;
         const phone = contact.phone_number || '';
         const roleLabel = getMemberRoleLabel(mem);
-        
+
         document.getElementById('mp-avatar').textContent = getInitials(finalName);
         document.getElementById('mp-name').textContent = finalName;
         document.getElementById('mp-role').innerHTML = roleLabel;
         document.getElementById('mp-phone').textContent = phone || 'No phone number on file';
-        
+
         const callBtn = document.getElementById('mp-call-btn');
         if (phone) {
           callBtn.href = `tel:${phone}`;
@@ -7665,7 +7831,8 @@
       <div class="mp-phone" id="mp-phone"></div>
       <a id="mp-call-btn" class="mp-call-btn" href="#">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <path fill="currentColor" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+          <path fill="currentColor"
+            d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
         </svg>
         Call
       </a>
@@ -7673,53 +7840,56 @@
     </div>
   </div>
 
-<!-- ═══ ENTRY FORM FIELD HEIGHT ENFORCER (last-in-cascade, always wins) ═══ -->
-<style>
-  /* This block is intentionally placed LAST so it wins over any cached CSS.
+  <!-- ═══ ENTRY FORM FIELD HEIGHT ENFORCER (last-in-cascade, always wins) ═══ -->
+  <style>
+    /* This block is intentionally placed LAST so it wins over any cached CSS.
      ef-input capsules must be the same height as the Save & Next button. */
-  html body .ef-input {
-    height: 44px !important;
-    min-height: 44px !important;
-    max-height: 44px !important;
-    padding: 0 16px !important;
-    box-sizing: border-box !important;
-    border-radius: 30px !important;
-  }
-  html body .sbox-footer .btn {
-    height: 44px !important;
-    min-height: 44px !important;
-  }
-  /* In landscape (max-height 520px) keep fields at 36px to conserve space */
-  @media (max-height: 520px) {
     html body .ef-input {
-      height: 36px !important;
-      min-height: 36px !important;
-      max-height: 36px !important;
+      height: 44px !important;
+      min-height: 44px !important;
+      max-height: 44px !important;
+      padding: 0 16px !important;
+      box-sizing: border-box !important;
+      border-radius: 30px !important;
     }
+
     html body .sbox-footer .btn {
-      height: 36px !important;
-      min-height: 36px !important;
+      height: 44px !important;
+      min-height: 44px !important;
     }
-  }
-</style>
-<script>
-  /* JS fallback: if CSS is still cached, force height via style attribute */
-  document.addEventListener('DOMContentLoaded', function() {
-    function enforceFieldHeight() {
-      var isLandscape = window.innerHeight < 520;
-      var h = isLandscape ? '36px' : '44px';
-      document.querySelectorAll('.ef-input').forEach(function(el) {
-        el.style.setProperty('height', h, 'important');
-        el.style.setProperty('min-height', h, 'important');
-        el.style.setProperty('max-height', h, 'important');
-      });
+
+    /* In landscape (max-height 520px) keep fields at 36px to conserve space */
+    @media (max-height: 520px) {
+      html body .ef-input {
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+      }
+
+      html body .sbox-footer .btn {
+        height: 36px !important;
+        min-height: 36px !important;
+      }
     }
-    enforceFieldHeight();
-    /* Re-run whenever a sheet opens (new fields may be injected dynamically) */
-    var observer = new MutationObserver(enforceFieldHeight);
-    observer.observe(document.body, { childList: true, subtree: true });
-  });
-</script>
+  </style>
+  <script>
+    /* JS fallback: if CSS is still cached, force height via style attribute */
+    document.addEventListener('DOMContentLoaded', function () {
+      function enforceFieldHeight() {
+        var isLandscape = window.innerHeight < 520;
+        var h = isLandscape ? '36px' : '44px';
+        document.querySelectorAll('.ef-input').forEach(function (el) {
+          el.style.setProperty('height', h, 'important');
+          el.style.setProperty('min-height', h, 'important');
+          el.style.setProperty('max-height', h, 'important');
+        });
+      }
+      enforceFieldHeight();
+      /* Re-run whenever a sheet opens (new fields may be injected dynamically) */
+      var observer = new MutationObserver(enforceFieldHeight);
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
 
 </body>
 
