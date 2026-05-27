@@ -3231,11 +3231,10 @@
     }
     /* Prevent iOS Safari from showing the Contacts/QuickType autofill toolbar
        by making the browser think these are internal/search fields */
-    /* Removed for theater-mode inline inputs because it causes mobile keyboard/autofill layout issues on Chrome.
-       Normal event page inputs already use the standard input styling without this hack. */
-    /* input.inline-input {
+    input.inline-input {
+      /* This specific combo suppresses autofill suggestion bar on iOS Safari */
       -webkit-user-modify: read-write-plaintext-only;
-    } */
+    }
   </style>
 </head>
 
@@ -5054,12 +5053,12 @@
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%; display:flex; align-items:center; height:100%;">
-              <input type="text" name="notepay_entry_val1" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor' : 'Description'}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text">
+              <input type="text" name="notepay_entry_val1" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor' : 'Description'}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" name="notepay_entry_val2" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal">
+            <input type="number" name="notepay_entry_val2" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">Auto</span>
@@ -5117,57 +5116,6 @@
         const input = tr.querySelector('.inl-name-input');
         if (input) input.focus();
       }, 50);
-    }
-
-    // Smooth row insertion without full table re-render (prevents page blink on save)
-    function insertNewRowSilently(tblBody, entry, type) {
-      const isDon = type === 'don';
-      const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
-      
-      // Build new row HTML
-      const newRowDom = document.createElement("div");
-      newRowDom.className = "tr" + ((isDon ? donations.length : expenses.length) % 2 ? " alt" : "");
-      newRowDom.setAttribute('data-id', entry.id || entry._id);
-      
-      const customCells = customCols.map(col => {
-        const colName = typeof col === "string" ? col : col.n;
-        const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-        const val = (entry.custom_fields && entry.custom_fields[colName]) || "";
-        return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
-      }).join("");
-      
-      newRowDom.innerHTML = `
-        <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
-          <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"></div>
-          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(isDon ? entry.donor_name : entry.description)}</div>
-        </div>
-        <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px;"><span class="${isDon ? 'cg' : 'cr'}">${entry.amount ? formatINR(entry.amount) : '<span class="cm">\u2014</span>'}</span></div>
-        <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px;font-size:11px;">${formatDate(entry.collected_at)}</div>
-        <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px;font-size:11px;" title="${escHtml(entry.collected_by_name || "—")}">${escHtml(entry.collected_by_name || "—")}</div>
-        ${customCells}
-      `;
-      
-      // Add event listeners
-      newRowDom.addEventListener("contextmenu", ev => { ev.preventDefault(); openCtx(ev, type, entry); });
-      newRowDom.addEventListener("dblclick", ev => { openCtx(ev, type, entry); });
-      let lastTap = 0;
-      newRowDom.addEventListener("touchend", ev => {
-        const now = Date.now();
-        if (now - lastTap < 300) {
-          ev.preventDefault();
-          const t = ev.changedTouches[0];
-          openCtx({ clientX: t.clientX, clientY: t.clientY }, type, entry);
-        }
-        lastTap = now;
-      });
-      
-      // Insert before the "new row" button at the end
-      const newRowBtn = tblBody.querySelector('.new-row');
-      if (newRowBtn) {
-        tblBody.insertBefore(newRowDom, newRowBtn);
-      } else {
-        tblBody.appendChild(newRowDom);
-      }
     }
 
     async function submitInlineEntry(type, btn, skipDupCheck = false) {
@@ -5346,12 +5294,12 @@
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%; display:flex; align-items:center; height:100%;">
-              <input type="text" name="notepay_edit_val1" class="inline-input inl-name-input" value="${nm}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text">
+              <input type="text" name="notepay_edit_val1" class="inline-input inl-name-input" value="${nm}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" name="notepay_edit_val2" class="inline-input inl-amt-input" value="${am}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal">
+            <input type="number" name="notepay_edit_val2" class="inline-input inl-amt-input" value="${am}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">${formatDate(d.collected_at)}</span>
@@ -5580,30 +5528,19 @@
 
       btn.disabled = true; btn.textContent = "Saving…";
       try {
-        let newEntry;
         if (entryType === "don") {
-          newEntry = await addDonation(eventId, name, amount || null, customFields);
-          donations.push(newEntry);
-          // Smooth update: insert new row without full re-render
-          const tblBody = document.getElementById('don-tbl-body');
-          if (tblBody) insertNewRowSilently(tblBody, newEntry, 'don');
-          const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
-          document.getElementById("don-count").textContent = `${donations.length} donor${donations.length !== 1 ? "s" : ""}`;
-          document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
+          const d = await addDonation(eventId, name, amount || null, customFields);
+          donations.push(d);
+          renderDonations();
         } else {
-          newEntry = await addExpense(eventId, name, amount || null, customFields);
-          expenses.push(newEntry);
-          // Smooth update: insert new row without full re-render
-          const tblBody = document.getElementById('exp-tbl-body');
-          if (tblBody) insertNewRowSilently(tblBody, newEntry, 'exp');
-          const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
-          document.getElementById("exp-count").textContent = `${expenses.length} expense${expenses.length !== 1 ? "s" : ""}`;
-          document.getElementById("exp-total").innerHTML = `Total: <span class="sum-r">${formatINR(total)}</span>`;
+          const e = await addExpense(eventId, name, amount || null, customFields);
+          expenses.push(e);
+          renderExpenses();
         }
         summaryData = null; // Invalidate cache
         clearEventCache();
         updateTheaterStats();
-        if (activeTheaterTab === 'sum') switchTheaterTab(activeTheaterTab, true);
+        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
 
         if (keepOpen) {
           // Clear inputs and keep focused
