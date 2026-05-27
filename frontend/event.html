@@ -3218,6 +3218,24 @@
       }
     }
   </style>
+  <style>
+    /* ── Kill browser autofill yellow bg & overlay on ALL inputs ── */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px var(--input-bg, #fff) inset !important;
+      box-shadow: 0 0 0 1000px var(--input-bg, #fff) inset !important;
+      -webkit-text-fill-color: var(--text, #000) !important;
+      transition: background-color 9999s ease-in-out 0s;
+    }
+    /* Prevent iOS Safari from showing the Contacts/QuickType autofill toolbar
+       by making the browser think these are internal/search fields */
+    input.inline-input {
+      /* This specific combo suppresses autofill suggestion bar on iOS Safari */
+      -webkit-user-modify: read-write-plaintext-only;
+    }
+  </style>
 </head>
 
 <body>
@@ -5068,26 +5086,21 @@
         newRowBtn.onclick = null;
         newRowBtn.style.cursor = "default";
         newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
-              <button class="btn btn-text-secondary inl-cancel-btn" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
-              <button class="btn btn-solid-primary inl-save-btn" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); window._inlEntryCancelFn && window._inlEntryCancelFn()" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); window._inlEntrySaveFn && window._inlEntrySaveFn()" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
           </span>`;
 
-        // Attach touch+click handlers properly so keyboard stays open
-        const saveBtn = newRowBtn.querySelector('.inl-save-btn');
-        const cancelBtn = newRowBtn.querySelector('.inl-cancel-btn');
-
-        function handleSave(e) {
-          e.preventDefault(); e.stopPropagation();
-          submitInlineEntry(type, saveBtn);
-        }
-        function handleCancel(e) {
-          e.preventDefault(); e.stopPropagation();
-          cancelInlineEntry(saveBtn, type);
-        }
-        saveBtn.addEventListener('touchend', handleSave, { passive: false });
-        saveBtn.addEventListener('click', function(e) { e.stopPropagation(); submitInlineEntry(type, saveBtn); });
-        cancelBtn.addEventListener('touchend', handleCancel, { passive: false });
-        cancelBtn.addEventListener('click', function(e) { e.stopPropagation(); cancelInlineEntry(saveBtn, type); });
+        // Store closures as global window functions so they survive any DOM rebuild
+        window._inlEntrySaveFn = function() {
+          const nr2 = tblBody.querySelector('.new-row');
+          const sb = nr2 ? nr2.querySelector('.btn-solid-primary') : null;
+          submitInlineEntry(type, sb || newRowBtn);
+        };
+        window._inlEntryCancelFn = function() {
+          const nr2 = tblBody.querySelector('.new-row');
+          const sb = nr2 ? nr2.querySelector('.btn-solid-primary') : null;
+          cancelInlineEntry(sb || newRowBtn, type);
+        };
       } else {
         tblBody.appendChild(tr);
       }
@@ -5292,7 +5305,7 @@
       let html = `
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
-            <div style="position:relative; width:100%; display:flex; align-items:center;">
+            <div style="position:relative; width:100%; display:flex; align-items:center; height:100%;">
               <input type="text" class="inline-input inl-name-input" value="${nm}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
@@ -5329,31 +5342,23 @@
         newRowBtn.onclick = null;
         newRowBtn.style.cursor = "default";
         newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
-              <button class="btn btn-text-secondary inl-edit-cancel-btn" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
-              <button class="btn btn-solid-primary inl-edit-save-btn" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); window._inlEditCancelFn && window._inlEditCancelFn()" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); window._inlEditSaveFn && window._inlEditSaveFn()" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
           </span>`;
 
-        // Use touchend+click so mobile keyboard stays open on tap
-        const editSaveBtn = newRowBtn.querySelector('.inl-edit-save-btn');
-        const editCancelBtn = newRowBtn.querySelector('.inl-edit-cancel-btn');
-        const entryId = String(d.id || d._id);
-
-        editSaveBtn.addEventListener('touchend', function(e) {
-          e.preventDefault(); e.stopPropagation();
-          submitInlineEdit(type, entryId, editSaveBtn);
-        }, { passive: false });
-        editSaveBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          submitInlineEdit(type, entryId, editSaveBtn);
-        });
-        editCancelBtn.addEventListener('touchend', function(e) {
-          e.preventDefault(); e.stopPropagation();
-          cancelInlineEdit(editCancelBtn, type);
-        }, { passive: false });
-        editCancelBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          cancelInlineEdit(editCancelBtn, type);
-        });
+        // Store as globals — these survive table re-renders since they use closures over tblBody
+        const capturedType = type;
+        const capturedId = String(d.id || d._id);
+        window._inlEditSaveFn = function() {
+          const nr2 = tblBody.querySelector('.new-row');
+          const sb = nr2 ? nr2.querySelector('.btn-solid-primary') : null;
+          if (sb) submitInlineEdit(capturedType, capturedId, sb);
+        };
+        window._inlEditCancelFn = function() {
+          const nr2 = tblBody.querySelector('.new-row');
+          const cb = nr2 ? nr2.querySelector('.btn-text-secondary') : null;
+          if (cb) cancelInlineEdit(cb, capturedType);
+        };
       } else {
         tblBody.appendChild(tr);
       }
