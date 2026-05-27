@@ -3239,6 +3239,11 @@
 </head>
 
 <body>
+  <!-- Hidden honeypot form: tells browser autocomplete is disabled for the entire page -->
+  <form id="__ac_trap" autocomplete="off" style="display:none;" onsubmit="return false;" aria-hidden="true">
+    <input type="text" name="__trap_name" tabindex="-1" autocomplete="off">
+    <input type="password" name="__trap_pw" tabindex="-1" autocomplete="off">
+  </form>
   <div class="page" id="main-page">
     <div class="app-bar">
       <div class="back" onclick="window.location.href='dashboard.html'"><span data-np-icon="arrow-left"
@@ -5086,21 +5091,9 @@
         newRowBtn.onclick = null;
         newRowBtn.style.cursor = "default";
         newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
-              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); window._inlEntryCancelFn && window._inlEntryCancelFn()" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
-              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); window._inlEntrySaveFn && window._inlEntrySaveFn()" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEntry(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEntry('${type}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
           </span>`;
-
-        // Store closures as global window functions so they survive any DOM rebuild
-        window._inlEntrySaveFn = function() {
-          const nr2 = tblBody.querySelector('.new-row');
-          const sb = nr2 ? nr2.querySelector('.btn-solid-primary') : null;
-          submitInlineEntry(type, sb || newRowBtn);
-        };
-        window._inlEntryCancelFn = function() {
-          const nr2 = tblBody.querySelector('.new-row');
-          const sb = nr2 ? nr2.querySelector('.btn-solid-primary') : null;
-          cancelInlineEntry(sb || newRowBtn, type);
-        };
       } else {
         tblBody.appendChild(tr);
       }
@@ -5342,23 +5335,9 @@
         newRowBtn.onclick = null;
         newRowBtn.style.cursor = "default";
         newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
-              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); window._inlEditCancelFn && window._inlEditCancelFn()" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
-              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); window._inlEditSaveFn && window._inlEditSaveFn()" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEdit(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEdit('${type}', '${String(d.id || d._id)}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
           </span>`;
-
-        // Store as globals — these survive table re-renders since they use closures over tblBody
-        const capturedType = type;
-        const capturedId = String(d.id || d._id);
-        window._inlEditSaveFn = function() {
-          const nr2 = tblBody.querySelector('.new-row');
-          const sb = nr2 ? nr2.querySelector('.btn-solid-primary') : null;
-          if (sb) submitInlineEdit(capturedType, capturedId, sb);
-        };
-        window._inlEditCancelFn = function() {
-          const nr2 = tblBody.querySelector('.new-row');
-          const cb = nr2 ? nr2.querySelector('.btn-text-secondary') : null;
-          if (cb) cancelInlineEdit(cb, capturedType);
-        };
       } else {
         tblBody.appendChild(tr);
       }
@@ -5371,14 +5350,25 @@
 
     function cancelInlineEdit(btn, type) {
       try {
-        const nr = btn.closest('.new-row');
-        if (nr) {
-          const tblBody = nr.parentElement;
+        // Find tblBody from btn OR from activeInlineEditType (robust fallback)
+        let tblBody = null;
+        if (btn) {
+          const nr = btn.closest('.new-row');
+          if (nr) tblBody = nr.parentElement;
+        }
+        if (!tblBody) {
+          // Fallback: find by type
+          if (activeTheaterTab) {
+            const rc = document.getElementById('rot-ov-body');
+            tblBody = rc ? rc.querySelector('.tbl-body-rows') : null;
+          } else {
+            tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+          }
+        }
+        if (tblBody) {
           const row = tblBody.querySelector('.inline-entry-row');
           if (row) {
-            if (row._origRow) {
-              row._origRow.style.display = '';
-            }
+            if (row._origRow) row._origRow.style.display = '';
             row.remove();
           }
           restoreNewRowBtn(tblBody, type);
@@ -5392,16 +5382,25 @@
 
     function cancelInlineEntry(btn, type) {
       try {
-        const nr = btn.closest('.new-row');
-        if (nr) {
-          const tblBody = nr.parentElement;
-          const row = tblBody.querySelector('.inline-entry-row');
-          if (row) {
-            row.remove();
+        // Find tblBody robustly from btn OR from type
+        let tblBody = null;
+        if (btn) {
+          const nr = btn.closest('.new-row');
+          if (nr) tblBody = nr.parentElement;
+        }
+        if (!tblBody) {
+          if (activeTheaterTab) {
+            const rc = document.getElementById('rot-ov-body');
+            tblBody = rc ? rc.querySelector('.tbl-body-rows') : null;
+          } else {
+            tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
           }
+        }
+        if (tblBody) {
+          const row = tblBody.querySelector('.inline-entry-row');
+          if (row) row.remove();
           restoreNewRowBtn(tblBody, type);
 
-          // If the list is empty, restore empty state overlay
           const isDon = type === 'don';
           const items = isDon ? donations : expenses;
           if (items.length === 0) {
@@ -5420,8 +5419,22 @@
     }
 
     async function submitInlineEdit(type, id, btn, skipDupCheck = false) {
-      const nr = btn.closest('.new-row');
-      const tblBody = nr.parentElement;
+      // Find tblBody robustly — do NOT rely on btn.closest() which breaks with detached nodes
+      let tblBody = null;
+      if (btn) {
+        const nr = btn.closest('.new-row');
+        if (nr) tblBody = nr.parentElement;
+      }
+      if (!tblBody) {
+        if (activeTheaterTab) {
+          const rc = document.getElementById('rot-ov-body');
+          tblBody = rc ? rc.querySelector('.tbl-body-rows') : null;
+        } else {
+          tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+        }
+      }
+      if (!tblBody) return;
+
       const row = tblBody.querySelector('.inline-entry-row');
       if (!row) return;
       const name = row.querySelector('.inl-name-input').value.trim();
@@ -5456,8 +5469,7 @@
         }
       });
 
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
       try {
         if (isDon) {
@@ -5465,11 +5477,13 @@
         } else {
           await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
         }
+        // Clear edit state BEFORE loadAll so table doesn't re-open the edit form
+        activeInlineEditType = null;
+        activeInlineEditId = null;
         await loadAll(true, true);
       } catch (e) {
         alert("Error saving: " + e.message);
-        btn.disabled = false;
-        btn.textContent = 'Save';
+        if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
       }
     }
 
