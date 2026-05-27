@@ -54,6 +54,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.post("/api/debug/log")
+async def debug_log(request: Request):
+    try:
+        data = await request.json()
+        msg = data.get("message", "")
+        with open("debug_js.log", "a", encoding="utf-8") as f:
+            f.write(msg + "\n")
+        print(f"[debug_js.log] {msg}")
+    except Exception as e:
+        print(f"Error logging: {e}")
+    return {"status": "ok"}
+
 #  WEBSOCKET MANAGER 
 class ConnectionManager:
     def __init__(self):

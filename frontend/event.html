@@ -301,6 +301,8 @@
       border-radius: 10px;
       display: block;
       -webkit-overflow-scrolling: touch;
+      scroll-padding-top: 38px;
+      scroll-padding-bottom: 38px;
     }
 
     .tbl-sc::-webkit-scrollbar {
@@ -452,6 +454,44 @@
       font-size: 11px;
     }
 
+    .inline-entry-row {
+      align-items: center !important;
+      min-height: 34px !important;
+      scroll-margin-top: 38px;
+      scroll-margin-bottom: 38px;
+    }
+
+    .inline-entry-row .fc,
+    .inline-entry-row .sc {
+      min-height: 34px !important;
+      height: 34px !important;
+      align-items: center !important;
+      display: flex !important;
+    }
+
+    #rot-main.is-theater .inline-entry-row {
+      min-height: 34px !important;
+      height: 34px !important;
+    }
+
+    #rot-main.is-theater .inline-entry-row .fc,
+    #rot-main.is-theater .inline-entry-row .sc {
+      min-height: 34px !important;
+      height: 34px !important;
+      align-items: center !important;
+      display: flex !important;
+      padding: 2px 4px !important;
+    }
+
+    .inline-input {
+      box-sizing: border-box !important;
+      height: 28px !important;
+      padding: 4px 8px !important;
+      font-size: 13px !important;
+      display: inline-block !important;
+      vertical-align: middle !important;
+    }
+
     .new-row {
       display: flex;
       align-items: center;
@@ -511,6 +551,13 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       touch-action: pan-x pan-y;
+      scroll-padding-top: 24px;
+      scroll-padding-bottom: 24px;
+    }
+
+    #rot-main.is-theater .tbl-sc {
+      scroll-padding-top: 24px;
+      scroll-padding-bottom: 24px;
     }
 
     /* Landscape phone: ultra-compact chrome + rows — maximize visible entries */
@@ -586,9 +633,6 @@
       #rot-main.is-theater .fc.sticky-col,
       #rot-main.is-theater .th.sticky-col {
         min-height: 20px;
-      }
-
-      #rot-main.is-theater .sc {
       }
 
       #rot-main.is-theater #theater-search {
@@ -3857,6 +3901,18 @@
   <script>
     // ── State ──
     const params = new URLSearchParams(location.search);
+    const origLog = console.log;
+    console.log = function(...args) {
+      origLog.apply(console, args);
+      const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+      if (msg.includes('[debug]')) {
+        fetch('http://localhost:8000/api/debug/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        }).catch(() => {});
+      }
+    };
     const eventId = params.get("id") || params.get("eventId");
     let eventData = null;
     let myUserId = null;
@@ -4118,7 +4174,7 @@
         }
         if (!wsAuthenticated) return;
         if (msg.type === "DATA_CHANGED") {
-          console.log("📢 Real-time update received. Forcing fresh fetch.");
+          console.log(`[debug] WS DATA_CHANGED received. activeInlineAddType=${activeInlineAddType}`);
           loadAll(true, true);
         }
         if (msg.type === "NEW_CHAT_MSG" && msg.data) {
@@ -4315,7 +4371,7 @@
 
         // Pick the correct default tab based on visibility
         const defaultTab = (currentTab && ((currentTab === 'don' && showDon) || (currentTab === 'exp' && showExp) || currentTab === 'sum')) ? currentTab : (showDon ? 'don' : (showExp ? 'exp' : 'sum'));
-        switchTab(defaultTab, false);
+        switchTab(defaultTab, false, true);
         if (activeTheaterTab) {
           // If the active theater tab was just hidden, switch to the first available
           const theaterTabValid = (activeTheaterTab === 'don' && showDon) || (activeTheaterTab === 'exp' && showExp) || activeTheaterTab === 'sum';
@@ -4349,10 +4405,13 @@
     }
 
     // ── Tab switching ──
-    function switchTab(tab, updateUrl = true) {
-      activeInlineAddType = null;
-      activeInlineEditType = null;
-      activeInlineEditId = null;
+    function switchTab(tab, updateUrl = true, preserveInline = false) {
+      console.log(`[debug] switchTab: tab=${tab}, updateUrl=${updateUrl}, preserveInline=${preserveInline}, activeInlineAddType=${activeInlineAddType}`);
+      if (!preserveInline) {
+        activeInlineAddType = null;
+        activeInlineEditType = null;
+        activeInlineEditId = null;
+      }
       currentTab = tab;
       if (updateUrl) {
         const p = new URLSearchParams(window.location.search);
@@ -4374,6 +4433,7 @@
 
     // ── Donations ──
     function renderDonations(q = "") {
+      console.log(`[debug] renderDonations: q="${q}", activeInlineAddType=${activeInlineAddType}`);
       const q2 = q.trim().toLowerCase();
       
       // Combined Pinned List (Local only)
@@ -4492,8 +4552,9 @@
       }
 
       // Auto-trigger active inline entry/edit states
+      console.log(`[debug] renderDonations end check: activeInlineAddType=${activeInlineAddType}`);
       if (activeInlineAddType === "don") {
-          renderInlineEntryForm("don");
+          renderInlineEntryForm("don", false);
       } else if (activeInlineEditType === "don" && activeInlineEditId) {
           const entry = donations.find(x => String(x.id || x._id) === activeInlineEditId);
           const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
@@ -4505,6 +4566,7 @@
 
     // ── Expenses ──
     function renderExpenses(q = "") {
+      console.log(`[debug] renderExpenses: q="${q}", activeInlineAddType=${activeInlineAddType}`);
       const q2 = q.trim().toLowerCase();
 
       const storageKey = `np_pinned_${eventId}_exp`;
@@ -4621,8 +4683,9 @@
       }
 
       // Auto-trigger active inline entry/edit states
+      console.log(`[debug] renderExpenses end check: activeInlineAddType=${activeInlineAddType}`);
       if (activeInlineAddType === "exp") {
-          renderInlineEntryForm("exp");
+          renderInlineEntryForm("exp", false);
       } else if (activeInlineEditType === "exp" && activeInlineEditId) {
           const entry = expenses.find(x => String(x.id || x._id) === activeInlineEditId);
           const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
@@ -4852,7 +4915,8 @@
     }
 
     // --- INLINE EDITING FOR THEATER MODE ---
-    function renderInlineEntryForm(type) {
+    function renderInlineEntryForm(type, scroll = true) {
+      console.log(`[debug] renderInlineEntryForm: type=${type}, scroll=${scroll}, activeInlineAddType=${activeInlineAddType}`);
       activeInlineAddType = type;
       const isDon = type === 'don';
       let tblBody;
@@ -4865,6 +4929,14 @@
           tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
       }
       if (!tblBody) return;
+
+      // Hide empty state overlay when editing/adding inline
+      const scrollList = tblBody.closest('.scroll-list');
+      if (scrollList) {
+          scrollList.classList.remove('is-empty');
+          const emptyMsg = scrollList.querySelector(isDon ? '#don-empty-msg' : '#exp-empty-msg');
+          if (emptyMsg) emptyMsg.style.display = 'none';
+      }
 
       // Prevent duplicate inline forms
       if (tblBody.querySelector('.inline-entry-row')) {
@@ -4883,13 +4955,13 @@
       let html = `
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
-            <div style="position:relative; width:100%;">
-              <input type="text" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor Name' : 'Description'}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);">
+            <div style="position:relative; width:100%; display:flex; align-items:center;">
+              <input type="text" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor Name' : 'Description'}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);">
+            <input type="number" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">Auto</span>
@@ -4903,7 +4975,7 @@
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
-          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);">
+          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>`;
       });
 
@@ -4941,13 +5013,16 @@
       });
 
       setTimeout(() => {
-          tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (scroll) {
+              tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
           const input = tr.querySelector('.inl-name-input');
           if (input) input.focus();
       }, 50);
     }
 
     async function submitInlineEntry(type, btn, skipDupCheck = false) {
+      console.log(`[debug] submitInlineEntry: type=${type}, activeInlineAddType=${activeInlineAddType}`);
       const nr = btn.closest('.new-row');
       const tblBody = nr.parentElement;
       const row = tblBody.querySelector('.inline-entry-row');
@@ -4993,7 +5068,9 @@
           } else {
               await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
           }
+          console.log(`[debug] submitInlineEntry API success. activeInlineAddType=${activeInlineAddType}`);
           await loadAll(true, true);
+          console.log(`[debug] submitInlineEntry loadAll finished. activeInlineAddType=${activeInlineAddType}`);
       } catch (e) {
           alert("Error saving: " + e.message);
           btn.disabled = false;
@@ -5032,13 +5109,13 @@
       let html = `
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
-            <div style="position:relative; width:100%;">
-              <input type="text" class="inline-input inl-name-input" value="${nm}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);">
+            <div style="position:relative; width:100%; display:flex; align-items:center;">
+              <input type="text" class="inline-input inl-name-input" value="${nm}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text);" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" class="inline-input inl-amt-input" value="${am}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);">
+            <input type="number" class="inline-input inl-amt-input" value="${am}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">${formatDate(d.collected_at)}</span>
@@ -5053,7 +5130,7 @@
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         const cv = (d.custom_fields && d.custom_fields[colName]) ? escHtml(d.custom_fields[colName]) : '';
         html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
-          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" value="${cv}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);">
+          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" value="${cv}" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px 6px; font-size:13px; background:var(--input-bg); color:var(--text);" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>`;
       });
 
@@ -5075,7 +5152,11 @@
       } else {
           tblBody.appendChild(tr);
       }
-      setTimeout(() => tr.querySelector('.inl-name-input').focus(), 50);
+      setTimeout(() => {
+          tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          const input = tr.querySelector('.inl-name-input');
+          if (input) input.focus();
+      }, 50);
     }
 
     function cancelInlineEdit(btn, type) {
@@ -5092,6 +5173,8 @@
               }
               restoreNewRowBtn(tblBody, type);
           }
+          activeInlineEditType = null;
+          activeInlineEditId = null;
       } catch (e) {
           console.error("Error in cancelInlineEdit:", e);
       }
@@ -5107,7 +5190,20 @@
                   row.remove();
               }
               restoreNewRowBtn(tblBody, type);
+
+              // If the list is empty, restore empty state overlay
+              const isDon = type === 'don';
+              const items = isDon ? donations : expenses;
+              if (items.length === 0) {
+                  const scrollList = tblBody.closest('.scroll-list');
+                  if (scrollList) {
+                      scrollList.classList.add('is-empty');
+                      const emptyMsg = scrollList.querySelector(isDon ? '#don-empty-msg' : '#exp-empty-msg');
+                      if (emptyMsg) emptyMsg.style.display = 'block';
+                  }
+              }
           }
+          activeInlineAddType = null;
       } catch (e) {
           console.error("Error in cancelInlineEntry:", e);
       }
@@ -6183,7 +6279,7 @@
 
       // Auto-trigger active inline entry/edit states
       if (activeInlineAddType === type) {
-          renderInlineEntryForm(type);
+          renderInlineEntryForm(type, false);
       } else if (activeInlineEditType === type && activeInlineEditId) {
           const arr = type === "don" ? donations : expenses;
           const entry = arr.find(x => String(x.id || x._id) === activeInlineEditId);
