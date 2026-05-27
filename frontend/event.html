@@ -5034,12 +5034,12 @@
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%; display:flex; align-items:center; height:100%;">
-              <input type="text" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor Name' : 'Description'}" style="width:100%; height:28px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; padding-right:16px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:normal; margin:0;" autocomplete="new-password" data-lpignore="true" autocorrect="off" autocapitalize="off" spellcheck="false">
+              <input type="text" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor Name' : 'Description'}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; height:28px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:normal; margin:0;" autocomplete="new-password" data-lpignore="true" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <input type="number" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">Auto</span>
@@ -5053,7 +5053,7 @@
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
-          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:28px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:normal; margin:0;" autocomplete="new-password" data-lpignore="true" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
       });
 
@@ -5140,6 +5140,12 @@
         }
       });
 
+      // CRITICAL: Focus the name input IMMEDIATELY (before await)
+      // Mobile browsers only allow .focus() inside a synchronous user-gesture.
+      // After await, the gesture context is lost and keyboard closes.
+      nameInput.focus();
+      nameInput.select();
+
       btn.disabled = true;
       btn.textContent = 'Saving...';
 
@@ -5212,7 +5218,8 @@
         btn.disabled = false;
         btn.textContent = 'Save';
 
-        // 4. Force focus retention on name input to keep virtual keyboard active!
+        // 4. The keyboard is already open (we focused before await).
+        // Re-focus just in case the browser reset it during DOM updates.
         nameInput.focus();
 
         // 5. Invalidate caches and silently sync in background
