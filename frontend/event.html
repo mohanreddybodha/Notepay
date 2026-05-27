@@ -565,6 +565,11 @@
       scroll-padding-bottom: 24px;
     }
 
+    /* Disable native autofill popup in Theater Mode to prevent floating bar when keyboard opens */
+    #rot-main.is-theater input {
+      -webkit-user-modify: read-write-plaintext-only;
+    }
+
     /* Landscape phone: ultra-compact chrome + rows — maximize visible entries */
     @media (orientation: landscape) and (max-height: 520px) {
       .rot-ov {
