@@ -3231,10 +3231,11 @@
     }
     /* Prevent iOS Safari from showing the Contacts/QuickType autofill toolbar
        by making the browser think these are internal/search fields */
-    input.inline-input {
-      /* This specific combo suppresses autofill suggestion bar on iOS Safari */
+    /* Removed for theater-mode inline inputs because it causes mobile keyboard/autofill layout issues on Chrome.
+       Normal event page inputs already use the standard input styling without this hack. */
+    /* input.inline-input {
       -webkit-user-modify: read-write-plaintext-only;
-    }
+    } */
   </style>
 </head>
 
@@ -5602,7 +5603,7 @@
         summaryData = null; // Invalidate cache
         clearEventCache();
         updateTheaterStats();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
+        if (activeTheaterTab === 'sum') switchTheaterTab(activeTheaterTab, true);
 
         if (keepOpen) {
           // Clear inputs and keep focused
