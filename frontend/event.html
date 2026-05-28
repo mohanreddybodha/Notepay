@@ -5037,7 +5037,7 @@
 
       // Prevent duplicate inline forms
       if (tblBody.querySelector('.inline-entry-row')) {
-        const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
+        const existingInput = tblBody.querySelector('.inline-entry-row .inl-str-val');
         if (existingInput) existingInput.focus();
         return;
       }
@@ -5053,7 +5053,7 @@
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%; display:flex; align-items:center; height:100%;">
-              <input type="text" name="notepay_entry_val1" class="inline-input inl-name-input" placeholder="${isDon ? 'Donor' : 'Description'}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
+              <input type="search" name="notepay_entry_val1" class="inline-input inl-str-val" placeholder="${isDon ? 'Donor' : 'Description'}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
@@ -5072,7 +5072,7 @@
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
-          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+          <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
       });
 
@@ -5113,7 +5113,7 @@
         if (scroll) {
           tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        const input = tr.querySelector('.inl-name-input');
+        const input = tr.querySelector('.inl-str-val');
         if (input) input.focus();
       }, 50);
     }
@@ -5125,7 +5125,7 @@
       const row = tblBody.querySelector('.inline-entry-row');
       if (!row) return;
 
-      const nameInput = row.querySelector('.inl-name-input');
+      const nameInput = row.querySelector('.inl-str-val');
       const amtInput = row.querySelector('.inl-amt-input');
       const name = nameInput.value.trim();
       const amt = amtInput.value;
@@ -5275,7 +5275,7 @@
         tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
       }
       if (tblBody && tblBody.querySelector('.inline-entry-row')) {
-        const existingInput = tblBody.querySelector('.inline-entry-row .inl-name-input');
+        const existingInput = tblBody.querySelector('.inline-entry-row .inl-str-val');
         if (existingInput) existingInput.focus();
         return;
       }
@@ -5294,7 +5294,7 @@
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%; display:flex; align-items:center; height:100%;">
-              <input type="text" name="notepay_edit_val1" class="inline-input inl-name-input" value="${nm}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
+              <input type="search" name="notepay_edit_val1" class="inline-input inl-str-val" value="${nm}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
@@ -5314,7 +5314,7 @@
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         const cv = (d.custom_fields && d.custom_fields[colName]) ? escHtml(d.custom_fields[colName]) : '';
         html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
-          <input type="text" class="inline-input inl-custom" data-col="${escHtml(colName)}" value="${cv}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+          <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" value="${cv}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
       });
 
@@ -5338,7 +5338,7 @@
       }
       setTimeout(() => {
         tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        const input = tr.querySelector('.inl-name-input');
+        const input = tr.querySelector('.inl-str-val');
         if (input) {
           input.focus();
           try {
@@ -5438,12 +5438,12 @@
 
       const row = tblBody.querySelector('.inline-entry-row');
       if (!row) return;
-      const name = row.querySelector('.inl-name-input').value.trim();
+      const name = row.querySelector('.inl-str-val').value.trim();
       const amt = row.querySelector('.inl-amt-input').value;
       const isDon = type === 'don';
 
       if (!name) {
-        row.querySelector('.inl-name-input').style.borderColor = 'var(--red)';
+        row.querySelector('.inl-str-val').style.borderColor = 'var(--red)';
         return;
       }
 
@@ -5473,15 +5473,54 @@
       if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
       try {
+        let updatedEntry = null;
         if (isDon) {
-          await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          updatedEntry = await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          const idx = donations.findIndex(d => String(d.id || d._id) === id);
+          if (idx !== -1) donations[idx] = updatedEntry;
         } else {
-          await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          updatedEntry = await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          const idx = expenses.findIndex(e => String(e.id || e._id) === id);
+          if (idx !== -1) expenses[idx] = updatedEntry;
         }
-        // Clear edit state BEFORE loadAll so table doesn't re-open the edit form
+
+        // 1. Restore the original row and update its DOM values locally to prevent blinking
+        if (row._origRow) {
+          const oRow = row._origRow;
+          oRow.style.display = '';
+          const nameEl = oRow.querySelector('.fc div:last-child');
+          if (nameEl) nameEl.textContent = isDon ? updatedEntry.donor_name : updatedEntry.description;
+          
+          const amtEl = oRow.querySelector('.sc:nth-child(2) span');
+          if (amtEl) {
+            amtEl.className = isDon ? 'cg' : 'cr';
+            amtEl.innerHTML = updatedEntry.amount ? formatINR(updatedEntry.amount) : '<span class="cm">—</span>';
+          }
+        }
+        
+        // 2. Remove the inline edit form row and restore the Add button
+        row.remove();
+        restoreNewRowBtn(tblBody, type);
+
+        // 3. Clear edit state
         activeInlineEditType = null;
         activeInlineEditId = null;
-        await loadAll(true, true);
+
+        // 4. Update the totals in Theater Mode locally
+        summaryData = null;
+        updateTheaterStats();
+
+        // 5. Trigger a truly silent background fetch to sync any other changes without redrawing
+        apiFetch("GET", `/events/${eventId}/full-details`).then(res => {
+          if (res) {
+            sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
+            donations = res.donations;
+            expenses = res.expenses;
+            summaryData = res.summary;
+            members = res.members || [];
+          }
+        }).catch(err => console.warn("Silent sync failed", err));
+
       } catch (e) {
         alert("Error saving: " + e.message);
         if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
