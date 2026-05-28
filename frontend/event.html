@@ -3543,11 +3543,11 @@
               <button id="rot-tab-exp" class="rtab" onclick="switchTheaterTab('exp')">Expenses</button>
               <button id="rot-tab-sum" class="rtab" onclick="switchTheaterTab('sum')">Summary</button>
             </div>
-            <div style="position:relative; display:flex; align-items:center;">
+            <div style="position:relative; display:flex; align-items:center;" id="theater-search-wrap">
               <span data-np-icon="search" data-np-size="12" style="position:absolute; left:8px; opacity:0.5;"></span>
-              <input type="text" id="theater-top-search" placeholder="Search..."
+              <input type="search" id="theater-top-search" placeholder="Search..."
                 style="width: 130px; padding: 4px 8px 4px 26px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 11px; outline: none;"
-                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
             </div>
           </div>
 
@@ -6336,6 +6336,7 @@
       document.getElementById("cc-sheet-sub").textContent = "This column will be added to the end of the table for everyone.";
       const inp = document.getElementById("cc-name");
       inp.value = "";
+      inp.setAttribute("readonly", "true");
       updateCharCount(inp);
       setCCSize(160); // default Medium
       document.getElementById("cc-add-btns").style.display = "flex";
@@ -6352,6 +6353,7 @@
       document.getElementById("cc-sheet-sub").textContent = `Editing: ${name}`;
       const inp = document.getElementById("cc-name");
       inp.value = name;
+      inp.setAttribute("readonly", "true");
       updateCharCount(inp);
 
       // Find current width
@@ -6756,7 +6758,13 @@
 
         // Link the top bar search input to this table container
         const topSearch = document.getElementById("theater-top-search");
+        const searchWrap = document.getElementById("theater-search-wrap");
+        if (searchWrap) {
+          searchWrap.style.display = (tab === 'sum') ? 'none' : 'flex';
+        }
+        
         if (topSearch) {
+          topSearch.setAttribute("readonly", "true");
           topSearch.value = window.theaterSearchQuery || '';
           topSearch.oninput = (e) => {
             window.theaterSearchQuery = e.target.value;
