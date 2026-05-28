@@ -4530,8 +4530,11 @@
     // ── Donations ──
     function renderDonations(q = "") {
       console.log(`[debug] renderDonations: q="${q}", activeInlineAddType=${activeInlineAddType}`);
-      saveInlineStates();
       const tblBody = document.getElementById("don-tbl-body");
+      if (tblBody && activeInlineAddType === "don" && tblBody.querySelector('.inline-entry-row')) {
+        console.log("[debug] renderDonations: inline add active. Skipping full rebuild to preserve input focus.");
+        return;
+      }
       const q2 = q.trim().toLowerCase();
 
       // Combined Pinned List (Local only)
@@ -4653,8 +4656,7 @@
       console.log(`[debug] renderDonations end check: activeInlineAddType=${activeInlineAddType}`);
       if (activeInlineAddType === "don") {
         renderInlineEntryForm("don", false);
-      }
-      if (activeInlineEditType === "don" && activeInlineEditId) {
+      } else if (activeInlineEditType === "don" && activeInlineEditId) {
         const entry = donations.find(x => String(x.id || x._id) === activeInlineEditId);
         const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
         if (entry && origRow) {
@@ -4666,8 +4668,11 @@
     // ── Expenses ──
     function renderExpenses(q = "") {
       console.log(`[debug] renderExpenses: q="${q}", activeInlineAddType=${activeInlineAddType}`);
-      saveInlineStates();
       const tblBody = document.getElementById("exp-tbl-body");
+      if (tblBody && activeInlineAddType === "exp" && tblBody.querySelector('.inline-entry-row')) {
+        console.log("[debug] renderExpenses: inline add active. Skipping full rebuild to preserve input focus.");
+        return;
+      }
       const q2 = q.trim().toLowerCase();
 
       const storageKey = `np_pinned_${eventId}_exp`;
@@ -4787,8 +4792,7 @@
       console.log(`[debug] renderExpenses end check: activeInlineAddType=${activeInlineAddType}`);
       if (activeInlineAddType === "exp") {
         renderInlineEntryForm("exp", false);
-      }
-      if (activeInlineEditType === "exp" && activeInlineEditId) {
+      } else if (activeInlineEditType === "exp" && activeInlineEditId) {
         const entry = expenses.find(x => String(x.id || x._id) === activeInlineEditId);
         const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
         if (entry && origRow) {
@@ -4998,40 +5002,6 @@
     let activeInlineEditType = null;
     let activeInlineEditId = null;
 
-    let savedInlineAddData = null;
-    let savedInlineEditData = null;
-
-    function saveInlineStates() {
-      savedInlineAddData = null;
-      savedInlineEditData = null;
-
-      const addRow = document.querySelector('.inline-add-row');
-      if (addRow && activeInlineAddType) {
-        const nameInput = addRow.querySelector('.inl-str-val');
-        const amtInput = addRow.querySelector('.inl-amt-input');
-        const custom = {};
-        addRow.querySelectorAll('.inl-cust-input').forEach(inp => custom[inp.dataset.colId] = inp.value);
-        savedInlineAddData = {
-          name: nameInput ? nameInput.value : '',
-          amt: amtInput ? amtInput.value : '',
-          custom: custom
-        };
-      }
-
-      const editRow = document.querySelector('.inline-edit-row');
-      if (editRow && activeInlineEditType && activeInlineEditId) {
-        const nameInput = editRow.querySelector('.inl-str-val');
-        const amtInput = editRow.querySelector('.inl-amt-input');
-        const custom = {};
-        editRow.querySelectorAll('.inl-cust-input').forEach(inp => custom[inp.dataset.colId] = inp.value);
-        savedInlineEditData = {
-          name: nameInput ? nameInput.value : '',
-          amt: amtInput ? amtInput.value : '',
-          custom: custom
-        };
-      }
-    }
-
     function restoreNewRowBtn(tblBody, type) {
       try {
         const nr = tblBody.querySelector('.new-row');
@@ -5084,7 +5054,7 @@
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
       const tr = document.createElement('div');
-      tr.className = 'tr inline-entry-row inline-add-row';
+      tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
       tr.style.position = 'relative';
 
@@ -5108,38 +5078,28 @@
       `;
 
       customCols.forEach(col => {
-        const id = typeof col === "string" ? col : col.n;
-        const width = typeof col === "string" ? 180 : (col.w || 180);
-        html += `<div class="sc" style="width:${width}px; display:flex; align-items:center;">
-          <input type="search" class="inline-input inl-cust-input" data-col-id="${escHtml(id)}" placeholder="${escHtml(id)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+        const colName = typeof col === "string" ? col : col.n;
+        const colWidth = typeof col === "string" ? 180 : (col.w || 180);
+        html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
+          <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
       });
-
-      html += `
-          <div class="sc new-row" style="width:100px; padding:0; flex-shrink:0; display:flex; gap:6px;">
-            <button class="inline-btn" style="color:var(--text3); border:1px solid var(--border);" onclick="cancelInlineEntry(this)"><span data-np-icon="x" data-np-size="16"></span></button>
-            <button class="inline-btn" style="color:white; background:var(--primary); border:none;" onclick="submitInlineEntry('${type}', this)"><span data-np-icon="check" data-np-size="16"></span></button>
-          </div>
-      `;
 
       tr.innerHTML = html;
 
       const newRowBtn = tblBody.querySelector('.new-row');
-      if (newRowBtn) newRowBtn.remove();
-      tblBody.appendChild(tr);
+      if (newRowBtn) {
+        tblBody.insertBefore(tr, newRowBtn);
 
-      // Restore saved state if exists
-      if (savedInlineAddData) {
-        const nInp = tr.querySelector('.inl-str-val');
-        if (nInp) nInp.value = savedInlineAddData.name;
-        const aInp = tr.querySelector('.inl-amt-input');
-        if (aInp) aInp.value = savedInlineAddData.amt;
-        const cInps = tr.querySelectorAll('.inl-cust-input');
-        cInps.forEach(inp => {
-          if (savedInlineAddData.custom[inp.dataset.colId] !== undefined) {
-            inp.value = savedInlineAddData.custom[inp.dataset.colId];
-          }
-        });
+        // Inject actions into the existing newRowBtn!
+        newRowBtn.onclick = null;
+        newRowBtn.style.cursor = "default";
+        newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEntry(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEntry('${type}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+          </span>`;
+      } else {
+        tblBody.appendChild(tr);
       }
 
       // Bind keydown events for Enter key continuous submission
@@ -5147,8 +5107,13 @@
         inp.addEventListener('keydown', function (e) {
           if (e.key === 'Enter') {
             e.preventDefault();
-            const btn = tr.querySelector('.inline-btn[style*="background:var(--primary)"]');
-            if (btn) submitInlineEntry(type, btn);
+            if (newRowBtn) {
+              const saveBtn = newRowBtn.querySelector('.btn-solid-primary');
+              if (saveBtn) {
+                e.stopPropagation();
+                submitInlineEntry(type, saveBtn);
+              }
+            }
           }
         });
       });
@@ -5163,8 +5128,10 @@
     }
 
     async function submitInlineEntry(type, btn, skipDupCheck = false) {
-      console.log(`[debug] submitInlineEntry: type=${type}`);
-      const row = btn.closest('.inline-entry-row');
+      console.log(`[debug] submitInlineEntry: type=${type}, activeInlineAddType=${activeInlineAddType}`);
+      const nr = btn.closest('.new-row');
+      const tblBody = nr.parentElement;
+      const row = tblBody.querySelector('.inline-entry-row');
       if (!row) return;
 
       const nameInput = row.querySelector('.inl-str-val');
@@ -5178,6 +5145,7 @@
         return;
       }
 
+      // Duplicate Check
       if (!skipDupCheck) {
         let existing = null;
         if (isDon) {
@@ -5192,14 +5160,17 @@
         }
       }
 
-      const customInputs = row.querySelectorAll('.inl-cust-input');
+      const customInputs = row.querySelectorAll('.inl-custom');
       const customFields = {};
       customInputs.forEach(inp => {
         if (inp.value.trim()) {
-          customFields[inp.dataset.colId] = inp.value.trim();
+          customFields[inp.getAttribute('data-col')] = inp.value.trim();
         }
       });
 
+      // CRITICAL: Focus the name input IMMEDIATELY (before await)
+      // Mobile browsers only allow .focus() inside a synchronous user-gesture.
+      // After await, the gesture context is lost and keyboard closes.
       nameInput.focus();
       nameInput.select();
 
@@ -5211,26 +5182,32 @@
         if (isDon) {
           newEntry = await addDonation(eventId, name, amt ? parseFloat(amt) : null, customFields);
           donations.push(newEntry);
+
+          // Silent Update Totals & Counts
           const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
           document.getElementById("don-count").textContent = `${donations.length} donor${donations.length !== 1 ? "s" : ""}`;
           document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
         } else {
           newEntry = await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
           expenses.push(newEntry);
+
+          // Silent Update Totals & Counts
           const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
           document.getElementById("exp-count").textContent = `${expenses.length} expense${expenses.length !== 1 ? "s" : ""}`;
           document.getElementById("exp-total").innerHTML = `Total: <span class="sum-r">${formatINR(total)}</span>`;
         }
 
+        // 1. Build and insert the new read-only row immediately above the input form row!
         const newRowDom = document.createElement("div");
         newRowDom.className = "tr" + ((isDon ? donations.length : expenses.length) % 2 ? " alt" : "");
         newRowDom.setAttribute('data-id', newEntry.id || newEntry._id);
+
         const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
         const customCells = customCols.map(col => {
-          const n = typeof col === "string" ? col : col.n;
-          const w = typeof col === "string" ? 180 : (col.w || 180);
-          const val = (newEntry.custom_fields && newEntry.custom_fields[n]) || "";
-          return `<div class="sc" style="width:${w}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
+          const colName = typeof col === "string" ? col : col.n;
+          const colWidth = typeof col === "string" ? 180 : (col.w || 180);
+          const val = (newEntry.custom_fields && newEntry.custom_fields[colName]) || "";
+          return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
         }).join("");
 
         newRowDom.innerHTML = `
@@ -5245,17 +5222,35 @@
           `;
         newRowDom.addEventListener("contextmenu", ev => { ev.preventDefault(); openCtx(ev, type, newEntry); });
         newRowDom.addEventListener("dblclick", ev => { openCtx(ev, type, newEntry); });
-        
-        const tblBody = row.parentElement;
+
+        let lastTap = 0;
+        newRowDom.addEventListener("touchend", ev => {
+          const now = Date.now();
+          if (now - lastTap < 300) {
+            ev.preventDefault();
+            const t = ev.changedTouches[0];
+            openCtx({ clientX: t.clientX, clientY: t.clientY }, type, newEntry);
+          }
+          lastTap = now;
+        });
+
+        // Insert directly above the input form row!
         tblBody.insertBefore(newRowDom, row);
 
+        // 2. Clear inputs in the active row to prepare for next consecutive add
         nameInput.value = "";
         amtInput.value = "";
         customInputs.forEach(inp => inp.value = "");
+
+        // 3. Re-enable Save button
         btn.disabled = false;
         btn.textContent = 'Save';
+
+        // 4. The keyboard is already open (we focused before await).
+        // Re-focus just in case the browser reset it during DOM updates.
         nameInput.focus();
 
+        // 5. Invalidate caches and silently sync in background
         summaryData = null;
         updateTheaterStats();
 
@@ -5288,14 +5283,16 @@
       } else {
         tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
       }
-      if (tblBody && tblBody.querySelector('.inline-edit-row')) {
+      if (tblBody && tblBody.querySelector('.inline-entry-row')) {
+        const existingInput = tblBody.querySelector('.inline-entry-row .inl-str-val');
+        if (existingInput) existingInput.focus();
         return;
       }
 
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
       const tr = document.createElement('div');
-      tr.className = 'tr inline-entry-row inline-edit-row';
+      tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
       tr.style.position = 'relative';
 
@@ -5322,88 +5319,133 @@
       `;
 
       customCols.forEach(col => {
-        const id = typeof col === "string" ? col : col.n;
-        const width = typeof col === "string" ? 180 : (col.w || 180);
-        const cv = (d.custom_fields && d.custom_fields[id]) ? escHtml(d.custom_fields[id]) : '';
-        html += `<div class="sc" style="width:${width}px; display:flex; align-items:center;">
-          <input type="search" data-col-id="${escHtml(id)}" class="inline-input inl-cust-input" value="${cv}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+        const colName = typeof col === "string" ? col : col.n;
+        const colWidth = typeof col === "string" ? 180 : (col.w || 180);
+        const cv = (d.custom_fields && d.custom_fields[colName]) ? escHtml(d.custom_fields[colName]) : '';
+        html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
+          <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" value="${cv}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
       });
 
-      html += `
-          <div class="sc new-row" style="width:100px; padding:0; flex-shrink:0; display:flex; gap:6px;">
-            <button class="inline-btn" style="color:var(--text3); border:1px solid var(--border);" onclick="cancelInlineEntry(this)"><span data-np-icon="x" data-np-size="16"></span></button>
-            <button class="inline-btn" style="color:white; background:var(--primary); border:none;" onclick="submitInlineEdit('${type}', '${String(d.id || d._id)}', this)"><span data-np-icon="check" data-np-size="16"></span></button>
-          </div>
-      `;
-
       tr.innerHTML = html;
-      origRow.replaceWith(tr);
 
-      // Restore saved state if exists
-      if (savedInlineEditData) {
-        const nInp = tr.querySelector('.inl-str-val');
-        if (nInp) nInp.value = savedInlineEditData.name;
-        const aInp = tr.querySelector('.inl-amt-input');
-        if (aInp) aInp.value = savedInlineEditData.amt;
-        const cInps = tr.querySelectorAll('.inl-cust-input');
-        cInps.forEach(inp => {
-          if (savedInlineEditData.custom[inp.dataset.colId] !== undefined) {
-            inp.value = savedInlineEditData.custom[inp.dataset.colId];
-          }
-        });
+      origRow.style.display = 'none';
+      tr._origRow = origRow;
+      const newRowBtn = tblBody.querySelector('.new-row');
+      if (newRowBtn) {
+        tblBody.insertBefore(tr, newRowBtn);
+
+        // Inject actions into newRowBtn!
+        newRowBtn.onclick = null;
+        newRowBtn.style.cursor = "default";
+        newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEdit(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEdit('${type}', '${String(d.id || d._id)}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+          </span>`;
       } else {
-        const inp = tr.querySelector('.inl-str-val');
-        if (inp) {
-          inp.focus();
-          const v = inp.value;
-          inp.value = '';
-          inp.value = v;
-        }
+        tblBody.appendChild(tr);
       }
-
-      tr.querySelectorAll('input').forEach(inp => {
-        inp.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const btn = tr.querySelector('.inline-btn[style*="background:var(--primary)"]');
-            if (btn) submitInlineEdit(type, String(d.id || d._id), btn);
-          }
-        });
-      });
-
       setTimeout(() => {
         tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const input = tr.querySelector('.inl-str-val');
+        if (input) {
+          input.focus();
+          try {
+            const len = input.value.length;
+            input.setSelectionRange(len, len);
+          } catch(e){}
+        }
       }, 50);
     }
 
-    function cancelInlineEntry(btn) {
-      const row = btn.closest('.inline-entry-row');
-      if (!row) return;
-      const tblBody = row.parentElement;
-      
-      const isAdd = row.classList.contains('inline-add-row');
-      
-      row.remove();
-      if (isAdd) {
-        const type = activeInlineAddType || (tblBody.id === 'don-tbl-body' ? 'don' : 'exp');
-        restoreNewRowBtn(tblBody, type);
-        activeInlineAddType = null;
-        savedInlineAddData = null;
-      } else {
-        const type = activeInlineEditType || (tblBody.id === 'don-tbl-body' ? 'don' : 'exp');
-        const id = activeInlineEditId;
+    function cancelInlineEdit(btn, type) {
+      try {
+        // Find tblBody from btn OR from activeInlineEditType (robust fallback)
+        let tblBody = null;
+        if (btn) {
+          const nr = btn.closest('.new-row');
+          if (nr) tblBody = nr.parentElement;
+        }
+        if (!tblBody) {
+          // Fallback: find by type
+          if (activeTheaterTab) {
+            const rc = document.getElementById('rot-ov-body');
+            tblBody = rc ? rc.querySelector('.tbl-body-rows') : null;
+          } else {
+            tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+          }
+        }
+        if (tblBody) {
+          const row = tblBody.querySelector('.inline-entry-row');
+          if (row) {
+            if (row._origRow) row._origRow.style.display = '';
+            row.remove();
+          }
+          restoreNewRowBtn(tblBody, type);
+        }
         activeInlineEditType = null;
         activeInlineEditId = null;
-        savedInlineEditData = null;
-        if (id) {
-          loadAll(true, true);
+      } catch (e) {
+        console.error("Error in cancelInlineEdit:", e);
+      }
+    }
+
+    function cancelInlineEntry(btn, type) {
+      try {
+        // Find tblBody robustly from btn OR from type
+        let tblBody = null;
+        if (btn) {
+          const nr = btn.closest('.new-row');
+          if (nr) tblBody = nr.parentElement;
         }
+        if (!tblBody) {
+          if (activeTheaterTab) {
+            const rc = document.getElementById('rot-ov-body');
+            tblBody = rc ? rc.querySelector('.tbl-body-rows') : null;
+          } else {
+            tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+          }
+        }
+        if (tblBody) {
+          const row = tblBody.querySelector('.inline-entry-row');
+          if (row) row.remove();
+          restoreNewRowBtn(tblBody, type);
+
+          const isDon = type === 'don';
+          const items = isDon ? donations : expenses;
+          if (items.length === 0) {
+            const scrollList = tblBody.closest('.scroll-list');
+            if (scrollList) {
+              scrollList.classList.add('is-empty');
+              const emptyMsg = scrollList.querySelector(isDon ? '#don-empty-msg' : '#exp-empty-msg');
+              if (emptyMsg) emptyMsg.style.display = 'block';
+            }
+          }
+        }
+        activeInlineAddType = null;
+      } catch (e) {
+        console.error("Error in cancelInlineEntry:", e);
       }
     }
 
     async function submitInlineEdit(type, id, btn, skipDupCheck = false) {
-      const row = btn.closest('.inline-entry-row');
+      // Find tblBody robustly — do NOT rely on btn.closest() which breaks with detached nodes
+      let tblBody = null;
+      if (btn) {
+        const nr = btn.closest('.new-row');
+        if (nr) tblBody = nr.parentElement;
+      }
+      if (!tblBody) {
+        if (activeTheaterTab) {
+          const rc = document.getElementById('rot-ov-body');
+          tblBody = rc ? rc.querySelector('.tbl-body-rows') : null;
+        } else {
+          tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+        }
+      }
+      if (!tblBody) return;
+
+      const row = tblBody.querySelector('.inline-entry-row');
       if (!row) return;
       const name = row.querySelector('.inl-str-val').value.trim();
       const amt = row.querySelector('.inl-amt-input').value;
@@ -5414,6 +5456,7 @@
         return;
       }
 
+      // Duplicate Check (excluding current entry)
       if (!skipDupCheck) {
         let existing = null;
         if (isDon) {
@@ -5428,29 +5471,64 @@
         }
       }
 
-      const customInputs = row.querySelectorAll('.inl-cust-input');
+      const customInputs = row.querySelectorAll('.inl-custom');
       const customFields = {};
       customInputs.forEach(inp => {
         if (inp.value.trim()) {
-          customFields[inp.dataset.colId] = inp.value.trim();
+          customFields[inp.getAttribute('data-col')] = inp.value.trim();
         }
       });
 
       if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
       try {
+        let updatedEntry = null;
         if (isDon) {
-          await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          updatedEntry = await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          const idx = donations.findIndex(d => String(d.id || d._id) === id);
+          if (idx !== -1) donations[idx] = updatedEntry;
         } else {
-          await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          updatedEntry = await updateExpense(eventId, id, { description: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          const idx = expenses.findIndex(e => String(e.id || e._id) === id);
+          if (idx !== -1) expenses[idx] = updatedEntry;
+        }
+
+        // 1. Restore the original row and update its DOM values locally to prevent blinking
+        if (row._origRow) {
+          const oRow = row._origRow;
+          oRow.style.display = '';
+          const nameEl = oRow.querySelector('.fc div:last-child');
+          if (nameEl) nameEl.textContent = isDon ? updatedEntry.donor_name : updatedEntry.description;
+          
+          const amtEl = oRow.querySelector('.sc:nth-child(2) span');
+          if (amtEl) {
+            amtEl.className = isDon ? 'cg' : 'cr';
+            amtEl.innerHTML = updatedEntry.amount ? formatINR(updatedEntry.amount) : '<span class="cm">—</span>';
+          }
         }
         
+        // 2. Remove the inline edit form row and restore the Add button
+        row.remove();
+        restoreNewRowBtn(tblBody, type);
+
+        // 3. Clear edit state
         activeInlineEditType = null;
         activeInlineEditId = null;
-        savedInlineEditData = null;
+
+        // 4. Update the totals in Theater Mode locally
         summaryData = null;
         updateTheaterStats();
-        loadAll(true, true);
+
+        // 5. Trigger a truly silent background fetch to sync any other changes without redrawing
+        apiFetch("GET", `/events/${eventId}/full-details`).then(res => {
+          if (res) {
+            sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
+            donations = res.donations;
+            expenses = res.expenses;
+            summaryData = res.summary;
+            members = res.members || [];
+          }
+        }).catch(err => console.warn("Silent sync failed", err));
 
       } catch (e) {
         alert("Error saving: " + e.message);
@@ -5606,8 +5684,24 @@
     function openEditForm() {
       const type = ctxType;
       const entry = ctxEntry;
-      saveInlineStates();
-      renderInlineEditForm(type, entry, document.querySelector(`.tr[data-id="${String(entry.id || entry._id)}"]`));
+
+      let tblBody;
+      if (activeTheaterTab) {
+        const rotContainer = document.getElementById('rot-ov-body');
+        if (rotContainer) {
+          tblBody = rotContainer.querySelector('.tbl-body-rows');
+        }
+      } else {
+        tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+      }
+
+      if (!tblBody) return;
+
+      const rowId = String(entry.id || entry._id);
+      const origRow = tblBody.querySelector(`.tr[data-id="${rowId}"]`);
+      if (origRow) {
+        renderInlineEditForm(type, entry, origRow);
+      }
       closeCtx();
     }
     function closeEditForm() { document.getElementById("edit-form-ov").style.display = "none"; }
@@ -5809,7 +5903,9 @@
     function openExitPop() {
       document.getElementById("exit-pop").style.display = "flex";
     }
-    function closeExitPop() { document.getElementById("exit-pop").style.display = "none"; }
+    function closeExitPop() {
+      document.getElementById("exit-pop").style.display = "none";
+    }
     async function confirmExit() {
       const lp = document.getElementById("loading-pane");
       try {
@@ -6396,7 +6492,10 @@
     }
 
     function fillTableRows(container, type) {
-      saveInlineStates();
+      if (container && activeInlineAddType === type && container.querySelector('.inline-entry-row')) {
+        console.log("[debug] fillTableRows: inline add active. Skipping full rebuild to preserve input focus.");
+        return;
+      }
       container.innerHTML = "";
       if (!eventData) return; // Safety check
       const isTheater = container.parentElement ? container.parentElement.classList.contains("is-theater-table") : true;
@@ -6460,8 +6559,7 @@
       // Auto-trigger active inline entry/edit states
       if (activeInlineAddType === type) {
         renderInlineEntryForm(type, false);
-      }
-      if (activeInlineEditType === type && activeInlineEditId) {
+      } else if (activeInlineEditType === type && activeInlineEditId) {
         const arr = type === "don" ? donations : expenses;
         const entry = arr.find(x => String(x.id || x._id) === activeInlineEditId);
         const origRow = container.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
