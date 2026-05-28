@@ -119,6 +119,7 @@ body { -webkit-tap-highlight-color: transparent;
 
 /* ── BASE ── */
 html {
+  box-sizing: border-box;
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
