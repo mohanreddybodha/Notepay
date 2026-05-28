@@ -5108,10 +5108,10 @@
       `;
 
       customCols.forEach(col => {
-        const colName = typeof col === "string" ? col : col.n;
-        const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-        html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
-          <input type="search" class="inline-input inl-cust-input" data-col-id="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+        const id = typeof col === "string" ? col : col.n;
+        const width = typeof col === "string" ? 180 : (col.w || 180);
+        html += `<div class="sc" style="width:${width}px; display:flex; align-items:center;">
+          <input type="search" class="inline-input inl-cust-input" data-col-id="${escHtml(id)}" placeholder="${escHtml(id)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
       });
 
@@ -5124,10 +5124,8 @@
 
       tr.innerHTML = html;
 
-      // Destroy new-row button so it doesn't duplicate
       const newRowBtn = tblBody.querySelector('.new-row');
       if (newRowBtn) newRowBtn.remove();
-      
       tblBody.appendChild(tr);
 
       // Restore saved state if exists
@@ -5290,7 +5288,7 @@
       } else {
         tblBody = document.getElementById(isDon ? 'don-tbl-body' : 'exp-tbl-body');
       }
-      if (tblBody && tblBody.querySelector('.inline-entry-row')) {
+      if (tblBody && tblBody.querySelector('.inline-edit-row')) {
         return;
       }
 
@@ -5363,6 +5361,16 @@
           inp.value = v;
         }
       }
+
+      tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const btn = tr.querySelector('.inline-btn[style*="background:var(--primary)"]');
+            if (btn) submitInlineEdit(type, String(d.id || d._id), btn);
+          }
+        });
+      });
 
       setTimeout(() => {
         tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -5599,21 +5607,7 @@
       const type = ctxType;
       const entry = ctxEntry;
       saveInlineStates();
-
-      let tblBody;
-      if (activeTheaterTab) {
-        const rotContainer = document.getElementById('rot-ov-body');
-        if (rotContainer) tblBody = rotContainer.querySelector('.tbl-body-rows');
-      } else {
-        tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
-      }
-
-      if (tblBody) {
-        const origRow = tblBody.querySelector(`.tr[data-id="${String(entry.id || entry._id)}"]`);
-        if (origRow) {
-          renderInlineEditForm(type, entry, origRow);
-        }
-      }
+      renderInlineEditForm(type, entry, document.querySelector(`.tr[data-id="${String(entry.id || entry._id)}"]`));
       closeCtx();
     }
     function closeEditForm() { document.getElementById("edit-form-ov").style.display = "none"; }
