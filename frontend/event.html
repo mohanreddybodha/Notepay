@@ -64,6 +64,9 @@
       padding: 10px 16px 12px;
       gap: 8px;
       min-height: 52px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .back {
@@ -3405,8 +3408,9 @@
             </div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
-              <input class="ef-input" id="ef-amount" type="number" placeholder="Optional" min="0" step="0.01"
-                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" />
+              <input class="ef-input" id="ef-amount" type="number" placeholder="Optional" min="0" step="100"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal"
+                readonly onfocus="this.removeAttribute('readonly');" />
             </div>
             <div id="ef-custom-fields" style="display:flex;flex-direction:column;gap:4px;"></div>
           </div>
@@ -3476,8 +3480,9 @@
             </div>
             <div class="ef-field">
               <div class="ef-label">Amount (₹)</div>
-              <input class="ef-input" id="edit-amount" type="number" min="0" step="0.01" autocomplete="off"
-                autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <input class="ef-input" id="edit-amount" type="number" min="0" step="100" autocomplete="off"
+                autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal"
+                readonly onfocus="this.removeAttribute('readonly');" />
             </div>
             <div id="edit-custom-fields" style="display:flex;flex-direction:column;gap:4px;"></div>
           </div>
@@ -5059,7 +5064,7 @@
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" name="notepay_entry_val2" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
+            <input type="number" step="100" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">Auto</span>
@@ -5300,7 +5305,7 @@
             </div>
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
-            <input type="number" name="notepay_edit_val2" class="inline-input inl-amt-input" value="${am}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
+            <input type="number" step="100" class="inline-input inl-amt-input" value="${am}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
           </div>
           <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">${formatDate(d.collected_at)}</span>
@@ -6751,10 +6756,18 @@
         // Scrollable table — native overflow (especially for mobile landscape layout)
         const tableContainer = document.createElement("div");
         tableContainer.className = "tbl-sc theater-scroll-area";
-        tableContainer.style.cssText = 'flex:1; min-height:0; width:100%; overflow:auto; -webkit-overflow-scrolling:touch; margin:0; padding:0; touch-action:pan-x pan-y; overscroll-behavior:contain;';
+        tableContainer.style.cssText = 'flex:1; min-height:0; width:100%; overflow:auto; -webkit-overflow-scrolling:touch; margin:0; padding:0; touch-action:pan-x pan-y; overscroll-behavior:contain; position:relative;';
 
-        const table = renderTable(tab, true);
-        tableContainer.appendChild(table);
+        const loaderDiv = document.createElement("div");
+        loaderDiv.style.cssText = "position:absolute; inset:0; display:flex; align-items:center; justify-content:center;";
+        loaderDiv.innerHTML = '<div class="spinner" style="display:block; border-top-color:var(--primary); width:32px; height:32px; border-width:4px;"></div>';
+        tableContainer.appendChild(loaderDiv);
+
+        setTimeout(() => {
+          const table = renderTable(tab, true);
+          loaderDiv.remove();
+          tableContainer.appendChild(table);
+        }, 15);
 
         // Link the top bar search input to this table container
         const topSearch = document.getElementById("theater-top-search");
