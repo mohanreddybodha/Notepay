@@ -3244,8 +3244,8 @@
   </style>
 </head>
 
-<body style="margin:0; padding:0; overflow-x:hidden;">
-  <div class="page" id="main-page" style="overflow-x:hidden;">
+<body style="margin:0; padding:0; overflow:hidden;">
+  <div class="page" id="main-page" style="overflow:hidden;">
     <div class="app-bar">
       <div class="back" onclick="window.location.href='dashboard.html'"><span data-np-icon="arrow-left"
           data-np-size="22"></span></div>
@@ -6743,6 +6743,11 @@
       theaterRotation = 0;
       let content;
 
+      const searchWrap = document.getElementById("theater-search-wrap");
+      if (searchWrap) {
+        searchWrap.style.display = (tab === 'sum') ? 'none' : 'flex';
+      }
+
       if (tab === "sum") {
         body.classList.add("sum-mode");
         const sumDiv = document.createElement("div");
@@ -6774,10 +6779,6 @@
 
         // Link the top bar search input to this table container
         const topSearch = document.getElementById("theater-top-search");
-        const searchWrap = document.getElementById("theater-search-wrap");
-        if (searchWrap) {
-          searchWrap.style.display = (tab === 'sum') ? 'none' : 'flex';
-        }
         
         if (topSearch) {
           topSearch.setAttribute("readonly", "true");
