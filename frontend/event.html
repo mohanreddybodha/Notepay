@@ -5084,7 +5084,7 @@
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
       const tr = document.createElement('div');
-      tr.className = 'tr inline-entry-row';
+      tr.className = 'tr inline-entry-row inline-add-row';
       tr.style.background = 'var(--surf-var)';
       tr.style.position = 'relative';
 
@@ -5111,25 +5111,37 @@
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         html += `<div class="sc" style="width:${colWidth}px; display:flex; align-items:center;">
-          <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
+          <input type="search" class="inline-input inl-cust-input" data-col-id="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
       });
 
+      html += `
+          <div class="sc new-row" style="width:100px; padding:0; flex-shrink:0; display:flex; gap:6px;">
+            <button class="inline-btn" style="color:var(--text3); border:1px solid var(--border);" onclick="cancelInlineEntry(this)"><span data-np-icon="x" data-np-size="16"></span></button>
+            <button class="inline-btn" style="color:white; background:var(--primary); border:none;" onclick="submitInlineEntry('${type}', this)"><span data-np-icon="check" data-np-size="16"></span></button>
+          </div>
+      `;
+
       tr.innerHTML = html;
 
+      // Destroy new-row button so it doesn't duplicate
       const newRowBtn = tblBody.querySelector('.new-row');
-      if (newRowBtn) {
-        tblBody.insertBefore(tr, newRowBtn);
+      if (newRowBtn) newRowBtn.remove();
+      
+      tblBody.appendChild(tr);
 
-        // Inject actions into the existing newRowBtn!
-        newRowBtn.onclick = null;
-        newRowBtn.style.cursor = "default";
-        newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
-              <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEntry(this, '${type}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
-              <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEntry('${type}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
-          </span>`;
-      } else {
-        tblBody.appendChild(tr);
+      // Restore saved state if exists
+      if (savedInlineAddData) {
+        const nInp = tr.querySelector('.inl-str-val');
+        if (nInp) nInp.value = savedInlineAddData.name;
+        const aInp = tr.querySelector('.inl-amt-input');
+        if (aInp) aInp.value = savedInlineAddData.amt;
+        const cInps = tr.querySelectorAll('.inl-cust-input');
+        cInps.forEach(inp => {
+          if (savedInlineAddData.custom[inp.dataset.colId] !== undefined) {
+            inp.value = savedInlineAddData.custom[inp.dataset.colId];
+          }
+        });
       }
 
       // Bind keydown events for Enter key continuous submission
@@ -5587,7 +5599,21 @@
       const type = ctxType;
       const entry = ctxEntry;
       saveInlineStates();
-      renderInlineEditForm(type, entry, document.querySelector(`.tr[data-id="${String(entry.id || entry._id)}"]`));
+
+      let tblBody;
+      if (activeTheaterTab) {
+        const rotContainer = document.getElementById('rot-ov-body');
+        if (rotContainer) tblBody = rotContainer.querySelector('.tbl-body-rows');
+      } else {
+        tblBody = document.getElementById(type === 'don' ? 'don-tbl-body' : 'exp-tbl-body');
+      }
+
+      if (tblBody) {
+        const origRow = tblBody.querySelector(`.tr[data-id="${String(entry.id || entry._id)}"]`);
+        if (origRow) {
+          renderInlineEditForm(type, entry, origRow);
+        }
+      }
       closeCtx();
     }
     function closeEditForm() { document.getElementById("edit-form-ov").style.display = "none"; }
