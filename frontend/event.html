@@ -4096,7 +4096,7 @@
     });
 
 
-    function applyData(res) {
+    function applyData(res, preventRender = false) {
       eventData = res.event;
       donations = res.donations;
       expenses = res.expenses;
@@ -4158,10 +4158,16 @@
         }
         return;
       }
+      
+      if (preventRender) {
+        updateTheaterStats();
+        return;
+      }
+      
       renderPage();
     }
 
-    async function loadAll(isBackground = false, forceFresh = false) {
+    async function loadAll(isBackground = false, forceFresh = false, preventRender = false) {
       if (!isBackground && !forceFresh) {
         // RESET GLOBALS
         isOrganizer = false;
@@ -4197,7 +4203,7 @@
         sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
 
         // Apply Fresh Data
-        applyData(res);
+        applyData(res, preventRender);
       } catch (e) {
         console.error("LoadAll failed", e);
         const msg = (e.message || "").toLowerCase();
@@ -4271,7 +4277,8 @@
         if (!wsAuthenticated) return;
         if (msg.type === "DATA_CHANGED") {
           console.log(`[debug] WS DATA_CHANGED received. activeInlineAddType=${activeInlineAddType}`);
-          loadAll(true, true);
+          const weCausedIt = window._ignoreNextWsUpdate && (Date.now() - window._ignoreNextWsUpdate < 3000);
+          loadAll(true, true, weCausedIt);
         }
         if (msg.type === "NEW_CHAT_MSG" && msg.data) {
           handleIncomingChatMsg(msg.data);
@@ -4579,6 +4586,34 @@
       // If we're resuming a paused add form during an edit submit/cancel
       if (forceRestore && state.type === 'add') {
         activeInlineAddType = state.formType;
+      }
+
+      // SMART PATCH: Instead of discarding the node on schema change, dynamically update its custom columns to prevent cursor flash!
+      if (window.schemaChanged && _preservedInlineFormNode) {
+        const isDon = state.formType === 'don';
+        const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
+        
+        // Remove old custom cells
+        const oldCustoms = _preservedInlineFormNode.querySelectorAll('.inl-custom');
+        oldCustoms.forEach(inp => {
+          const cell = inp.closest('.sc');
+          if (cell) cell.remove();
+        });
+
+        // Add new custom cells
+        customCols.forEach(col => {
+          const colName = typeof col === "string" ? col : col.n;
+          const colWidth = typeof col === "string" ? 180 : (col.w || 180);
+          const val = state.customVals[colName] || '';
+          const cell = document.createElement('div');
+          cell.className = 'sc';
+          cell.style.cssText = `width:${colWidth}px; display:flex; align-items:center;`;
+          // Use same HTML as renderInlineEntryForm
+          cell.innerHTML = `<input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" value="${escHtml(val)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">`;
+          _preservedInlineFormNode.appendChild(cell);
+        });
+        
+        window.schemaChanged = false; // Successfully patched, skip rebuild!
       }
 
       if (window.schemaChanged || !_preservedInlineFormNode) {
@@ -5283,6 +5318,8 @@
       btn.disabled = true;
       btn.textContent = 'Saving...';
 
+      window._ignoreNextWsUpdate = Date.now();
+
       try {
         let newEntry;
         if (isDon) {
@@ -5587,6 +5624,8 @@
       });
 
       if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+      window._ignoreNextWsUpdate = Date.now();
 
       try {
         let updatedEntry = null;
