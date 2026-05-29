@@ -5103,7 +5103,7 @@
       const filterUI = `
         <div style="display:flex; justify-content:center; gap:8px; margin-bottom:15px; padding:0 10px;">
           ${['all', 'month', 'week', 'today'].map(f => `
-            <button onclick="sumDateFilter='${f}'; renderSummary();" 
+            <button onclick="sumDateFilter='${f}'; renderSummary(0, '${containerId}');" 
               style="padding:6px 14px; border-radius:20px; border:1px solid ${sumDateFilter === f ? 'var(--primary)' : 'var(--border2)'}; 
               background:${sumDateFilter === f ? 'var(--primary)' : 'var(--surface)'}; 
               color:${sumDateFilter === f ? 'white' : 'var(--text2)'}; 
@@ -5157,15 +5157,15 @@
               ${topCollectors.length ? topCollectors.map((c, i) => {
                 const pct = maxCol ? (c[1]/maxCol)*100 : 0;
                 return `
-                <div onclick="jumpToTabAndSearch('don', '${escHtml(c[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, var(--surf-var) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                <div onclick="jumpToTabAndSearch('don', '${escHtml(c[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(13, 139, 139, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(c[0])}</span>
                   </div>
                   <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(c[1])}</div>
                 </div>
               `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
-              ${topCollectorsAll.length > sumLimits.col ? `<div onclick="sumLimits.col+=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
-              ${sumLimits.col > 5 ? `<div onclick="sumLimits.col=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
+              ${topCollectorsAll.length > sumLimits.col ? `<div onclick="sumLimits.col+=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
+              ${sumLimits.col > 5 ? `<div onclick="sumLimits.col=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
             </div>
           </div>` : ''}
 
@@ -5179,15 +5179,15 @@
               ${topDonors.length ? topDonors.map((d, i) => {
                 const pct = maxDon ? (d[1]/maxDon)*100 : 0;
                 return `
-                <div onclick="jumpToTabAndSearch('don', '${escHtml(d[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, var(--surf-var) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                <div onclick="jumpToTabAndSearch('don', '${escHtml(d[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(13, 139, 139, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(d[0])}</span>
                   </div>
                   <div style="font-size:14px; font-weight:900; color:var(--green);">${formatINR(d[1])}</div>
                 </div>
               `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
-              ${topDonorsAll.length > sumLimits.don ? `<div onclick="sumLimits.don+=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
-              ${sumLimits.don > 5 ? `<div onclick="sumLimits.don=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
+              ${topDonorsAll.length > sumLimits.don ? `<div onclick="sumLimits.don+=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
+              ${sumLimits.don > 5 ? `<div onclick="sumLimits.don=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
             </div>
           </div>` : ''}
 
@@ -5201,15 +5201,15 @@
               ${topExpenses.length ? topExpenses.map((exp, i) => {
                 const pct = maxExp ? (exp.amount/maxExp)*100 : 0;
                 return `
-                <div onclick="jumpToTabAndSearch('exp', '${escHtml(exp.description).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, var(--surf-var) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                <div onclick="jumpToTabAndSearch('exp', '${escHtml(exp.description).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(13, 139, 139, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(exp.description)}</span>
                   </div>
                   <div style="font-size:14px; font-weight:900; color:var(--red);">${formatINR(exp.amount)}</div>
                 </div>
               `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
-              ${topExpensesAll.length > sumLimits.exp ? `<div onclick="sumLimits.exp+=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
-              ${sumLimits.exp > 5 ? `<div onclick="sumLimits.exp=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
+              ${topExpensesAll.length > sumLimits.exp ? `<div onclick="sumLimits.exp+=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
+              ${sumLimits.exp > 5 ? `<div onclick="sumLimits.exp=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
             </div>
           </div>` : ''}
         </div>
