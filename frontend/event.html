@@ -3307,7 +3307,10 @@
           </svg>
           <input class="search-input" id="don-search" type="text" placeholder="Search donors…"
             oninput="filterTable('don',this.value)" autocomplete="off" autocorrect="off" autocapitalize="off"
-            spellcheck="false" />
+            spellcheck="false" style="flex:1;" />
+          <button class="filter-icon-btn" onclick="openFilterModal()" style="background:transparent; border:none; padding:6px; border-radius:10px; cursor:pointer; color:var(--text2); display:flex; align-items:center; justify-content:center; transition:all 0.2s; margin-left:4px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"></line><line x1="10" y1="4" x2="3" y2="4"></line><line x1="21" y1="12" x2="12" y2="12"></line><line x1="8" y1="12" x2="3" y2="12"></line><line x1="21" y1="20" x2="16" y2="20"></line><line x1="12" y1="20" x2="3" y2="20"></line><line x1="14" y1="2" x2="14" y2="6"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="16" y1="18" x2="16" y2="22"></line></svg>
+          </button>
         </div>
       </div>
       <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
@@ -3348,7 +3351,10 @@
           </svg>
           <input class="search-input" id="exp-search" type="text" placeholder="Search expenses…"
             oninput="filterTable('exp',this.value)" autocomplete="off" autocorrect="off" autocapitalize="off"
-            spellcheck="false" />
+            spellcheck="false" style="flex:1;" />
+          <button class="filter-icon-btn" onclick="openFilterModal()" style="background:transparent; border:none; padding:6px; border-radius:10px; cursor:pointer; color:var(--text2); display:flex; align-items:center; justify-content:center; transition:all 0.2s; margin-left:4px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"></line><line x1="10" y1="4" x2="3" y2="4"></line><line x1="21" y1="12" x2="12" y2="12"></line><line x1="8" y1="12" x2="3" y2="12"></line><line x1="21" y1="20" x2="16" y2="20"></line><line x1="12" y1="20" x2="3" y2="20"></line><line x1="14" y1="2" x2="14" y2="6"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="16" y1="18" x2="16" y2="22"></line></svg>
+          </button>
         </div>
       </div>
       <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
@@ -3556,6 +3562,9 @@
               <input type="search" id="theater-top-search" placeholder="Search..."
                 style="width: 130px; padding: 4px 8px 4px 26px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 11px; outline: none;"
                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
+              <button class="filter-icon-btn" onclick="openFilterModal()" style="margin-left:6px; background:var(--surface); border:1px solid var(--border); padding:4px; border-radius:8px; cursor:pointer; color:var(--text2); display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"></line><line x1="10" y1="4" x2="3" y2="4"></line><line x1="21" y1="12" x2="12" y2="12"></line><line x1="8" y1="12" x2="3" y2="12"></line><line x1="21" y1="20" x2="16" y2="20"></line><line x1="12" y1="20" x2="3" y2="20"></line><line x1="14" y1="2" x2="14" y2="6"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="16" y1="18" x2="16" y2="22"></line></svg>
+              </button>
             </div>
           </div>
 
@@ -4017,6 +4026,31 @@
     let donations = [];
     let expenses = [];
     let members = [];
+    
+    // Sort & Filter state
+    let currentSort = 'time_asc'; // 'time_asc', 'time_desc', 'amt_desc', 'amt_asc', 'name_asc'
+    let myEntriesOnly = false;
+
+    function applySortAndFilter(list, type) {
+      let res = [...list];
+      if (myEntriesOnly && myUserId) {
+        if (type === 'don') res = res.filter(d => d.collected_by === myUserId);
+        else res = res.filter(e => e.spent_by === myUserId);
+      }
+      res.sort((a, b) => {
+        if (currentSort === 'time_asc') return new Date(a.collected_at) - new Date(b.collected_at);
+        if (currentSort === 'time_desc') return new Date(b.collected_at) - new Date(a.collected_at);
+        if (currentSort === 'amt_desc') return (b.amount || 0) - (a.amount || 0);
+        if (currentSort === 'amt_asc') return (a.amount || 0) - (b.amount || 0);
+        if (currentSort === 'name_asc') {
+          const nameA = ((type === 'don' ? a.donor_name : a.description) || '').toLowerCase();
+          const nameB = ((type === 'don' ? b.donor_name : b.description) || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        }
+        return 0;
+      });
+      return res;
+    }
     let currentTab = params.get("tab") || "don";
     let ctxTarget = null; // { type:'don'|'exp', entry, row }
     let editTarget = null;
@@ -4717,19 +4751,18 @@
       const storageKey = `np_pinned_${eventId}_don`;
       const pD = JSON.parse(localStorage.getItem(storageKey) || "[]").map(id => String(id));
 
-      // Sort: Pinned first (by sequence), then by date asc (oldest first)
-      const sorted = [...donations].sort((a, b) => {
-        const aid = String(a.id || a._id);
-        const bid = String(b.id || b._id);
-        const ap = pD.indexOf(aid);
-        const bp = pD.indexOf(bid);
-
-        if (ap !== -1 && bp !== -1) return ap - bp;
-        if (ap !== -1) return -1;
-        if (bp !== -1) return 1;
-
-        return new Date(a.collected_at) - new Date(b.collected_at);
+      let pinned = [];
+      let unpinned = [];
+      const sortedBase = applySortAndFilter(donations, 'don');
+      sortedBase.forEach(item => {
+        const id = String(item.id || item._id);
+        const idx = pD.indexOf(id);
+        if (idx !== -1) pinned.push({ item, idx });
+        else unpinned.push(item);
       });
+      pinned.sort((a, b) => a.idx - b.idx);
+      const sorted = [...pinned.map(p => p.item), ...unpinned];
+
       const filtered = q2 ? sorted.filter(d => searchMatch(d, q2)) : sorted;
       const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
       document.getElementById("don-count").textContent = `${filtered.length} donor${filtered.length !== 1 ? "s" : ""}`;
@@ -4841,18 +4874,18 @@
       const storageKey = `np_pinned_${eventId}_exp`;
       const pE = JSON.parse(localStorage.getItem(storageKey) || "[]").map(id => String(id));
 
-      const sorted = [...expenses].sort((a, b) => {
-        const aid = String(a.id || a._id);
-        const bid = String(b.id || b._id);
-        const ap = pE.indexOf(aid);
-        const bp = pE.indexOf(bid);
-
-        if (ap !== -1 && bp !== -1) return ap - bp;
-        if (ap !== -1) return -1;
-        if (bp !== -1) return 1;
-
-        return new Date(a.collected_at) - new Date(b.collected_at);
+      let pinned = [];
+      let unpinned = [];
+      const sortedBase = applySortAndFilter(expenses, 'exp');
+      sortedBase.forEach(item => {
+        const id = String(item.id || item._id);
+        const idx = pE.indexOf(id);
+        if (idx !== -1) pinned.push({ item, idx });
+        else unpinned.push(item);
       });
+      pinned.sort((a, b) => a.idx - b.idx);
+      const sorted = [...pinned.map(p => p.item), ...unpinned];
+
       const filtered = q2 ? sorted.filter(e => searchMatch(e, q2)) : sorted;
       const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
       document.getElementById("exp-count").textContent = `${filtered.length} expense${filtered.length !== 1 ? "s" : ""}`;
@@ -6139,6 +6172,51 @@
     function openDD() { document.getElementById("dd-ov").style.display = "block"; }
     function closeDD() { document.getElementById("dd-ov").style.display = "none"; }
 
+    function openFilterModal() {
+      document.getElementById("filter-sort-overlay").style.display = "flex";
+      document.querySelector(`input[name="fs_sort"][value="${currentSort}"]`).checked = true;
+      document.getElementById("fs_my_entries").checked = myEntriesOnly;
+      if (!isVisitor) {
+        document.getElementById("fs-filter-section").style.display = "block";
+      } else {
+        document.getElementById("fs-filter-section").style.display = "none";
+      }
+    }
+    
+    function closeFilterModal() {
+      document.getElementById("filter-sort-overlay").style.display = "none";
+    }
+
+    function applyFilterSort() {
+      currentSort = document.querySelector('input[name="fs_sort"]:checked').value;
+      myEntriesOnly = document.getElementById("fs_my_entries").checked;
+      
+      updateFilterIconStyles();
+      
+      const qd = document.getElementById("don-search").value;
+      const qe = document.getElementById("exp-search").value;
+      renderDonations(qd);
+      renderExpenses(qe);
+      if (activeTheaterTab) {
+        enterTheater(activeTheaterTab);
+      }
+    }
+
+    function updateFilterIconStyles() {
+      const icons = document.querySelectorAll('.filter-icon-btn');
+      const isActive = currentSort !== 'time_asc' || myEntriesOnly;
+      icons.forEach(btn => {
+        if (isActive) {
+          btn.style.color = "var(--primary)";
+          btn.style.background = "var(--primary-lt)";
+        } else {
+          btn.style.color = "var(--text2)";
+          btn.style.background = "transparent";
+          if(btn.style.padding === "4px") btn.style.background = "var(--surface)"; // theater mode variant
+        }
+      });
+    }
+
     function openColDD() { document.getElementById("dd-col-ov").style.display = "flex"; }
     function closeColDD() {
       document.getElementById("dd-col-ov").style.display = "none";
@@ -6755,14 +6833,17 @@
       const q = (window.theaterSearchQuery || "");
       const filtered = q ? rawList.filter(x => searchMatch(x, q)) : rawList;
 
-      const list = [...filtered].sort((a, b) => {
-        const ap = pList.indexOf(String(a.id || a._id));
-        const bp = pList.indexOf(String(b.id || b._id));
-        if (ap !== -1 && bp !== -1) return ap - bp;
-        if (ap !== -1) return -1;
-        if (bp !== -1) return 1;
-        return new Date(a.collected_at) - new Date(b.collected_at);
+      let pinned = [];
+      let unpinned = [];
+      const sortedBase = applySortAndFilter(filtered, type);
+      sortedBase.forEach(item => {
+        const id = String(item.id || item._id);
+        const idx = pList.indexOf(id);
+        if (idx !== -1) pinned.push({ item, idx });
+        else unpinned.push(item);
       });
+      pinned.sort((a, b) => a.idx - b.idx);
+      const list = [...pinned.map(p => p.item), ...unpinned];
       const customCols = type === "don" ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
       list.forEach((entry, i) => {
@@ -8263,6 +8344,55 @@
     });
   </script>
 
+  <div id="filter-sort-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:10000; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px);" onclick="if(event.target===this) closeFilterModal()">
+    <div style="background:var(--card); width:100%; max-width:500px; border-radius:24px 24px 0 0; padding:24px; animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; font-size:20px; font-weight:900; color:var(--text);">Sort & Filter</h3>
+        <button onclick="closeFilterModal()" style="background:var(--surface); border:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <h4 style="margin:0 0 10px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Sort By</h4>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
+            <input type="radio" name="fs_sort" value="time_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+            <span style="font-size:15px; font-weight:800; color:var(--text);">Time: Newest First</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
+            <input type="radio" name="fs_sort" value="time_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+            <span style="font-size:15px; font-weight:800; color:var(--text);">Default (Time: Oldest First)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
+            <input type="radio" name="fs_sort" value="amt_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+            <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: High to Low</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
+            <input type="radio" name="fs_sort" value="amt_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+            <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: Low to High</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
+            <input type="radio" name="fs_sort" value="name_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+            <span style="font-size:15px; font-weight:800; color:var(--text);">Name: A to Z</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="fs-filter-section" style="margin-bottom:20px; display:none;">
+        <h4 style="margin:0 0 10px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Filter</h4>
+        <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--primary-lt); border:1px solid var(--primary); padding:14px; border-radius:12px;">
+          <input type="checkbox" id="fs_my_entries" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+          <div style="flex:1;">
+            <span style="font-size:15px; font-weight:800; color:var(--primary-dk); display:block;">My Entries Only</span>
+            <span style="font-size:12px; font-weight:700; color:var(--primary); opacity:0.8;">Only show entries created by you</span>
+          </div>
+        </label>
+      </div>
+
+      <button onclick="closeFilterModal()" class="btn btn-solid-primary" style="width:100%; height:48px; font-size:16px;">Done</button>
+    </div>
+  </div>
 </body>
 
 </html>
