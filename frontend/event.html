@@ -4529,6 +4529,7 @@
 
     // --- Seamless Inline State Preservation ---
     let _draftInlineData = null;
+    let _preservedInlineFormNode = null;
 
     function captureInlineState(tblBody, type) {
       if (!tblBody) return;
@@ -4565,6 +4566,8 @@
       });
 
       _draftInlineData = state;
+      _preservedInlineFormNode = formRow;
+      formRow.remove();
     }
 
     function restoreInlineState(tblBody, forceRestore = false) {
@@ -4577,14 +4580,49 @@
         activeInlineAddType = state.formType;
       }
 
-      if (state.type === 'add') {
-        renderInlineEntryForm(state.formType, false);
-      } else if (state.type === 'edit' && state.editId) {
-        const list = state.formType === 'don' ? donations : expenses;
-        const entry = list.find(x => String(x.id || x._id) === state.editId);
-        const origRow = tblBody.querySelector(`.tr[data-id="${state.editId}"]`);
-        if (entry && origRow) {
-          renderInlineEditForm(state.formType, entry, origRow);
+      if (window.schemaChanged || !_preservedInlineFormNode) {
+        if (state.type === 'add') {
+          renderInlineEntryForm(state.formType, false);
+        } else if (state.type === 'edit' && state.editId) {
+          const list = state.formType === 'don' ? donations : expenses;
+          const entry = list.find(x => String(x.id || x._id) === state.editId);
+          const origRow = tblBody.querySelector(`.tr[data-id="${state.editId}"]`);
+          if (entry && origRow) {
+            renderInlineEditForm(state.formType, entry, origRow);
+          }
+        }
+      } else {
+        // Reuse preserved node to avoid blink
+        if (state.type === 'add') {
+          const newRowBtn = tblBody.querySelector('.new-row');
+          if (newRowBtn) {
+            tblBody.insertBefore(_preservedInlineFormNode, newRowBtn);
+            newRowBtn.onclick = null;
+            newRowBtn.style.cursor = "default";
+            newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEntry(this, '${state.formType}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+                <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEntry('${state.formType}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+            </span>`;
+          } else {
+            tblBody.appendChild(_preservedInlineFormNode);
+          }
+        } else if (state.type === 'edit' && state.editId) {
+          const origRow = tblBody.querySelector(`.tr[data-id="${state.editId}"]`);
+          if (origRow) {
+            origRow.style.display = 'none';
+            tblBody.insertBefore(_preservedInlineFormNode, origRow.nextSibling);
+            const newRowBtn = tblBody.querySelector('.new-row');
+            if (newRowBtn) {
+              newRowBtn.onclick = null;
+              newRowBtn.style.cursor = "default";
+              newRowBtn.innerHTML = `<span style="position:sticky; left:50%; transform:translateX(-50%); white-space:nowrap; z-index:10; display:flex; gap:8px; align-items:center;">
+                  <button class="btn btn-text-secondary" onclick="event.stopPropagation(); cancelInlineEdit(this, '${state.formType}')" style="padding:4px 14px; font-size:12px; background:var(--surface); border:1px solid var(--border2); height:28px; white-space:nowrap;">Cancel</button>
+                  <button class="btn btn-solid-primary" onclick="event.stopPropagation(); submitInlineEdit('${state.formType}', '${state.editId}', this)" style="padding:4px 18px; font-size:12px; height:28px; box-shadow:0 4px 10px rgba(0,0,0,0.15); white-space:nowrap;">Save</button>
+              </span>`;
+            }
+          } else {
+            tblBody.appendChild(_preservedInlineFormNode);
+          }
         }
       }
 
@@ -4616,6 +4654,8 @@
       }
 
       _draftInlineData = null;
+      _preservedInlineFormNode = null;
+      window.schemaChanged = false;
     }
 
     // ── Donations ──
@@ -5867,6 +5907,7 @@
         const res = await updateEvent(eventId, data);
         eventData[key] = res[key];
         clearEventCache();
+        window.schemaChanged = true;
         if (activeColType === "don") renderDonations(); else renderExpenses();
         if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeCustomColSheet();
@@ -6512,6 +6553,7 @@
         const res = await updateEvent(eventId, data);
         eventData[key] = res[key];
         clearEventCache();
+        window.schemaChanged = true;
         if (activeColType === "don") renderDonations(); else renderExpenses();
         if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeCustomColSheet();
@@ -6554,6 +6596,7 @@
         eventData[key] = res[key];
         clearEventCache();
 
+        window.schemaChanged = true;
         if (activeColType === "don") renderDonations(); else renderExpenses();
         if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
         closeCustomColSheet();
