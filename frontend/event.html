@@ -5604,9 +5604,9 @@
       if (!skipDupCheck) {
         let existing = null;
         if (isDon) {
-          existing = donations.find(d => d.id !== id && d.donor_name.toLowerCase() === name.toLowerCase());
+          existing = donations.find(d => String(d.id || d._id) !== id && d.donor_name.toLowerCase() === name.toLowerCase());
         } else {
-          existing = expenses.find(e => e.id !== id && e.description.toLowerCase() === name.toLowerCase());
+          existing = expenses.find(e => String(e.id || e._id) !== id && e.description.toLowerCase() === name.toLowerCase());
         }
         if (existing) {
           const existingName = type === "don" ? existing.donor_name : existing.description;
@@ -5885,10 +5885,11 @@
       if (!skipDupCheck) {
         const amtVal = amount ? parseFloat(amount) : null;
         let existing = null;
+        const currentId = String(editTarget.entry.id || editTarget.entry._id);
         if (editTarget.type === "don") {
-          existing = donations.find(d => d.id !== editTarget.entry.id && d.donor_name.toLowerCase() === name.toLowerCase());
+          existing = donations.find(d => String(d.id || d._id) !== currentId && d.donor_name.toLowerCase() === name.toLowerCase());
         } else {
-          existing = expenses.find(e => e.id !== editTarget.entry.id && e.description.toLowerCase() === name.toLowerCase());
+          existing = expenses.find(e => String(e.id || e._id) !== currentId && e.description.toLowerCase() === name.toLowerCase());
         }
         if (existing) {
           const existingName = editTarget.type === "don" ? existing.donor_name : existing.description;
