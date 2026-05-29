@@ -1235,6 +1235,7 @@
       display: flex;
       align-items: flex-end;
       z-index: 11500;
+      animation: fadeIn 0.2s ease-out forwards;
     }
 
     .sbox {
@@ -1251,6 +1252,7 @@
       flex-direction: column;
       overflow: hidden;
       box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
+      animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .sbox-header {
@@ -1485,6 +1487,16 @@
       to {
         transform: rotate(360deg)
       }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     /* ── Dark Mode Local Overrides ── */
@@ -3841,7 +3853,7 @@
     </div>
 
     <!-- Collector Settings Dropdown -->
-    <div id="dd-col-ov" class="sov" style="display:none;background:rgba(0,0,0,.1);" onclick="closeColDD()">
+    <div id="dd-col-ov" class="dd-ov" style="display:none;background:rgba(0,0,0,.1);" onclick="closeColDD()">
       <div class="dd-box" onclick="event.stopPropagation()">
         <div class="dd-item" id="col-action-item" onclick="closeColDD();openExitPop()" style="color:var(--red);">
           <div class="dd-ic"><span data-np-icon="log-out" data-np-size="18"></span></div>
@@ -8345,52 +8357,59 @@
   </script>
 
   <div id="filter-sort-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:10000; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px);" onclick="if(event.target===this) closeFilterModal()">
-    <div style="background:var(--card); width:100%; max-width:500px; border-radius:24px 24px 0 0; padding:24px; animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div style="background:var(--card); width:100%; max-width:500px; max-height:100vh; display:flex; flex-direction:column; border-radius:24px 24px 0 0; padding:20px; animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-shrink:0;">
         <h3 style="margin:0; font-size:20px; font-weight:900; color:var(--text);">Sort & Filter</h3>
         <button onclick="closeFilterModal()" style="background:var(--surface); border:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
 
-      <div style="margin-bottom:20px;">
-        <h4 style="margin:0 0 10px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Sort By</h4>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
-            <input type="radio" name="fs_sort" value="time_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-            <span style="font-size:15px; font-weight:800; color:var(--text);">Time: Newest First</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
-            <input type="radio" name="fs_sort" value="time_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-            <span style="font-size:15px; font-weight:800; color:var(--text);">Default (Time: Oldest First)</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
-            <input type="radio" name="fs_sort" value="amt_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-            <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: High to Low</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
-            <input type="radio" name="fs_sort" value="amt_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-            <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: Low to High</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:14px; border-radius:12px;">
-            <input type="radio" name="fs_sort" value="name_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-            <span style="font-size:15px; font-weight:800; color:var(--text);">Name: A to Z</span>
+      <!-- Scrollable Content -->
+      <div style="flex:1; overflow-y:auto; padding-right:4px;">
+        <div style="margin-bottom:16px;">
+          <h4 style="margin:0 0 8px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Sort By</h4>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
+              <input type="radio" name="fs_sort" value="time_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+              <span style="font-size:15px; font-weight:800; color:var(--text);">Time: Newest First</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
+              <input type="radio" name="fs_sort" value="time_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+              <span style="font-size:15px; font-weight:800; color:var(--text);">Default (Time: Oldest First)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
+              <input type="radio" name="fs_sort" value="amt_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+              <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: High to Low</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
+              <input type="radio" name="fs_sort" value="amt_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+              <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: Low to High</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
+              <input type="radio" name="fs_sort" value="name_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+              <span style="font-size:15px; font-weight:800; color:var(--text);">Name: A to Z</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="fs-filter-section" style="margin-bottom:16px; display:none;">
+          <h4 style="margin:0 0 8px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Filter</h4>
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
+            <input type="checkbox" id="fs_my_entries" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
+            <div style="flex:1;">
+              <span style="font-size:15px; font-weight:800; color:var(--text); display:block;">My Entries Only</span>
+              <span style="font-size:12px; font-weight:700; color:var(--text3); margin-top:2px; display:block;">Only show entries created by you</span>
+            </div>
           </label>
         </div>
-      </div>
 
-      <div id="fs-filter-section" style="margin-bottom:20px; display:none;">
-        <h4 style="margin:0 0 10px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Filter</h4>
-        <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--primary-lt); border:1px solid var(--primary); padding:14px; border-radius:12px;">
-          <input type="checkbox" id="fs_my_entries" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-          <div style="flex:1;">
-            <span style="font-size:15px; font-weight:800; color:var(--primary-dk); display:block;">My Entries Only</span>
-            <span style="font-size:12px; font-weight:700; color:var(--primary); opacity:0.8;">Only show entries created by you</span>
-          </div>
-        </label>
+        <!-- Footer Moved Inside Scrollable Area -->
+        <div style="margin-bottom:4px;">
+          <button onclick="closeFilterModal()" class="btn btn-solid-primary" style="width:100%; height:48px; font-size:16px;">Done</button>
+        </div>
       </div>
-
-      <button onclick="closeFilterModal()" class="btn btn-solid-primary" style="width:100%; height:48px; font-size:16px;">Done</button>
     </div>
   </div>
 </body>
