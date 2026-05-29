@@ -4537,7 +4537,8 @@
       const formRow = tblBody.querySelector('.inline-entry-row') || tblBody.querySelector('.inline-edit-row');
       if (!formRow) return;
 
-      const isAdd = formRow.classList.contains('inline-entry-row');
+      // Reliable detection: Edit forms always have _origRow attached to the DOM node
+      const isAdd = !formRow._origRow;
 
       const state = {
         type: isAdd ? 'add' : 'edit',
@@ -5805,9 +5806,13 @@
 
       if (!tblBody) return;
 
-      if (activeInlineAddType === type) {
+      if (activeInlineAddType === type || activeInlineEditType === type) {
         captureInlineState(tblBody, type);
-        activeInlineAddType = null;
+        if (activeInlineAddType === type) activeInlineAddType = null;
+        if (activeInlineEditType === type) {
+          activeInlineEditType = null;
+          activeInlineEditId = null;
+        }
         restoreNewRowBtn(tblBody, type);
       }
 
@@ -5908,8 +5913,11 @@
         eventData[key] = res[key];
         clearEventCache();
         window.schemaChanged = true;
-        if (activeColType === "don") renderDonations(); else renderExpenses();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
+        if (activeTheaterTab) {
+          switchTheaterTab(activeTheaterTab, true);
+        } else {
+          if (activeColType === "don") renderDonations(); else renderExpenses();
+        }
         closeCustomColSheet();
         closeDelColPop();
         showToast("Column deleted.");
@@ -6554,8 +6562,11 @@
         eventData[key] = res[key];
         clearEventCache();
         window.schemaChanged = true;
-        if (activeColType === "don") renderDonations(); else renderExpenses();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
+        if (activeTheaterTab) {
+          switchTheaterTab(activeTheaterTab, true);
+        } else {
+          if (activeColType === "don") renderDonations(); else renderExpenses();
+        }
         closeCustomColSheet();
         showToast("Column added!");
       } catch (e) { showToast(e.message || "Failed.", "error"); }
@@ -6597,8 +6608,11 @@
         clearEventCache();
 
         window.schemaChanged = true;
-        if (activeColType === "don") renderDonations(); else renderExpenses();
-        if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
+        if (activeTheaterTab) {
+          switchTheaterTab(activeTheaterTab, true);
+        } else {
+          if (activeColType === "don") renderDonations(); else renderExpenses();
+        }
         closeCustomColSheet();
         showToast("Column renamed!");
       } catch (e) { showToast(e.message || "Failed.", "error"); }
