@@ -4694,6 +4694,19 @@
       window.schemaChanged = false;
     }
 
+    function searchMatch(obj, q) {
+      if (!q) return true;
+      const q2 = q.toLowerCase();
+      let str = (obj.donor_name || obj.description || '') + ' ' + 
+                (obj.amount || '') + ' ' + 
+                (obj.collected_by_name || 'System') + ' ' +
+                (obj.spent_by_name || 'System');
+      if (obj.custom_fields) {
+        str += ' ' + Object.values(obj.custom_fields).join(' ');
+      }
+      return str.toLowerCase().includes(q2);
+    }
+
     // ── Donations ──
     function renderDonations(q = "") {
       const tblBody = document.getElementById("don-tbl-body");
@@ -4717,7 +4730,7 @@
 
         return new Date(a.collected_at) - new Date(b.collected_at);
       });
-      const filtered = q2 ? sorted.filter(d => d.donor_name.toLowerCase().includes(q2)) : sorted;
+      const filtered = q2 ? sorted.filter(d => searchMatch(d, q2)) : sorted;
       const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
       document.getElementById("don-count").textContent = `${filtered.length} donor${filtered.length !== 1 ? "s" : ""}`;
       document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
@@ -4840,7 +4853,7 @@
 
         return new Date(a.collected_at) - new Date(b.collected_at);
       });
-      const filtered = q2 ? sorted.filter(e => e.description.toLowerCase().includes(q2)) : sorted;
+      const filtered = q2 ? sorted.filter(e => searchMatch(e, q2)) : sorted;
       const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
       document.getElementById("exp-count").textContent = `${filtered.length} expense${filtered.length !== 1 ? "s" : ""}`;
       document.getElementById("exp-total").innerHTML = `Total: <span class="sum-r">${formatINR(total)}</span>`;
@@ -4943,67 +4956,122 @@
     }
 
     // ── Summary ──
-    // ── Summary ──
+    let sumDateFilter = 'all'; // all, month, week, today
+    let sumLimits = { don: 5, exp: 5, col: 5 };
+
+    function filterByDate(list, filterType) {
+      if (filterType === 'all') return list;
+      const now = new Date();
+      return list.filter(item => {
+        if (!item.collected_at) return true;
+        const dt = new Date(item.collected_at);
+        if (filterType === 'today') {
+           return dt.getDate() === now.getDate() && dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear();
+        }
+        if (filterType === 'week') {
+           const diff = now - dt;
+           return diff <= 7 * 24 * 60 * 60 * 1000;
+        }
+        if (filterType === 'month') {
+           return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear();
+        }
+        return true;
+      });
+    }
+
+    function jumpToTabAndSearch(tab, query) {
+      switchTab(tab);
+      const searchInput = document.getElementById(tab === 'don' ? 'don-search' : 'exp-search');
+      if (searchInput) {
+        searchInput.value = query;
+        filterTable(tab, query);
+      }
+    }
+
     async function renderSummary(mode = 0, containerId = "sum-body") { // 1: More, -1: Less
       if (mode === 1) vTxnsCount += 5;
       else if (mode === -1) vTxnsCount = 5;
 
-      if (!summaryData) {
-        const totalDonations = donations.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
-        const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-        summaryData = {
-          total_donations: totalDonations,
-          total_expenses: totalExpenses,
-          balance: totalDonations - totalExpenses,
-          donations_count: donations.length,
-          expenses_count: expenses.length,
-          recent_transactions: []
-        };
-      }
+      const fDon = filterByDate(donations, sumDateFilter);
+      const fExp = filterByDate(expenses, sumDateFilter);
 
-      renderSummaryUI(summaryData, false, containerId);
+      const totalDonations = fDon.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
+      const totalExpenses = fExp.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+      
+      const recent = [...fDon.map(d => ({ ...d, type: 'donation', title: d.donor_name })), ...fExp.map(e => ({ ...e, type: 'expense', title: e.description }))]
+        .sort((a, b) => new Date(b.collected_at || 0) - new Date(a.collected_at || 0));
+
+      const dynamicSummary = {
+        total_donations: totalDonations,
+        total_expenses: totalExpenses,
+        balance: totalDonations - totalExpenses,
+        donations_count: fDon.length,
+        expenses_count: fExp.length,
+        recent_transactions: recent,
+        fDon,
+        fExp
+      };
+
+      renderSummaryUI(dynamicSummary, false, containerId);
     }
 
     function renderSummaryUI(data, isTheater, containerId) {
       const body = document.getElementById(containerId || "sum-body");
       const s = data;
       const bal = s.balance;
+      const fDon = s.fDon || donations;
+      const fExp = s.fExp || expenses;
 
       // Top Donors (Ranked)
       const donorTotals = {};
-      donations.forEach(d => {
+      fDon.forEach(d => {
         const name = d.donor_name;
         if (!donorTotals[name]) donorTotals[name] = 0;
         donorTotals[name] += (d.amount || 0);
       });
-      const topDonors = Object.entries(donorTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
+      const topDonorsAll = Object.entries(donorTotals).sort((a, b) => b[1] - a[1]);
+      const topDonors = topDonorsAll.slice(0, sumLimits.don);
+      const maxDon = topDonorsAll.length ? topDonorsAll[0][1] : 0;
 
       // Top Expenses (Ranked)
-      const topExpenses = [...expenses]
-        .sort((a, b) => (b.amount || 0) - (a.amount || 0))
-        .slice(0, 5);
+      const topExpensesAll = [...fExp].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+      const topExpenses = topExpensesAll.slice(0, sumLimits.exp);
+      const maxExp = topExpensesAll.length ? topExpensesAll[0].amount : 0;
 
       const spendRatio = s.total_donations > 0 ? (s.total_expenses / s.total_donations) * 100 : 0;
 
       // Top Collectors (Ranked)
       const collectorTotals = {};
-      donations.forEach(d => {
+      fDon.forEach(d => {
         const name = d.collected_by_name || 'System';
         if (!collectorTotals[name]) collectorTotals[name] = 0;
         collectorTotals[name] += (d.amount || 0);
       });
-      const topCollectors = Object.entries(collectorTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
+      const topCollectorsAll = Object.entries(collectorTotals).sort((a, b) => b[1] - a[1]);
+      const topCollectors = topCollectorsAll.slice(0, sumLimits.col);
+      const maxCol = topCollectorsAll.length ? topCollectorsAll[0][1] : 0;
 
       // Table visibility flags
       const showDon = eventData.show_donations !== false;
       const showExp = eventData.show_expenses !== false;
 
+      const filterUI = `
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:15px; padding:0 10px;">
+          ${['all', 'month', 'week', 'today'].map(f => `
+            <button onclick="sumDateFilter='${f}'; renderSummary();" 
+              style="padding:6px 14px; border-radius:20px; border:1px solid ${sumDateFilter === f ? 'var(--primary)' : 'var(--border2)'}; 
+              background:${sumDateFilter === f ? 'var(--primary)' : 'var(--surface)'}; 
+              color:${sumDateFilter === f ? 'white' : 'var(--text2)'}; 
+              font-size:11px; font-weight:800; cursor:pointer; text-transform:uppercase; transition:all 0.2s; box-shadow:${sumDateFilter === f ? '0 4px 10px rgba(0,0,0,0.1)' : 'none'};">
+              ${f}
+            </button>
+          `).join("")}
+        </div>
+      `;
+
       const html = `
       <div style="padding: 10px; max-width: 500px; margin: 0 auto;">
+        ${filterUI}
         <!-- Available Balance -->
         <div style="background:var(--primary-dk); border-radius:18px; padding:20px; margin-bottom:12px; color:white; box-shadow:0 10px 20px -5px rgba(0,0,0,0.3); text-align:center;">
           <div style="font-size:12px; font-weight:800; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Available Balance</div>
@@ -5041,14 +5109,18 @@
               <span>${npIcon("users", { size: 14 })}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              ${topCollectors.length ? topCollectors.map((c, i) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
-                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
-                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(c[0])}
+              ${topCollectors.length ? topCollectors.map((c, i) => {
+                const pct = maxCol ? (c[1]/maxCol)*100 : 0;
+                return `
+                <div onclick="jumpToTabAndSearch('don', '${escHtml(c[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, var(--surf-var) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
+                    <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(c[0])}</span>
                   </div>
                   <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(c[1])}</div>
                 </div>
-              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
+              `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
+              ${topCollectorsAll.length > sumLimits.col ? `<div onclick="sumLimits.col+=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
+              ${sumLimits.col > 5 ? `<div onclick="sumLimits.col=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
             </div>
           </div>` : ''}
 
@@ -5059,14 +5131,18 @@
               <span>${npIcon("heart", { size: 14 })}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              ${topDonors.length ? topDonors.map((d, i) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
-                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
-                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(d[0])}
+              ${topDonors.length ? topDonors.map((d, i) => {
+                const pct = maxDon ? (d[1]/maxDon)*100 : 0;
+                return `
+                <div onclick="jumpToTabAndSearch('don', '${escHtml(d[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, var(--surf-var) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
+                    <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(d[0])}</span>
                   </div>
                   <div style="font-size:14px; font-weight:900; color:var(--green);">${formatINR(d[1])}</div>
                 </div>
-              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
+              `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
+              ${topDonorsAll.length > sumLimits.don ? `<div onclick="sumLimits.don+=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
+              ${sumLimits.don > 5 ? `<div onclick="sumLimits.don=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
             </div>
           </div>` : ''}
 
@@ -5077,14 +5153,18 @@
               <span>${npIcon("wallet", { size: 14 })}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              ${topExpenses.length ? topExpenses.map((exp, i) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--row-alt); border-radius:10px;">
-                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px;">
-                    <span style="opacity:0.4;">${i + 1}</span> ${escHtml(exp.description)}
+              ${topExpenses.length ? topExpenses.map((exp, i) => {
+                const pct = maxExp ? (exp.amount/maxExp)*100 : 0;
+                return `
+                <div onclick="jumpToTabAndSearch('exp', '${escHtml(exp.description).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, var(--surf-var) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                  <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
+                    <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(exp.description)}</span>
                   </div>
                   <div style="font-size:14px; font-weight:900; color:var(--red);">${formatINR(exp.amount)}</div>
                 </div>
-              `).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
+              `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
+              ${topExpensesAll.length > sumLimits.exp ? `<div onclick="sumLimits.exp+=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
+              ${sumLimits.exp > 5 ? `<div onclick="sumLimits.exp=5; renderSummary();" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
             </div>
           </div>` : ''}
         </div>
@@ -6672,8 +6752,8 @@
       const storageKey = `np_pinned_${eventId}_${type}`;
       const pList = JSON.parse(localStorage.getItem(storageKey) || "[]").map(id => String(id));
       const rawList = type === "don" ? donations : expenses;
-      const q = (window.theaterSearchQuery || "").toLowerCase();
-      const filtered = q ? rawList.filter(x => (x.donor_name || x.description).toLowerCase().includes(q)) : rawList;
+      const q = (window.theaterSearchQuery || "");
+      const filtered = q ? rawList.filter(x => searchMatch(x, q)) : rawList;
 
       const list = [...filtered].sort((a, b) => {
         const ap = pList.indexOf(String(a.id || a._id));
