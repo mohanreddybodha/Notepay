@@ -4527,14 +4527,101 @@
       else vTxnsCount = 5;
     }
 
+    // --- Seamless Inline State Preservation ---
+    let _draftInlineData = null;
+
+    function captureInlineState(tblBody, type) {
+      if (!tblBody) return;
+
+      const formRow = tblBody.querySelector('.inline-entry-row') || tblBody.querySelector('.inline-edit-row');
+      if (!formRow) return;
+
+      const isAdd = formRow.classList.contains('inline-entry-row');
+
+      const state = {
+        type: isAdd ? 'add' : 'edit',
+        formType: type,
+        editId: isAdd ? null : activeInlineEditId,
+        focusClass: null,
+        strVal: '',
+        amtVal: '',
+        customVals: {}
+      };
+
+      if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+        state.focusClass = document.activeElement.className;
+      }
+
+      const strInput = formRow.querySelector('.inl-str-val');
+      if (strInput) state.strVal = strInput.value;
+
+      const amtInput = formRow.querySelector('.inl-amt-input');
+      if (amtInput) state.amtVal = amtInput.value;
+
+      const customInputs = formRow.querySelectorAll('.inl-custom');
+      customInputs.forEach(inp => {
+        const colName = inp.getAttribute('data-col');
+        if (colName) state.customVals[colName] = inp.value;
+      });
+
+      _draftInlineData = state;
+    }
+
+    function restoreInlineState(tblBody, forceRestore = false) {
+      if (!_draftInlineData || !tblBody) return;
+
+      const state = _draftInlineData;
+      
+      // If we're resuming a paused add form during an edit submit/cancel
+      if (forceRestore && state.type === 'add') {
+        activeInlineAddType = state.formType;
+      }
+
+      if (state.type === 'add') {
+        renderInlineEntryForm(state.formType, false);
+      } else if (state.type === 'edit' && state.editId) {
+        const list = state.formType === 'don' ? donations : expenses;
+        const entry = list.find(x => String(x.id || x._id) === state.editId);
+        const origRow = tblBody.querySelector(`.tr[data-id="${state.editId}"]`);
+        if (entry && origRow) {
+          renderInlineEditForm(state.formType, entry, origRow);
+        }
+      }
+
+      const newFormRow = tblBody.querySelector(state.type === 'add' ? '.inline-entry-row' : '.inline-edit-row');
+      if (newFormRow) {
+        const strInput = newFormRow.querySelector('.inl-str-val');
+        if (strInput) strInput.value = state.strVal;
+
+        const amtInput = newFormRow.querySelector('.inl-amt-input');
+        if (amtInput) amtInput.value = state.amtVal;
+
+        const customInputs = newFormRow.querySelectorAll('.inl-custom');
+        customInputs.forEach(inp => {
+          const colName = inp.getAttribute('data-col');
+          if (colName && state.customVals[colName] !== undefined) {
+            inp.value = state.customVals[colName];
+          }
+        });
+
+        if (state.focusClass) {
+          const inputs = newFormRow.querySelectorAll('input');
+          for (let i = 0; i < inputs.length; i++) {
+            if (inputs[i].className === state.focusClass) {
+              setTimeout(() => { if (inputs[i]) inputs[i].focus(); }, 10);
+              break;
+            }
+          }
+        }
+      }
+
+      _draftInlineData = null;
+    }
+
     // ── Donations ──
     function renderDonations(q = "") {
-      console.log(`[debug] renderDonations: q="${q}", activeInlineAddType=${activeInlineAddType}`);
       const tblBody = document.getElementById("don-tbl-body");
-      if (tblBody && activeInlineAddType === "don" && tblBody.querySelector('.inline-entry-row')) {
-        console.log("[debug] renderDonations: inline add active. Skipping full rebuild to preserve input focus.");
-        return;
-      }
+      captureInlineState(tblBody, "don");
       const q2 = q.trim().toLowerCase();
 
       // Combined Pinned List (Local only)
@@ -4653,26 +4740,13 @@
       }
 
       // Auto-trigger active inline entry/edit states
-      console.log(`[debug] renderDonations end check: activeInlineAddType=${activeInlineAddType}`);
-      if (activeInlineAddType === "don") {
-        renderInlineEntryForm("don", false);
-      } else if (activeInlineEditType === "don" && activeInlineEditId) {
-        const entry = donations.find(x => String(x.id || x._id) === activeInlineEditId);
-        const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
-        if (entry && origRow) {
-          renderInlineEditForm("don", entry, origRow);
-        }
-      }
+      restoreInlineState(tblBody);
     }
 
     // ── Expenses ──
     function renderExpenses(q = "") {
-      console.log(`[debug] renderExpenses: q="${q}", activeInlineAddType=${activeInlineAddType}`);
       const tblBody = document.getElementById("exp-tbl-body");
-      if (tblBody && activeInlineAddType === "exp" && tblBody.querySelector('.inline-entry-row')) {
-        console.log("[debug] renderExpenses: inline add active. Skipping full rebuild to preserve input focus.");
-        return;
-      }
+      captureInlineState(tblBody, "exp");
       const q2 = q.trim().toLowerCase();
 
       const storageKey = `np_pinned_${eventId}_exp`;
@@ -4789,16 +4863,7 @@
       }
 
       // Auto-trigger active inline entry/edit states
-      console.log(`[debug] renderExpenses end check: activeInlineAddType=${activeInlineAddType}`);
-      if (activeInlineAddType === "exp") {
-        renderInlineEntryForm("exp", false);
-      } else if (activeInlineEditType === "exp" && activeInlineEditId) {
-        const entry = expenses.find(x => String(x.id || x._id) === activeInlineEditId);
-        const origRow = tblBody.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
-        if (entry && origRow) {
-          renderInlineEditForm("exp", entry, origRow);
-        }
-      }
+      restoreInlineState(tblBody);
     }
 
     // ── Summary ──
@@ -5385,6 +5450,7 @@
         }
         activeInlineEditType = null;
         activeInlineEditId = null;
+        if (tblBody) restoreInlineState(tblBody, true);
       } catch (e) {
         console.error("Error in cancelInlineEdit:", e);
       }
@@ -5514,6 +5580,8 @@
         // 3. Clear edit state
         activeInlineEditType = null;
         activeInlineEditId = null;
+        
+        restoreInlineState(tblBody, true);
 
         // 4. Update the totals in Theater Mode locally
         summaryData = null;
@@ -5696,6 +5764,12 @@
       }
 
       if (!tblBody) return;
+
+      if (activeInlineAddType === type) {
+        captureInlineState(tblBody, type);
+        activeInlineAddType = null;
+        restoreNewRowBtn(tblBody, type);
+      }
 
       const rowId = String(entry.id || entry._id);
       const origRow = tblBody.querySelector(`.tr[data-id="${rowId}"]`);
@@ -6492,10 +6566,7 @@
     }
 
     function fillTableRows(container, type) {
-      if (container && activeInlineAddType === type && container.querySelector('.inline-entry-row')) {
-        console.log("[debug] fillTableRows: inline add active. Skipping full rebuild to preserve input focus.");
-        return;
-      }
+      captureInlineState(container, type);
       container.innerHTML = "";
       if (!eventData) return; // Safety check
       const isTheater = container.parentElement ? container.parentElement.classList.contains("is-theater-table") : true;
@@ -6556,17 +6627,8 @@
         container.appendChild(nr);
       }
 
-      // Auto-trigger active inline entry/edit states
-      if (activeInlineAddType === type) {
-        renderInlineEntryForm(type, false);
-      } else if (activeInlineEditType === type && activeInlineEditId) {
-        const arr = type === "don" ? donations : expenses;
-        const entry = arr.find(x => String(x.id || x._id) === activeInlineEditId);
-        const origRow = container.querySelector(`.tr[data-id="${activeInlineEditId}"]`);
-        if (entry && origRow) {
-          renderInlineEditForm(type, entry, origRow);
-        }
-      }
+      restoreInlineState(container);
+      
     }
 
 
