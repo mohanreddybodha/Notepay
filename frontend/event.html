@@ -1798,6 +1798,16 @@
       .rot-rotate-btn {
         display: none !important;
       }
+      .rot-ov-top {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+      }
+      .rot-top-center {
+        margin: 0;
+      }
+      .rot-top-right {
+        justify-content: flex-end;
+      }
     }
 
     .rot-stat {
@@ -5025,11 +5035,18 @@
     }
 
     function jumpToTabAndSearch(tab, query) {
-      switchTab(tab);
-      const searchInput = document.getElementById(tab === 'don' ? 'don-search' : 'exp-search');
-      if (searchInput) {
-        searchInput.value = query;
-        filterTable(tab, query);
+      if (activeTheaterTab) {
+        window.theaterSearchQuery = query;
+        switchTheaterTab(tab, true);
+        const topSearch = document.getElementById("theater-top-search");
+        if (topSearch) topSearch.value = query;
+      } else {
+        switchTab(tab);
+        const searchInput = document.getElementById(tab === 'don' ? 'don-search' : 'exp-search');
+        if (searchInput) {
+          searchInput.value = query;
+          filterTable(tab, query);
+        }
       }
     }
 
@@ -5157,7 +5174,7 @@
               ${topCollectors.length ? topCollectors.map((c, i) => {
                 const pct = maxCol ? (c[1]/maxCol)*100 : 0;
                 return `
-                <div onclick="jumpToTabAndSearch('don', '${escHtml(c[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(13, 139, 139, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                <div onclick="jumpToTabAndSearch('don', '${escHtml(c[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(59, 130, 246, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(c[0])}</span>
                   </div>
@@ -5179,7 +5196,7 @@
               ${topDonors.length ? topDonors.map((d, i) => {
                 const pct = maxDon ? (d[1]/maxDon)*100 : 0;
                 return `
-                <div onclick="jumpToTabAndSearch('don', '${escHtml(d[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(13, 139, 139, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                <div onclick="jumpToTabAndSearch('don', '${escHtml(d[0]).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(16, 185, 129, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(d[0])}</span>
                   </div>
@@ -5201,7 +5218,7 @@
               ${topExpenses.length ? topExpenses.map((exp, i) => {
                 const pct = maxExp ? (exp.amount/maxExp)*100 : 0;
                 return `
-                <div onclick="jumpToTabAndSearch('exp', '${escHtml(exp.description).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(13, 139, 139, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                <div onclick="jumpToTabAndSearch('exp', '${escHtml(exp.description).replace(/'/g, "\\'")}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:linear-gradient(90deg, rgba(239, 68, 68, 0.15) ${pct}%, transparent ${pct}%); border-radius:10px; border:1px solid var(--border2); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(exp.description)}</span>
                   </div>
