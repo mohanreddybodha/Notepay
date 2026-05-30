@@ -54,17 +54,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/api/debug/log")
-async def debug_log(request: Request):
-    try:
-        data = await request.json()
-        msg = data.get("message", "")
-        with open("debug_js.log", "a", encoding="utf-8") as f:
-            f.write(msg + "\n")
-        print(f"[debug_js.log] {msg}")
-    except Exception as e:
-        print(f"Error logging: {e}")
-    return {"status": "ok"}
 
 #  WEBSOCKET MANAGER 
 class ConnectionManager:
@@ -172,16 +161,10 @@ async def get_current_user_id(
     db: Session = Depends(get_db),
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
 ):
-    # Start profiling
-    import time
-    start_t = time.time()
-    
     if not credentials:
         raise HTTPException(status_code=401, detail="Auth header required")
     
     decoded = await auth.verify_token(credentials)
-    auth_dur = (time.time() - start_t) * 1000
-    print(f" Auth Verification took {auth_dur:.2f}ms")
     
     uid = decoded["uid"]
     phone = decoded.get("phone_number")
@@ -313,12 +296,12 @@ async def create_user(
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/users/me/full-dashboard", response_model=schemas.UserFullDashboardResponse, tags=["Profile"])
-async def get_user_full_dashboard(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_user_full_dashboard(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """The 'Dashboard Big Bang' request. Returns profile and all event lists in one call."""
     return crud.get_user_full_dashboard(db, user_id)
 
 @app.get("/users/me", response_model=schemas.UserResponse, tags=["Profile"])
-async def get_my_profile(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_my_profile(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View the currently logged-in user's profile."""
     user = crud.get_user_profile(db, user_id)
     if not user:
@@ -344,19 +327,19 @@ async def create_event(event: schemas.EventCreate,
     return crud.create_event(db=db, event=event, organizer_id=user_id)
 
 @app.get("/events", response_model=List[schemas.EventResponse], tags=["Events"])
-async def read_all_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def read_all_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """All events this user belongs to (Organizer + Collector). Includes deactivated."""
     events = crud.get_events_for_user(db, user_id=user_id)
     return [fix_event_json(e) for e in events]
 
 @app.get("/events/my", response_model=List[schemas.EventResponse], tags=["Events"])
-async def read_my_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def read_my_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard  My Events tab: only events where user is Organizer."""
     events = crud.get_my_events(db, user_id=user_id)
     return [fix_event_json(e) for e in events]
 
 @app.get("/events/shared", response_model=List[schemas.EventResponse], tags=["Events"])
-async def read_shared_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def read_shared_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard  Shared Events tab: events joined via code (Collector). Includes deactivated."""
     events = crud.get_shared_events(db, user_id=user_id)
     return [fix_event_json(e) for e in events]
@@ -427,7 +410,7 @@ async def regenerate_invite_code(event_id: str, db: Session = Depends(get_db), u
     verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=60)
     return crud.regenerate_invite_code(db, event_id)
 @app.get("/events/watched", tags=["Events"])
-async def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard  Discover tab: public events recently viewed. Optimized with bulk membership check."""
     watched = crud.get_watched_events(db, user_id)
     if not watched: return []
@@ -482,7 +465,7 @@ def fix_event_json(e_dict):
     return e_dict
 
 @app.get("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])
-async def read_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def read_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Fetch details for a single event. Requires strict auth."""
     event = crud.get_event(db, event_id)
     if not event:
@@ -517,14 +500,14 @@ async def toggle_event_privacy(event_id: str, is_public: bool, db: Session = Dep
     return event
 
 @app.get("/events/{event_id}/members", response_model=List[schemas.EventMemberResponse], tags=["Event Management"])
-async def get_event_members(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_event_members(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all members in the event. Organizer only."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     return crud.get_event_members(db, event_id)
 
 @app.get("/events/{event_id}/members/{target_user_id}/contact",
          response_model=schemas.MemberContactResponse, tags=["Event Management"])
-async def get_member_contact(event_id: str, target_user_id: int,
+def get_member_contact(event_id: str, target_user_id: int,
                              db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Phone number for 1:1 call  fellow event members only (not public visitors)."""
     verify_membership(db, event_id, user_id, require_member=True)
@@ -604,7 +587,7 @@ async def exit_event(event_id: str, db: Session = Depends(get_db), user_id: int 
 
 #  DONATIONS 
 @app.get("/events/{event_id}/donations", response_model=List[schemas.DonationResponse], tags=["Donations"])
-async def get_event_donations(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_event_donations(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all donations. Requires strict auth."""
     verify_membership(db, event_id, user_id)
     return crud.get_donations(db, event_id)
@@ -652,7 +635,7 @@ async def delete_donation(event_id: str, donation_id: int,
 
 #  EXPENSES 
 @app.get("/events/{event_id}/expenses", response_model=List[schemas.ExpenseResponse], tags=["Expenses"])
-async def get_event_expenses(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_event_expenses(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View all expenses. Requires strict auth."""
     verify_membership(db, event_id, user_id)
     return crud.get_expenses(db, event_id)
@@ -700,13 +683,13 @@ async def delete_expense(event_id: str, expense_id: int,
 
 #  SUMMARY 
 @app.get("/events/{event_id}/summary", response_model=schemas.EventSummaryResponse, tags=["Summary"])
-async def get_event_summary(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_event_summary(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Financial overview. Requires strict auth."""
     verify_membership(db, event_id, user_id)
     return crud.get_event_summary(db, event_id)
 
 @app.get("/events/{event_id}/full-details", response_model=schemas.EventFullDetailsResponse, tags=["Events"])
-async def get_event_full_details(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def get_event_full_details(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """The 'Big Bang' request. Returns everything for an event in one call. Highly optimized with caching."""
     member = verify_membership(db, event_id, user_id)
     
@@ -723,7 +706,7 @@ async def get_event_full_details(event_id: str, db: Session = Depends(get_db), u
 
 #  CHAT 
 @app.get("/events/{event_id}/chat", response_model=List[schemas.ChatMessageResponse], tags=["Chat"])
-async def get_chat_history(event_id: str, limit: int = 50, before_id: int = None,
+def get_chat_history(event_id: str, limit: int = 50, before_id: int = None,
                            db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Get chat message history for an event. Supports pagination via before_id."""
     verify_membership(db, event_id, user_id)

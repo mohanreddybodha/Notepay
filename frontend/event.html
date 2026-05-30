@@ -4029,18 +4029,7 @@
   <script>
     // ── State ──
     const params = new URLSearchParams(location.search);
-    const origLog = console.log;
-    console.log = function (...args) {
-      origLog.apply(console, args);
-      const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-      if (msg.includes('[debug]')) {
-        fetch('http://localhost:8000/api/debug/log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: msg })
-        }).catch(() => { });
-      }
-    };
+
     const eventId = params.get("id") || params.get("eventId");
     let eventData = null;
     let myUserId = null;
