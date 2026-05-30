@@ -102,7 +102,7 @@
 
   waitForAuthReady().then(async () => {
     try {
-      const raw = sessionStorage.getItem("np_profile");
+      const raw = localStorage.getItem("np_profile");
       const p   = raw ? JSON.parse(raw) : await getMyProfile();
       document.getElementById("full-name").value = p.full_name;
       document.getElementById("ph-val").textContent = p.phone_number;
@@ -132,7 +132,7 @@
     btn.classList.add("loading"); btn.disabled = true;
     try {
       await updateProfile({ full_name: name, gender: selectedGender });
-      sessionStorage.removeItem("np_profile"); // force reload
+      localStorage.removeItem("np_profile"); // force reload
       showToast("Profile updated!");
       history.back();
     } catch(e) {

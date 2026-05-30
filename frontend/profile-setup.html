@@ -114,7 +114,7 @@
       return;
     }
     // Try to get phone from Firebase user, fallback to sessionStorage
-    userPhone = user.phoneNumber || sessionStorage.getItem("np_phone") || "";
+    userPhone = user.phoneNumber || localStorage.getItem("np_phone") || "";
     document.getElementById("phone-show").textContent = userPhone;
   });
 
@@ -148,12 +148,12 @@
     btn.classList.add("loading"); btn.disabled = true;
 
     try {
-      const token = sessionStorage.getItem("np_token_tmp") || await getIdToken();
+      const token = localStorage.getItem("np_token_tmp") || await getIdToken();
       const { status, data } = await registerUser(token, name, selectedGender, userPhone);
 
       if (status === 200 || status === 201) {
-        sessionStorage.removeItem("np_new_user");
-        sessionStorage.removeItem("np_token_tmp");
+        localStorage.removeItem("np_new_user");
+        localStorage.removeItem("np_token_tmp");
         const params = new URLSearchParams(window.location.search);
         const returnUrl = params.get("return");
         if (returnUrl) {

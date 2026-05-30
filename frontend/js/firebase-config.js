@@ -20,14 +20,24 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 
-// ── Get a fresh Firebase ID token (auto-refreshes if expired) ──
+// ── Get a fresh Firebase ID token (cached for 50 min to avoid repeated calls) ──
+let _cachedToken = null;
+let _tokenExpiry = 0;
+
 async function getIdToken() {
+  // Return cached token if still valid (50 min window; tokens expire at 60 min)
+  if (_cachedToken && Date.now() < _tokenExpiry) return _cachedToken;
+  
   const user = auth.currentUser;
   if (!user) return null;
   try {
-    return await user.getIdToken(/* forceRefresh = */ false);
+    _cachedToken = await user.getIdToken(/* forceRefresh = */ false);
+    _tokenExpiry = Date.now() + 50 * 60 * 1000; // 50 minutes
+    return _cachedToken;
   } catch (e) {
     console.error("getIdToken error:", e);
+    _cachedToken = null;
+    _tokenExpiry = 0;
     return null;
   }
 }
@@ -70,6 +80,8 @@ function waitForAuthReady() {
 function resetAuthCache() {
   authReadyPromise = null;
   _authHasSettled = false;
+  _cachedToken = null;
+  _tokenExpiry = 0;
 }
 
 /** Alias used by logout / login flows. */

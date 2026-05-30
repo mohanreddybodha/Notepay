@@ -3637,6 +3637,7 @@
           <div class="dd-ic"><span data-np-icon="file-text" data-np-size="18"></span></div>
           <div class="dd-lbl">Download PDF Report</div>
         </div>
+
         <div class="dd-item" id="don-visibility-btn" onclick="closeDD();toggleTableVisibility('don')">
           <div class="dd-ic"><span data-np-icon="download" data-np-size="18"></span></div>
           <div class="dd-lbl" id="don-vis-lbl">Hide Donations Table</div>
@@ -4121,7 +4122,7 @@
         const profile = await getMyProfile();
         myUserId = profile.id;
         // Also set sessionStorage as a backup for other functions
-        sessionStorage.setItem("np_my_id", myUserId);
+        localStorage.setItem("np_my_id", myUserId);
 
         setupWebSocket().catch(() => { });
         await loadAll();
@@ -4160,7 +4161,7 @@
       members = res.members || [];
 
       const rawRole = (res.my_role || "visitor").toLowerCase();
-      const myIdStr = sessionStorage.getItem("np_my_id");
+      const myIdStr = localStorage.getItem("np_my_id");
       const myId = myIdStr ? parseInt(myIdStr) : -1;
 
       // Robust check: Ensure types match for comparison
@@ -4233,7 +4234,7 @@
 
         // PLACE 2: Hybrid Caching (Frontend)
         const cacheKey = "ev_cache_" + eventId;
-        const cached = sessionStorage.getItem(cacheKey);
+        const cached = localStorage.getItem(cacheKey);
         if (cached) {
           try {
             const cData = JSON.parse(cached);
@@ -4256,7 +4257,7 @@
         }
 
         // Update Cache
-        sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
+        localStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
 
         // Apply Fresh Data
         applyData(res, preventRender);
@@ -5541,7 +5542,7 @@
 
         apiFetch("GET", `/events/${eventId}/full-details`).then(res => {
           if (res) {
-            sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
+            localStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
             donations = res.donations;
             expenses = res.expenses;
             summaryData = res.summary;
@@ -5813,7 +5814,7 @@
         // 5. Trigger a truly silent background fetch to sync any other changes without redrawing
         apiFetch("GET", `/events/${eventId}/full-details`).then(res => {
           if (res) {
-            sessionStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
+            localStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
             donations = res.donations;
             expenses = res.expenses;
             summaryData = res.summary;
@@ -6265,7 +6266,7 @@
         await apiFetch("POST", `/events/${eventId}/exit`);
         // Clear all cached state so user loses access immediately
         clearEventCache();
-        sessionStorage.removeItem("ev_cache_" + eventId);
+        localStorage.removeItem("ev_cache_" + eventId);
         window.location.replace("dashboard.html");
       } catch (e) {
         if (lp) lp.style.display = "none";
@@ -6291,7 +6292,7 @@
         try { await unwatchEvent(eventId); } catch (ex) { /* Not in watched, that's fine */ }
         // Clear all cached state
         clearEventCache();
-        sessionStorage.removeItem("ev_cache_" + eventId);
+        localStorage.removeItem("ev_cache_" + eventId);
         window.location.replace("dashboard.html");
       } catch (e) {
         if (lp) lp.style.display = "none";
@@ -6317,9 +6318,9 @@
     }
 
     function clearEventCache() {
-      const myId = sessionStorage.getItem("np_my_id") || "guest";
-      sessionStorage.removeItem(`event_cache_${eventId}_u${myId}`);
-      sessionStorage.removeItem("ev_cache_" + eventId);
+      const myId = localStorage.getItem("np_my_id") || "guest";
+      localStorage.removeItem(`event_cache_${eventId}_u${myId}`);
+      localStorage.removeItem("ev_cache_" + eventId);
     }
 
     // ── Privacy / Public Access ──
@@ -7264,7 +7265,17 @@
 
     async function exportPDF() {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('p', 'mm', 'a4');
+      
+      const donColsCount = (eventData.donation_custom_columns || []).length;
+      const expColsCount = (eventData.expense_custom_columns || []).length;
+      const maxCols = Math.max(donColsCount, expColsCount) + 4;
+      const orientation = 'l'; // Always use Landscape for maximum width
+      
+      // Dynamic scaling for many columns to prevent bleeding
+      const dynFontSize = maxCols > 12 ? 5 : (maxCols > 8 ? 6 : 7.5);
+      const dynCellPad = maxCols > 12 ? 1 : (maxCols > 8 ? 1.5 : 2.5);
+
+      const doc = new jsPDF(orientation, 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
 
@@ -7362,10 +7373,10 @@
           head: [donHead],
           body: donBody,
           theme: 'grid',
-          styles: { fontSize: 7, cellPadding: 2.5, valign: 'middle', font: 'helvetica', lineColor: BORDER, lineWidth: 0.1 },
-          headStyles: { fillColor: PRIMARY_DK, textColor: 255, fontStyle: 'bold', fontSize: 8, halign: 'center' },
+          styles: { fontSize: dynFontSize, cellPadding: dynCellPad, valign: 'middle', font: 'helvetica', lineColor: BORDER, lineWidth: 0.1, overflow: 'linebreak' },
+          headStyles: { fillColor: PRIMARY_DK, textColor: 255, fontStyle: 'bold', fontSize: dynFontSize + 1, halign: 'center' },
           columnStyles: {
-            0: { halign: 'left', fontStyle: 'bold', cellWidth: 'auto' },
+            0: { halign: 'left', fontStyle: 'bold' },
             1: { halign: 'right', fontStyle: 'bold', textColor: GREEN },
             2: { halign: 'center' },
             3: { halign: 'center' }
@@ -7380,8 +7391,14 @@
         currentY = doc.lastAutoTable.finalY + 15;
       }
 
-      // Check for page overflow
-      if (currentY > 240) { doc.addPage(); currentY = 20; }
+      // Always print Expenses on a new page if Donations existed
+      if (donBody.length > 0 && expenses.length > 0) { 
+        doc.addPage(); 
+        currentY = 20; 
+      } else if (currentY > 240) { 
+        doc.addPage(); 
+        currentY = 20; 
+      }
 
       // --- EXPENSES TABLE (DEBITS) ---
       const expCols = eventData.expense_custom_columns || [];
@@ -7405,10 +7422,10 @@
           head: [expHead],
           body: expBody,
           theme: 'grid',
-          styles: { fontSize: 7, cellPadding: 2.5, valign: 'middle', font: 'helvetica', lineColor: BORDER, lineWidth: 0.1 },
-          headStyles: { fillColor: PRIMARY_DK, textColor: 255, fontStyle: 'bold', fontSize: 8, halign: 'center' },
+          styles: { fontSize: dynFontSize, cellPadding: dynCellPad, valign: 'middle', font: 'helvetica', lineColor: BORDER, lineWidth: 0.1, overflow: 'linebreak' },
+          headStyles: { fillColor: PRIMARY_DK, textColor: 255, fontStyle: 'bold', fontSize: dynFontSize + 1, halign: 'center' },
           columnStyles: {
-            0: { halign: 'left', fontStyle: 'bold', cellWidth: 'auto' },
+            0: { halign: 'left', fontStyle: 'bold' },
             1: { halign: 'right', fontStyle: 'bold', textColor: RED },
             2: { halign: 'center' },
             3: { halign: 'center' }
@@ -7703,7 +7720,9 @@
           chatFullyLoaded = true;
         }
         if (msgs.length === 0 && loadOlder) {
-          chatLoading = false;
+          if (!isBackground || chatOpen) {
+            renderChatMessages('older');
+          }
           return;
         }
         if (loadOlder) {
@@ -7730,8 +7749,9 @@
         }
       } catch (e) {
         console.error('Failed to load chat:', e);
+      } finally {
+        chatLoading = false;
       }
-      chatLoading = false;
     }
 
     function chatTimeExact(dateStr) {
@@ -7751,7 +7771,7 @@
     }
 
     function buildMessageHTML(m, lastSender, lastDate) {
-      const myId = parseInt(sessionStorage.getItem('np_my_id') || '0');
+      const myId = parseInt(localStorage.getItem('np_my_id') || '0');
       const isOwn = m.user_id === myId;
       const dateLabel = chatDateLabel(m.sent_at);
       let html = '';
@@ -7963,7 +7983,7 @@
 
       // Check delete permission
       const delBtn = document.getElementById('ctx-delete-btn');
-      const myId = parseInt(sessionStorage.getItem('np_my_id') || '0');
+      const myId = parseInt(localStorage.getItem('np_my_id') || '0');
       if (senderId === myId || isOrganizerGlobal) {
         delBtn.style.display = 'block';
       } else {

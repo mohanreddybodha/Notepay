@@ -33,7 +33,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Security(secu
     
     # PHASE 4: Auth Caching (Place 4)
     # Use a hash of the token as the cache key for security/length
-    token_hash = hashlib.sha256(id_token.encode()).hexdigest()
+    token_hash = hashlib.sha1(id_token.encode()).hexdigest()
     cache_key = f"auth:{token_hash}"
     
     cached_user = cache.cache.get(cache_key)

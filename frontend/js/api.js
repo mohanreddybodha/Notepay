@@ -42,8 +42,8 @@ async function apiFetch(method, path, body = null) {
             donor_name: queue[idx].body.donor_name || body.donor_name || "",
             description: queue[idx].body.description || body.description || "",
             amount: queue[idx].body.amount || body.amount || null,
-            collected_by: parseInt(sessionStorage.getItem("np_my_id")) || 0,
-            collected_by_name: sessionStorage.getItem("np_my_name") || "You (Offline)",
+            collected_by: parseInt(localStorage.getItem("np_my_id")) || 0,
+            collected_by_name: localStorage.getItem("np_my_name") || "You (Offline)",
             collected_at: new Date().toISOString(),
             custom_fields: queue[idx].body.custom_fields || body.custom_fields || null,
             is_offline: true
@@ -162,8 +162,8 @@ function handleOfflineWrite(method, path, body) {
     donor_name: body?.donor_name || "",
     description: body?.description || "",
     amount: body?.amount || null,
-    collected_by: parseInt(sessionStorage.getItem("np_my_id")) || 0,
-    collected_by_name: sessionStorage.getItem("np_my_name") || "You (Offline)",
+    collected_by: parseInt(localStorage.getItem("np_my_id")) || 0,
+    collected_by_name: localStorage.getItem("np_my_name") || "You (Offline)",
     collected_at: new Date().toISOString(),
     custom_fields: body?.custom_fields || null,
     is_offline: true
@@ -183,7 +183,7 @@ async function apiFetchWithToken(method, path, token, body = null) {
 
   const res = await fetch(`${API_BASE}${path}`, opts);
   if (res.status === 401) {
-    sessionStorage.removeItem("np_token_tmp");
+    localStorage.removeItem("np_token_tmp");
     window.location.href = "login.html";
     throw new Error("Session expired");
   }

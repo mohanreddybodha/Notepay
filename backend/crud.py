@@ -517,23 +517,26 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     cache_key = f"full:{event_id}:{user_id}"
     cached_data = cache.cache.get(cache_key)
     if cached_data:
-        print(f" Cache Hit for Event {event_id} (User {user_id})")
-        # Return as the Pydantic model it expects
         return schemas.EventFullDetailsResponse(**cached_data)
 
-    # Fetch everything (DB)
-    event = get_event(db, event_id)
+    # === OPTIMIZED: 3 queries instead of 10 ===
+
+    # Query 1: Event + Member in one shot
+    from sqlalchemy.orm import joinedload
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event: return None
     
-    member = get_member(db, event_id, user_id)
-    
-    # Determine role (Hard-check for creator)
+    member = db.query(models.EventMember).filter(
+        models.EventMember.event_id == event_id,
+        models.EventMember.user_id == user_id
+    ).first()
+
+    # Determine role
     actual_role = "visitor"
     if user_id == event.organizer_id:
         actual_role = "Organizer"
     elif member:
         actual_role = member.role
-
     is_restricted = member.is_restricted if member else False
 
     # Map event details
@@ -541,22 +544,70 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     event_dict["my_role"] = actual_role
     event_dict["is_restricted"] = is_restricted
     
-    # Manual JSON fix to avoid circular import
-    import json
+    import json as _json
     for col_name in ["donation_custom_columns", "expense_custom_columns"]:
         val = event_dict.get(col_name)
         if isinstance(val, str) and val.strip():
-            try:
-                event_dict[col_name] = json.loads(val)
-            except:
-                event_dict[col_name] = []
+            try: event_dict[col_name] = _json.loads(val)
+            except: event_dict[col_name] = []
         elif val is None:
             event_dict[col_name] = []
 
-    donations = get_donations(db, event_id)
-    expenses = get_expenses(db, event_id)
-    summary = get_event_summary(db, event_id)
-    members_raw = get_event_members(db, event_id)
+    # Query 2: All donations + user names (single JOIN)
+    don_results = db.query(models.Donation, models.User.full_name).join(
+        models.User, models.Donation.collected_by == models.User.id
+    ).filter(models.Donation.event_id == event_id).all()
+    
+    donations = []
+    for d, name in don_results:
+        d_dict = {c.name: getattr(d, c.name) for c in d.__table__.columns}
+        d_dict["collected_by_name"] = name
+        donations.append(d_dict)
+
+    # Query 3: All expenses + user names (single JOIN)
+    exp_results = db.query(models.Expense, models.User.full_name).join(
+        models.User, models.Expense.collected_by == models.User.id
+    ).filter(models.Expense.event_id == event_id).all()
+    
+    expenses = []
+    for e, name in exp_results:
+        e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
+        e_dict["collected_by_name"] = name
+        expenses.append(e_dict)
+
+    # === COMPUTE SUMMARY IN PYTHON (0 extra queries!) ===
+    total_donations = sum(d.get("amount") or 0 for d in donations)
+    total_expenses = sum(e.get("amount") or 0 for e in expenses)
+    
+    txns = []
+    for d in donations:
+        txns.append(schemas.RecentTransaction(
+            id=d["id"], type='donation', title=d["donor_name"],
+            amount=d.get("amount") or 0, date=d.get("collected_at"),
+            collected_by_name=d.get("collected_by_name")
+        ))
+    for e in expenses:
+        txns.append(schemas.RecentTransaction(
+            id=e["id"], type='expense', title=e["description"],
+            amount=e.get("amount") or 0, date=e.get("collected_at"),
+            collected_by_name=e.get("collected_by_name")
+        ))
+    from datetime import datetime
+    txns.sort(key=lambda x: x.date or datetime.min, reverse=True)
+
+    summary = schemas.EventSummaryResponse(
+        total_donations=total_donations,
+        total_expenses=total_expenses,
+        balance=total_donations - total_expenses,
+        donations_count=len(donations),
+        expenses_count=len(expenses),
+        recent_transactions=txns
+    )
+
+    # Query 4 (lightweight): Members with eager-loaded user relationship
+    members_raw = db.query(models.EventMember).options(
+        joinedload(models.EventMember.user)
+    ).filter(models.EventMember.event_id == event_id).all()
     members_public = members_to_public_response(members_raw)
 
     resp = schemas.EventFullDetailsResponse(
@@ -569,8 +620,8 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
         is_restricted=is_restricted
     )
 
-    # Save to cache (Place 1) - Convert to dict for JSON storage
-    cache.cache.set(cache_key, resp.model_dump(), expire=1800) # 30 min cache
+    # Save to cache
+    cache.cache.set(cache_key, resp.model_dump(), expire=1800)
     return resp
 
 def fix_event_json(e):

@@ -254,7 +254,7 @@
       myEvents = res.my_events;
       sharedEvents = res.shared_events;
       
-      sessionStorage.setItem("np_my_id", profile.id);
+      localStorage.setItem("np_my_id", profile.id);
       
       // Update profile UI
       const initials = getInitials(profile.full_name);

@@ -199,18 +199,18 @@ let countdownTimer     = null;
 let recaptchaVerifier  = null;
 
 // ─────────────────────────────────────────────
-//  On page load — always start fresh on the login screen
-//  Clears stale IndexedDB Firebase sessions (wrong OTP / post-logout refresh).
-//  Redirect only if OTP was verified in this browser tab (sessionStorage).
-// ─────────────────────────────────────────────
+//  On page load - restore session if exists
+//  Redirects to dashboard if Firebase Auth confirms session
+// ============================================================================
 (async () => {
-  resetAuthCache();
-  try {
-    await auth.signOut();
-  } catch (e) { /* ignore */ }
-  resetAuthCache();
-  await waitForAuthReady();
-  // Never auto-redirect from Firebase persistence — only verifyOTP() navigates away.
+  const user = await waitForAuthReady();
+  if (user) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrl = urlParams.get('return') || 'dashboard.html';
+    window.location.replace(returnUrl);
+    return;
+  }
+  // Otherwise, user is truly logged out, stay on login page.
 })();
 
 // ─────────────────────────────────────────────
@@ -362,9 +362,9 @@ async function verifyOTP() {
       }
     } else if (status === 404) {
       // New user → Profile Setup
-      sessionStorage.setItem("np_new_user", "1");
-      sessionStorage.setItem("np_phone", "+91 " + phoneInput.value.trim());
-      sessionStorage.setItem("np_token_tmp", token);
+      localStorage.setItem("np_new_user", "1");
+      localStorage.setItem("np_phone", "+91 " + phoneInput.value.trim());
+      localStorage.setItem("np_token_tmp", token);
       let nextUrl = "profile-setup.html";
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get("return");

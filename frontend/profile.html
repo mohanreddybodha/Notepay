@@ -161,7 +161,7 @@
       document.getElementById("prof-gender").textContent= p.gender === "other" ? "Prefer not to say" : p.gender;
       document.getElementById("prof-since").textContent = formatDate(p.created_at);
       // Store for edit page
-      sessionStorage.setItem("np_profile", JSON.stringify(p));
+      localStorage.setItem("np_profile", JSON.stringify(p));
     } catch(e) { showToast("Failed to load profile.","error"); }
     document.getElementById("loading").style.display = "none";
     document.getElementById("content").style.display = "block";
@@ -194,7 +194,7 @@
 
       // 4. Clear all session/app data, but preserve dark mode preference
       const darkMode = localStorage.getItem("np_dark");
-      sessionStorage.clear();
+      localStorage.clear();
       localStorage.clear();
       if (darkMode) localStorage.setItem("np_dark", darkMode);
 

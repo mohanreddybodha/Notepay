@@ -261,7 +261,7 @@ async def logout_user(
     """
     if credentials and cache:
         import hashlib
-        token_hash = hashlib.sha256(credentials.credentials.encode()).hexdigest()
+        token_hash = hashlib.sha1(credentials.credentials.encode()).hexdigest()
         cache_key = f"auth:{token_hash}"
         cache.cache.delete(cache_key)
     return {"message": "Logged out successfully"}
@@ -714,10 +714,7 @@ async def get_event_full_details(event_id: str, db: Session = Depends(get_db), u
     if not member:
         crud.add_watched_event(db, user_id, event_id)
     
-    start_fetch = time.time()
     res = crud.get_event_full_details(db, event_id, user_id)
-    fetch_dur = (time.time() - start_fetch) * 1000
-    print(f" Data Fetch took {fetch_dur:.2f}ms")
     
     if not res:
         raise HTTPException(status_code=404, detail="Event not found")
