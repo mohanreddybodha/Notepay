@@ -75,7 +75,7 @@ jobs:
           sed -i "s|wss://replace-with-your-websocket-api.execute-api.ap-south-1.amazonaws.com/prod|$WS_URL|g" frontend/js/api.js
           
           # 3. Upload frontend files to the S3 Bucket
-          aws s3 sync frontend/ s3://$BUCKET_NAME/ --delete
+          aws s3 sync frontend/ s3://$BUCKET_NAME/ --delete --cache-control "no-cache"
           
           # 4. Invalidate CloudFront Cache so users see the new version immediately
           aws cloudfront create-invalidation --distribution-id $CF_ID --paths "/*"
