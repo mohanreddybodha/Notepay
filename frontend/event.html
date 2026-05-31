@@ -6476,7 +6476,21 @@
 
       const mCount = document.getElementById("members-count");
       if (mCount) mCount.textContent = members.length + " total";
-      list.innerHTML = members.map(m => {
+      const sortedMembers = [...members].sort((a, b) => {
+        const roleWeight = (m) => {
+          if (m.user_id === eventData.organizer_id) return 0;
+          if ((m.role || "").toLowerCase() === "organizer") return 1;
+          return 2;
+        };
+        const wA = roleWeight(a);
+        const wB = roleWeight(b);
+        if (wA !== wB) return wA - wB;
+        const nameA = (a.user?.full_name || "Unknown").toLowerCase();
+        const nameB = (b.user?.full_name || "Unknown").toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+
+      list.innerHTML = sortedMembers.map(m => {
         const uId = m.user_id;
         const uName = m.user?.full_name || "Unknown";
         const isMe = uId === myUserId;

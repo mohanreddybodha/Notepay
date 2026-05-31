@@ -5,17 +5,26 @@
 
 // Firebase compat SDK (loaded via CDN in each HTML page)
 const firebaseConfig = {
-  apiKey:            "AIzaSyCXoO0BrquatMswZQxPmZj8zFmK94V9aBs",
-  authDomain:        "notepay-de2b0.firebaseapp.com",
-  projectId:         "notepay-de2b0",
-  storageBucket:     "notepay-de2b0.firebasestorage.app",
+  apiKey: "AIzaSyCXoO0BrquatMswZQxPmZj8zFmK94V9aBs",
+  authDomain: "notepay-de2b0.firebaseapp.com",
+  projectId: "notepay-de2b0",
+  storageBucket: "notepay-de2b0.firebasestorage.app",
   messagingSenderId: "1058046259638",
-  appId:             "1:1058046259638:android:f39f0e070087e146b3d117"
+  appId: "1:1058046259638:android:f39f0e070087e146b3d117"
 };
 
 // Initialize Firebase (guard against double-init on page reloads)
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
+
+  // Initialize Firebase App Check
+  if (typeof firebase.appCheck === 'function') {
+    const appCheck = firebase.appCheck();
+    appCheck.activate(
+      '6Lc0XwUtAAAAACjgZWnte4AkFEkHpfuGY933wjSx',
+      true
+    );
+  }
 }
 
 const auth = firebase.auth();
@@ -27,7 +36,7 @@ let _tokenExpiry = 0;
 async function getIdToken() {
   // Return cached token if still valid (50 min window; tokens expire at 60 min)
   if (_cachedToken && Date.now() < _tokenExpiry) return _cachedToken;
-  
+
   const user = auth.currentUser;
   if (!user) return null;
   try {
