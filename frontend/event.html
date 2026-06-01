@@ -7903,6 +7903,9 @@
         }
       }
 
+      container.offsetHeight; 
+      container.style.overflowY = 'auto';
+
       // Clear the divider flag after opening so it doesn't persist if they load older messages
       if (scrollMode !== 'older') unreadDividerId = null;
     }
