@@ -8473,8 +8473,10 @@
 
       document.addEventListener('touchstart', (e) => {
         const target = e.target.closest('.tbl-sc, .sum-body, .theater-scroll-area');
+        // Only start pulling if we're at the top of a scroll area
         if (target && target.scrollTop <= 0) {
           ptrStartY = e.touches[0].clientY;
+          ptrCurrentY = ptrStartY; // Fix: Reset currentY so normal clicks don't trigger previous drag distance
           ptrIsPulling = true;
           ptrIndicator.style.transition = 'none';
         } else {
