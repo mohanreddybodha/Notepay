@@ -5936,7 +5936,7 @@
         </div>
         ${canModify ? `
           ${type === 'don' ? `
-          <div class="ctx-item" onclick="closeCtx();shareReceipt('${escHtml(entry.donor_name).replace(/'/g, "\\'")}', '${entry.amount}', '${entry.date}', '${escHtml(entry.collected_by_name || 'System').replace(/'/g, "\\'")}')">
+          <div class="ctx-item" onclick="closeCtx();shareReceipt('${escHtml(entry.donor_name).replace(/'/g, "\\'")}', '${entry.amount}', '${entry.collected_at}', '${escHtml(entry.collected_by_name || 'System').replace(/'/g, "\\'")}')">
             <span data-np-icon="share-2" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Share Receipt
           </div>
@@ -8527,7 +8527,15 @@
       const formattedAmt = parseInt(amount).toLocaleString('en-IN');
       const formattedDate = formatDate(dateStr);
       
-      const receiptText = '🧾 *OFFICIAL RECEIPT* 🧾\n\n*Event:* ' + eventName + '\n*Donor Name:* ' + donorName + '\n*Amount:* ₹' + formattedAmt + '\n*Date:* ' + formattedDate + '\n*Collected By:* ' + collectorName + '\n\n_Thank you for your generous contribution! 🙏_';
+      const receiptText = 
+`━━━━━━ *DONATION RECEIVED*━━━━━━
+
+*Txn Date:* ${formattedDate}
+*Received from:* ${donorName}
+*Amount Received:* ₹${formattedAmt}
+*Credited to:* ${eventName}
+
+_Thank you for your contribution!_ 🙏`;
       
       if (navigator.share) {
         navigator.share({

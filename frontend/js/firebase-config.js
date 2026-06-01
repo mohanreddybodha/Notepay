@@ -17,8 +17,8 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 
-  // Initialize Firebase App Check
-  if (typeof firebase.appCheck === 'function') {
+  // Initialize Firebase App Check (Skip on localhost to prevent reCAPTCHA conflicts)
+  if (typeof firebase.appCheck === 'function' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
     const appCheck = firebase.appCheck();
     appCheck.activate(
       '6Lc0XwUtAAAAACjgZWnte4AkFEkHpfuGY933wjSx',
