@@ -8521,42 +8521,111 @@
   </script>
 
   <script>
-    function shareReceipt(donorName, amount, dateStr, collectorName) {
+    async function shareReceipt(donorName, amount, dateStr, collectorName) {
       const eventName = typeof eventData !== 'undefined' && eventData ? eventData.name : 'Event';
-      // Format amount with commas
       const formattedAmt = parseInt(amount).toLocaleString('en-IN');
       const formattedDate = formatDate(dateStr);
       
-      const receiptText = 
-`━━━━━━ *DONATION RECEIVED*━━━━━━
-
-*Txn Date:* ${formattedDate}
-*Received from:* ${donorName}
-*Amount Received:* ₹${formattedAmt}
-*Credited to:* ${eventName}
-
-_Thank you for your contribution!_ 🙏`;
+      const { jsPDF } = window.jspdf;
+      // Use A6 size for a nice small receipt card (105x148 mm)
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [105, 148] });
       
-      if (navigator.share) {
-        navigator.share({
-          title: 'Donation Receipt',
-          text: receiptText
-        }).catch((error) => {
-          console.error('Error sharing:', error);
-          // Fallback if sharing is aborted or fails
-          fallbackShare(receiptText);
-        });
-      } else {
-        fallbackShare(receiptText);
+      // Outer Border
+      doc.setDrawColor(30, 30, 30);
+      doc.setLineWidth(0.8);
+      doc.rect(5, 5, 95, 138);
+      
+      // Header Background
+      doc.setFillColor(245, 245, 245);
+      doc.rect(7.5, 7.5, 90, 22, 'F');
+      
+      // Header Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(30, 30, 30);
+      const titleText = eventName.toUpperCase() + " RECEIPT";
+      // Auto-wrap title if it's too long
+      const splitTitle = doc.splitTextToSize(titleText, 85);
+      doc.text(splitTitle, 52.5, 16, { align: "center" });
+      
+      // Divider Line
+      doc.setLineWidth(0.5);
+      doc.line(7, 30, 98, 30);
+      
+      // Receipt Details
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text("RECEIPT NO:", 12, 40);
+      doc.setFont("helvetica", "normal");
+      // Use timestamp as a fake receipt number
+      const receiptNo = "REC-" + new Date(dateStr).getTime().toString().slice(-6);
+      doc.text(receiptNo, 40, 40);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("DATE:", 12, 50);
+      doc.setFont("helvetica", "normal");
+      doc.text(formattedDate, 40, 50);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("RECEIVED FROM:", 12, 60);
+      doc.setFont("helvetica", "normal");
+      const splitName = doc.splitTextToSize(donorName.toUpperCase(), 50);
+      doc.text(splitName, 45, 60);
+      
+      // Amount Box
+      doc.setFillColor(250, 250, 250);
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
+      doc.rect(12, 75, 81, 18, 'FD');
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("AMOUNT RECEIVED:", 16, 86);
+      doc.setFontSize(14);
+      doc.setTextColor(0, 100, 0); // Dark Green
+      // Added extra space after Rs. and pushed X coordinate further right
+      doc.text("Rs.   " + formattedAmt, 60, 86);
+      doc.setTextColor(30, 30, 30);
+      
+      // Signature Section
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text("Authorized Signature:", 12, 115);
+      
+      // Place the collector's name boldly ON the line
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(collectorName.toUpperCase(), 69, 114, { align: "center" });
+      
+      // Signature line underneath the name
+      doc.setDrawColor(50, 50, 50);
+      doc.line(48, 116, 90, 116);
+      
+      // Footer
+      doc.line(7, 130, 98, 130);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Thank you for your generous contribution!", 52.5, 136, { align: "center" });
+      
+      const filename = `Receipt_${donorName.replace(/\s+/g, '_')}.pdf`;
+      
+      try {
+        const pdfBlob = doc.output('blob');
+        const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Donation Receipt',
+            files: [file]
+          });
+        } else {
+          doc.save(filename);
+        }
+      } catch (err) {
+        console.error('Error sharing PDF:', err);
+        doc.save(filename);
       }
-    }
-    
-    function fallbackShare(text) {
-      const waUrl = 'https://wa.me/?text=' + encodeURIComponent(text);
-      window.open(waUrl, '_blank');
     }
   </script>
 </body>
-
-
 </html>
