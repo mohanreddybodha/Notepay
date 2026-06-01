@@ -7883,10 +7883,14 @@
         lastSender = res.newSender;
       });
 
+      // Freeze paint to prevent the screen from blinking when replacing HTML
+      container.style.overflowY = 'hidden';
       container.innerHTML = html;
 
       if (scrollMode === 'older') {
-        container.scrollTop = container.scrollHeight - prevScrollHeight;
+        // When prepending old messages, the scroll height increases.
+        // We push the scroll down by the exact amount of new height added so the user's view doesn't jump.
+        container.scrollTop = container.scrollHeight - prevScrollHeight + prevScrollTop;
       } else if (scrollMode === 'keep') {
         container.scrollTop = prevScrollTop;
       } else {
