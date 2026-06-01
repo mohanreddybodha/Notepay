@@ -8510,7 +8510,7 @@
           ptrIndicator.style.top = '20px';
           ptrIndicator.style.opacity = '1';
           if(typeof loadAll === 'function') {
-            await loadAll(false, true);
+            await loadAll(true, true); // True (background mode) prevents the screen from blinking
           }
           ptrIndicator.style.top = '-50px';
           ptrIndicator.style.opacity = '0';
