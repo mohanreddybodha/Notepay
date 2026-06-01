@@ -5935,6 +5935,12 @@
           ${pinned ? 'Unpin Entry' : 'Pin Entry'}
         </div>
         ${canModify ? `
+          ${type === 'don' ? `
+          <div class="ctx-item" onclick="closeCtx();shareReceipt('${escHtml(entry.donor_name).replace(/'/g, "\\'")}', '${entry.amount}', '${entry.date}', '${escHtml(entry.collected_by_name || 'System').replace(/'/g, "\\'")}')">
+            <span data-np-icon="share-2" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
+            Share Receipt
+          </div>
+          ` : ''}
           <div class="ctx-item" onclick="closeCtx();openEditForm()">
             <span data-np-icon="edit" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Modify
@@ -8513,6 +8519,36 @@
       });
     });
   </script>
+
+  <script>
+    function shareReceipt(donorName, amount, dateStr, collectorName) {
+      const eventName = typeof eventData !== 'undefined' && eventData ? eventData.name : 'Event';
+      // Format amount with commas
+      const formattedAmt = parseInt(amount).toLocaleString('en-IN');
+      const formattedDate = formatDate(dateStr);
+      
+      const receiptText = '🧾 *OFFICIAL RECEIPT* 🧾\n\n*Event:* ' + eventName + '\n*Donor Name:* ' + donorName + '\n*Amount:* ₹' + formattedAmt + '\n*Date:* ' + formattedDate + '\n*Collected By:* ' + collectorName + '\n\n_Thank you for your generous contribution! 🙏_';
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Donation Receipt',
+          text: receiptText
+        }).catch((error) => {
+          console.error('Error sharing:', error);
+          // Fallback if sharing is aborted or fails
+          fallbackShare(receiptText);
+        });
+      } else {
+        fallbackShare(receiptText);
+      }
+    }
+    
+    function fallbackShare(text) {
+      const waUrl = 'https://wa.me/?text=' + encodeURIComponent(text);
+      window.open(waUrl, '_blank');
+    }
+  </script>
 </body>
+
 
 </html>
