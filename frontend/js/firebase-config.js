@@ -106,14 +106,10 @@ auth.onAuthStateChanged(user => {
 });
 
 // ── Clean URL (Remove .html from address bar) ──
-// Uses replaceState so the URL bar shows /event instead of /event.html.
-// IMPORTANT: For this to survive browser refresh (F5), your hosting must have a
-// "clean URL" or "pretty URL" setting enabled:
-//   • AWS CloudFront: Set a custom error response mapping 403/404 → the root page
-//     with HTTP 200, OR enable "Clean URLs" in your S3 static website hosting.
-//   • In the AWS Console → CloudFront → your distribution → Error Pages:
-//     Add a custom error response: Error Code 404, Response page: /index.html (or the specific page), HTTP 200.
-if (window.location.pathname.endsWith('.html')) {
+// Only runs on production (CloudFront). Skipped on localhost so that
+// browser refresh doesn't cause a 404 from the local dev server.
+const _isLocalhost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
+if (!_isLocalhost && window.location.pathname.endsWith('.html')) {
   const cleanPath = window.location.pathname.replace(/\.html$/, '');
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
 }
