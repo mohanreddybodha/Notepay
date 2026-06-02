@@ -802,16 +802,20 @@
       gap: 8px;
       width: 100%;
     }
-    .cc-footer-row .btn {
-      width: auto !important;   /* override global width:100% */
-      flex: 1;                  /* share space equally */
+    
+    /* Using html body to beat the specificity of the global 44px rule at the bottom of the file */
+    html body .sbox-footer .cc-footer-row .btn {
+      width: auto !important;
+      flex: 1;
       white-space: nowrap;
-      height: 28px !important;  /* Match narrower UI height exactly */
-      font-size: 11.5px !important; /* Smaller text size */
+      height: 28px !important;
+      min-height: 28px !important;
+      max-height: 28px !important;
+      font-size: 11.5px !important;
       padding: 0 12px !important;
     }
-    .cc-footer-row .btn-cancel {
-      flex: 0 0 auto;           /* Cancel stays compact */
+    html body .sbox-footer .cc-footer-row .btn-cancel {
+      flex: 0 0 auto;
     }
 
     .sbox-footer {

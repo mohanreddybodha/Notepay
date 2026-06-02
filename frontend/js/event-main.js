@@ -2803,8 +2803,8 @@
         formView.style.display = "block";
         hiddenView.style.display = "none";
         footer.style.display = "block";
-        title.textContent = window.editingColName ? "Update Column" : "Add Custom Column";
-        subTitle.textContent = window.editingColName ? "Any changes made will reflect on the table for all participants." : "This column will be added to the end of the table for everyone.";
+        title.textContent = editingColName ? "Update Column" : "Add Custom Column";
+        subTitle.textContent = editingColName ? "Any changes made will reflect on the table for all participants." : "This column will be added to the end of the table for everyone.";
       } else {
         formView.style.display = "none";
         hiddenView.style.display = "block";
