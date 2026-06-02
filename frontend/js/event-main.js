@@ -390,7 +390,7 @@
         if (isOrganizer) {
           const deleteItem = document.getElementById("org-delete-event-item");
           const exitItem = document.getElementById("org-exit-event-item");
-          if (eventData.organizer_id === myUserId) {
+          if (eventData.organizer_id == myUserId) {
             if (deleteItem) deleteItem.style.display = "flex";
             if (exitItem) exitItem.style.display = "none";
           } else {
@@ -575,7 +575,7 @@
         indicator.style.transform = `translateX(${activeIndex * 100}%)`;
       }
 
-      if (theaterMode) return;
+      if (activeTheaterTab) return;
 
       ["don", "exp", "sum"].forEach(t => {
         const p = document.getElementById("pane-" + t);
@@ -2569,10 +2569,10 @@
       list.innerHTML = sortedMembers.map(m => {
         const uId = m.user_id;
         const uName = m.user?.full_name || "Unknown";
-        const isMe = uId === myUserId;
+        const isMe = uId == myUserId;
         const roleStr = (m.role || "").toLowerCase();
         const isRes = m.is_restricted;
-        const isCreator = uId === eventData.organizer_id;
+        const isCreator = uId == eventData.organizer_id;
 
         const roleTxt = isRes ? '<span style="color:var(--red);font-weight:800;">Restricted</span>' : (isCreator ? `<span style="color:var(--amber);font-weight:800;">${npIcon("crown", { size: 12, tone: "amber" })} Creator</span>` : (m.role === "Organizer" ? "Organizer" : "Collector"));
 

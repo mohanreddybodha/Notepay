@@ -570,7 +570,7 @@ a {
   background: none;
 }
 .btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; background: var(--input-bg) !important; color: var(--text3) !important; box-shadow: none !important; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none !important; pointer-events: none; }
 .btn.loading .btn-text { display: none; }
 .btn.loading .spinner { display: block; }
 
