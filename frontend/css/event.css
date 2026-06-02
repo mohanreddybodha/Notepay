@@ -152,10 +152,22 @@
 
     /* Tabs */
     .tab-heading {
+      position: relative;
       display: flex;
       border-bottom: 2px solid var(--border2);
       flex-shrink: 0;
       background: var(--surface);
+    }
+
+    .tab-indicator {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      height: 2.5px;
+      background: var(--teal);
+      border-radius: 2px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2;
     }
 
     .tab-h {
@@ -3163,6 +3175,8 @@
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
         margin: 0 auto !important;
         max-height: 96vh !important;
+        display: block !important;
+        overflow-y: auto !important;
       }
 
       .sh-handle {
@@ -3180,6 +3194,7 @@
 
       .sbox-body {
         padding: 6px 14px 10px !important;
+        overflow-y: visible !important;
       }
 
       /* Display form fields horizontally (side-by-side) instead of vertically */

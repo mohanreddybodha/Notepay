@@ -69,9 +69,10 @@
         NOW</button>
     </div>
     <div class="tab-heading" id="tab-bar" style="display:none;">
-      <div class="tab-h active" id="tab-don" onclick="switchTab('don')">Donations</div>
+      <div class="tab-h active" id="tab-don" onclick="switchTab('don')">Collections</div>
       <div class="tab-h" id="tab-exp" onclick="switchTab('exp')">Expenses</div>
       <div class="tab-h" id="tab-sum" onclick="switchTab('sum')">Summary</div>
+      <div class="tab-indicator" id="tab-indicator"></div>
     </div>
     <!-- Loading -->
     <div id="loading-pane" style="flex:1;display:flex;align-items:center;justify-content:center;">
@@ -79,7 +80,7 @@
     </div>
 
 
-    <!-- Donations Tab -->
+    <!-- Collections Tab -->
     <div id="pane-don" class="tbl-section" style="display:none;">
       <div class="tbl-top">
         <div class="search-bar" id="don-search-bar">
@@ -335,7 +336,7 @@
 
           <div class="rot-top-center" style="display:flex; align-items:center; gap:12px;">
             <div class="rot-tabs">
-              <button id="rot-tab-don" class="rtab" onclick="switchTheaterTab('don')">Donations</button>
+              <button id="rot-tab-don" class="rtab" onclick="switchTheaterTab('don')">Collections</button>
               <button id="rot-tab-exp" class="rtab" onclick="switchTheaterTab('exp')">Expenses</button>
               <button id="rot-tab-sum" class="rtab" onclick="switchTheaterTab('sum')">Summary</button>
             </div>
@@ -400,7 +401,7 @@
 
         <div class="dd-item" id="don-visibility-btn" onclick="closeDD();toggleTableVisibility('don')">
           <div class="dd-ic"><span data-np-icon="download" data-np-size="18"></span></div>
-          <div class="dd-lbl" id="don-vis-lbl">Hide Donations Table</div>
+          <div class="dd-lbl" id="don-vis-lbl">Hide Collections Table</div>
         </div>
         <div class="dd-item" id="exp-visibility-btn" onclick="closeDD();toggleTableVisibility('exp')">
           <div class="dd-ic"><span data-np-icon="wallet" data-np-size="18"></span></div>

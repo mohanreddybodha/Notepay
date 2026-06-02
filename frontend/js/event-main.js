@@ -380,7 +380,7 @@
         const showExp = eventData.show_expenses !== false;
         const donVisLbl = document.getElementById("don-vis-lbl");
         const expVisLbl = document.getElementById("exp-vis-lbl");
-        if (donVisLbl) donVisLbl.textContent = showDon ? "Hide Donations Table" : "Show Donations Table";
+        if (donVisLbl) donVisLbl.textContent = showDon ? "Hide Collections Table" : "Show Collections Table";
         if (expVisLbl) expVisLbl.textContent = showExp ? "Hide Expenses Table" : "Show Expenses Table";
         const donVisBtn = document.getElementById("don-visibility-btn");
         const expVisBtn = document.getElementById("exp-visibility-btn");
@@ -564,6 +564,20 @@
       ["don", "exp", "sum"].forEach(t => {
         const el = document.getElementById("tab-" + t);
         if (el) el.classList.toggle("active", t === tab);
+      });
+
+      // Animate Tab Indicator
+      const tabs = Array.from(document.querySelectorAll("#tab-bar .tab-h")).filter(el => el.style.display !== "none");
+      const activeIndex = tabs.findIndex(el => el.classList.contains("active"));
+      const indicator = document.getElementById("tab-indicator");
+      if (indicator && tabs.length > 0 && activeIndex >= 0) {
+        indicator.style.width = `${100 / tabs.length}%`;
+        indicator.style.transform = `translateX(${activeIndex * 100}%)`;
+      }
+
+      if (theaterMode) return;
+
+      ["don", "exp", "sum"].forEach(t => {
         const p = document.getElementById("pane-" + t);
         if (p) p.style.display = t === tab ? (t === "sum" ? "block" : "flex") : "none";
         if (p && t !== "sum") p.style.flexDirection = "column";
@@ -2425,7 +2439,7 @@
         else eventData.show_expenses = newVal;
         clearEventCache();
         renderPage();
-        showToast(newVal ? `${type === 'don' ? 'Donations' : 'Expenses'} table is now visible` : `${type === 'don' ? 'Donations' : 'Expenses'} table hidden`, newVal ? "success" : "info");
+        showToast(newVal ? `${type === 'don' ? 'Collections' : 'Expenses'} table is now visible` : `${type === 'don' ? 'Collections' : 'Expenses'} table hidden`, newVal ? "success" : "info");
       } catch (e) {
         showToast("Failed to update table visibility", "error");
       }
