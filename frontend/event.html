@@ -546,7 +546,7 @@
           <!-- Edit Column mode -->
           <div class="cc-footer-row" id="cc-edit-btns" style="display:none;">
             <button class="btn btn-text-secondary btn-cancel" onclick="closeCustomColSheet()">Cancel</button>
-            <button class="btn btn-text-secondary btn-cancel" style="border-color:var(--red);color:var(--red);" onclick="deleteCustomColumn()">Hide</button>
+            <button class="btn btn-tonal" onclick="deleteCustomColumn()">Hide</button>
             <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()">Save</button>
           </div>
         </div>
@@ -576,8 +576,8 @@
         <div class="sbox-footer" id="def-col-footer">
           <div class="cc-footer-row">
             <button class="btn btn-text-secondary btn-cancel" onclick="closeDefColSheet()">Cancel</button>
-            <button class="btn btn-text-secondary btn-cancel" style="border-color:var(--red); color:var(--red); display:none;" id="def-col-hide-btn" onclick="openDelDefColPop()">Hide</button>
-            <button class="btn btn-solid-primary" onclick="saveDefColWidth()">Save Changes</button>
+            <button class="btn btn-tonal" id="def-col-hide-btn" onclick="openDelDefColPop()" style="display:none;">Hide</button>
+            <button class="btn btn-solid-primary" onclick="saveDefColWidth()">Save</button>
           </div>
         </div>
       </div>
