@@ -2795,17 +2795,13 @@
     function toggleHiddenCols(forceForm = false) {
       const formView = document.getElementById("cc-form-view");
       const hiddenView = document.getElementById("cc-hidden-view");
-      const footer = document.getElementById("cc-footer");
       
       if (forceForm || formView.style.display === "none") {
         formView.style.display = "block";
         hiddenView.style.display = "none";
-        footer.style.display = "flex";
-        footer.style.flexDirection = "column";
       } else {
         formView.style.display = "none";
         hiddenView.style.display = "block";
-        footer.style.display = "none";
       }
     }
 

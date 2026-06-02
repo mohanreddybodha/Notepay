@@ -535,16 +535,18 @@
           </div>
         </div>
         
-        <div class="sbox-footer" id="cc-footer" style="padding:10px 18px 24px;">
-          <div class="ef-btns" id="cc-add-btns" style="display:flex; flex-direction:row; gap:6px; width:100%;">
-            <button class="btn btn-text-secondary" onclick="closeCustomColSheet()" style="flex: 0 0 auto; white-space:nowrap; padding: 0 12px; font-size:12px; min-width:0;">Cancel</button>
-            <button class="btn btn-solid-primary toggle-hidden-cols-btn" onclick="toggleHiddenCols()" style="display:none; flex: 1; white-space:nowrap; padding: 0 8px; font-size:12px; border-radius: 30px; background: var(--primary); min-width:0; overflow:hidden; text-overflow:ellipsis;">Hidden Cols</button>
-            <button class="btn btn-solid-primary" id="cc-save-btn" onclick="saveCustomColumn()" style="flex: 1; white-space:nowrap; padding: 0 8px; font-size:12px; min-width:0; overflow:hidden; text-overflow:ellipsis;">Add Column</button>
+        <div class="sbox-footer" id="cc-footer">
+          <!-- Add Column mode -->
+          <div class="cc-footer-row" id="cc-add-btns">
+            <button class="btn btn-text-secondary btn-cancel" onclick="closeCustomColSheet()">Cancel</button>
+            <button class="btn btn-solid-primary toggle-hidden-cols-btn" onclick="toggleHiddenCols()" style="display:none;">Hidden Cols</button>
+            <button class="btn btn-solid-primary" id="cc-save-btn" onclick="saveCustomColumn()">Add Column</button>
           </div>
-          <div class="ef-btns" id="cc-edit-btns" style="display:none; flex-direction:row; gap:6px; width:100%;">
-            <button class="btn btn-text-secondary" style="border-color:var(--red); color:var(--red); flex: 0 0 auto; white-space:nowrap; padding: 0 12px; font-size:12px; min-width:0;" onclick="deleteCustomColumn()">Hide</button>
-            <button class="btn btn-solid-primary toggle-hidden-cols-btn" onclick="toggleHiddenCols()" style="display:none; flex: 1; white-space:nowrap; padding: 0 8px; font-size:12px; border-radius: 30px; background: var(--primary); min-width:0; overflow:hidden; text-overflow:ellipsis;">Hidden Cols</button>
-            <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()" style="flex: 1; white-space:nowrap; padding: 0 8px; font-size:12px; min-width:0; overflow:hidden; text-overflow:ellipsis;">Save</button>
+          <!-- Edit Column mode -->
+          <div class="cc-footer-row" id="cc-edit-btns" style="display:none;">
+            <button class="btn btn-text-secondary btn-cancel" style="border-color:var(--red);color:var(--red);" onclick="deleteCustomColumn()">Hide</button>
+            <button class="btn btn-solid-primary toggle-hidden-cols-btn" onclick="toggleHiddenCols()" style="display:none;">Hidden Cols</button>
+            <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()">Save</button>
           </div>
         </div>
       </div>
