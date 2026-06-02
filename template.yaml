@@ -140,9 +140,21 @@ Resources:
           AllowedMethods: [GET, HEAD, OPTIONS]
           CachedMethods: [GET, HEAD]
           ForwardedValues:
-            QueryString: false
+            # QueryString: true allows ?v=4 cache-busting to work correctly
+            QueryString: true
             Cookies:
               Forward: none
+        # Fix: redirect 404/403 (clean-URL refreshes) to error.html → error.html
+        # redirects the browser back to the correct .html page automatically
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /error.html
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /error.html
+            ErrorCachingMinTTL: 0
 
   FrontendBucketPolicy:
     Type: AWS::S3::BucketPolicy

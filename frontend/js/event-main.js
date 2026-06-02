@@ -83,10 +83,17 @@
       }, 10000);
 
       try {
-        const profile = await getMyProfile();
-        myUserId = profile.id;
-        // Also set sessionStorage as a backup for other functions
-        localStorage.setItem("np_my_id", myUserId);
+        // PERF: Don't block page load waiting for the /me profile endpoint.
+        const cachedMyId = localStorage.getItem("np_my_id");
+        if (cachedMyId) {
+          myUserId = cachedMyId;
+          // Fetch silently in background to keep cache valid
+          getMyProfile().then(p => localStorage.setItem("np_my_id", p.id)).catch(console.warn);
+        } else {
+          const profile = await getMyProfile();
+          myUserId = profile.id;
+          localStorage.setItem("np_my_id", myUserId);
+        }
 
         setupWebSocket().catch(() => { });
         await loadAll();
@@ -2793,7 +2800,8 @@
       if (forceForm || formView.style.display === "none") {
         formView.style.display = "block";
         hiddenView.style.display = "none";
-        footer.style.display = "block";
+        footer.style.display = "flex";
+        footer.style.flexDirection = "column";
       } else {
         formView.style.display = "none";
         hiddenView.style.display = "block";

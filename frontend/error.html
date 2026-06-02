@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
+  <script>
+    // This page is served when CloudFront gets a 404.
+    // It reconstructs the correct .html URL and redirects the user.
+    var path = window.location.pathname;
+    var search = window.location.search;
+    var hash = window.location.hash;
+
+    // Map clean paths back to .html files
+    var knownPages = ['/event', '/dashboard', '/login', '/join-event', '/create-event', '/profile', '/edit-profile', '/profile-setup', '/privacy', '/terms'];
+    var matched = knownPages.find(function(p) { return path === p || path.startsWith(p + '?'); });
+
+    if (matched) {
+      window.location.replace(matched + '.html' + search + hash);
+    } else {
+      window.location.replace('/login.html');
+    }
+  </script>
+</head>
+<body style="font-family:sans-serif; text-align:center; padding:40px; color:#666;">
+  Redirecting...
+</body>
+</html>
