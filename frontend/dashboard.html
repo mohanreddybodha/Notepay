@@ -30,9 +30,10 @@
     .av-btn{width:34px;height:34px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:900;cursor:pointer;border:2px solid rgba(255,255,255,.3);font-family:'Nunito',sans-serif;transition:transform .15s;text-decoration:none;}
     .av-btn:hover{transform:scale(1.08);}
     /* Tabs */
-    .tab-heading{display:flex;border-bottom:2px solid var(--border2);flex-shrink:0;background:var(--surface);}
-    .tab-h{flex:1;text-align:center;padding:10px 4px 11px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;color:var(--text3);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;user-select:none;}
-    .tab-h.active{color:var(--primary);border-bottom-color:var(--teal);}
+    .tab-heading{position:relative;display:flex;border-bottom:2px solid var(--border2);flex-shrink:0;background:var(--surface);}
+    .tab-h{flex:1;text-align:center;padding:10px 4px 11px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;color:var(--text3);cursor:pointer;transition:color .3s;user-select:none;z-index:1;}
+    .tab-h.active{color:var(--primary);}
+    .tab-indicator{position:absolute;bottom:-2px;left:0;width:33.333%;height:2.5px;background:var(--teal);border-radius:2px;transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:2;}
     .badge{background:var(--surf-var2);color:var(--text3);border-radius:20px;padding:2px 7px;font-size:10px;font-weight:800;margin-left:4px;}
     /* Search */
     .search-bar{margin:12px 14px 0;background:var(--card);border-radius:20px;padding:9px 14px;display:flex;align-items:center;gap:8px;border:1.5px solid var(--border2);transition:border-color .15s;}
@@ -119,6 +120,7 @@
     <div class="tab-h active" id="tab-my" onclick="switchTab(0)">My Events<span class="badge" id="badge-my">0</span></div>
     <div class="tab-h" id="tab-shared" onclick="switchTab(1)">Shared Events<span class="badge" id="badge-shared">0</span></div>
     <div class="tab-h" id="tab-discover" onclick="switchTab(2)">Visited Events<span class="badge" id="badge-discover">0</span></div>
+    <div class="tab-indicator" id="tab-indicator"></div>
   </div>
 
   <!-- Search -->
@@ -400,6 +402,8 @@
     document.getElementById("tab-my").classList.toggle("active", idx===0);
     document.getElementById("tab-shared").classList.toggle("active", idx===1);
     document.getElementById("tab-discover").classList.toggle("active", idx===2);
+    
+    document.getElementById("tab-indicator").style.transform = `translateX(${idx * 100}%)`;
     
     const wrapper = document.getElementById("panes-wrapper");
     wrapper.style.transform = `translateX(-${(idx * 100) / 3}%)`;

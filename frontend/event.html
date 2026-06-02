@@ -3545,13 +3545,13 @@
     <div id="del-col-pop" class="pop-ov" style="display:none;">
       <div class="pop-box">
         <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Delete this column?</div>
-        <div class="pop-m">Are you sure you want to delete "<strong id="del-col-nm">Column</strong>"? Existing data in
-          this column will no longer be visible.</div>
+        <div class="pop-t" style="color:var(--red);">Hide this column?</div>
+        <div class="pop-m">Are you sure you want to hide "<strong id="del-col-nm">Column</strong>"? Existing data in
+          this column will no longer be visible in the table.</div>
         <div class="pop-line"></div>
         <div class="pop-btns">
           <button class="pbc" onclick="closeDelColPop()">Cancel</button>
-          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmDeleteColumn()">Delete</button>
+          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmDeleteColumn()">Hide</button>
         </div>
       </div>
     </div>
@@ -3729,42 +3729,59 @@
             end of the table for everyone.</div>
         </div>
         <div class="sbox-body" style="padding: 12px 18px 8px;">
-          <div class="ef-field">
-            <div class="ef-label">Column Name <span style="color:var(--red);">*</span></div>
-            <input class="ef-input" id="cc-name" type="search" placeholder="e.g. House No." maxlength="25"
-              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text"
-              readonly onfocus="this.removeAttribute('readonly');"
-              oninput="updateCharCount(this); document.getElementById('cc-error').style.display='none';" />
-            <span id="cc-char-count"
-              style="opacity: 0.5; font-size: 11px; font-weight: 800; font-family: 'Nunito', sans-serif; margin-left: 6px; white-space: nowrap; flex-shrink: 0;">0/25</span>
-          </div>
-          <div id="cc-error"
-            style="color:var(--red); font-size:11px; margin: -6px 14px 12px; font-weight:700; display:none; width:100%;">
+          
+          <!-- View 1: Form View -->
+          <div id="cc-form-view">
+            <div class="ef-field">
+              <div class="ef-label">Column Name <span style="color:var(--red);">*</span></div>
+              <input class="ef-input" id="cc-name" type="search" placeholder="e.g. House No." maxlength="25"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text"
+                readonly onfocus="this.removeAttribute('readonly');"
+                oninput="updateCharCount(this); document.getElementById('cc-error').style.display='none';" />
+              <span id="cc-char-count"
+                style="opacity: 0.5; font-size: 11px; font-weight: 800; font-family: 'Nunito', sans-serif; margin-left: 6px; white-space: nowrap; flex-shrink: 0;">0/25</span>
+            </div>
+            <div id="cc-error"
+              style="color:var(--red); font-size:11px; margin: -6px 14px 12px; font-weight:700; display:none; width:100%;">
+            </div>
+
+            <!-- Width Selector: compact chips -->
+            <div style="margin-top: 10px; margin-bottom: 12px; width: 100%;">
+              <div
+                style="font-size: 9.5px; font-weight: 800; color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; padding-left: 12px;">
+                Column Width</div>
+              <div style="display:flex; gap:8px; width: 100%;">
+                <button id="cc-size-s" onclick="setCCSize(80)" class="cc-size-chip">Narrow</button>
+                <button id="cc-size-m" onclick="setCCSize(160)" class="cc-size-chip active">Medium</button>
+                <button id="cc-size-l" onclick="setCCSize(260)" class="cc-size-chip">Wide</button>
+              </div>
+              <input type="hidden" id="cc-width" value="160">
+            </div>
           </div>
 
-          <!-- Width Selector: compact chips -->
-          <div style="margin-top: 10px; margin-bottom: 12px; width: 100%;">
-            <div
-              style="font-size: 9.5px; font-weight: 800; color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; padding-left: 12px;">
-              Column Width</div>
-            <div style="display:flex; gap:8px; width: 100%;">
-              <button id="cc-size-s" onclick="setCCSize(80)" class="cc-size-chip">Narrow</button>
-              <button id="cc-size-m" onclick="setCCSize(160)" class="cc-size-chip active">Medium</button>
-              <button id="cc-size-l" onclick="setCCSize(260)" class="cc-size-chip">Wide</button>
+          <!-- View 2: Hidden Columns View -->
+          <div id="cc-hidden-view" style="display:none; min-height: 150px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="font-size: 13px; font-weight: 800; color: var(--text1); text-transform: uppercase;">Hidden Columns</div>
+              <button class="btn btn-text-secondary" onclick="toggleHiddenCols()" style="font-size:11px; padding: 4px 10px; height:auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surf-var); color: var(--text2); width: fit-content !important; flex: 0 0 auto; margin: 0;">Back to Form</button>
             </div>
-            <input type="hidden" id="cc-width" value="160">
+            <div id="hidden-cols-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-bottom: 24px;">
+              <!-- Hidden columns will be injected here -->
+            </div>
           </div>
         </div>
-        <div class="sbox-footer" style="padding:10px 18px 24px;">
+        
+        <div class="sbox-footer" id="cc-footer" style="padding:10px 18px 24px;">
           <div class="ef-btns" id="cc-add-btns">
             <button class="btn btn-text-secondary" onclick="closeCustomColSheet()">Cancel</button>
+            <button class="btn btn-solid-primary toggle-hidden-cols-btn" onclick="toggleHiddenCols()" style="display:none; border-radius: 30px; background: var(--primary); padding: 14px 8px; font-size: 13px;">Hidden Columns</button>
             <button class="btn btn-solid-primary" id="cc-save-btn" onclick="saveCustomColumn()">Add Column</button>
           </div>
           <div class="ef-btns" id="cc-edit-btns" style="display:none;">
             <button class="btn btn-text-secondary" style="border-color:var(--red); color:var(--red);"
-              onclick="deleteCustomColumn()">Delete Column</button>
-            <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()">Save
-              Changes</button>
+              onclick="deleteCustomColumn()">Hide Column</button>
+            <button class="btn btn-solid-primary toggle-hidden-cols-btn" onclick="toggleHiddenCols()" style="display:none; border-radius: 30px; background: var(--primary); padding: 14px 8px; font-size: 13px;">Hidden Columns</button>
+            <button class="btn btn-solid-primary" id="cc-update-btn" onclick="renameCustomColumn()">Save Changes</button>
           </div>
         </div>
       </div>
@@ -3792,6 +3809,7 @@
         </div>
         <div class="sbox-footer" style="padding:10px 18px 24px;">
           <div class="ef-btns">
+            <button class="btn btn-text-secondary" style="border-color:var(--red); color:var(--red); display:none;" id="def-col-hide-btn" onclick="hideDefCol()">Hide Column</button>
             <button class="btn btn-text-secondary" onclick="closeDefColSheet()">Cancel</button>
             <button class="btn btn-solid-primary" onclick="saveDefColWidth()">Save Changes</button>
           </div>
@@ -4783,16 +4801,30 @@
       if (!tblBody) return;
       tblBody.innerHTML = "";
       const customCols = eventData.donation_custom_columns || [];
+      const hideDonDate = customCols.some(c => (typeof c === 'string' ? c : c.n) === '_sys_don_date' && c.hidden);
+      const hideDonColBy = customCols.some(c => (typeof c === 'string' ? c : c.n) === '_sys_don_colby' && c.hidden);
+      const visibleCustomCols = customCols.filter(c => {
+        const n = typeof c === 'string' ? c : c.n;
+        return !n.startsWith('_sys_') && !(c.hidden === true);
+      });
 
       // 1. Render Header Row
       const hdr = document.createElement("div");
       hdr.className = "tr hdr-row";
-      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Name', 'don_name')\"" : ''}>Name</div></div>
-                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'don_amt')\"" : ''}>Amount</div>
-                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'don_date')\"" : ''}>Date</div>
-                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>Collected By</div>`;
+      
+      let hdrHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Name', 'don_name')\"" : ''}>Name</div></div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'don_amt')\"" : ''}>Amount</div>`;
+                   
+      if (!hideDonDate) {
+        hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'don_date')\"" : ''}>Date</div>`;
+      }
+      if (!hideDonColBy) {
+        hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>Collected By</div>`;
+      }
+      
+      hdr.innerHTML = hdrHTML;
 
-      customCols.forEach(col => {
+      visibleCustomCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         const div = document.createElement("div");
@@ -4813,7 +4845,7 @@
           row.className = "tr" + (i % 2 ? " alt" : "");
           row.setAttribute('data-id', d.id || d._id);
 
-          const customCells = customCols.map(col => {
+          const customCells = visibleCustomCols.map(col => {
             const colName = typeof col === "string" ? col : col.n;
             const colWidth = typeof col === "string" ? 180 : (col.w || 180);
             const val = (d.custom_fields && d.custom_fields[colName]) || "";
@@ -4821,18 +4853,25 @@
           }).join("");
 
           const pinned = isPinned("don", d.id || d._id);
-          row.innerHTML = `
+          
+          let rowHTML = `
         <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;">
           <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
             ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
           </div>
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(d.donor_name)}</div>
         </div>
-        <div class="sc" style="width:${getColWidth('don_amt', 90)}px;"><span class="cg">${d.amount ? formatINR(d.amount) : '<span class="cm">—</span>'}</span></div>
-        <div class="sc" style="width:${getColWidth('don_date', 100)}px;font-size:11px;">${formatDate(d.collected_at)}</div>
-        <div class="sc" style="width:${getColWidth('don_colby', 130)}px;font-size:11px;" title="${escHtml(d.collected_by_name || "—")}">${escHtml(d.collected_by_name || "—")}</div>
-        ${customCells}
-      `;
+        <div class="sc" style="width:${getColWidth('don_amt', 90)}px;"><span class="cg">${d.amount ? formatINR(d.amount) : '<span class="cm">—</span>'}</span></div>`;
+        
+        if (!hideDonDate) {
+          rowHTML += `<div class="sc" style="width:${getColWidth('don_date', 100)}px;font-size:11px;">${formatDate(d.collected_at)}</div>`;
+        }
+        if (!hideDonColBy) {
+          rowHTML += `<div class="sc" style="width:${getColWidth('don_colby', 130)}px;font-size:11px;" title="${escHtml(d.collected_by_name || "—")}">${escHtml(d.collected_by_name || "—")}</div>`;
+        }
+        
+        rowHTML += `${customCells}`;
+        row.innerHTML = rowHTML;
           row.addEventListener("contextmenu", e => { e.preventDefault(); openCtx(e, "don", d); });
           row.addEventListener("dblclick", e => { openCtx(e, "don", d); });
 
@@ -4906,16 +4945,30 @@
       if (!tblBody) return;
       tblBody.innerHTML = "";
       const customCols = eventData.expense_custom_columns || [];
+      const hideExpDate = customCols.some(c => (typeof c === 'string' ? c : c.n) === '_sys_exp_date' && c.hidden);
+      const hideExpAddBy = customCols.some(c => (typeof c === 'string' ? c : c.n) === '_sys_exp_colby' && c.hidden);
+      const visibleCustomCols = customCols.filter(c => {
+        const n = typeof c === 'string' ? c : c.n;
+        return !n.startsWith('_sys_') && !(c.hidden === true);
+      });
 
       // 1. Render Header Row
       const hdr = document.createElement("div");
       hdr.className = "tr hdr-row";
-      hdr.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Description', 'exp_desc')\"" : ''}>Description</div></div>
-                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'exp_amt')\"" : ''}>Amount</div>
-                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'exp_date')\"" : ''}>Date</div>
-                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Added By', 'exp_colby')\"" : ''}>Added By</div>`;
+      
+      let hdrHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Description', 'exp_desc')\"" : ''}>Description</div></div>
+                   <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'exp_amt')\"" : ''}>Amount</div>`;
+                   
+      if (!hideExpDate) {
+        hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'exp_date')\"" : ''}>Date</div>`;
+      }
+      if (!hideExpAddBy) {
+        hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Added By', 'exp_colby')\"" : ''}>Added By</div>`;
+      }
+      
+      hdr.innerHTML = hdrHTML;
 
-      customCols.forEach(col => {
+      visibleCustomCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         const div = document.createElement("div");
@@ -4936,7 +4989,7 @@
           row.className = "tr" + (i % 2 ? " alt" : "");
           row.setAttribute('data-id', e.id || e._id);
 
-          const customCells = customCols.map(col => {
+          const customCells = visibleCustomCols.map(col => {
             const colName = typeof col === "string" ? col : col.n;
             const colWidth = typeof col === "string" ? 180 : (col.w || 180);
             const val = (e.custom_fields && e.custom_fields[colName]) || "";
@@ -4944,18 +4997,25 @@
           }).join("");
 
           const pinned = isPinned("exp", e.id || e._id);
-          row.innerHTML = `
+          
+          let rowHTML = `
         <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;">
           <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
             ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
           </div>
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(e.description)}</div>
         </div>
-        <div class="sc" style="width:${getColWidth('exp_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>
-        <div class="sc" style="width:${getColWidth('exp_date', 100)}px;font-size:11px;">${formatDate(e.collected_at)}</div>
-        <div class="sc" style="width:${getColWidth('exp_colby', 130)}px;font-size:11px;" title="${escHtml(e.collected_by_name || "—")}">${escHtml(e.collected_by_name || "—")}</div>
-        ${customCells}
-      `;
+        <div class="sc" style="width:${getColWidth('exp_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>`;
+        
+        if (!hideExpDate) {
+          rowHTML += `<div class="sc" style="width:${getColWidth('exp_date', 100)}px;font-size:11px;">${formatDate(e.collected_at)}</div>`;
+        }
+        if (!hideExpAddBy) {
+          rowHTML += `<div class="sc" style="width:${getColWidth('exp_colby', 130)}px;font-size:11px;" title="${escHtml(e.collected_by_name || "—")}">${escHtml(e.collected_by_name || "—")}</div>`;
+        }
+        
+        rowHTML += `${customCells}`;
+        row.innerHTML = rowHTML;
           row.addEventListener("contextmenu", ev => { ev.preventDefault(); openCtx(ev, "exp", e); });
           row.addEventListener("dblclick", ev => { openCtx(ev, "exp", e); });
 
@@ -6082,9 +6142,12 @@
       try {
         const key = activeColType === "don" ? "donation_custom_columns" : "expense_custom_columns";
         const existing = eventData[key] || [];
-        const updated = existing.filter(c => {
+        const updated = existing.map(c => {
           const n = typeof c === "string" ? c : c.n;
-          return n !== editingColName;
+          if (n === editingColName) {
+            return { n: n, w: c.w || 180, hidden: true };
+          }
+          return c;
         });
 
         const data = {}; data[key] = updated;
@@ -6693,6 +6756,93 @@
       else setCCSize(260);
     }
 
+    function renderHiddenColumns(type) {
+      const key = type === "don" ? "donation_custom_columns" : "expense_custom_columns";
+      const existing = eventData[key] || [];
+      const hidden = existing.filter(c => c.hidden === true);
+      
+      const list = document.getElementById("hidden-cols-list");
+      list.innerHTML = "";
+      
+      toggleHiddenCols(true);
+      
+      const btns = document.querySelectorAll(".toggle-hidden-cols-btn");
+      if (hidden.length === 0) {
+        btns.forEach(btn => btn.style.display = "none");
+        return;
+      }
+      
+      btns.forEach(btn => btn.style.display = "flex");
+      hidden.forEach(c => {
+        let name = typeof c === "string" ? c : c.n;
+        let isSys = name.startsWith("_sys_");
+        let dispName = name;
+        if (isSys) {
+          if (name.endsWith("date")) dispName = "Date";
+          if (name.endsWith("colby")) dispName = type === "don" ? "Collected By" : "Added By";
+        }
+        
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.justifyContent = "space-between";
+        row.style.alignItems = "center";
+        row.style.padding = "8px 12px";
+        row.style.background = "var(--row-bg)";
+        row.style.borderRadius = "8px";
+        row.style.border = "1px solid var(--border)";
+        
+        row.innerHTML = `
+          <div style="font-size:13px; font-weight:700; color:var(--text1);">${escHtml(dispName)}</div>
+          <button class="btn btn-solid-primary" style="padding: 4px 10px; font-size: 11px; border-radius: 12px; height: auto; white-space: nowrap; width: fit-content !important; flex: 0 0 auto; margin: 0;" onclick="restoreHiddenColumn('${name}')">Restore</button>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function toggleHiddenCols(forceForm = false) {
+      const formView = document.getElementById("cc-form-view");
+      const hiddenView = document.getElementById("cc-hidden-view");
+      const footer = document.getElementById("cc-footer");
+      
+      if (forceForm || formView.style.display === "none") {
+        formView.style.display = "block";
+        hiddenView.style.display = "none";
+        footer.style.display = "block";
+      } else {
+        formView.style.display = "none";
+        hiddenView.style.display = "block";
+        footer.style.display = "none";
+      }
+    }
+
+    async function restoreHiddenColumn(name) {
+      const key = activeColType === "don" ? "donation_custom_columns" : "expense_custom_columns";
+      const existing = eventData[key] || [];
+      
+      const updated = existing.map(c => {
+        const n = typeof c === "string" ? c : c.n;
+        if (n === name) {
+          delete c.hidden;
+        }
+        return c;
+      });
+
+      try {
+        const data = {}; data[key] = updated;
+        const res = await updateEvent(eventId, data);
+        eventData[key] = res[key];
+        clearEventCache();
+        window.schemaChanged = true;
+        if (activeTheaterTab) {
+          switchTheaterTab(activeTheaterTab, true);
+        } else {
+          if (activeColType === "don") renderDonations(); else renderExpenses();
+        }
+        renderHiddenColumns(activeColType);
+        showToast("Column restored!");
+      } catch (e) { showToast(e.message || "Failed.", "error"); }
+    }
+
     function updateCharCount(el) {
       const count = document.getElementById("cc-char-count");
       if (count) count.textContent = `${el.value.length}/25`;
@@ -6705,12 +6855,13 @@
       document.getElementById("cc-sheet-sub").textContent = "This column will be added to the end of the table for everyone.";
       const inp = document.getElementById("cc-name");
       inp.value = "";
-      inp.setAttribute("readonly", "true");
+      inp.removeAttribute("readonly");
       updateCharCount(inp);
       setCCSize(160); // default Medium
       document.getElementById("cc-add-btns").style.display = "flex";
       document.getElementById("cc-edit-btns").style.display = "none";
       document.getElementById("cc-error").style.display = "none";
+      renderHiddenColumns(type);
       document.getElementById("custom-col-sheet").style.display = "flex";
       setTimeout(() => inp.focus(), 100);
     }
@@ -6734,6 +6885,7 @@
       document.getElementById("cc-add-btns").style.display = "none";
       document.getElementById("cc-edit-btns").style.display = "flex";
       document.getElementById("cc-error").style.display = "none";
+      renderHiddenColumns(type);
       document.getElementById("custom-col-sheet").style.display = "flex";
     }
 
@@ -6741,12 +6893,19 @@
     function getColWidth(key, defaultWidth) {
       return localStorage.getItem('np_col_' + key) || defaultWidth;
     }
-    function openDefaultColW(title, key, flex) {
-      if (!isOrganizer) return; // Only organizer can resize, or actually anyone can!
-      document.getElementById("def-col-title").textContent = title + " Width";
+    function openDefaultColW(title, key, flex = false) {
+      document.getElementById("def-col-title").textContent = title;
       document.getElementById("def-col-key").value = key;
       const curr = getColWidth(key, flex ? 'flex' : 130);
       setDefSize(curr === 'flex' ? 130 : parseInt(curr) || 130);
+      
+      const hideBtn = document.getElementById("def-col-hide-btn");
+      if (key === 'don_date' || key === 'don_colby' || key === 'exp_date' || key === 'exp_colby') {
+        hideBtn.style.display = 'block';
+      } else {
+        hideBtn.style.display = 'none'; // Cannot hide Name/Amount
+      }
+
       document.getElementById("def-col-sheet").style.display = "flex";
     }
     function closeDefColSheet() { document.getElementById("def-col-sheet").style.display = "none"; }
@@ -6765,6 +6924,37 @@
       renderDonations();
       renderExpenses();
       if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
+    }
+
+    async function hideDefCol() {
+      const key = document.getElementById("def-col-key").value;
+      const colArrKey = key.startsWith("don_") ? "donation_custom_columns" : "expense_custom_columns";
+      const sysKey = "_sys_" + key;
+      
+      try {
+        const existing = eventData[colArrKey] || [];
+        // Remove any existing definition for this sys key
+        const updated = existing.filter(c => (typeof c === "string" ? c : c.n) !== sysKey);
+        // Push the hidden state
+        updated.push({ n: sysKey, hidden: true });
+        
+        const data = {}; data[colArrKey] = updated;
+        const res = await updateEvent(eventId, data);
+        eventData[colArrKey] = res[colArrKey];
+        clearEventCache();
+        window.schemaChanged = true;
+        closeDefColSheet();
+        
+        if (activeTheaterTab) {
+          switchTheaterTab(activeTheaterTab, true);
+        } else {
+          renderDonations(); 
+          renderExpenses();
+        }
+        showToast("Column hidden.");
+      } catch (e) {
+        showToast(e.message || "Failed to hide column.", "error");
+      }
     }
 
     function closeCustomColSheet() {
@@ -6884,6 +7074,12 @@
       pinned.sort((a, b) => a.idx - b.idx);
       const list = [...pinned.map(p => p.item), ...unpinned];
       const customCols = type === "don" ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
+      const hideDate = customCols.some(c => (typeof c === 'string' ? c : c.n) === (type === 'don' ? '_sys_don_date' : '_sys_exp_date') && c.hidden);
+      const hideColBy = customCols.some(c => (typeof c === 'string' ? c : c.n) === (type === 'don' ? '_sys_don_colby' : '_sys_exp_colby') && c.hidden);
+      const visibleCustomCols = customCols.filter(c => {
+        const n = typeof c === 'string' ? c : c.n;
+        return !n.startsWith('_sys_') && !(c.hidden === true);
+      });
 
       list.forEach((entry, i) => {
         const tr = document.createElement("div");
@@ -6892,14 +7088,14 @@
         tr.onclick = (e) => openCtx(e, type, entry);
 
         const isPinned = pList.includes(String(entry.id || entry._id));
-        const customCells = customCols.map(c => {
+        const customCells = visibleCustomCols.map(c => {
           const n = typeof c === "string" ? c : c.n;
           const w = (typeof c === "string" ? 180 : c.w);
           const val = (entry.custom_fields && entry.custom_fields[n]) || "-";
           return `<div class="sc" style="width:${w}px;">${escHtml(val)}</div>`;
         }).join("");
 
-        tr.innerHTML = `
+        let rowHTML = `
           <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(type === "don" ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
               ${isPinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
@@ -6908,11 +7104,17 @@
           </div>
           <div class="sc" style="width:${getColWidth(type === "don" ? 'don_amt' : 'exp_amt', 90)}px;">
             <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>
-          </div>
-          <div class="sc" style="width:${getColWidth(type === "don" ? 'don_date' : 'exp_date', 100)}px;">${formatDate(entry.collected_at)}</div>
-          <div class="sc" style="width:${getColWidth(type === "don" ? 'don_colby' : 'exp_colby', 130)}px;">${escHtml(entry.collected_by_name || "-")}</div>
-          ${customCells}
-        `;
+          </div>`;
+          
+        if (!hideDate) {
+          rowHTML += `<div class="sc" style="width:${getColWidth(type === "don" ? 'don_date' : 'exp_date', 100)}px;">${formatDate(entry.collected_at)}</div>`;
+        }
+        if (!hideColBy) {
+          rowHTML += `<div class="sc" style="width:${getColWidth(type === "don" ? 'don_colby' : 'exp_colby', 130)}px;">${escHtml(entry.collected_by_name || "-")}</div>`;
+        }
+        
+        rowHTML += `${customCells}`;
+        tr.innerHTML = rowHTML;
         container.appendChild(tr);
       });
 
@@ -6944,19 +7146,28 @@
         hdrRow.style.zIndex = "2500";
       }
 
-      if (type === "don") {
-        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Name', 'don_name')\"" : ''}>NAME</div></div>
-                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'don_amt')\"" : ''}>AMOUNT</div>
-                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'don_date')\"" : ''}>DATE</div>
-                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>COLLECTED BY</div>`;
-      } else {
-        hdrRow.innerHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Description', 'exp_desc')\"" : ''}>DESCRIPTION</div></div>
-                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'exp_amt')\"" : ''}>AMOUNT</div>
-                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'exp_date')\"" : ''}>DATE</div>
-                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Added By', 'exp_colby')\"" : ''}>ADDED BY</div>`;
-      }
+      const hideDate = customCols.some(c => (typeof c === 'string' ? c : c.n) === (type === 'don' ? '_sys_don_date' : '_sys_exp_date') && c.hidden);
+      const hideColBy = customCols.some(c => (typeof c === 'string' ? c : c.n) === (type === 'don' ? '_sys_don_colby' : '_sys_exp_colby') && c.hidden);
+      const visibleCustomCols = customCols.filter(c => {
+        const n = typeof c === 'string' ? c : c.n;
+        return !n.startsWith('_sys_') && !(c.hidden === true);
+      });
 
-      customCols.forEach((c) => {
+      let hdrHTML = '';
+      if (type === "don") {
+        hdrHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Name', 'don_name')\"" : ''}>NAME</div></div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'don_amt')\"" : ''}>AMOUNT</div>`;
+        if (!hideDate) hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'don_date')\"" : ''}>DATE</div>`;
+        if (!hideColBy) hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>COLLECTED BY</div>`;
+      } else {
+        hdrHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Description', 'exp_desc')\"" : ''}>DESCRIPTION</div></div>
+                     <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'exp_amt')\"" : ''}>AMOUNT</div>`;
+        if (!hideDate) hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'exp_date')\"" : ''}>DATE</div>`;
+        if (!hideColBy) hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Added By', 'exp_colby')\"" : ''}>ADDED BY</div>`;
+      }
+      hdrRow.innerHTML = hdrHTML;
+
+      visibleCustomCols.forEach((c) => {
         const th = document.createElement("div");
         th.className = "th" + (isOrganizer && !isVisitor ? " sth-custom" : "");
         const colName = typeof c === "string" ? c : c.n;
@@ -7361,15 +7572,26 @@
       let currentY = 105;
 
       // --- DONATIONS TABLE (CREDITS) ---
-      const donCols = eventData.donation_custom_columns || [];
-      const donHead = ['NAME', 'AMOUNT (RS.)', 'DATE', 'COLLECTED BY', ...donCols.map(c => (typeof c === 'string' ? c : c.n).toUpperCase())];
-      const donBody = donations.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at)).map(d => [
-        d.donor_name.toUpperCase(),
-        formatPDF_Amt(d.amount),
-        formatDate(d.collected_at).toUpperCase(),
-        (d.collected_by_name || '-').toUpperCase(),
-        ...donCols.map(c => (d.custom_fields ? (d.custom_fields[typeof c === 'string' ? c : c.n] || '-') : '-').toUpperCase())
-      ]);
+      const donColsRaw = eventData.donation_custom_columns || [];
+      const hideDonDate = donColsRaw.some(c => (typeof c === 'string' ? c : c.n) === '_sys_don_date' && c.hidden);
+      const hideDonColBy = donColsRaw.some(c => (typeof c === 'string' ? c : c.n) === '_sys_don_colby' && c.hidden);
+      const visibleDonCols = donColsRaw.filter(c => {
+        const n = typeof c === 'string' ? c : c.n;
+        return !n.startsWith('_sys_') && !(c.hidden === true);
+      });
+      
+      const donHead = ['NAME', 'AMOUNT (RS.)'];
+      if (!hideDonDate) donHead.push('DATE');
+      if (!hideDonColBy) donHead.push('COLLECTED BY');
+      visibleDonCols.forEach(c => donHead.push((typeof c === 'string' ? c : c.n).toUpperCase()));
+      
+      const donBody = donations.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at)).map(d => {
+        const row = [d.donor_name.toUpperCase(), formatPDF_Amt(d.amount)];
+        if (!hideDonDate) row.push(formatDate(d.collected_at).toUpperCase());
+        if (!hideDonColBy) row.push((d.collected_by_name || '-').toUpperCase());
+        visibleDonCols.forEach(c => row.push((d.custom_fields ? (d.custom_fields[typeof c === 'string' ? c : c.n] || '-') : '-').toUpperCase()));
+        return row;
+      });
 
       if (donBody.length > 0) {
         doc.setFontSize(11);
@@ -7410,15 +7632,26 @@
       }
 
       // --- EXPENSES TABLE (DEBITS) ---
-      const expCols = eventData.expense_custom_columns || [];
-      const expHead = ['DESCRIPTION', 'AMOUNT (RS.)', 'DATE', 'ADDED BY', ...expCols.map(c => (typeof c === 'string' ? c : c.n).toUpperCase())];
-      const expBody = expenses.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at)).map(e => [
-        e.description.toUpperCase(),
-        formatPDF_Amt(e.amount),
-        formatDate(e.collected_at).toUpperCase(),
-        (e.collected_by_name || '-').toUpperCase(),
-        ...expCols.map(c => (e.custom_fields ? (e.custom_fields[typeof c === 'string' ? c : c.n] || '-') : '-').toUpperCase())
-      ]);
+      const expColsRaw = eventData.expense_custom_columns || [];
+      const hideExpDate = expColsRaw.some(c => (typeof c === 'string' ? c : c.n) === '_sys_exp_date' && c.hidden);
+      const hideExpAddBy = expColsRaw.some(c => (typeof c === 'string' ? c : c.n) === '_sys_exp_colby' && c.hidden);
+      const visibleExpCols = expColsRaw.filter(c => {
+        const n = typeof c === 'string' ? c : c.n;
+        return !n.startsWith('_sys_') && !(c.hidden === true);
+      });
+
+      const expHead = ['DESCRIPTION', 'AMOUNT (RS.)'];
+      if (!hideExpDate) expHead.push('DATE');
+      if (!hideExpAddBy) expHead.push('ADDED BY');
+      visibleExpCols.forEach(c => expHead.push((typeof c === 'string' ? c : c.n).toUpperCase()));
+
+      const expBody = expenses.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at)).map(e => {
+        const row = [e.description.toUpperCase(), formatPDF_Amt(e.amount)];
+        if (!hideExpDate) row.push(formatDate(e.collected_at).toUpperCase());
+        if (!hideExpAddBy) row.push((e.collected_by_name || '-').toUpperCase());
+        visibleExpCols.forEach(c => row.push((e.custom_fields ? (e.custom_fields[typeof c === 'string' ? c : c.n] || '-') : '-').toUpperCase()));
+        return row;
+      });
 
       if (expBody.length > 0) {
         doc.setFontSize(11);
@@ -7747,7 +7980,11 @@
         // If chat is currently open, we MUST render the messages even if this is a background load
         // (to ensure newly arrived messages appear instantly if the user is already looking at the chat)
         if (!isBackground || chatOpen) {
-          renderChatMessages(loadOlder ? 'older' : 'bottom');
+          if (loadOlder) {
+            prependOlderMessages(msgs);
+          } else {
+            renderChatMessages('bottom');
+          }
         }
 
         // Calculate initial unread count on first load
@@ -7844,6 +8081,50 @@
       if (!isOwn) html += `</div>`; // end chat-msg-row
 
       return { html, dateLabel, newSender: m.user_id };
+    }
+
+    function prependOlderMessages(msgs) {
+      if (!msgs || msgs.length === 0) return;
+      const container = document.getElementById('chat-messages');
+      const prevScrollHeight = container.scrollHeight;
+      const prevScrollTop = container.scrollTop;
+
+      const loadBtn = container.querySelector('.chat-load-more');
+      if (loadBtn) loadBtn.remove();
+      const infoMsg = container.querySelector('.chat-retention-info');
+      if (infoMsg) infoMsg.remove();
+
+      let html = '';
+
+      if (chatFullyLoaded) {
+        html += `<div class="chat-retention-info" style="text-align:center; padding:10px 14px; margin:8px 12px; font-size:11px; font-weight:700; color:var(--text3); background:var(--surf-var); border-radius:10px; border:1px solid var(--border2); line-height:1.4;">
+          NotePay Chat preserves the latest 200 messages. Older messages are automatically deleted by the server.
+        </div>`;
+      } else if (chatMessages.length >= 50) {
+        html += `<div class="chat-load-more" onclick="loadChatHistory(true)">Load older messages </div>`;
+      }
+
+      let lastDate = '';
+      let lastSender = -1;
+      msgs.forEach((m) => {
+        const res = buildMessageHTML(m, lastSender, lastDate);
+        html += res.html;
+        lastDate = res.dateLabel;
+        lastSender = res.newSender;
+      });
+
+      // Remove the redundant date divider of the old top message if it matches the last newly loaded message
+      if (lastDate) {
+        const oldDividers = container.querySelectorAll('.chat-date-divider');
+        if (oldDividers.length > 0) {
+           if (oldDividers[0].textContent === lastDate) {
+             oldDividers[0].remove();
+           }
+        }
+      }
+
+      container.insertAdjacentHTML('afterbegin', html);
+      container.scrollTop = container.scrollHeight - prevScrollHeight + prevScrollTop;
     }
 
     function renderChatMessages(scrollMode = 'bottom') {
