@@ -2786,7 +2786,7 @@
         
         row.innerHTML = `
           <div style="font-size:13px; font-weight:700; color:var(--text1);">${escHtml(dispName)}</div>
-          <button class="btn btn-solid-primary" style="padding: 4px 10px; font-size: 11px; border-radius: 12px; height: auto; white-space: nowrap; width: fit-content !important; flex: 0 0 auto; margin: 0;" onclick="restoreHiddenColumn('${name}')">Restore</button>
+          <button class="btn btn-solid-primary" style="padding: 0 12px; font-size: 11.5px; border-radius: 30px; height: 28px; white-space: nowrap; width: fit-content !important; flex: 0 0 auto; margin: 0;" onclick="restoreHiddenColumn('${name}')">Restore</button>
         `;
         list.appendChild(row);
       });
@@ -2804,7 +2804,7 @@
         hiddenView.style.display = "none";
         footer.style.display = "block";
         title.textContent = window.editingColName ? "Update Column" : "Add Custom Column";
-        subTitle.textContent = window.editingColName ? "Updating this column will change it for everyone." : "This column will be added to the end of the table for everyone.";
+        subTitle.textContent = window.editingColName ? "Any changes made will reflect on the table for all participants." : "This column will be added to the end of the table for everyone.";
       } else {
         formView.style.display = "none";
         hiddenView.style.display = "block";
@@ -2869,7 +2869,7 @@
       activeColType = type;
       editingColName = name;
       document.getElementById("cc-sheet-title").textContent = "Update Column";
-      document.getElementById("cc-sheet-sub").textContent = "Updating this column will change it for everyone.";
+      document.getElementById("cc-sheet-sub").textContent = "Any changes made will reflect on the table for all participants.";
       const inp = document.getElementById("cc-name");
       inp.value = name;
       inp.setAttribute("readonly", "true");
