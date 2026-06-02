@@ -104,3 +104,15 @@ function clearAuthCache() {
 auth.onAuthStateChanged(user => {
   if (!user && _authHasSettled) resetAuthCache();
 });
+
+// ── Clean URL (Remove .html from address bar) ──
+if (window.location.pathname.endsWith('.html')) {
+  const cleanPath = window.location.pathname.replace(/\.html$/, '');
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}
+
+// Clean URL (Remove .html from address bar)
+if (window.location.pathname.endsWith('.html')) {
+  const cleanPath = window.location.pathname.replace(/\.html$/, '');
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}

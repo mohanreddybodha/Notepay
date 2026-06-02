@@ -61,7 +61,7 @@
     <div class="field-wrap">
       <div class="field-label-out">Event Code <span style="color:var(--red);">*</span></div>
       <div class="field" id="code-field">
-        <input type="text" id="code-input" placeholder="Enter 12-character code" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false" />
+        <input type="text" id="code-input" placeholder="Enter event code" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false" />
       </div>
     </div>
 
@@ -97,7 +97,7 @@
     const errTxt = document.getElementById("err-txt");
 
     if (!code) { errTxt.textContent="Please enter an event code."; err.classList.add("visible"); return; }
-    if (code.length !== 12) { errTxt.textContent = "Event code must be 12 characters."; err.classList.add("visible"); return; }
+    if (code.length !== 16) { errTxt.textContent = "Event code must be 16 characters."; err.classList.add("visible"); return; }
 
     btn.classList.add("loading"); btn.disabled = true;
     err.classList.remove("visible");
