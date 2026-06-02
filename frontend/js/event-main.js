@@ -2804,7 +2804,7 @@
         hiddenView.style.display = "none";
         footer.style.display = "block";
         title.textContent = window.editingColName ? "Update Column" : "Add Custom Column";
-        subTitle.textContent = window.editingColName ? `Editing: ${window.editingColName}` : "This column will be added to the end of the table for everyone.";
+        subTitle.textContent = window.editingColName ? "Updating this column will change it for everyone." : "This column will be added to the end of the table for everyone.";
       } else {
         formView.style.display = "none";
         hiddenView.style.display = "block";
@@ -2869,7 +2869,7 @@
       activeColType = type;
       editingColName = name;
       document.getElementById("cc-sheet-title").textContent = "Update Column";
-      document.getElementById("cc-sheet-sub").textContent = `Editing: ${name}`;
+      document.getElementById("cc-sheet-sub").textContent = "Updating this column will change it for everyone.";
       const inp = document.getElementById("cc-name");
       inp.value = name;
       inp.setAttribute("readonly", "true");
