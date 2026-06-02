@@ -2795,13 +2795,22 @@
     function toggleHiddenCols(forceForm = false) {
       const formView = document.getElementById("cc-form-view");
       const hiddenView = document.getElementById("cc-hidden-view");
+      const footer = document.getElementById("cc-footer");
+      const subTitle = document.getElementById("cc-sheet-sub");
+      const title = document.getElementById("cc-sheet-title");
       
       if (forceForm || formView.style.display === "none") {
         formView.style.display = "block";
         hiddenView.style.display = "none";
+        footer.style.display = "block";
+        title.textContent = window.editingColName ? "Update Column" : "Add Custom Column";
+        subTitle.textContent = window.editingColName ? `Editing: ${window.editingColName}` : "This column will be added to the end of the table for everyone.";
       } else {
         formView.style.display = "none";
         hiddenView.style.display = "block";
+        footer.style.display = "none"; // Hide footer on hidden columns page
+        title.textContent = "Hidden Columns";
+        subTitle.textContent = "Restoring a column will make it visible to everyone again.";
       }
     }
 
