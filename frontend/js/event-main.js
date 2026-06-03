@@ -851,7 +851,7 @@
           </div>
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(d.donor_name)}</div>
         </div>
-        <div class="sc" style="width:${getColWidth('don_amt', 90)}px;"><span class="cg">${d.amount ? formatINR(d.amount) : '<span class="cm">—</span>'}</span></div>`;
+        <div class="sc" style="width:${getColWidth('don_amt', 90)}px;"><span class="cg">${d.amount ? formatINR(d.amount) : '₹0'}</span></div>`;
         
         if (!hideDonDate) {
           rowHTML += `<div class="sc" style="width:${getColWidth('don_date', 100)}px;font-size:11px;">${formatDate(d.collected_at)}</div>`;
@@ -995,7 +995,7 @@
           </div>
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(e.description)}</div>
         </div>
-        <div class="sc" style="width:${getColWidth('exp_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '<span class="cm">—</span>'}</span></div>`;
+        <div class="sc" style="width:${getColWidth('exp_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '₹0'}</span></div>`;
         
         if (!hideExpDate) {
           rowHTML += `<div class="sc" style="width:${getColWidth('exp_date', 100)}px;font-size:11px;">${formatDate(e.collected_at)}</div>`;
@@ -1182,13 +1182,15 @@
         </div>
 
         <div class="stats" style="display:flex; gap:10px; margin-bottom:12px;">
-          ${showDon ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
+          ${showDon ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center; position:relative; padding-bottom:18px;">
             <div style="font-size:11px; font-weight:800; color:var(--text3);">COLLECTED</div>
             <div style="font-size:16px; font-weight:900; color:var(--green);">${formatINR(s.total_donations)}</div>
+            <div style="position:absolute; bottom:6px; left:12px; font-size:9px; font-weight:800; color:var(--text3); opacity:0.6;">${s.donations_count} donors</div>
           </div>` : ''}
-          ${showExp ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center;">
+          ${showExp ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center; position:relative; padding-bottom:18px;">
             <div style="font-size:11px; font-weight:800; color:var(--text3);">SPENT</div>
             <div style="font-size:16px; font-weight:900; color:var(--red);">${formatINR(s.total_expenses)}</div>
+            <div style="position:absolute; bottom:6px; left:12px; font-size:9px; font-weight:800; color:var(--text3); opacity:0.6;">${s.expenses_count} expenses</div>
           </div>` : ''}
         </div>
 
@@ -1218,7 +1220,7 @@
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(c[0])}</span>
                   </div>
-                  <div style="font-size:14px; font-weight:900; color:var(--primary);">${formatINR(c[1])}</div>
+                  <div style="font-size:14px; font-weight:900; color:var(--primary);">${c[1] ? formatINR(c[1]) : '₹0'}</div>
                 </div>
               `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No collections yet</div>'}
               ${topCollectorsAll.length > sumLimits.col ? `<div onclick="sumLimits.col+=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
@@ -1240,7 +1242,7 @@
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(d[0])}</span>
                   </div>
-                  <div style="font-size:14px; font-weight:900; color:var(--green);">${formatINR(d[1])}</div>
+                  <div style="font-size:14px; font-weight:900; color:var(--green);">${d[1] ? formatINR(d[1]) : '₹0'}</div>
                 </div>
               `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
               ${topDonorsAll.length > sumLimits.don ? `<div onclick="sumLimits.don+=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
@@ -1262,7 +1264,7 @@
                   <div style="font-size:13px; font-weight:800; color:var(--text); display:flex; gap:8px; align-items:center;">
                     <span style="opacity:0.4; font-size:11px;">${i + 1}</span> <span>${escHtml(exp.description)}</span>
                   </div>
-                  <div style="font-size:14px; font-weight:900; color:var(--red);">${formatINR(exp.amount)}</div>
+                  <div style="font-size:14px; font-weight:900; color:var(--red);">${exp.amount ? formatINR(exp.amount) : '₹0'}</div>
                 </div>
               `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No expenses yet</div>'}
               ${topExpensesAll.length > sumLimits.exp ? `<div onclick="sumLimits.exp+=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
@@ -1290,23 +1292,19 @@
               </div>
               <div style="text-align:right;">
                 <div style="font-size:14px; font-weight:900; color:${t.type === 'donation' ? 'var(--green)' : 'var(--red)'};">
-                  ${t.type === 'donation' ? '+' : '-'}${formatINR(t.amount)}
+                  ${t.type === 'donation' ? '+' : '-'}${t.amount ? formatINR(t.amount) : '₹0'}
                 </div>
                 <div style="font-size:9px; font-weight:800; color:var(--text3);">${t.type.toUpperCase()}</div>
               </div>
             </div>
           `).join("")}
           
-          <div style="display:flex; background:var(--row-alt); border-top:1px solid var(--border2);">
+          <div>
             ${s.recent_transactions.length > vTxnsCount ? `
-              <div style="flex:1; padding:14px; text-align:center; cursor:pointer; font-size:12.5px; font-weight:900; color:var(--primary); border-right:1px solid var(--border2);" onclick="renderSummary(1, '${containerId}')">
-                SHOW MORE ACTIVITY
-              </div>
+              <div onclick="renderSummary(1, '${containerId}')" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>
             ` : ""}
             ${vTxnsCount > 5 ? `
-              <div style="flex:1; padding:14px; text-align:center; cursor:pointer; font-size:12.5px; font-weight:900; color:var(--text3);" onclick="renderSummary(-1, '${containerId}')">
-                COLLAPSE LIST
-              </div>
+              <div onclick="renderSummary(-1, '${containerId}')" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>
             ` : ""}
           </div>
         </div>
@@ -1540,7 +1538,7 @@
               <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"></div>
               <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(isDon ? newEntry.donor_name : newEntry.description)}</div>
             </div>
-            <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px;"><span class="${isDon ? 'cg' : 'cr'}">${newEntry.amount ? formatINR(newEntry.amount) : '<span class="cm">—</span>'}</span></div>
+            <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px;"><span class="${isDon ? 'cg' : 'cr'}">${newEntry.amount ? formatINR(newEntry.amount) : '₹0'}</span></div>
             <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px;font-size:11px;">${formatDate(newEntry.collected_at)}</div>
             <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px;font-size:11px;" title="${escHtml(newEntry.collected_by_name || "—")}">${escHtml(newEntry.collected_by_name || "—")}</div>
             ${customCells}
@@ -1832,7 +1830,7 @@
           const amtEl = oRow.querySelector('.sc:nth-child(2) span');
           if (amtEl) {
             amtEl.className = isDon ? 'cg' : 'cr';
-            amtEl.innerHTML = updatedEntry.amount ? formatINR(updatedEntry.amount) : '<span class="cm">—</span>';
+            amtEl.innerHTML = updatedEntry.amount ? formatINR(updatedEntry.amount) : '₹0';
           }
         }
         
