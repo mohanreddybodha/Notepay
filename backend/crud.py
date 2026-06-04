@@ -516,12 +516,6 @@ def get_member_contact(db: Session, event_id: str, target_user_id: int):
 
 
 def get_event_full_details(db: Session, event_id: str, user_id: int):
-    # PHASE 2: Try cache first (Place 1)
-    cache_key = f"full:{event_id}:{user_id}"
-    cached_data = cache.cache.get(cache_key)
-    if cached_data:
-        return schemas.EventFullDetailsResponse(**cached_data)
-
     # === OPTIMIZED: 3 queries instead of 10 ===
 
     # Query 1: Event + Member in one shot
@@ -623,8 +617,6 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
         is_restricted=is_restricted
     )
 
-    # Save to cache
-    cache.cache.set(cache_key, resp.model_dump(), expire=1800)
     return resp
 
 def fix_event_json(e):
@@ -670,19 +662,6 @@ def _chat_msg_to_dict(db, msg, sender_name):
     return d
 
 def create_chat_message(db: Session, event_id: str, user_id: int, message: str, reply_to_id: int = None):
-    # Cap chat history to latest 200 messages to prevent database bloat
-    message_count = db.query(models.ChatMessage).filter(models.ChatMessage.event_id == event_id).count()
-    if message_count >= 200:
-        # Fetch the oldest messages that exceed the limit
-        oldest_msgs = db.query(models.ChatMessage).filter(
-            models.ChatMessage.event_id == event_id
-        ).order_by(models.ChatMessage.id.asc()).limit(message_count - 199).all()
-        for old in oldest_msgs:
-            # Dissociate any replies to this message before deletion to prevent constraint violations
-            db.query(models.ChatMessage).filter(models.ChatMessage.reply_to_id == old.id).update({models.ChatMessage.reply_to_id: None})
-            db.delete(old)
-        db.commit()
-
     msg = models.ChatMessage(
         event_id=event_id,
         user_id=user_id,

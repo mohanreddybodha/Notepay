@@ -87,22 +87,6 @@ class CacheManager:
         """Clears all cached data related to a specific event."""
         self.delete(f"sum:{event_id}")
         self.delete(f"all:{event_id}")
-        
-        # Also clear all user-specific "Big Bang" caches for this event
-        if self.client:
-            try:
-                # Redis pattern match
-                keys = self.client.keys(f"full:{event_id}:*")
-                if keys:
-                    self.client.delete(*keys)
-            except Exception as e:
-                print(f"Redis pattern invalidate error: {e}")
-        else:
-            # Local cache pattern match
-            prefix = f"full:{event_id}:"
-            to_del = [k for k in self._local_cache.keys() if k.startswith(prefix)]
-            for k in to_del:
-                del self._local_cache[k]
         print(f" Cache Fully Cleared for Event {event_id}")
 
     def get_global_version(self) -> str:

@@ -195,13 +195,23 @@
       renderPage();
     }
 
+    let _isFetchingLoadAll = false;
+    let _queueNextLoadAll = false;
+
     async function loadAll(isBackground = false, forceFresh = false, preventRender = false) {
-      if (!isBackground && !forceFresh) {
-        // RESET GLOBALS
-        isOrganizer = false;
-        isOrganizerGlobal = false;
-        isVisitor = true;
-        isRestricted = false;
+      if (_isFetchingLoadAll) {
+         if (isBackground) _queueNextLoadAll = true;
+         return;
+      }
+      _isFetchingLoadAll = true;
+
+      try {
+        if (!isBackground && !forceFresh) {
+          // RESET GLOBALS
+          isOrganizer = false;
+          isOrganizerGlobal = false;
+          isVisitor = true;
+          isRestricted = false;
 
         // PLACE 2: Hybrid Caching (Frontend)
         const cacheKey = "ev_cache_" + eventId;
@@ -265,6 +275,13 @@
           }
         } else {
           renderPage();
+        }
+      } finally {
+        _isFetchingLoadAll = false;
+        if (_queueNextLoadAll) {
+          _queueNextLoadAll = false;
+          // Trigger a single background fetch to catch any missed updates
+          setTimeout(() => loadAll(true, true, false), 100);
         }
       }
     }
@@ -1573,19 +1590,9 @@
         // Re-focus just in case the browser reset it during DOM updates.
         nameInput.focus();
 
-        // 5. Invalidate caches and silently sync in background
+        // 5. Invalidate caches (DATA_CHANGED websocket event will handle fetching fresh data)
         summaryData = null;
         updateTheaterStats();
-
-        apiFetch("GET", `/events/${eventId}/full-details`).then(res => {
-          if (res) {
-            localStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
-            donations = res.donations;
-            expenses = res.expenses;
-            summaryData = res.summary;
-            members = res.members || [];
-          }
-        }).catch(err => console.warn("Silent sync failed", err));
 
       } catch (e) {
         alert("Error saving: " + e.message);
@@ -1848,16 +1855,7 @@
         summaryData = null;
         updateTheaterStats();
 
-        // 5. Trigger a truly silent background fetch to sync any other changes without redrawing
-        apiFetch("GET", `/events/${eventId}/full-details`).then(res => {
-          if (res) {
-            localStorage.setItem("ev_cache_" + eventId, JSON.stringify(res));
-            donations = res.donations;
-            expenses = res.expenses;
-            summaryData = res.summary;
-            members = res.members || [];
-          }
-        }).catch(err => console.warn("Silent sync failed", err));
+        // 5. The DATA_CHANGED websocket event will handle fetching fresh data automatically.
 
       } catch (e) {
         alert("Error saving: " + e.message);
