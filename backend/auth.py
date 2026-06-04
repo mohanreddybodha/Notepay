@@ -68,7 +68,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Security(secu
                 await asyncio.sleep(2)  # Wait 2 seconds for clocks to align
                 try:
                     decoded = auth.verify_id_token(id_token, check_revoked=False)
-                    cache.cache.set(cache_key, decoded, expire=600)
+                    _local_token_cache[token_hash] = (decoded, time.time() + 600)
                     print(f" Clock skew resolved on attempt {attempt + 1}")
                     return decoded
                 except Exception as retry_e:
