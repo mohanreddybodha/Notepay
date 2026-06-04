@@ -670,9 +670,12 @@
           if (cell) cell.remove();
         });
 
+        const rightCol = _preservedInlineFormNode.querySelector('.sticky-col-right');
+
         // Add new custom cells
         customCols.forEach(col => {
           const colName = typeof col === "string" ? col : col.n;
+          if (colName.startsWith("_sys_")) return;
           const colWidth = typeof col === "string" ? 180 : (col.w || 180);
           const isHidden = typeof col === "object" && col.hidden;
           const val = state.customVals[colName] || '';
@@ -681,7 +684,12 @@
           cell.style.cssText = `width:${colWidth}px; display:${isHidden ? 'none !important' : 'flex'}; align-items:center;`;
           // Use same HTML as renderInlineEntryForm
           cell.innerHTML = `<input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" value="${escHtml(val)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">`;
-          _preservedInlineFormNode.appendChild(cell);
+          
+          if (rightCol) {
+            _preservedInlineFormNode.insertBefore(cell, rightCol);
+          } else {
+            _preservedInlineFormNode.appendChild(cell);
+          }
         });
         
         window.schemaChanged = false; // Successfully patched, skip rebuild!
