@@ -691,9 +691,9 @@
       if (_preservedInlineFormNode) {
         const isDon = state.formType === 'don';
         const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
-        const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date"));
-        const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby"));
-        const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt"));
+        const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date") && c.hidden);
+        const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby") && c.hidden);
+        const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt") && c.hidden);
 
         const cells = Array.from(_preservedInlineFormNode.children);
         if (cells.length >= 4) {
@@ -1428,9 +1428,9 @@
 
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
-      const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date"));
-      const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby"));
-      const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt"));
+      const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date") && c.hidden);
+      const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby") && c.hidden);
+      const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt") && c.hidden);
 
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
@@ -1664,9 +1664,9 @@
 
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
-      const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date"));
-      const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby"));
-      const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt"));
+      const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date") && c.hidden);
+      const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby") && c.hidden);
+      const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt") && c.hidden);
 
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
