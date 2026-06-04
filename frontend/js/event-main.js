@@ -1504,8 +1504,14 @@
         tblBody.appendChild(tr);
       }
 
-      // Bind keydown events for Enter key continuous submission
+      // Bind focus events to auto-scroll
       tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('focus', () => {
+          setTimeout(() => {
+            const target = newRowBtn || tr;
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 350);
+        });
         inp.addEventListener('keydown', function (e) {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -1749,6 +1755,17 @@
       } else {
         tblBody.appendChild(tr);
       }
+
+      // Bind focus events to auto-scroll
+      tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('focus', () => {
+          setTimeout(() => {
+            const target = newRowBtn || tr;
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 350);
+        });
+      });
+
       setTimeout(() => {
         const input = tr.querySelector('.inl-str-val');
         if (input) {
