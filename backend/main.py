@@ -66,8 +66,7 @@ class ConnectionManager:
         # Connections listening to dashboard/system-wide changes
         self.dashboard_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket, event_id: str):
-        await websocket.accept()
+    def register(self, websocket: WebSocket, event_id: str):
         if event_id not in self.active_connections:
             self.active_connections[event_id] = []
         self.active_connections[event_id].append(websocket)
