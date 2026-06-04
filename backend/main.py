@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import asyncio
+import concurrent.futures
 from datetime import datetime
 from typing import List, Optional, Dict
 import boto3
@@ -56,17 +57,17 @@ app.add_middleware(
 
 
 #  WEBSOCKET MANAGER 
+apigw_client = None
+
 class ConnectionManager:
     def __init__(self):
-        # event_id -> list of websockets (for local dev)
-        self.active_connections: Dict[int, List[WebSocket]] = {}
+        # Maps event_id -> list of active WebSocket connections
+        self.active_connections: Dict[str, List[WebSocket]] = {}
+        # Connections listening to dashboard/system-wide changes
         self.dashboard_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket, event_id: str):
         await websocket.accept()
-        self.register(websocket, event_id)
-
-    def register(self, websocket: WebSocket, event_id: str):
         if event_id not in self.active_connections:
             self.active_connections[event_id] = []
         self.active_connections[event_id].append(websocket)
@@ -83,15 +84,26 @@ class ConnectionManager:
             conns = cache.client.smembers(f"ws:evt:{event_id}")
             if conns:
                 try:
-                    endpoint = os.getenv("WEBSOCKET_URL", "").replace("wss://", "https://")
-                    apigw = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint)
+                    global apigw_client
+                    if apigw_client is None:
+                        endpoint = os.getenv("WEBSOCKET_URL", "").replace("wss://", "https://")
+                        apigw_client = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint)
+                    
                     msg_str = json.dumps(message)
                     dead = []
-                    for cid in conns:
+                    
+                    def _send(cid):
                         try:
-                            apigw.post_to_connection(ConnectionId=cid, Data=msg_str.encode('utf-8'))
+                            apigw_client.post_to_connection(ConnectionId=cid, Data=msg_str.encode('utf-8'))
+                            return None
                         except Exception:
-                            dead.append(cid)
+                            return cid
+                            
+                    # Fire all WS posts in parallel instead of sequentially
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        results = list(executor.map(_send, conns))
+                        dead = [r for r in results if r]
+                        
                     if dead:
                         cache.client.srem(f"ws:evt:{event_id}", *dead)
                 except Exception as e:

@@ -29,11 +29,16 @@ if "sqlite" in SQLALCHEMY_DATABASE_URL:
         cursor.execute("PRAGMA synchronous=NORMAL")
         cursor.close()
 else:
-    # Production uses Neon PostgreSQL with NullPool for Serverless compatibility
-    from sqlalchemy.pool import NullPool
+    # Production uses Neon PostgreSQL. We use a tuned QueuePool (pool_size=1) 
+    # to maintain exactly 1 persistent connection per AWS Lambda container,
+    # eliminating the 200ms TLS handshake per query while avoiding DB connection exhaustion.
+    from sqlalchemy.pool import QueuePool
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL,
-        poolclass=NullPool
+        poolclass=QueuePool,
+        pool_size=1,
+        max_overflow=2,
+        pool_pre_ping=True
     )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
