@@ -762,8 +762,12 @@
           const origRow = tblBody.querySelector(`.tr[data-id="${state.editId}"]`);
           if (origRow) {
             origRow.style.display = 'none';
-            tblBody.insertBefore(_preservedInlineFormNode, origRow.nextSibling);
             const newRowBtn = tblBody.querySelector('.new-row');
+            if (newRowBtn) {
+              tblBody.insertBefore(_preservedInlineFormNode, newRowBtn);
+            } else {
+              tblBody.insertBefore(_preservedInlineFormNode, origRow.nextSibling);
+            }
             if (newRowBtn) {
               newRowBtn.onclick = null;
               newRowBtn.style.cursor = "default";
@@ -2215,6 +2219,7 @@
         eventData[key] = res[key];
         clearEventCache();
         window.schemaChanged = true;
+        preserveInlineState();
         if (activeTheaterTab) {
           switchTheaterTab(activeTheaterTab, true);
         } else {
@@ -2899,6 +2904,7 @@
         eventData[key] = res[key];
         clearEventCache();
         window.schemaChanged = true;
+        preserveInlineState();
         if (activeTheaterTab) {
           switchTheaterTab(activeTheaterTab, true);
         } else {
@@ -3009,6 +3015,7 @@
         eventData[colArrKey] = res[colArrKey];
         clearEventCache();
         window.schemaChanged = true;
+        preserveInlineState();
         closeDefColSheet();
         
         if (activeTheaterTab) {
@@ -3056,6 +3063,7 @@
         eventData[key] = res[key];
         clearEventCache();
         window.schemaChanged = true;
+        preserveInlineState();
         if (activeTheaterTab) {
           switchTheaterTab(activeTheaterTab, true);
         } else {
@@ -3100,8 +3108,8 @@
         const res = await updateEvent(eventId, data);
         eventData[key] = res[key];
         clearEventCache();
-
         window.schemaChanged = true;
+        preserveInlineState();
         if (activeTheaterTab) {
           switchTheaterTab(activeTheaterTab, true);
         } else {
