@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import firebase_admin
 from firebase_admin import credentials, auth
 import hashlib
-import cache # Import our centralized cache
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,24 +27,34 @@ if not firebase_admin._apps:
         firebase_admin.initialize_app(options={'projectId': FIREBASE_PROJECT_ID})
 
 security = HTTPBearer()
+_local_token_cache = {}
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Security(security)):
     id_token = credentials.credentials
     
     # PHASE 4: Auth Caching (Place 4)
-    # Use a hash of the token as the cache key for security/length
+    # Use a highly optimized in-memory cache to completely bypass Redis/Network latency on every request
     token_hash = hashlib.sha1(id_token.encode()).hexdigest()
-    cache_key = f"auth:{token_hash}"
     
-    cached_user = cache.cache.get(cache_key)
-    if cached_user:
-        return cached_user
+    if token_hash in _local_token_cache:
+        cached_data, expire_at = _local_token_cache[token_hash]
+        if time.time() < expire_at:
+            return cached_data
+        else:
+            del _local_token_cache[token_hash]
 
     try:
         # Verify token using Firebase Admin
         decoded = auth.verify_id_token(id_token)
-        # Cache the result for 10 minutes (600s)
-        cache.cache.set(cache_key, decoded, expire=600)
+        # Cache the result in memory for 10 minutes (600s)
+        _local_token_cache[token_hash] = (decoded, time.time() + 600)
+        
+        # Prevent memory leak by capping cache size
+        if len(_local_token_cache) > 5000:
+            now = time.time()
+            expired = [k for k, v in _local_token_cache.items() if v[1] < now]
+            for k in expired: del _local_token_cache[k]
+
         return decoded
     except Exception as e:
         error_msg = str(e)

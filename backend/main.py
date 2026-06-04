@@ -169,6 +169,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Firebase Bearer token scheme
 _bearer = HTTPBearer(auto_error=False)
 
+_uid_to_internal_id_cache = {}
+
 async def get_current_user_id(
     db: Session = Depends(get_db),
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
@@ -177,39 +179,56 @@ async def get_current_user_id(
         raise HTTPException(status_code=401, detail="Auth header required")
     
     decoded = await auth.verify_token(credentials)
-    
     uid = decoded["uid"]
+    
+    if uid in _uid_to_internal_id_cache:
+        return _uid_to_internal_id_cache[uid]
+    
     phone = decoded.get("phone_number")
-    
-    # Log for diagnosis (masking UID)
-    # Debug logging removed
-    
     user = crud.get_user_by_firebase_uid(db, uid)
-    if not user and phone:
-        # Debug logging removed
-        # Check if user exists by phone (UID might have changed)
-        user = crud.get_user_by_phone(db, phone)
-        if user:
-            # User found by phone, updating UID
-            # Update UID to the new one
-            user.firebase_uid = uid
-            db.commit()
-            db.refresh(user)
-            
+    
     if not user:
-        # User not found in DB
-        raise HTTPException(status_code=404, detail="User not registered")
+        if phone:
+            user = crud.get_user_by_phone(db, phone)
+            if user:
+                user = crud.update_user_firebase_uid(db, user, uid)
+                _uid_to_internal_id_cache[uid] = user.id
+                return user.id
+            else:
+                raise HTTPException(status_code=404, detail="User not found")
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+    _uid_to_internal_id_cache[uid] = user.id
+    
+    # Keep cache from growing infinitely
+    if len(_uid_to_internal_id_cache) > 10000:
+        _uid_to_internal_id_cache.clear()
+        
     return user.id
 
 # Optional user id dependency removed to enforce strict auth.
 
+
+_membership_cache = {}
 
 #  HELPER: Membership Gatekeeper 
 def verify_membership(db: Session, event_id: str, user_id: int,
                       require_organizer: bool = False,
                       require_unrestricted: bool = False,
                       require_member: bool = False):
-    member = crud.get_member(db, event_id, user_id)
+    now = time.time()
+    cache_key = f"{event_id}:{user_id}"
+    member = None
+    
+    if cache_key in _membership_cache and _membership_cache[cache_key][1] > now:
+        member = _membership_cache[cache_key][0]
+    else:
+        member = crud.get_member(db, event_id, user_id)
+        _membership_cache[cache_key] = (member, now + 5)
+        # Prevent memory bloat
+        if len(_membership_cache) > 2000: _membership_cache.clear()
+        
     if not member:
         event = crud.get_event(db, event_id)
         if require_member or require_organizer or require_unrestricted:
