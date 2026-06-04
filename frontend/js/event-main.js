@@ -1522,6 +1522,28 @@
                 submitInlineEntry(type, saveBtn);
               }
             }
+          } else if (e.key === 'ArrowRight') {
+            let atEnd = false;
+            try { atEnd = (e.target.type === 'number') ? true : (e.target.selectionStart === e.target.value.length); } catch(err) { atEnd = true; }
+            if (atEnd) {
+              const inputs = Array.from(tr.querySelectorAll('input'));
+              const idx = inputs.indexOf(e.target);
+              if (idx > -1 && idx < inputs.length - 1) {
+                e.preventDefault();
+                inputs[idx + 1].focus();
+              }
+            }
+          } else if (e.key === 'ArrowLeft') {
+            let atStart = false;
+            try { atStart = (e.target.type === 'number') ? true : (e.target.selectionStart === 0); } catch(err) { atStart = true; }
+            if (atStart) {
+              const inputs = Array.from(tr.querySelectorAll('input'));
+              const idx = inputs.indexOf(e.target);
+              if (idx > 0) {
+                e.preventDefault();
+                inputs[idx - 1].focus();
+              }
+            }
           }
         });
       });
@@ -1762,6 +1784,40 @@
             const target = newRowBtn || tr;
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }, 350);
+        });
+        inp.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (newRowBtn) {
+              const saveBtn = newRowBtn.querySelector('.btn-solid-primary');
+              if (saveBtn) {
+                e.stopPropagation();
+                submitInlineEdit(type, String(d.id || d._id), saveBtn);
+              }
+            }
+          } else if (e.key === 'ArrowRight') {
+            let atEnd = false;
+            try { atEnd = (e.target.type === 'number') ? true : (e.target.selectionStart === e.target.value.length); } catch(err) { atEnd = true; }
+            if (atEnd) {
+              const inputs = Array.from(tr.querySelectorAll('input'));
+              const idx = inputs.indexOf(e.target);
+              if (idx > -1 && idx < inputs.length - 1) {
+                e.preventDefault();
+                inputs[idx + 1].focus();
+              }
+            }
+          } else if (e.key === 'ArrowLeft') {
+            let atStart = false;
+            try { atStart = (e.target.type === 'number') ? true : (e.target.selectionStart === 0); } catch(err) { atStart = true; }
+            if (atStart) {
+              const inputs = Array.from(tr.querySelectorAll('input'));
+              const idx = inputs.indexOf(e.target);
+              if (idx > 0) {
+                e.preventDefault();
+                inputs[idx - 1].focus();
+              }
+            }
+          }
         });
       });
 
