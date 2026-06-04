@@ -609,17 +609,12 @@
     let _preservedInlineFormNode = null;
 
     function preserveInlineState() {
-      if (activeTheaterTab) {
-        const rotTblBody = document.querySelector('#rot-ov-body .tbl-body-rows');
-        if (rotTblBody && rotTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(rotTblBody, activeTheaterTab);
-      } else {
-        document.querySelectorAll('.inline-entry-row, .inline-edit-row').forEach(r => r.remove());
-        activeInlineEditId = null;
-        activeInlineAddType = null;
-        activeInlineEditType = null;
-        _draftInlineData = null;
-        _preservedInlineFormNode = null;
-      }
+      document.querySelectorAll('.inline-entry-row, .inline-edit-row').forEach(r => r.remove());
+      activeInlineEditId = null;
+      activeInlineAddType = null;
+      activeInlineEditType = null;
+      _draftInlineData = null;
+      _preservedInlineFormNode = null;
     }
 
     function captureInlineState(tblBody, type) {
