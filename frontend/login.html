@@ -221,7 +221,9 @@ window.addEventListener("load", () => {
     size: "invisible",
     callback: () => {}
   });
-  recaptchaVerifier.render();
+  recaptchaVerifier.render().then(widgetId => {
+    window.recaptchaWidgetId = widgetId;
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -252,12 +254,6 @@ async function sendOTP() {
   phoneError.classList.remove("visible");
 
   try {
-    // Reset verifier if reused
-    if (!recaptchaVerifier) {
-      recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible", callback:()=>{} });
-      await recaptchaVerifier.render();
-    }
-
     confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
     // Show OTP section — confirmationResult stays in this window
     showOTPSection(num);
@@ -265,12 +261,10 @@ async function sendOTP() {
     console.error("sendOTP error:", err);
     showPhoneError(getFriendlyError(err));
     sendBtn.classList.remove("loading"); sendBtn.disabled = false;
-    // Reset reCAPTCHA
-    try {
-      recaptchaVerifier.clear();
-      recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible", callback:()=>{} });
-      await recaptchaVerifier.render();
-    } catch(e) {}
+    // Reset reCAPTCHA correctly
+    if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+      grecaptcha.reset(window.recaptchaWidgetId);
+    }
   }
 }
 
@@ -406,9 +400,9 @@ async function resendOTP() {
   if (!num) { goBackToPhone(); return; }
   document.getElementById("resend-link").classList.remove("active");
   try {
-    recaptchaVerifier.clear();
-    recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible", callback:()=>{} });
-    await recaptchaVerifier.render();
+    if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+      grecaptcha.reset(window.recaptchaWidgetId);
+    }
     confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
     startCountdown();
     showToast("OTP resent!");
