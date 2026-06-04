@@ -1584,7 +1584,6 @@
       // Mobile browsers only allow .focus() inside a synchronous user-gesture.
       // After await, the gesture context is lost and keyboard closes.
       nameInput.focus();
-      nameInput.select();
 
       btn.disabled = true;
       btn.textContent = 'Saving...';
