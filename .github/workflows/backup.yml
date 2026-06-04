@@ -30,7 +30,7 @@ jobs:
           DATABASE_URL=$(aws ssm get-parameter --name "/notepay/database_url" --with-decryption --query "Parameter.Value" --output text)
           
           # 2. Dump the database (this takes a snapshot of all data)
-          pg_dump $DATABASE_URL -Fc -f backup_$(date +%Y%m%d).dump
+          /usr/lib/postgresql/17/bin/pg_dump $DATABASE_URL -Fc -f backup_$(date +%Y%m%d).dump
           
           # 3. Create a unique, private S3 bucket for backups if it doesn't exist
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
