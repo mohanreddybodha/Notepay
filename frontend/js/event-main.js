@@ -608,6 +608,15 @@
     let _draftInlineData = null;
     let _preservedInlineFormNode = null;
 
+    function preserveInlineState() {
+      const donTblBody = document.getElementById('don-tbl-body');
+      if (donTblBody && donTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(donTblBody, 'don');
+      const expTblBody = document.getElementById('exp-tbl-body');
+      if (expTblBody && expTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(expTblBody, 'exp');
+      const rotTblBody = document.querySelector('#rot-ov-body .tbl-body-rows');
+      if (rotTblBody && rotTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(rotTblBody, activeTheaterTab);
+    }
+
     function captureInlineState(tblBody, type) {
       if (!tblBody) return;
 
