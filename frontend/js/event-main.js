@@ -3321,22 +3321,26 @@
     }
 
     function switchTheaterTab(tab, force = false) {
-      activeInlineAddType = null;
-      activeInlineEditType = null;
-      activeInlineEditId = null;
+      if (!force) {
+        activeInlineAddType = null;
+        activeInlineEditType = null;
+        activeInlineEditId = null;
+      }
       if (!force && (!activeTheaterTab || activeTheaterTab === tab)) return;
       // Block switching to a hidden tab
       const showDon = eventData.show_donations !== false;
       const showExp = eventData.show_expenses !== false;
       if (tab === 'don' && !showDon) return;
       if (tab === 'exp' && !showExp) return;
-      enterTheater(tab);
+      enterTheater(tab, force);
     }
 
-    function enterTheater(tab) {
-      activeInlineAddType = null;
-      activeInlineEditType = null;
-      activeInlineEditId = null;
+    function enterTheater(tab, force = false) {
+      if (!force) {
+        activeInlineAddType = null;
+        activeInlineEditType = null;
+        activeInlineEditId = null;
+      }
       activeTheaterTab = tab;
       // Hide chat FAB in theater mode
       const chatFab = document.getElementById('chat-fab');
