@@ -674,7 +674,7 @@
         customCols.forEach(col => {
           const colName = typeof col === "string" ? col : col.n;
           const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-          const isHidden = typeof col === "object" && col.h;
+          const isHidden = typeof col === "object" && col.hidden;
           const val = state.customVals[colName] || '';
           const cell = document.createElement('div');
           cell.className = 'sc';
@@ -702,7 +702,7 @@
           customCols.forEach(col => {
             if (cells[idx]) {
                 const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-                const isHidden = typeof col === "object" && col.h;
+                const isHidden = typeof col === "object" && col.hidden;
                 cells[idx].style.width = colWidth + 'px';
                 if (isHidden) {
                   cells[idx].style.setProperty('display', 'none', 'important');
@@ -1446,7 +1446,7 @@
       customCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-        const isHidden = typeof col === "object" && col.h;
+        const isHidden = typeof col === "object" && col.hidden;
         html += `<div class="sc" style="width:${colWidth}px; display:${isHidden ? 'none !important' : 'flex'}; align-items:center;">
           <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" placeholder="${escHtml(colName)}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
@@ -1680,7 +1680,7 @@
       customCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-        const isHidden = typeof col === "object" && col.h;
+        const isHidden = typeof col === "object" && col.hidden;
         const cv = (d.custom_fields && d.custom_fields[colName]) ? escHtml(d.custom_fields[colName]) : '';
         html += `<div class="sc" style="width:${colWidth}px; display:${isHidden ? 'none !important' : 'flex'}; align-items:center;">
           <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" value="${cv}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
