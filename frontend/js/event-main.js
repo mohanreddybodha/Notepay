@@ -691,15 +691,24 @@
       if (_preservedInlineFormNode) {
         const isDon = state.formType === 'don';
         const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
+        const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date"));
+        const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby"));
+        const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt"));
+
         const cells = Array.from(_preservedInlineFormNode.children);
         if (cells.length >= 4) {
           cells[0].style.width = getColWidth(isDon ? 'don_name' : 'exp_desc', 140) + 'px';
           cells[1].style.width = getColWidth(isDon ? 'don_amt' : 'exp_amt', 90) + 'px';
+          if (hideAmt) { cells[1].style.setProperty('display', 'none', 'important'); } else { cells[1].style.display = 'flex'; }
           cells[2].style.width = getColWidth(isDon ? 'don_date' : 'exp_date', 100) + 'px';
+          if (hideDate) { cells[2].style.setProperty('display', 'none', 'important'); } else { cells[2].style.display = 'flex'; }
           cells[3].style.width = getColWidth(isDon ? 'don_colby' : 'exp_colby', 130) + 'px';
+          if (hideColBy) { cells[3].style.setProperty('display', 'none', 'important'); } else { cells[3].style.display = 'flex'; }
           
           let idx = 4;
           customCols.forEach(col => {
+            const colName = typeof col === "string" ? col : col.n;
+            if (colName.startsWith("_sys_")) return;
             if (cells[idx]) {
                 const colWidth = typeof col === "string" ? 180 : (col.w || 180);
                 const isHidden = typeof col === "object" && col.hidden;
@@ -1419,6 +1428,10 @@
 
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
+      const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date"));
+      const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby"));
+      const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt"));
+
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
@@ -1432,19 +1445,20 @@
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
-          <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
+          <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:${hideAmt ? 'none !important' : 'flex'}; align-items:center;">
             <input type="search" class="inline-input inl-amt-input" placeholder="Amount" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
           </div>
-          <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
+          <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:${hideDate ? 'none !important' : 'flex'}; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">Auto</span>
           </div>
-          <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px; display:flex; align-items:center;">
+          <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px; display:${hideColBy ? 'none !important' : 'flex'}; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">You</span>
           </div>
       `;
 
       customCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
+        if (colName.startsWith("_sys_")) return;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         const isHidden = typeof col === "object" && col.hidden;
         html += `<div class="sc" style="width:${colWidth}px; display:${isHidden ? 'none !important' : 'flex'}; align-items:center;">
@@ -1650,6 +1664,10 @@
 
       const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
 
+      const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date"));
+      const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby"));
+      const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt"));
+
       const tr = document.createElement('div');
       tr.className = 'tr inline-entry-row';
       tr.style.background = 'var(--surf-var)';
@@ -1666,19 +1684,20 @@
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
-          <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
+          <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:${hideAmt ? 'none !important' : 'flex'}; align-items:center;">
             <input type="search" class="inline-input inl-amt-input" value="${am}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="decimal" readonly onfocus="this.removeAttribute('readonly');">
           </div>
-          <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:flex; align-items:center;">
+          <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px; display:${hideDate ? 'none !important' : 'flex'}; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">${formatDate(d.collected_at)}</span>
           </div>
-          <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px; display:flex; align-items:center;">
+          <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px; display:${hideColBy ? 'none !important' : 'flex'}; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">${escHtml(d.collected_by_name || '—')}</span>
           </div>
       `;
 
       customCols.forEach(col => {
         const colName = typeof col === "string" ? col : col.n;
+        if (colName.startsWith("_sys_")) return;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         const isHidden = typeof col === "object" && col.hidden;
         const cv = (d.custom_fields && d.custom_fields[colName]) ? escHtml(d.custom_fields[colName]) : '';
