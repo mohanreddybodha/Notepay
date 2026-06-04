@@ -609,12 +609,17 @@
     let _preservedInlineFormNode = null;
 
     function preserveInlineState() {
-      const donTblBody = document.getElementById('don-tbl-body');
-      if (donTblBody && donTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(donTblBody, 'don');
-      const expTblBody = document.getElementById('exp-tbl-body');
-      if (expTblBody && expTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(expTblBody, 'exp');
-      const rotTblBody = document.querySelector('#rot-ov-body .tbl-body-rows');
-      if (rotTblBody && rotTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(rotTblBody, activeTheaterTab);
+      if (activeTheaterTab) {
+        const rotTblBody = document.querySelector('#rot-ov-body .tbl-body-rows');
+        if (rotTblBody && rotTblBody.querySelector('.inline-entry-row, .inline-edit-row')) captureInlineState(rotTblBody, activeTheaterTab);
+      } else {
+        document.querySelectorAll('.inline-entry-row, .inline-edit-row').forEach(r => r.remove());
+        activeInlineEditId = null;
+        activeInlineAddType = null;
+        activeInlineEditType = null;
+        _draftInlineData = null;
+        _preservedInlineFormNode = null;
+      }
     }
 
     function captureInlineState(tblBody, type) {
