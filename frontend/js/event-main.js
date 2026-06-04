@@ -1521,11 +1521,15 @@
       });
 
       setTimeout(() => {
-        if (scroll) {
-          tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
         const input = tr.querySelector('.inl-str-val');
         if (input) input.focus();
+        
+        if (scroll) {
+          setTimeout(() => {
+            const target = newRowBtn || tr;
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 350);
+        }
       }, 50);
     }
 
@@ -1746,7 +1750,6 @@
         tblBody.appendChild(tr);
       }
       setTimeout(() => {
-        tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         const input = tr.querySelector('.inl-str-val');
         if (input) {
           input.focus();
@@ -1755,6 +1758,10 @@
             input.setSelectionRange(len, len);
           } catch(e){}
         }
+        setTimeout(() => {
+          const target = newRowBtn || tr;
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 350);
       }, 50);
     }
 
