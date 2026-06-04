@@ -205,13 +205,12 @@
       }
       _isFetchingLoadAll = true;
 
-      try {
-        if (!isBackground && !forceFresh) {
-          // RESET GLOBALS
-          isOrganizer = false;
-          isOrganizerGlobal = false;
-          isVisitor = true;
-          isRestricted = false;
+      if (!isBackground && !forceFresh) {
+        // RESET GLOBALS
+        isOrganizer = false;
+        isOrganizerGlobal = false;
+        isVisitor = true;
+        isRestricted = false;
 
         // PLACE 2: Hybrid Caching (Frontend)
         const cacheKey = "ev_cache_" + eventId;
