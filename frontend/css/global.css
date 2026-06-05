@@ -712,3 +712,55 @@ body.dark-mode .btn-solid-primary { box-shadow: 0 4px 12px rgba(96, 165, 250, 0.
     content: ' *';
     color: var(--color-danger, #e74c3c);
 }
+
+/* --- APP SPLASH SCREEN --- */
+#app-splash {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100dvh;
+  background: var(--surface);
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+}
+#app-splash.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.splash-logo-box {
+  width: 72px;
+  height: 72px;
+  background: var(--primary);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.4);
+  animation: splash-pulse 1.5s infinite alternate ease-in-out;
+  margin-bottom: 20px;
+}
+.splash-logo-box svg {
+  width: 44px;
+  height: 44px;
+  color: white;
+}
+.splash-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.splash-sub {
+  font-size: 13px;
+  color: var(--text3);
+  font-weight: 600;
+}
+@keyframes splash-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.3); }
+  100% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(var(--primary-rgb), 0); }
+}
