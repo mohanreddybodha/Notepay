@@ -105,11 +105,4 @@ auth.onAuthStateChanged(user => {
   if (!user && _authHasSettled) resetAuthCache();
 });
 
-// ── Clean URL (Remove .html from address bar) ──
-// Only runs on production (CloudFront). Skipped on localhost so that
-// browser refresh doesn't cause a 404 from the local dev server.
-const _isLocalhost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
-if (!_isLocalhost && window.location.pathname.endsWith('.html')) {
-  const cleanPath = window.location.pathname.replace(/\.html$/, '');
-  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
-}
+// Removed .html stripping to support refreshing on local IP addresses

@@ -44,7 +44,7 @@
 
   <div class="page" id="main-page" style="overflow:hidden;">
     <div class="app-bar">
-      <div class="back" onclick="window.location.href='dashboard.html'"><span data-np-icon="arrow-left"
+      <div class="back" onclick="goBackToDashboard()"><span data-np-icon="arrow-left"
           data-np-size="22"></span></div>
       <div class="ab-ttl" id="ev-title">Loading…</div>
 
@@ -855,11 +855,14 @@
           <button class="reply-close" onclick="cancelReply()">✕</button>
         </div>
         <div class="chat-input-bar">
-          <div class="chat-input-wrapper">
-            <input class="chat-input" id="chat-input" type="text" placeholder="Type a message…" maxlength="500"
+          <div class="chat-input-wrapper" style="position: relative; display: flex; align-items: center; flex: 1;">
+            <input class="chat-input" id="chat-input" type="text" placeholder="Type a message or @ai" maxlength="500"
               enterkeyhint="send" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false"
               onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}"
-              oninput="updateSendBtnVisibility()" />
+              oninput="updateSendBtnVisibility()" style="padding-right: 74px; width: 100%;" />
+            <div id="ai-inline-btn" style="position:absolute; right:6px; background:var(--surf-var); border:1px solid var(--border); border-radius:12px; padding:4px 8px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:800; color:var(--primary); cursor:pointer; z-index:10;" onclick="document.getElementById('chat-input').value='@ai '; document.getElementById('chat-input').focus(); updateSendBtnVisibility();">
+              <span style="font-size:12px;">✨</span> Ask AI
+            </div>
           </div>
           <button type="button" class="chat-send-btn" id="chat-send-btn" aria-label="Send">➤</button>
         </div>

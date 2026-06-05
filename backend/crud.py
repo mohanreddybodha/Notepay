@@ -665,17 +665,18 @@ def create_chat_message(db: Session, event_id: str, user_id: int, message: str, 
     msg = models.ChatMessage(
         event_id=event_id,
         user_id=user_id,
-        message=message[:500],
+        message=message[:2000], # AI responses can be longer
         reply_to_id=reply_to_id
     )
     db.add(msg)
     db.commit()
     db.refresh(msg)
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    return _chat_msg_to_dict(db, msg, user.full_name if user else "Unknown")
+    user = db.query(models.User).filter(models.User.id == user_id).first() if user_id else None
+    sender_name = "AI Advisor" if user_id is None else (user.full_name if user else "Unknown")
+    return _chat_msg_to_dict(db, msg, sender_name)
 
 def get_chat_messages(db: Session, event_id: str, limit: int = 50, before_id: int = None):
-    q = db.query(models.ChatMessage, models.User.full_name).join(
+    q = db.query(models.ChatMessage, models.User.full_name).outerjoin(
         models.User, models.ChatMessage.user_id == models.User.id
     ).filter(models.ChatMessage.event_id == event_id)
     if before_id:
@@ -683,7 +684,7 @@ def get_chat_messages(db: Session, event_id: str, limit: int = 50, before_id: in
     results = q.order_by(models.ChatMessage.id.desc()).limit(limit).all()
     msgs = []
     for msg, sender_name in results:
-        msgs.append(_chat_msg_to_dict(db, msg, sender_name))
+        msgs.append(_chat_msg_to_dict(db, msg, sender_name or "AI Advisor"))
     return msgs[::-1]  # Return in chronological order
 
 def toggle_reaction(db: Session, message_id: int, event_id: str, user_id: int, emoji: str):
@@ -732,7 +733,7 @@ def delete_chat_message(db: Session, message_id: int, event_id: str, user_id: in
         return None
     if msg.user_id != user_id and not is_organizer:
         return None
-    msg.message = " This message was deleted."
+    msg.message = "[DELETED]"
     msg.reactions = {}
     from sqlalchemy.orm.attributes import flag_modified
     flag_modified(msg, "reactions")

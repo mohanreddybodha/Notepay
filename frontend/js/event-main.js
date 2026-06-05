@@ -3897,6 +3897,11 @@
       const val = document.getElementById('chat-input').value;
       const btn = document.getElementById('chat-send-btn');
       btn.classList.toggle('is-visible', val.length > 0);
+      
+      const aiInlineBtn = document.getElementById('ai-inline-btn');
+      if (aiInlineBtn) {
+        aiInlineBtn.style.display = val.length > 0 ? 'none' : 'flex';
+      }
     }
 
     let emojiTrayOpen = false;
@@ -3965,6 +3970,12 @@
       window.visualViewport.addEventListener('scroll', applyChatVisualViewport);
     }
 
+    window.addEventListener("popstate", (e) => {
+      if (chatOpen) {
+        closeChat(true);
+      }
+    });
+
     function openChat() {
       chatOpen = true;
       bindChatVisualViewport();
@@ -3982,7 +3993,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       if (!urlParams.has('chat')) {
         urlParams.set('chat', '1');
-        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+        window.history.pushState({ chat: true }, '', `${window.location.pathname}?${urlParams}`);
       }
 
       if (!chatHistoryLoaded) loadChatHistory();
@@ -4001,7 +4012,7 @@
       updateChatBadge();
     }
 
-    function closeChat() {
+    function closeChat(fromPopState = false) {
       chatOpen = false;
       document.getElementById('chat-overlay').style.display = 'none';
       closeEmojiTray();
@@ -4024,7 +4035,15 @@
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('chat')) {
         urlParams.delete('chat');
-        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+        if (fromPopState === true) {
+          window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+        } else {
+          if (history.state && history.state.chat) {
+            window.history.back();
+          } else {
+            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+          }
+        }
       }
     }
 
@@ -4129,14 +4148,15 @@
         rxHtml += `</div>`;
       }
 
-      const isDeleted = m.message === '🚫 This message was deleted.';
+      const isDeleted = m.message === '[DELETED]' || m.message.includes('This message was deleted');
 
       const safeName = escHtml(m.sender_name).replace(/"/g, '&quot;').replace(/\n/g, '&#10;');
       const ctxText = isGroupCallMessage(m.message) ? 'Group call — Join meeting' : m.message;
       const safeText = escHtml(ctxText).replace(/"/g, '&quot;').replace(/\n/g, '&#10;');
 
       let avatarHtml = '';
-      if (!isOwn) {
+      const isAI = m.user_id == null || m.sender_name === "AI Advisor";
+      if (!isOwn && !isAI) {
         if (showSender) {
           const initial = m.sender_name.charAt(0).toUpperCase();
           const hue = (m.sender_name.charCodeAt(0) * 137) % 360;
@@ -4146,23 +4166,36 @@
         }
       }
 
-      if (!isOwn) html += `<div class="chat-msg-row">${avatarHtml}`;
+      if (!isOwn && !isAI) html += `<div class="chat-msg-row">${avatarHtml}`;
+      if (isAI) html += `<div class="chat-msg-row" style="margin: 16px 0;">`; // Extra spacing for AI
 
-      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${showSender ? 'chat-msg-first' : ''} ${isDeleted ? 'chat-msg-deleted' : ''}" id="chat-msg-${m.id}">`;
-      html += `<div class="chat-bubble" ${!isDeleted ? `data-id="${m.id}" data-uid="${m.user_id}" data-sender="${safeName}" data-text="${safeText}"` : ''}>`;
+      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${showSender ? 'chat-msg-first' : ''} ${isDeleted ? 'chat-msg-deleted' : ''}" id="chat-msg-${m.id}" ${isAI ? 'style="width: 100%; max-width: 100%;"' : ''}>`;
+      
+      const aiBubbleStyle = isAI ? 'width: 100%; max-width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);' : '';
+      
+      html += `<div class="chat-bubble" ${!isDeleted ? `data-id="${m.id}" data-uid="${m.user_id}" data-sender="${safeName}" data-text="${safeText}"` : ''} style="${aiBubbleStyle}">`;
       html += `<div class="chat-bubble-content">`;
-      if (showSender) {
+      if (showSender && !isAI) {
         html += `<div class="chat-msg-sender">${escHtml(m.sender_name)}</div>`;
+      } else if (showSender && isAI) {
+        html += `<div class="chat-msg-sender" style="display:flex; align-items:center; gap:6px; color:var(--primary); font-size:14px; margin-bottom:8px;"><span style="font-size:16px;">\u2728</span> AI Advisor</div>`;
       }
       if (replyHtml) html += replyHtml;
-      html += `<div class="chat-msg-text">${formatChatMessageText(m.message)}</div>`;
-      html += `<div class="chat-msg-time">${chatTimeExact(m.sent_at)}</div>`;
+      
+      let msgContent = formatChatMessageText(m.message);
+      if (isDeleted) {
+        msgContent = `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-style:italic;">${npIcon('trash', {size: 16, tone: 'muted'})} This message was deleted.</span>`;
+      }
+      html += `<div class="chat-msg-text" ${isAI ? 'style="font-size:15px; line-height:1.6;"' : ''}>${msgContent}</div>`;
+      if (!isDeleted) {
+        html += `<div class="chat-msg-time">${chatTimeExact(m.sent_at)}</div>`;
+      }
       html += `</div>`; // end chat-bubble-content
       html += `</div>`; // end chat-bubble
       html += rxHtml;
       html += `</div>`;
 
-      if (!isOwn) html += `</div>`; // end chat-msg-row
+      if (!isOwn || isAI) html += `</div>`; // end chat-msg-row
 
       return { html, dateLabel, newSender: m.user_id };
     }
@@ -4407,7 +4440,7 @@
         await apiFetch('DELETE', `/events/${eventId}/chat/${mId}`);
         const idx = chatMessages.findIndex(m => m.id === mId);
         if (idx !== -1) {
-          chatMessages[idx].message = '🚫 This message was deleted.';
+          chatMessages[idx].message = '[DELETED]';
           updateMessageNode(chatMessages[idx]);
         }
       } catch (e) {
@@ -4468,8 +4501,25 @@
       try {
         const payload = { message: msg };
         if (replyingToId) payload.reply_to_id = replyingToId;
+        
         await apiFetch('POST', `/events/${eventId}/chat`, payload);
         cancelReply();
+
+        if (msg.toLowerCase().startsWith('@ai ')) {
+          const aiLoadingMsg = {
+            id: 'ai-loading',
+            user_id: null,
+            sender_name: "AI Advisor",
+            message: "\u2728 AI is taking a look...",
+            sent_at: new Date().toISOString(),
+            reactions: {}
+          };
+          chatMessages.push(aiLoadingMsg);
+          if (chatOpen) {
+            appendChatMessage(aiLoadingMsg);
+            scrollChatToBottom(true);
+          }
+        }
       } catch (e) {
         showToast('Failed to send message', 'error');
         input.value = msg;
@@ -4488,6 +4538,20 @@
 
     function handleIncomingChatMsg(data) {
       if (chatMessages.some(m => m.id === data.id)) return;
+      
+      if (data.user_id == null) {
+        const loadingIdx = chatMessages.findIndex(m => m.id === 'ai-loading');
+        if (loadingIdx !== -1) {
+          chatMessages.splice(loadingIdx, 1);
+          const el = document.getElementById('chat-msg-ai-loading');
+          if (el) {
+            const row = el.closest('.chat-msg-row');
+            if (row) row.remove();
+            else el.remove();
+          }
+        }
+      }
+      
       chatMessages.push(data);
       if (chatOpen) {
         const container = document.getElementById('chat-messages');
@@ -4598,7 +4662,12 @@
           </a>
         </div>`;
       }
-      const escaped = escHtml(text).replace(/\n/g, '<br/>');
+      let escaped = escHtml(text);
+      // Basic markdown parsing for AI responses
+      escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+      escaped = escaped.replace(/\*(.*?)\*/g, '<i>$1</i>');
+      escaped = escaped.replace(/\n/g, '<br/>');
+      
       return escaped.replace(
         /(https?:\/\/[^\s<]+)/g,
         '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>'

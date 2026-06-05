@@ -16,6 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+import requests
 
 import models, schemas, crud, auth
 try:
@@ -209,24 +210,11 @@ async def get_current_user_id(
 # Optional user id dependency removed to enforce strict auth.
 
 
-_membership_cache = {}
-
-#  HELPER: Membership Gatekeeper 
 def verify_membership(db: Session, event_id: str, user_id: int,
                       require_organizer: bool = False,
                       require_unrestricted: bool = False,
                       require_member: bool = False):
-    now = time.time()
-    cache_key = f"{event_id}:{user_id}"
-    member = None
-    
-    if cache_key in _membership_cache and _membership_cache[cache_key][1] > now:
-        member = _membership_cache[cache_key][0]
-    else:
-        member = crud.get_member(db, event_id, user_id)
-        _membership_cache[cache_key] = (member, now + 5)
-        # Prevent memory bloat
-        if len(_membership_cache) > 2000: _membership_cache.clear()
+    member = crud.get_member(db, event_id, user_id)
         
     if not member:
         event = crud.get_event(db, event_id)
@@ -734,6 +722,126 @@ def get_event_full_details(event_id: str, db: Session = Depends(get_db), user_id
         
     return res
 
+def process_ai_chat(event_id: str, question: str, loop: asyncio.AbstractEventLoop, reply_to_id: int = None):
+    from database import SessionLocal
+    db = SessionLocal()
+    try:
+        event = db.query(models.Event).filter(models.Event.id == event_id).first()
+        if not event:
+            return
+        
+        donations = db.query(models.Donation).filter(models.Donation.event_id == event_id).all()
+        expenses = db.query(models.Expense).filter(models.Expense.event_id == event_id).all()
+        
+        total_collected = sum((d.amount or 0.0) for d in donations)
+        total_spent = sum((e.amount or 0.0) for e in expenses)
+        balance = total_collected - total_spent
+        
+        # Get users for mapping
+        members = db.query(models.EventMember).filter(models.EventMember.event_id == event_id).all()
+        user_ids = {m.user_id for m in members} | {d.collected_by for d in donations if d.collected_by} | {e.collected_by for e in expenses if e.collected_by}
+        users = db.query(models.User).filter(models.User.id.in_(user_ids)).all() if user_ids else []
+        user_map = {u.id: u.full_name for u in users}
+        
+        member_lines = "\n".join([f"  - {user_map.get(m.user_id, 'Unknown')}: {m.role.value}" + (" (RESTRICTED)" if m.is_restricted else "") for m in members])
+        expense_lines = "\n".join([f"  - {e.description}: \u20b9{e.amount or 0} (Spent by: {user_map.get(e.collected_by, 'Unknown')})" for e in sorted(expenses, key=lambda x: x.amount or 0, reverse=True)])
+        donation_lines = "\n".join([f"  - {d.donor_name}: \u20b9{d.amount or 0} (Collected by: {user_map.get(d.collected_by, 'Unknown')})" for d in sorted(donations, key=lambda x: x.amount or 0, reverse=True)])
+        
+        event_name = event.name
+        event_desc = event.description
+        num_donors = len(donations)
+        num_expenses = len(expenses)
+    except Exception as e:
+        print(f"AI Chat DB Fetch Error: {type(e).__name__} - {e}")
+        return
+    finally:
+        db.close()
+        
+    context = f"""
+You are a smart financial advisor embedded inside Notepay. Notepay is a collaborative event ledger application where multiple members (Organizers, Collectors, and Visitors) work together to track shared expenses and donations for events.
+
+You are helping the organizer of this event make better financial decisions and monitor the activity of their members.
+Be concise, specific, and practical. Use \u20b9 for amounts. Format with bullet points. 
+Never give generic advice - always reference the actual numbers below.
+Keep responses under 200 words.
+
+CRITICAL RULE: You must ONLY answer questions directly related to this event's ledger, expenses, donations, members, or finances. 
+If the user asks an irrelevant, off-topic, or general knowledge question (e.g., "what is the capital of india?"), you MUST reply with EXACTLY this exact sentence and nothing else:
+"I am a dedicated financial advisor for the {event_name} event. I can only answer questions related to its ledger, expenses, and donations."
+
+\u2550\u2550\u2550 EVENT FINANCIAL DATA \u2550\u2550\u2550
+Event: {event_name}
+Description: {event_desc}
+
+MEMBERS LIST:
+{member_lines}
+
+COLLECTIONS:
+  Total collected:    \u20b9{total_collected}
+  Number of donors:   {num_donors}
+{donation_lines}
+
+EXPENSES (already paid):
+  Total spent:        \u20b9{total_spent}
+  Number of items:    {num_expenses}
+{expense_lines}
+
+FINANCIAL POSITION:
+  Current balance:    ₹{balance}
+═══ END OF EVENT DATA ═══
+
+User question: {question}
+"""
+        
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=AIzaSyCGvpnyr3USTjawAnSv7T1rehhezQo7BUY"
+    payload = {
+        "contents": [{"parts": [{"text": context}]}],
+        "generationConfig": {"temperature": 0.4}
+    }
+    
+    ai_text = None
+    for attempt in range(4):  # Up to 4 attempts
+        try:
+            resp = requests.post(url, json=payload, timeout=60)
+            if resp.status_code == 200:
+                ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+                break
+            elif resp.status_code in (429, 503):
+                wait_sec = (2 ** attempt) * 5  # 5s, 10s, 20s, 40s
+                print(f"AI rate limited ({resp.status_code}), retrying in {wait_sec}s (attempt {attempt+1})")
+                time.sleep(wait_sec)
+            else:
+                ai_text = f"Sorry, the AI Advisor is currently unavailable. ({resp.status_code})"
+                break
+        except Exception as e:
+            if attempt < 3:
+                time.sleep(5 * (attempt + 1))
+            else:
+                ai_text = f"Sorry, the AI request timed out or failed. ({type(e).__name__})"
+    
+    if ai_text is None:
+        ai_text = "Sorry, the AI Advisor is currently overloaded. Please try again in a minute."
+        
+    # Save AI response as chat message
+    db2 = SessionLocal()
+    try:
+        msg = crud.create_chat_message(db2, event_id, None, ai_text, reply_to_id)
+        msg_data = jsonable_encoder(msg)
+    except Exception as e:
+        print(f"AI Chat DB Save Error: {type(e).__name__} - {e}")
+        return
+    finally:
+        db2.close()
+
+    # Broadcast safely across threads
+    try:
+        asyncio.run_coroutine_threadsafe(
+            manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": msg_data}),
+            loop
+        )
+    except Exception as e:
+        print(f"AI Chat Broadcast Error: {type(e).__name__} - {e}")
+
 #  CHAT 
 @app.get("/events/{event_id}/chat", response_model=List[schemas.ChatMessageResponse], tags=["Chat"])
 def get_chat_history(event_id: str, limit: int = 50, before_id: int = None,
@@ -743,16 +851,25 @@ def get_chat_history(event_id: str, limit: int = 50, before_id: int = None,
     return crud.get_chat_messages(db, event_id, limit=limit, before_id=before_id)
 
 @app.post("/events/{event_id}/chat", response_model=schemas.ChatMessageResponse, tags=["Chat"])
-async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate,
+async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, background_tasks: BackgroundTasks,
                             db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Send a chat message to all members of an event."""
     verify_membership(db, event_id, user_id, require_member=True, require_unrestricted=True)
     verify_rate_limit(f"user:{user_id}:chat", limit=20, window=60)
     if not data.message or not data.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
-    msg = crud.create_chat_message(db, event_id, user_id, data.message.strip(), data.reply_to_id)
+    
+    clean_msg = data.message.strip()
+    msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
     # Broadcast to all connected clients via WebSocket
     await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": jsonable_encoder(msg)})
+    
+    if clean_msg.lower().startswith("@ai "):
+        question = clean_msg[4:].strip()
+        if question:
+            loop = asyncio.get_running_loop()
+            background_tasks.add_task(process_ai_chat, event_id, question, loop, msg["id"])
+            
     return msg
 
 @app.post("/events/{event_id}/chat/{message_id}/react", tags=["Chat"])
@@ -811,39 +928,34 @@ async def _ws_send_auth_ok(websocket: WebSocket) -> bool:
 async def websocket_dashboard(websocket: WebSocket):
     """Authenticated dashboard channel for DASHBOARD_UPDATE broadcasts (no event membership)."""
     await websocket.accept()
-    db = next(get_db())
+    from database import SessionLocal
+    db = SessionLocal()
     try:
-        try:
-            raw = await asyncio.wait_for(websocket.receive_text(), timeout=20.0)
-            auth_msg = json.loads(raw)
-        except (asyncio.TimeoutError, json.JSONDecodeError):
-            await websocket.close(code=4401, reason="Auth required")
-            return
-
+        raw = await asyncio.wait_for(websocket.receive_text(), timeout=20.0)
+        auth_msg = json.loads(raw)
         if auth_msg.get("type") != "AUTH" or not auth_msg.get("token"):
-            await websocket.close(code=4401, reason="Auth required")
-            return
-
+            raise ValueError("Auth required")
         await _authenticate_ws_user(db, auth_msg["token"])
-        manager.register_dashboard(websocket)
-        if not await _ws_send_auth_ok(websocket):
-            manager.disconnect_dashboard(websocket)
-            return
-
-        try:
-            while True:
-                await websocket.receive_text()
-        except WebSocketDisconnect:
-            manager.disconnect_dashboard(websocket)
-    except HTTPException:
-        try:
-            await websocket.close(code=4401, reason="Invalid token")
-        except WebSocketDisconnect:
-            pass
-        except WebSocketDisconnect:
-            manager.disconnect_dashboard(websocket)
-    finally:
+    except Exception:
         db.close()
+        try:
+            await websocket.close(code=4401, reason="Auth failed")
+        except:
+            pass
+        return
+        
+    db.close()
+    
+    manager.register_dashboard(websocket)
+    if not await _ws_send_auth_ok(websocket):
+        manager.disconnect_dashboard(websocket)
+        return
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except Exception:
+        manager.disconnect_dashboard(websocket)
 
 #  AWS SERVERLESS HANDLER 
 from mangum import Mangum
@@ -915,57 +1027,32 @@ def handler(event, context):
 @app.websocket("/ws/{event_id}")
 async def websocket_endpoint(websocket: WebSocket, event_id: str):
     """Authenticate via first JSON message {type:AUTH, token}  avoids huge JWT in query string."""
-
-
     await websocket.accept()
-    db = next(get_db())
+    from database import SessionLocal
+    db = SessionLocal()
     try:
-        try:
-            raw = await asyncio.wait_for(websocket.receive_text(), timeout=20.0)
-            auth_msg = json.loads(raw)
-        except asyncio.TimeoutError:
-            await websocket.close(code=4401, reason="Auth timeout")
-            return
-        except json.JSONDecodeError:
-            await websocket.close(code=4401, reason="Invalid auth payload")
-            return
-
-        if auth_msg.get("type") != "AUTH":
-            await websocket.close(code=4401, reason="Auth message required")
-            return
-
-        token = auth_msg.get("token")
-        if not token:
-            await websocket.close(code=4401, reason="Token required")
-            return
-
-        ws_user_id = await _authenticate_ws_user(db, token)
-        # We allow visitors and restricted users to stay connected 
-        # so they can receive DATA_CHANGED signals in real-time.
-        # Security is still enforced during actual data fetching.
-        
-        manager.register(websocket, event_id)
-        if not await _ws_send_auth_ok(websocket):
-            manager.disconnect(websocket, event_id)
-            return
-
-        try:
-            while True:
-                await websocket.receive_text()
-        except WebSocketDisconnect:
-            manager.disconnect(websocket, event_id)
-    except HTTPException:
-        try:
-            await websocket.close(code=4401, reason="Invalid token")
-        except WebSocketDisconnect:
-            pass
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, event_id)
-    except Exception as exc:
-        print(f"WebSocket error event={event_id}: {exc!r}")
-        try:
-            await websocket.close(code=1011, reason="Server error")
-        except WebSocketDisconnect:
-            pass
-    finally:
+        raw = await asyncio.wait_for(websocket.receive_text(), timeout=20.0)
+        auth_msg = json.loads(raw)
+        if auth_msg.get("type") != "AUTH" or not auth_msg.get("token"):
+            raise ValueError("Auth required")
+        await _authenticate_ws_user(db, auth_msg["token"])
+    except Exception:
         db.close()
+        try:
+            await websocket.close(code=4401, reason="Auth failed")
+        except:
+            pass
+        return
+        
+    db.close()
+    
+    manager.register(websocket, event_id)
+    if not await _ws_send_auth_ok(websocket):
+        manager.disconnect(websocket, event_id)
+        return
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except Exception:
+        manager.disconnect(websocket, event_id)

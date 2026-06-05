@@ -196,7 +196,7 @@ class ChatReplySnippet(BaseModel):
 class ChatMessageResponse(BaseModel):
     id: int
     event_id: str
-    user_id: int
+    user_id: Optional[int] = None
     sender_name: str
     message: str
     reply_to_id: Optional[int] = None
