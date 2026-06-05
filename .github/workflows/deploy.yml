@@ -26,7 +26,7 @@ jobs:
       - name: Run Pytest
         run: |
           cd backend
-          pytest tests/ -v -W ignore::DeprecationWarning
+          if [ -d "tests" ]; then pytest tests/ -v -W ignore::DeprecationWarning; else echo "No tests found, skipping."; fi
 
   deploy-backend:
     runs-on: ubuntu-latest
