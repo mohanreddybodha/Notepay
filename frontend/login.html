@@ -79,14 +79,6 @@
     .btn.loading .btn-text{display:none;}
     .btn.loading .spinner{display:block;}
 
-    /* ── Splash Screen ── */
-    #app-splash{position:fixed;inset:0;background:var(--primary-dk);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .3s;}
-    #app-splash.hidden{opacity:0;pointer-events:none;}
-    .splash-logo-box{width:80px;height:80px;background:var(--primary);border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
-    .splash-logo-box svg{width:44px;height:44px;}
-    .splash-title{font-family:'Nunito',sans-serif;font-size:32px;font-weight:900;color:white;}
-    .splash-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:8px;font-weight:600;}
-
     /* ── Sections ── */
     #section-phone{display:flex;flex-direction:column;align-items:center;width:100%;}
     #section-otp{display:none;flex-direction:column;align-items:center;width:100%;}
@@ -105,7 +97,7 @@
       </svg>
     </div>
     <div class="splash-title">Notepay</div>
-    <div class="splash-sub">Verifying session...</div>
+    <div class="splash-sub">Loading...</div>
   </div>
 
 <div class="page" id="page-login">
