@@ -79,12 +79,35 @@
     .btn.loading .btn-text{display:none;}
     .btn.loading .spinner{display:block;}
 
+    /* ── Splash Screen ── */
+    #app-splash{position:fixed;inset:0;background:var(--primary-dk);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .3s;}
+    #app-splash.hidden{opacity:0;pointer-events:none;}
+    .splash-logo-box{width:80px;height:80px;background:var(--primary);border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+    .splash-logo-box svg{width:44px;height:44px;}
+    .splash-title{font-family:'Nunito',sans-serif;font-size:32px;font-weight:900;color:white;}
+    .splash-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:8px;font-weight:600;}
+
     /* ── Sections ── */
     #section-phone{display:flex;flex-direction:column;align-items:center;width:100%;}
     #section-otp{display:none;flex-direction:column;align-items:center;width:100%;}
   </style>
 </head>
 <body>
+  <!-- SPLASH SCREEN to mask Auth Check -->
+  <div id="app-splash">
+    <div class="splash-logo-box">
+      <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="7" y="4" width="24" height="32" rx="3" fill="white" fill-opacity=".9"/>
+        <rect x="5" y="6" width="4" height="28" rx="2" fill="white" fill-opacity=".5"/>
+        <rect x="12" y="12" width="14" height="2" rx="1" fill="#1A4E8C"/>
+        <rect x="12" y="17" width="14" height="2" rx="1" fill="#1A4E8C"/>
+        <rect x="12" y="22" width="10" height="2" rx="1" fill="#0FA3A3"/>
+      </svg>
+    </div>
+    <div class="splash-title">Notepay</div>
+    <div class="splash-sub">Verifying session...</div>
+  </div>
+
 <div class="page" id="page-login">
   <div class="form-body">
 
@@ -210,7 +233,9 @@ let recaptchaVerifier  = null;
     window.location.replace(returnUrl);
     return;
   }
-  // Otherwise, user is truly logged out, stay on login page.
+  // Otherwise, user is truly logged out, hide splash and stay on login page.
+  const splash = document.getElementById('app-splash');
+  if (splash) splash.classList.add('hidden');
 })();
 
 // ─────────────────────────────────────────────
