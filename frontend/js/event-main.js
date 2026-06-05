@@ -2318,7 +2318,7 @@
         }
         closeCustomColSheet();
         closeDelColPop();
-        showToast("Column deleted.");
+        showToast("Column hidden.");
       } catch (e) {
         showToast(e.message || "Failed.", "error");
         closeDelColPop();
