@@ -59,7 +59,7 @@ async function apiFetch(method, path, body = null) {
   }
 
   // 2. Intercept write mutations optimistically if navigator is explicitly offline
-  if (isWrite && !navigator.onLine && !path.includes("/chat")) {
+  if (isWrite && !navigator.onLine) {
     return handleOfflineWrite(method, path, body);
   }
 
@@ -98,9 +98,6 @@ async function apiFetch(method, path, body = null) {
 
   // 3. Fallback optimistically if request failed due to a network connection error
   if (isWrite && isNetworkError) {
-    if (path.includes("/chat")) {
-      throw new Error("Cannot send chat messages while offline.");
-    }
     return handleOfflineWrite(method, path, body);
   }
 

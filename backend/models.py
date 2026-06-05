@@ -121,6 +121,8 @@ class ChatMessage(Base):
     message = Column(String, nullable=False)
     reply_to_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)
     reactions = Column(JSON, default=dict)  # {"": [1,3], "": [2]}
+    delivered_to = Column(JSON, default=list)  # [1, 2, 3]
+    read_by = Column(JSON, default=list)  # [1, 2]
     sent_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User")

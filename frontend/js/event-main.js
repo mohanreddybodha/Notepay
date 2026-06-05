@@ -333,6 +333,9 @@
         if (msg.type === "CHAT_REACTION" && msg.data) {
           handleIncomingChatReaction(msg.data);
         }
+        if (msg.type === "CHAT_STATUS_UPDATE" && msg.data) {
+          handleIncomingChatStatus(msg.data);
+        }
       };
 
       ws.onclose = () => {
@@ -4162,6 +4165,28 @@
       const ctxText = isGroupCallMessage(m.message) ? 'Group call — Join meeting' : m.message;
       const safeText = escHtml(ctxText).replace(/"/g, '&quot;').replace(/\n/g, '&#10;');
 
+      // Status Icons Logic
+      let statusIcon = '';
+      if (isOwn && !isDeleted) {
+        if (m.is_pending) {
+          statusIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        } else {
+          const membersCount = typeof eventMembers !== 'undefined' ? eventMembers.length : 1;
+          const readCount = m.read_by ? m.read_by.length : 0;
+          const deliveredCount = m.delivered_to ? m.delivered_to.length : 0;
+          
+          if (membersCount > 1 && readCount >= membersCount - 1) {
+            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" class="msg-status-icon msg-status-blue"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
+          } else if (membersCount > 1 && deliveredCount >= membersCount - 1) {
+            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
+          } else if (m.id > 0) {
+            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+          } else {
+            statusIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+          }
+        }
+      }
+
       let avatarHtml = '';
       const isAI = m.user_id == null || m.sender_name === "AI Advisor";
       if (!isOwn && !isAI) {
@@ -4196,10 +4221,14 @@
       } else if (m.id === 'ai-loading') {
         msgContent = `<div class="ai-typing-indicator"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
       }
-      html += `<div class="chat-msg-text" ${isAI ? 'style="font-size:15px; line-height:1.6;"' : ''}>${msgContent}</div>`;
+      
+      let timeHtml = "";
       if (!isDeleted) {
-        html += `<div class="chat-msg-time">${chatTimeExact(m.sent_at)}</div>`;
+        msgContent += `<span class="time-spacer"></span>`;
+        timeHtml = `<div class="chat-msg-time">${chatTimeExact(m.sent_at)} ${statusIcon}</div>`;
       }
+      html += `<div class="chat-msg-text" ${isAI ? 'style="font-size:15px; line-height:1.6;"' : ''}>${msgContent}</div>`;
+      html += timeHtml;
       html += `</div>`; // end chat-bubble-content
       html += `</div>`; // end chat-bubble
       html += rxHtml;
@@ -4252,6 +4281,62 @@
 
       container.insertAdjacentHTML('afterbegin', html);
       container.scrollTop = container.scrollHeight - prevScrollHeight + prevScrollTop;
+    }
+
+    let chatObserver = null;
+    let statusQueue = [];
+    let isStatusSending = false;
+
+    async function processStatusQueue() {
+      if (isStatusSending || statusQueue.length === 0) return;
+      isStatusSending = true;
+      while (statusQueue.length > 0) {
+        const id = statusQueue.shift();
+        try {
+          await apiFetch('POST', `/events/${eventId}/chat/${id}/status`, { status: 'read' });
+        } catch (e) {
+          console.warn(e);
+        }
+        await new Promise(r => setTimeout(r, 50)); // Prevent slamming the server
+      }
+      isStatusSending = false;
+    }
+
+    function setupChatObserver() {
+      if (chatObserver) return;
+      chatObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.dataset.id;
+            const uid = entry.target.dataset.uid;
+            const myId = parseInt(localStorage.getItem('np_my_id') || '0');
+            if (id && uid && parseInt(uid) !== myId) {
+              statusQueue.push(id);
+              processStatusQueue();
+              chatObserver.unobserve(entry.target);
+            }
+          }
+        });
+      }, {
+        root: document.getElementById('chat-messages'),
+        threshold: 0.5
+      });
+    }
+
+    function observeNewMessages() {
+      setupChatObserver();
+      const myId = parseInt(localStorage.getItem('np_my_id') || '0');
+      const container = document.getElementById('chat-messages');
+      container.querySelectorAll('.chat-bubble[data-id]').forEach(el => {
+        const uid = parseInt(el.dataset.uid);
+        if (uid !== myId) {
+          const msgId = parseInt(el.dataset.id);
+          const msg = chatMessages.find(x => x.id === msgId);
+          if (msg && (!msg.read_by || !msg.read_by.includes(myId))) {
+            chatObserver.observe(el);
+          }
+        }
+      });
     }
 
     function renderChatMessages(scrollMode = 'bottom') {
@@ -4316,6 +4401,8 @@
 
       // Clear the divider flag after opening so it doesn't persist if they load older messages
       if (scrollMode !== 'older') unreadDividerId = null;
+      
+      observeNewMessages();
     }
 
     function appendChatMessage(m) {
@@ -4332,6 +4419,7 @@
       }
       const res = buildMessageHTML(m, lastSender, lastDate);
       container.insertAdjacentHTML('beforeend', res.html);
+      observeNewMessages();
     }
 
     function updateMessageNode(m) {
@@ -4533,8 +4621,40 @@
         const payload = { message: msg };
         if (replyingToId) payload.reply_to_id = replyingToId;
         
-        await apiFetch('POST', `/events/${eventId}/chat`, payload);
+        const myId = parseInt(localStorage.getItem('np_my_id'));
+        const mockMsg = {
+          id: -Date.now(),
+          event_id: eventId,
+          user_id: myId,
+          sender_name: localStorage.getItem('np_my_name') || 'You',
+          message: msg,
+          reply_to_id: replyingToId,
+          reactions: {},
+          sent_at: new Date().toISOString(),
+          is_pending: !navigator.onLine,
+          delivered_to: [],
+          read_by: []
+        };
+        chatMessages.push(mockMsg);
+        if (chatOpen) {
+          const container = document.getElementById('chat-messages');
+          const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+          appendChatMessage(mockMsg);
+          if (isAtBottom) scrollChatToBottom(true);
+        } else {
+          chatUnread++;
+          updateChatBadge();
+        }
+
+        const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, payload);
         cancelReply();
+        
+        // Update mock message to real one if we haven't received it via WebSocket yet
+        const idx = chatMessages.findIndex(m => m.id === mockMsg.id);
+        if (idx !== -1) {
+          chatMessages[idx] = realMsg;
+          updateMessageNode(realMsg);
+        }
 
         if (msg.toLowerCase().startsWith('@ai ')) {
           window._aiLoadingShownAt = Date.now();
@@ -4560,8 +4680,25 @@
     }
 
     function handleIncomingChatMsg(data) {
+      const myId = parseInt(localStorage.getItem('np_my_id') || '0');
+      
+      // If it's my own message, see if we have a pending mock message to replace
+      if (data.user_id === myId) {
+        const mockIdx = chatMessages.findIndex(m => m.id < 0 && m.message === data.message && m.reply_to_id === data.reply_to_id);
+        if (mockIdx !== -1) {
+          chatMessages[mockIdx] = data;
+          updateMessageNode(data);
+          return;
+        }
+      }
+
       if (chatMessages.some(m => m.id === data.id)) return;
       
+      // Mark as delivered if it's from someone else
+      if (data.user_id != null && data.user_id !== myId) {
+        apiFetch('POST', `/events/${eventId}/chat/${data.id}/status`, { status: 'delivered' }).catch(e => console.warn(e));
+      }
+
       if (data.user_id == null) {
         const showRealResponse = () => {
           hideAITypingIndicator();
@@ -4607,6 +4744,14 @@
     }
 
     function handleIncomingChatReaction(data) {
+      const idx = chatMessages.findIndex(m => m.id === data.id);
+      if (idx !== -1) {
+        chatMessages[idx] = data;
+        if (chatOpen) updateMessageNode(data);
+      }
+    }
+
+    function handleIncomingChatStatus(data) {
       const idx = chatMessages.findIndex(m => m.id === data.id);
       if (idx !== -1) {
         chatMessages[idx] = data;

@@ -202,7 +202,12 @@ class ChatMessageResponse(BaseModel):
     reply_to_id: Optional[int] = None
     reply_snippet: Optional[ChatReplySnippet] = None
     reactions: Optional[dict] = {}
+    delivered_to: Optional[List[int]] = []
+    read_by: Optional[List[int]] = []
     sent_at: datetime
 
 class ChatReactionRequest(BaseModel):
     emoji: str
+
+class MessageStatusUpdate(BaseModel):
+    status: str  # 'delivered' or 'read'

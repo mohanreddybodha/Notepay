@@ -898,6 +898,22 @@ async def react_to_message(event_id: str, message_id: int, data: schemas.ChatRea
     await manager.broadcast_change(event_id, {"type": "CHAT_REACTION", "data": jsonable_encoder(msg)})
     return msg
 
+@app.post("/events/{event_id}/chat/{message_id}/status", tags=["Chat"])
+async def update_message_status(event_id: str, message_id: int, data: schemas.MessageStatusUpdate,
+                           db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Update message status to delivered or read."""
+    verify_membership(db, event_id, user_id, require_member=True)
+    if data.status not in ["delivered", "read"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    msg = crud.update_chat_status(db, message_id, event_id, user_id, data.status)
+    if not msg:
+        # Either msg not found or no change needed (e.g., sender marking own msg)
+        return {"message": "Ignored"}
+        
+    await manager.broadcast_change(event_id, {"type": "CHAT_STATUS_UPDATE", "data": jsonable_encoder(msg)})
+    return msg
+
 @app.delete("/events/{event_id}/chat/{message_id}", tags=["Chat"])
 async def delete_chat_message(event_id: str, message_id: int, 
                               db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):

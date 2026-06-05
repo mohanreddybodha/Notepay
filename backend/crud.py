@@ -650,6 +650,8 @@ def _chat_msg_to_dict(db, msg, sender_name):
         "reply_to_id": msg.reply_to_id,
         "reply_snippet": None,
         "reactions": msg.reactions or {},
+        "delivered_to": msg.delivered_to or [],
+        "read_by": msg.read_by or [],
         "sent_at": msg.sent_at.isoformat() + "Z" if msg.sent_at else None
     }
     if msg.reply_to_id and msg.reply_to:
@@ -741,6 +743,49 @@ def delete_chat_message(db: Session, message_id: int, event_id: str, user_id: in
     sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
     return _chat_msg_to_dict(db, msg, sender_name)
 
+def update_chat_status(db: Session, message_id: int, event_id: str, user_id: int, status: str):
+    """Update delivered or read status for a chat message."""
+    msg = db.query(models.ChatMessage).filter(
+        models.ChatMessage.id == message_id,
+        models.ChatMessage.event_id == event_id
+    ).first()
+    if not msg:
+        return None
+    
+    # AI messages or messages sent by the user themselves don't need their own read receipts
+    if msg.user_id == user_id or msg.user_id is None:
+        return None
+
+    changed = False
+    if status == "delivered":
+        delivered_list = msg.delivered_to or []
+        if user_id not in delivered_list:
+            delivered_list.append(user_id)
+            msg.delivered_to = delivered_list
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(msg, "delivered_to")
+            changed = True
+    elif status == "read":
+        read_list = msg.read_by or []
+        if user_id not in read_list:
+            read_list.append(user_id)
+            msg.read_by = read_list
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(msg, "read_by")
+            changed = True
+            
+            # implicitly mark as delivered too
+            delivered_list = msg.delivered_to or []
+            if user_id not in delivered_list:
+                delivered_list.append(user_id)
+                msg.delivered_to = delivered_list
+                flag_modified(msg, "delivered_to")
+
+    if changed:
+        db.commit()
+        sender_name = db.query(models.User.full_name).filter(models.User.id == msg.user_id).scalar()
+        return _chat_msg_to_dict(db, msg, sender_name)
+    return None
 
 def get_user_full_dashboard(db: Session, user_id: int):
     # Use global version to ensure real-time sync across all users

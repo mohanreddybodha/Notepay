@@ -2879,8 +2879,9 @@
     }
 
     .chat-bubble {
-      padding: 6px 8px 6px 10px;
-      border-radius: 12px;
+      position: relative;
+      padding: 6px 7px 8px 9px;
+      border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
       line-height: 1.4;
@@ -2899,10 +2900,26 @@
     .chat-msg-own.chat-msg-first .chat-bubble {
       border-top-right-radius: 0;
     }
+    
+    .chat-msg-own.chat-msg-first .chat-bubble::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -8px;
+      width: 0;
+      height: 0;
+      border-top: 0px solid transparent;
+      border-left: 10px solid #d9fdd3;
+      border-bottom: 12px solid transparent;
+    }
 
     .dark-mode .chat-msg-own .chat-bubble {
       background: #005c4b;
       color: #e9edef;
+    }
+    
+    .dark-mode .chat-msg-own.chat-msg-first .chat-bubble::before {
+      border-left-color: #005c4b;
     }
 
     .chat-msg-other .chat-bubble {
@@ -2913,28 +2930,68 @@
     .chat-msg-other.chat-msg-first .chat-bubble {
       border-top-left-radius: 0;
     }
+    
+    .chat-msg-other.chat-msg-first .chat-bubble::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-top: 0px solid transparent;
+      border-right: 10px solid #ffffff;
+      border-bottom: 12px solid transparent;
+    }
 
     .dark-mode .chat-msg-other .chat-bubble {
       background: #202c33;
       color: #e9edef;
     }
+    
+    .dark-mode .chat-msg-other.chat-msg-first .chat-bubble::before {
+      border-right-color: #202c33;
+    }
 
     .chat-bubble-content {
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .chat-msg-text {
-      padding-right: 50px;
       min-height: 16px;
+      word-wrap: break-word;
+    }
+
+    .time-spacer {
+      display: inline-block;
+      width: 66px; /* Width of timestamp + ticks + 1 character space */
+      height: 10px;
+      background: transparent;
     }
 
     .chat-msg-time {
-      position: absolute;
-      bottom: -2px;
-      right: 0;
+      align-self: flex-end;
+      margin-top: -14px;
+      margin-bottom: -4px; /* Collapse the empty height left by pulling it up */
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
       font-size: 10px;
       font-weight: 700;
       color: rgba(17, 27, 33, 0.6);
+      line-height: 1;
+      z-index: 1;
+    }
+
+    .msg-status-icon {
+      stroke: currentColor;
+      flex-shrink: 0;
+      margin-bottom: 1px;
+    }
+
+    .msg-status-blue {
+      stroke: #3b82f6 !important;
     }
 
     .dark-mode .chat-msg-time {
