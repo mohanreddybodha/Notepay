@@ -7,6 +7,8 @@ import concurrent.futures
 from datetime import datetime
 from typing import List, Optional, Dict
 import boto3
+from dotenv import load_dotenv
+load_dotenv()  # Load .env for local development
 
 # Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -744,8 +746,8 @@ def process_ai_chat(event_id: str, question: str, loop: asyncio.AbstractEventLoo
         user_map = {u.id: u.full_name for u in users}
         
         member_lines = "\n".join([f"  - {user_map.get(m.user_id, 'Unknown')}: {m.role.value}" + (" (RESTRICTED)" if m.is_restricted else "") for m in members])
-        expense_lines = "\n".join([f"  - {e.description}: \u20b9{e.amount or 0} (Spent by: {user_map.get(e.collected_by, 'Unknown')})" for e in sorted(expenses, key=lambda x: x.amount or 0, reverse=True)])
-        donation_lines = "\n".join([f"  - {d.donor_name}: \u20b9{d.amount or 0} (Collected by: {user_map.get(d.collected_by, 'Unknown')})" for d in sorted(donations, key=lambda x: x.amount or 0, reverse=True)])
+        expense_lines = "\n".join([f"  - {e.description}: ₹{e.amount or 0} (Spent by: {user_map.get(e.collected_by, 'Unknown')})" for e in sorted(expenses, key=lambda x: x.amount or 0, reverse=True)])
+        donation_lines = "\n".join([f"  - {d.donor_name}: ₹{d.amount or 0} (Collected by: {user_map.get(d.collected_by, 'Unknown')})" for d in sorted(donations, key=lambda x: x.amount or 0, reverse=True)])
         
         event_name = event.name
         event_desc = event.description
@@ -761,7 +763,7 @@ def process_ai_chat(event_id: str, question: str, loop: asyncio.AbstractEventLoo
 You are a smart financial advisor embedded inside Notepay. Notepay is a collaborative event ledger application where multiple members (Organizers, Collectors, and Visitors) work together to track shared expenses and donations for events.
 
 You are helping the organizer of this event make better financial decisions and monitor the activity of their members.
-Be concise, specific, and practical. Use \u20b9 for amounts. Format with bullet points. 
+Be concise, specific, and practical. Use ₹ for amounts. Format with bullet points. 
 Never give generic advice - always reference the actual numbers below.
 Keep responses under 200 words.
 
@@ -769,7 +771,7 @@ CRITICAL RULE: You must ONLY answer questions directly related to this event's l
 If the user asks an irrelevant, off-topic, or general knowledge question (e.g., "what is the capital of india?"), you MUST reply with EXACTLY this exact sentence and nothing else:
 "I am a dedicated financial advisor for the {event_name} event. I can only answer questions related to its ledger, expenses, and donations."
 
-\u2550\u2550\u2550 EVENT FINANCIAL DATA \u2550\u2550\u2550
+═══ EVENT FINANCIAL DATA ═══
 Event: {event_name}
 Description: {event_desc}
 
@@ -777,12 +779,12 @@ MEMBERS LIST:
 {member_lines}
 
 COLLECTIONS:
-  Total collected:    \u20b9{total_collected}
+  Total collected:    ₹{total_collected}
   Number of donors:   {num_donors}
 {donation_lines}
 
 EXPENSES (already paid):
-  Total spent:        \u20b9{total_spent}
+  Total spent:        ₹{total_spent}
   Number of items:    {num_expenses}
 {expense_lines}
 
@@ -793,7 +795,16 @@ FINANCIAL POSITION:
 User question: {question}
 """
         
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=AIzaSyCGvpnyr3USTjawAnSv7T1rehhezQo7BUY"
+    import os
+    raw_keys = [
+        os.environ.get("GEMINI_KEY_1", ""),
+        os.environ.get("GEMINI_KEY_2", "")
+    ]
+    keys = [k for k in raw_keys if k]  # filter out empty/missing keys
+    if not keys:
+        print("AI Chat Error: No Gemini API keys configured in environment.")
+        return
+    
     payload = {
         "contents": [{"parts": [{"text": context}]}],
         "generationConfig": {"temperature": 0.4}
@@ -801,6 +812,8 @@ User question: {question}
     
     ai_text = None
     for attempt in range(4):  # Up to 4 attempts
+        attempt_key = keys[attempt % len(keys)]
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={attempt_key}"
         try:
             resp = requests.post(url, json=payload, timeout=60)
             if resp.status_code == 200:

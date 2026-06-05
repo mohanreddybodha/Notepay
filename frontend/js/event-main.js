@@ -3893,14 +3893,21 @@
     let isOrganizerGlobal = false;
     let unreadDividerId = null;
 
+    function autoResizeChatInput(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    }
+
     function updateSendBtnVisibility() {
-      const val = document.getElementById('chat-input').value;
+      const input = document.getElementById('chat-input');
+      const val = input.value;
       const btn = document.getElementById('chat-send-btn');
       btn.classList.toggle('is-visible', val.length > 0);
       
       const aiInlineBtn = document.getElementById('ai-inline-btn');
       if (aiInlineBtn) {
         aiInlineBtn.style.display = val.length > 0 ? 'none' : 'flex';
+        input.style.paddingRight = val.length > 0 ? '12px' : '74px';
       }
     }
 
@@ -4129,7 +4136,8 @@
         html += `<div class="chat-date-divider">${dateLabel}</div>`;
       }
 
-      const showSender = !isOwn && m.user_id !== lastSender;
+      const isAILoading = m.id === 'ai-loading';
+      const showSender = isAILoading ? true : (!isOwn && m.user_id !== lastSender);
       let replyHtml = '';
       if (m.reply_snippet) {
         replyHtml = `<div class="chat-reply-snippet" onclick="scrollToMsg(${m.reply_snippet.id})">
@@ -4185,6 +4193,8 @@
       let msgContent = formatChatMessageText(m.message);
       if (isDeleted) {
         msgContent = `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-style:italic;">${npIcon('trash', {size: 16, tone: 'muted'})} This message was deleted.</span>`;
+      } else if (m.id === 'ai-loading') {
+        msgContent = `<div class="ai-typing-indicator"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
       }
       html += `<div class="chat-msg-text" ${isAI ? 'style="font-size:15px; line-height:1.6;"' : ''}>${msgContent}</div>`;
       if (!isDeleted) {
@@ -4489,12 +4499,33 @@
       }
     }
 
+    function showAITypingIndicator() {
+      const el = document.getElementById('ai-typing-status');
+      if (!el) return;
+      el.innerHTML = `
+        <strong class="ai-typing-name">AI Advisor</strong>
+        <span class="ai-typing-verb"> is typing</span>
+        <span class="ai-typing-dots">
+          <span class="ai-td"></span>
+          <span class="ai-td"></span>
+          <span class="ai-td"></span>
+        </span>
+      `;
+      el.style.display = 'flex';
+    }
+
+    function hideAITypingIndicator() {
+      const el = document.getElementById('ai-typing-status');
+      if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+    }
+
     async function sendChatMessage() {
       const input = document.getElementById('chat-input');
       const msg = input.value.trim();
       if (!msg) return;
 
       input.value = '';
+      input.style.height = 'auto';
       updateSendBtnVisibility();
       closeEmojiTray();
 
@@ -4506,19 +4537,11 @@
         cancelReply();
 
         if (msg.toLowerCase().startsWith('@ai ')) {
-          const aiLoadingMsg = {
-            id: 'ai-loading',
-            user_id: null,
-            sender_name: "AI Advisor",
-            message: "\u2728 AI is taking a look...",
-            sent_at: new Date().toISOString(),
-            reactions: {}
-          };
-          chatMessages.push(aiLoadingMsg);
-          if (chatOpen) {
-            appendChatMessage(aiLoadingMsg);
-            scrollChatToBottom(true);
-          }
+          window._aiLoadingShownAt = Date.now();
+          showAITypingIndicator();
+        }
+        if (chatOpen) {
+          scrollChatToBottom(true);
         }
       } catch (e) {
         showToast('Failed to send message', 'error');
@@ -4540,16 +4563,32 @@
       if (chatMessages.some(m => m.id === data.id)) return;
       
       if (data.user_id == null) {
-        const loadingIdx = chatMessages.findIndex(m => m.id === 'ai-loading');
-        if (loadingIdx !== -1) {
-          chatMessages.splice(loadingIdx, 1);
-          const el = document.getElementById('chat-msg-ai-loading');
-          if (el) {
-            const row = el.closest('.chat-msg-row');
-            if (row) row.remove();
-            else el.remove();
+        const showRealResponse = () => {
+          hideAITypingIndicator();
+          chatMessages.push(data);
+          if (chatOpen) {
+            const container = document.getElementById('chat-messages');
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+            appendChatMessage(data);
+            if (isAtBottom) {
+              scrollChatToBottom(true);
+              markChatAsRead();
+            }
+          } else {
+            chatUnread++;
+            updateChatBadge();
           }
+        };
+        // Ensure typing animation shows for at least 1.5s
+        const loadingShownAt = window._aiLoadingShownAt || 0;
+        const elapsed = Date.now() - loadingShownAt;
+        const minShow = 1500;
+        if (elapsed >= minShow) {
+          showRealResponse();
+        } else {
+          setTimeout(showRealResponse, minShow - elapsed);
         }
+        return;
       }
       
       chatMessages.push(data);

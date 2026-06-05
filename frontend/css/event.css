@@ -3032,6 +3032,14 @@
       font-weight: 600;
       font-family: 'Nunito', sans-serif;
       outline: none;
+      resize: none;
+      overflow-y: auto;
+      line-height: 20px;
+      scrollbar-width: none;
+    }
+
+    .chat-input::-webkit-scrollbar {
+      display: none;
     }
 
     .chat-input::placeholder {
@@ -3336,5 +3344,153 @@
       html body .sbox-footer .btn {
         height: 36px !important;
         min-height: 36px !important;
+      }
+    }
+
+    /* ── AI Typing Status Indicator ── */
+    #ai-typing-status {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px 2px;
+      white-space: nowrap;
+      animation: aiStatusIn 0.2s ease;
+    }
+
+    @keyframes aiStatusIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ai-typing-name {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .ai-typing-verb {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text3);
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .ai-typing-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: 2px;
+    }
+
+    .ai-td {
+      display: block;
+      width: 5px;
+      height: 5px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: aiTdBounce 1.2s infinite ease-in-out;
+    }
+
+    .ai-td:nth-child(1) { animation-delay: 0s; }
+    .ai-td:nth-child(2) { animation-delay: 0.2s; }
+    .ai-td:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes aiTdBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+      30% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* old compat */
+    .ai-typing-avatar, .ai-typing-inline, .ai-typing-text-wrap, .ai-typing-label { display: none; }
+    .ai-typing-indicator { display: flex; align-items: center; gap: 4px; height: 24px; }
+    .ai-typing-indicator .dot { display: block; width: 6px; height: 6px; background: var(--primary); border-radius: 50%; animation: aiTdBounce 1.2s infinite ease-in-out; }
+    .ai-typing-indicator .dot:nth-child(1) { animation-delay: 0s; }
+    .ai-typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+    .ai-typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @media (max-width: 768px) {
+      .chat-drawer {
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 0;
+      }
+    }
+
+    @keyframes aiStatusIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ai-typing-avatar {
+      font-size: 18px;
+      animation: aiAvatarGlow 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes aiAvatarGlow {
+      0%, 100% { filter: drop-shadow(0 0 3px rgba(15,163,163,0.5)); opacity: 0.8; }
+      50% { filter: drop-shadow(0 0 10px rgba(15,163,163,1)); opacity: 1; }
+    }
+
+    .ai-typing-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .ai-typing-name {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .ai-typing-verb {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text3);
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .ai-typing-dots {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 12px;
+    }
+
+    .ai-td {
+      display: block;
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: aiTdBounce 1.2s infinite ease-in-out;
+      box-shadow: 0 0 6px var(--primary);
+    }
+
+    .ai-td:nth-child(1) { animation-delay: 0s; }
+    .ai-td:nth-child(2) { animation-delay: 0.2s; }
+    .ai-td:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes aiTdBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; box-shadow: 0 0 4px var(--primary); }
+      30% { transform: translateY(-5px); opacity: 1; box-shadow: 0 0 12px var(--primary), 0 0 20px rgba(15,163,163,0.4); }
+    }
+
+    /* old ai-typing-indicator kept for compat */
+    .ai-typing-indicator { display: flex; align-items: center; gap: 4px; height: 24px; }
+    .ai-typing-indicator .dot { display: block; width: 6px; height: 6px; background: var(--primary); border-radius: 50%; animation: aiTdBounce 1.2s infinite ease-in-out; }
+    .ai-typing-indicator .dot:nth-child(1) { animation-delay: 0s; }
+    .ai-typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+    .ai-typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @media (max-width: 768px) {
+      .chat-drawer {
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 0;
       }
     }

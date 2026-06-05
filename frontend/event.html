@@ -823,8 +823,10 @@
         </div>
       </div>
       <div class="chat-header">
+        <button class="chat-back-btn" onclick="closeChat()" aria-label="Back to event" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 4px; margin-right: 8px; color: var(--text);">
+          <span data-np-icon="arrow-left" data-np-size="22"></span>
+        </button>
         <div class="chat-header-title">
-          <span data-np-icon="message-square" data-np-size="18"></span>
           <span id="chat-header-name">Event Chat</span>
         </div>
         <div class="chat-header-actions">
@@ -835,7 +837,6 @@
                 d="M17 10.5V7c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h11c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
             </svg>
           </button>
-          <button class="chat-close-btn" onclick="closeChat()">Close</button>
         </div>
       </div>
       <div class="chat-messages" id="chat-messages">
@@ -854,13 +855,14 @@
           </div>
           <button class="reply-close" onclick="cancelReply()">✕</button>
         </div>
+        <div id="ai-typing-status" style="display:none;"></div>
         <div class="chat-input-bar">
           <div class="chat-input-wrapper" style="position: relative; display: flex; align-items: center; flex: 1;">
-            <input class="chat-input" id="chat-input" type="text" placeholder="Type a message or @ai" maxlength="500"
+            <textarea class="chat-input" id="chat-input" rows="1" placeholder="Type a message or @ai" maxlength="500"
               enterkeyhint="send" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false"
-              onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}"
-              oninput="updateSendBtnVisibility()" style="padding-right: 74px; width: 100%;" />
-            <div id="ai-inline-btn" style="position:absolute; right:6px; background:var(--surf-var); border:1px solid var(--border); border-radius:12px; padding:4px 8px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:800; color:var(--primary); cursor:pointer; z-index:10;" onclick="document.getElementById('chat-input').value='@ai '; document.getElementById('chat-input').focus(); updateSendBtnVisibility();">
+              onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChatMessage();}"
+              oninput="autoResizeChatInput(this); updateSendBtnVisibility();" style="padding-right: 74px; width: 100%;"></textarea>
+            <div id="ai-inline-btn" style="position:absolute; right:6px; background:var(--surf-var); border:1px solid var(--border); border-radius:12px; padding:4px 8px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:800; color:var(--primary); cursor:pointer; z-index:10; bottom: 6px;" onclick="document.getElementById('chat-input').value='@ai '; document.getElementById('chat-input').focus(); updateSendBtnVisibility();">
               <span style="font-size:12px;">✨</span> Ask AI
             </div>
           </div>
