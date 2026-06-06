@@ -81,7 +81,12 @@ async function apiFetch(method, path, body = null) {
   let res;
   let isNetworkError = false;
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    opts.signal = controller.signal;
+    
     res = await fetch(`${API_BASE}${path}`, opts);
+    clearTimeout(timeoutId);
   } catch (e) {
     if (isWrite) {
       isNetworkError = true;
@@ -181,18 +186,33 @@ async function apiFetchWithToken(method, path, token, body = null) {
   };
   if (body) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${API_BASE}${path}`, opts);
-  if (res.status === 401) {
-    localStorage.removeItem("np_token_tmp");
-    window.location.href = "login.html";
-    throw new Error("Session expired");
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  opts.signal = controller.signal;
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, opts);
+    clearTimeout(timeoutId);
+    if (res.status === 401) {
+      localStorage.removeItem("np_token_tmp");
+      window.location.href = "login.html";
+      throw new Error("Session expired");
+    }
+
+    const data = res.headers.get("content-type")?.includes("application/json")
+      ? await res.json()
+      : null;
+
+    if (!res.ok) {
+      const msg = data?.detail || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return { status: res.status, data };
+  } catch (e) {
+    clearTimeout(timeoutId);
+    throw e;
   }
-
-  const data = res.headers.get("content-type")?.includes("application/json")
-    ? await res.json()
-    : null;
-
-  return { status: res.status, data };
 }
 
 // ══════════════════════════════════════════════
