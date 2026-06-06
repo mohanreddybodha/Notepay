@@ -319,8 +319,10 @@
         const msg = JSON.parse(event.data);
         if (msg.type === "AUTH_OK") {
           wsAuthenticated = true;
-          if (chatMessages && chatMessages.length > 0) {
-            loadChatHistory(true); // Fetch missing messages since we reconnected
+          if (chatHistoryLoaded) {
+            // Re-fetch latest messages so we don't miss anything sent while disconnected
+            chatLoading = false;
+            loadChatHistory(false, true);
           }
           return;
         }
@@ -4186,14 +4188,13 @@
           // 1. TIMER — offline / not yet sent
           statusIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon" style="opacity:0.6"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
         } else if (m.id > 0) {
-          // Count only unrestricted non-sender members
+          // Count only unrestricted non-sender members using the top-level `members` array
           const myId2 = parseInt(localStorage.getItem('np_my_id') || '0');
-          const unrestrictedOthers = (typeof eventData !== 'undefined' && eventData && eventData.members)
-            ? eventData.members.filter(mem => !mem.is_restricted && mem.user_id !== myId2)
-            : [];
+          const membersArr = (typeof members !== 'undefined' && members && members.length > 0) ? members : [];
+          const unrestrictedOthers = membersArr.filter(mem => !mem.is_restricted && mem.user_id !== myId2);
           const requiredCount = unrestrictedOthers.length;
-          const readIds = m.read_by || [];
-          const readCount = unrestrictedOthers.filter(mem => readIds.includes(mem.user_id)).length;
+          const readIds = (m.read_by || []).map(id => parseInt(id));
+          const readCount = unrestrictedOthers.filter(mem => readIds.includes(parseInt(mem.user_id))).length;
 
           if (requiredCount > 0 && readCount >= requiredCount) {
             // 3. BLUE DOUBLE TICK — all unrestricted members have seen the message
@@ -4635,9 +4636,11 @@
       const queue = [...chatSyncQueue];
       localStorage.setItem(`np_chat_sync_${eventId}`, '[]');
       
+      let anySent = false;
       for (let item of queue) {
         try {
           const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, item.payload);
+          anySent = true;
           const idx = chatMessages.findIndex(m => m.id === item.mockId);
           if (idx !== -1) {
             chatMessages[idx] = realMsg;
@@ -4651,10 +4654,18 @@
           }
         }
       }
+
+      // After all queued messages are sent, do a fresh chat reload to ensure server-side ordering
+      if (anySent) {
+        chatMessages = chatMessages.filter(m => typeof m.id === 'number' && m.id > 0);
+        chatHistoryLoaded = false;
+        chatOldestId = null;
+        chatLoading = false;
+        await loadChatHistory(false, !chatOpen);
+      }
     }
     window.addEventListener('online', () => {
-      processChatQueue();
-      if (typeof loadChatHistory === 'function') loadChatHistory(true);
+      processChatQueue(); // Will handle fresh reload internally after sending
     });
 
     async function sendChatMessage() {
