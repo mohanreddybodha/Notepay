@@ -5056,66 +5056,7 @@
       var observer = new MutationObserver(enforceFieldHeight);
       observer.observe(document.body, { childList: true, subtree: true });
     });
-    document.addEventListener('DOMContentLoaded', () => {
-      const ptrIndicator = document.createElement('div');
-      ptrIndicator.innerHTML = '<div class="loader" style="width:24px;height:24px;margin:auto;"></div>';
-      ptrIndicator.style.cssText = 'position:absolute; top:-50px; left:50%; transform:translateX(-50%); z-index:99999; background:var(--card); border-radius:50%; box-shadow:0 4px 12px rgba(0,0,0,0.15); padding:8px; transition:top 0.2s ease; display:flex; align-items:center; justify-content:center; width:40px; height:40px; opacity:0; pointer-events:none;';
-      document.body.appendChild(ptrIndicator);
 
-      let ptrStartY = 0;
-      let ptrCurrentY = 0;
-      let ptrIsPulling = false;
-      const ptrThreshold = 75;
-
-      document.addEventListener('touchstart', (e) => {
-        const target = e.target.closest('.tbl-sc, .sum-body, .theater-scroll-area');
-        // Only start pulling if we're at the top of a scroll area
-        if (target && target.scrollTop <= 0) {
-          ptrStartY = e.touches[0].clientY;
-          ptrCurrentY = ptrStartY; // Fix: Reset currentY so normal clicks don't trigger previous drag distance
-          ptrIsPulling = true;
-          ptrIndicator.style.transition = 'none';
-        } else {
-          ptrIsPulling = false;
-        }
-      }, { passive: true });
-
-      document.addEventListener('touchmove', (e) => {
-        if (!ptrIsPulling) return;
-        ptrCurrentY = e.touches[0].clientY;
-        const dy = ptrCurrentY - ptrStartY;
-        if (dy > 0 && dy < 150) {
-          ptrIndicator.style.top = (dy / 2 - 40) + 'px';
-          ptrIndicator.style.opacity = Math.min(dy / 100, 1).toString();
-          
-          if(dy > ptrThreshold) {
-             ptrIndicator.querySelector('.loader').style.borderTopColor = 'var(--teal)';
-          } else {
-             ptrIndicator.querySelector('.loader').style.borderTopColor = 'var(--primary)';
-          }
-        }
-      }, { passive: true });
-
-      document.addEventListener('touchend', async (e) => {
-        if (!ptrIsPulling) return;
-        ptrIsPulling = false;
-        const dy = ptrCurrentY - ptrStartY;
-        ptrIndicator.style.transition = 'top 0.3s ease, opacity 0.3s ease';
-        
-        if (dy > ptrThreshold) {
-          ptrIndicator.style.top = '20px';
-          ptrIndicator.style.opacity = '1';
-          if(typeof loadAll === 'function') {
-            await loadAll(true, true); // True (background mode) prevents the screen from blinking
-          }
-          ptrIndicator.style.top = '-50px';
-          ptrIndicator.style.opacity = '0';
-        } else {
-          ptrIndicator.style.top = '-50px';
-          ptrIndicator.style.opacity = '0';
-        }
-      });
-    });
     async function shareReceipt(donorName, amount, dateStr, collectorName) {
       const eventName = typeof eventData !== 'undefined' && eventData ? eventData.name : 'Event';
       const formattedAmt = parseInt(amount).toLocaleString('en-IN');

@@ -673,6 +673,17 @@ def create_chat_message(db: Session, event_id: str, user_id: int, message: str, 
     db.add(msg)
     db.commit()
     db.refresh(msg)
+    
+    # Enforce limit of 250 messages per event
+    count = db.query(models.ChatMessage).filter(models.ChatMessage.event_id == event_id).count()
+    if count > 250:
+        to_delete = count - 250
+        oldest = db.query(models.ChatMessage.id).filter(models.ChatMessage.event_id == event_id).order_by(models.ChatMessage.id.asc()).limit(to_delete).all()
+        oldest_ids = [row[0] for row in oldest]
+        if oldest_ids:
+            db.query(models.ChatMessage).filter(models.ChatMessage.id.in_(oldest_ids)).delete(synchronize_session=False)
+            db.commit()
+
     user = db.query(models.User).filter(models.User.id == user_id).first() if user_id else None
     sender_name = "AI Advisor" if user_id is None else (user.full_name if user else "Unknown")
     return _chat_msg_to_dict(db, msg, sender_name)
