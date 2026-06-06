@@ -4183,9 +4183,9 @@
           const deliveredCount = m.delivered_to ? m.delivered_to.length : 0;
           const requiredCount = Math.max(0, membersCount - 1);
           
-          if (membersCount === 1 || readCount >= requiredCount) {
+          if (requiredCount > 0 && readCount >= requiredCount) {
             statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon msg-status-blue"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
-          } else if (deliveredCount >= requiredCount) {
+          } else if (requiredCount > 0 && deliveredCount >= requiredCount) {
             statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
           } else if (m.id > 0) {
             statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
@@ -4718,9 +4718,10 @@
           scrollChatToBottom(true);
         }
       } catch (e) {
-        if (!navigator.onLine || e.message === 'Failed to fetch') {
+        const isNetworkError = !navigator.onLine || e.name === 'TypeError' || (e.message && (e.message.toLowerCase().includes('fetch') || e.message.toLowerCase().includes('network')));
+        if (isNetworkError) {
           let chatSyncQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
-          chatSyncQueue.push({ mockId: chatMessages[chatMessages.length - 1].id, payload: { message: msg, reply_to_id: replyingToId } });
+          chatSyncQueue.push({ mockId: mockMsg.id, payload: { message: msg, reply_to_id: replyingToId } });
           localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify(chatSyncQueue));
           cancelReply();
         } else {
@@ -4728,7 +4729,8 @@
           input.value = msg;
           updateSendBtnVisibility();
           // Remove the mock message if it failed due to bad request
-          chatMessages.pop();
+          const idx = chatMessages.findIndex(m => m.id === mockMsg.id);
+          if (idx !== -1) chatMessages.splice(idx, 1);
           if (chatOpen) renderChatMessages(); // re-render to clear mock message
         }
       }
