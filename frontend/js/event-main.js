@@ -4097,6 +4097,12 @@
         }
         chatHistoryLoaded = true;
 
+        // If the fetched messages contain an AI response, immediately hide the typing indicator
+        // (covers the case where the AI response arrived via background poll instead of WebSocket)
+        if (msgs.some(m => m.user_id == null)) {
+          hideAITypingIndicator();
+        }
+
         // If chat is currently open, we MUST render the messages even if this is a background load
         // (to ensure newly arrived messages appear instantly if the user is already looking at the chat)
         if (!isBackground || chatOpen) {
@@ -4119,6 +4125,7 @@
         chatLoading = false;
       }
     }
+
 
     function chatTimeExact(dateStr) {
       let d = dateStr.endsWith('Z') ? new Date(dateStr) : new Date(dateStr + 'Z');
@@ -4613,17 +4620,11 @@
         </span>
       `;
       el.style.display = 'flex';
-      
-      if (window._aiTypingTimeout) clearTimeout(window._aiTypingTimeout);
-      window._aiTypingTimeout = setTimeout(() => {
-        hideAITypingIndicator();
-      }, 60000);
     }
 
     function hideAITypingIndicator() {
       const el = document.getElementById('ai-typing-status');
       if (el) { el.style.display = 'none'; el.innerHTML = ''; }
-      if (window._aiTypingTimeout) clearTimeout(window._aiTypingTimeout);
     }
 
     async function processChatQueue() {
@@ -4774,29 +4775,20 @@
       }
 
       if (data.user_id == null) {
-        const showRealResponse = () => {
-          chatMessages.push(data);
-          if (chatOpen) {
-            const container = document.getElementById('chat-messages');
-            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-            appendChatMessage(data);
-            if (isAtBottom) {
-              scrollChatToBottom(true);
-              markChatAsRead();
-            }
-          } else {
-            chatUnread++;
-            updateChatBadge();
+        // AI responded — immediately hide typing indicator and show message
+        hideAITypingIndicator();
+        chatMessages.push(data);
+        if (chatOpen) {
+          const container = document.getElementById('chat-messages');
+          const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+          appendChatMessage(data);
+          if (isAtBottom) {
+            scrollChatToBottom(true);
+            markChatAsRead();
           }
-        };
-        // Ensure typing animation shows for at least 1.5s
-        const loadingShownAt = window._aiLoadingShownAt || 0;
-        const elapsed = Date.now() - loadingShownAt;
-        const minShow = 1500;
-        if (elapsed >= minShow) {
-          showRealResponse();
         } else {
-          setTimeout(showRealResponse, minShow - elapsed);
+          chatUnread++;
+          updateChatBadge();
         }
         return;
       }
