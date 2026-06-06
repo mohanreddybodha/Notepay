@@ -4374,8 +4374,9 @@
       let html = '';
 
       if (chatFullyLoaded) {
+        const evNameEscaped = typeof eventData !== 'undefined' && eventData ? escHtml(eventData.name) : 'NotePay';
         html += `<div class="chat-retention-info" style="text-align:center; padding:10px 14px; margin:8px 12px; font-size:11px; font-weight:700; color:var(--text3); background:var(--surf-var); border-radius:10px; border:1px solid var(--border2); line-height:1.4;">
-          NotePay Chat preserves the latest 250 messages. Older messages are automatically deleted by the server.
+          ${evNameEscaped} Chat preserves the latest 250 messages. Older messages are automatically deleted by the server.
         </div>`;
       } else if (chatMessages.length >= 50) {
         html += `<div class="chat-load-more" onclick="loadChatHistory(true)">Load older messages ↑</div>`;
