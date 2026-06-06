@@ -319,6 +319,9 @@
         const msg = JSON.parse(event.data);
         if (msg.type === "AUTH_OK") {
           wsAuthenticated = true;
+          if (chatMessages && chatMessages.length > 0) {
+            loadChatHistory(true); // Fetch missing messages since we reconnected
+          }
           return;
         }
         if (!wsAuthenticated) return;
@@ -4607,11 +4610,17 @@
         </span>
       `;
       el.style.display = 'flex';
+      
+      if (window._aiTypingTimeout) clearTimeout(window._aiTypingTimeout);
+      window._aiTypingTimeout = setTimeout(() => {
+        hideAITypingIndicator();
+      }, 60000);
     }
 
     function hideAITypingIndicator() {
       const el = document.getElementById('ai-typing-status');
       if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+      if (window._aiTypingTimeout) clearTimeout(window._aiTypingTimeout);
     }
 
     async function processChatQueue() {
@@ -4639,7 +4648,10 @@
         }
       }
     }
-    window.addEventListener('online', processChatQueue);
+    window.addEventListener('online', () => {
+      processChatQueue();
+      if (typeof loadChatHistory === 'function') loadChatHistory(true);
+    });
 
     async function sendChatMessage() {
       const input = document.getElementById('chat-input');
@@ -4734,12 +4746,17 @@
     function handleIncomingChatMsg(data) {
       const myId = parseInt(localStorage.getItem('np_my_id') || '0');
       
+      if (data.user_id == null) {
+        hideAITypingIndicator();
+      }
+
       // If it's my own message, see if we have a pending mock message to replace
       if (data.user_id === myId) {
         const mockIdx = chatMessages.findIndex(m => m.id < 0 && m.message === data.message && m.reply_to_id === data.reply_to_id);
         if (mockIdx !== -1) {
+          const oldMockId = chatMessages[mockIdx].id;
           chatMessages[mockIdx] = data;
-          updateMessageNode(data);
+          updateMessageNode(data, oldMockId);
           return;
         }
       }
@@ -4753,7 +4770,6 @@
 
       if (data.user_id == null) {
         const showRealResponse = () => {
-          hideAITypingIndicator();
           chatMessages.push(data);
           if (chatOpen) {
             const container = document.getElementById('chat-messages');
