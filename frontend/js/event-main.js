@@ -4636,6 +4636,11 @@
 
 
     async function sendChatMessage() {
+      if (!navigator.onLine) {
+        showToast('Please check your internet connection to send messages.', 'error');
+        return;
+      }
+
       const input = document.getElementById('chat-input');
       const msg = input.value.trim();
       if (!msg) return;
@@ -4741,30 +4746,30 @@
         apiFetch('POST', `/events/${eventId}/chat/${data.id}/status`, { status: 'delivered' }).catch(e => console.warn(e));
       }
 
+      // Check if this new message arrived out of order compared to the last received message
+      const lastMsg = chatMessages[chatMessages.length - 1];
+      const outOfOrder = lastMsg && typeof lastMsg.id === 'number' && lastMsg.id > 0 && data.id < lastMsg.id;
+
+      chatMessages.push(data);
+      if (outOfOrder) {
+        chatMessages.sort((a, b) => a.id - b.id);
+      }
+
       if (data.user_id == null) {
-        // AI responded — immediately hide typing indicator and show message
+        // AI responded — immediately hide typing indicator
         hideAITypingIndicator();
-        chatMessages.push(data);
-        if (chatOpen) {
-          const container = document.getElementById('chat-messages');
-          const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-          appendChatMessage(data);
-          if (isAtBottom) {
-            scrollChatToBottom(true);
-            markChatAsRead();
-          }
-        } else {
-          chatUnread++;
-          updateChatBadge();
-        }
-        return;
       }
       
-      chatMessages.push(data);
       if (chatOpen) {
         const container = document.getElementById('chat-messages');
         const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-        appendChatMessage(data);
+        
+        if (outOfOrder) {
+          renderChatMessages();
+        } else {
+          appendChatMessage(data);
+        }
+        
         if (isAtBottom) {
           scrollChatToBottom(true);
           markChatAsRead();
