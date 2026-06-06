@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Prevent PTR if we are inside a horizontal scroll area like the dashboard tabs
     if (e.target.closest('.slider-container')) return;
     
+    // Prevent PTR inside the chat overlay or drawer
+    if (e.target.closest('.chat-drawer') || e.target.closest('#chat-overlay')) return;
+    
     // Support either specific scroll areas or the body itself
     let target = e.target.closest('.tbl-sc, .sum-body, .theater-scroll-area, .content-container, .page-content');
     let scrollTop = target ? target.scrollTop : document.documentElement.scrollTop;
