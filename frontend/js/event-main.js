@@ -4428,8 +4428,9 @@
       observeNewMessages();
     }
 
-    function updateMessageNode(m) {
-      const el = document.getElementById(`chat-msg-${m.id}`);
+    function updateMessageNode(m, oldId = null) {
+      const searchId = oldId !== null ? oldId : m.id;
+      const el = document.getElementById(`chat-msg-${searchId}`);
       if (!el) return;
 
       // To properly rebuild, find previous sender/date
@@ -4627,7 +4628,7 @@
           const idx = chatMessages.findIndex(m => m.id === item.mockId);
           if (idx !== -1) {
             chatMessages[idx] = realMsg;
-            if (chatOpen) updateMessageNode(realMsg);
+            if (chatOpen) updateMessageNode(realMsg, item.mockId);
           }
         } catch(e) {
           if (!navigator.onLine || e.message === 'Failed to fetch') {
@@ -4694,7 +4695,7 @@
         const idx = chatMessages.findIndex(m => m.id === mockMsg.id);
         if (idx !== -1) {
           chatMessages[idx] = realMsg;
-          updateMessageNode(realMsg);
+          updateMessageNode(realMsg, mockMsg.id);
         }
 
         if (msg.toLowerCase().startsWith('@ai ')) {
