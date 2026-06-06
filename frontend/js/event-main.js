@@ -4133,7 +4133,7 @@
       return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
-    function buildMessageHTML(m, lastSender, lastDate) {
+    function buildMessageHTML(m, lastSender, lastDate, isNew = false) {
       const myId = parseInt(localStorage.getItem('np_my_id') || '0');
       const isOwn = m.user_id === myId;
       const dateLabel = chatDateLabel(m.sent_at);
@@ -4173,7 +4173,7 @@
       let statusIcon = '';
       if (isOwn && !isDeleted) {
         if (m.is_pending) {
-          statusIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+          statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
         } else {
           const membersCount = (typeof eventData !== 'undefined' && eventData && eventData.members) ? eventData.members.length : 1;
           const readCount = m.read_by ? m.read_by.length : 0;
@@ -4181,13 +4181,13 @@
           const requiredCount = Math.max(0, membersCount - 1);
           
           if (membersCount === 1 || readCount >= requiredCount) {
-            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" class="msg-status-icon msg-status-blue"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
+            statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon msg-status-blue"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
           } else if (deliveredCount >= requiredCount) {
-            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
+            statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
           } else if (m.id > 0) {
-            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
           } else {
-            statusIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
           }
         }
       }
@@ -4205,9 +4205,10 @@
       }
 
       if (!isOwn && !isAI) html += `<div class="chat-msg-row">${avatarHtml}`;
-      if (isAI) html += `<div class="chat-msg-row" style="margin: 16px 0;">`; // Extra spacing for AI
+      if (isAI) html += `<div class="chat-msg-row" style="margin: 16px 0; max-width: 100%;">`; // Extra spacing for AI
 
-      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${showSender ? 'chat-msg-first' : ''} ${isDeleted ? 'chat-msg-deleted' : ''}" id="chat-msg-${m.id}" ${isAI ? 'style="width: 100%; max-width: 100%;"' : ''}>`;
+      const animateClass = isNew ? 'animate-in' : '';
+      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${showSender ? 'chat-msg-first' : ''} ${isDeleted ? 'chat-msg-deleted' : ''} ${animateClass}" id="chat-msg-${m.id}" ${isAI ? 'style="width: 100%; max-width: 100%;"' : ''}>`;
       
       const aiBubbleStyle = isAI ? 'width: 100%; max-width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);' : '';
       
@@ -4612,6 +4613,33 @@
       if (el) { el.style.display = 'none'; el.innerHTML = ''; }
     }
 
+    async function processChatQueue() {
+      if (!navigator.onLine) return;
+      let chatSyncQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
+      if (chatSyncQueue.length === 0) return;
+      
+      const queue = [...chatSyncQueue];
+      localStorage.setItem(`np_chat_sync_${eventId}`, '[]');
+      
+      for (let item of queue) {
+        try {
+          const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, item.payload);
+          const idx = chatMessages.findIndex(m => m.id === item.mockId);
+          if (idx !== -1) {
+            chatMessages[idx] = realMsg;
+            if (chatOpen) updateMessageNode(realMsg);
+          }
+        } catch(e) {
+          if (!navigator.onLine || e.message === 'Failed to fetch') {
+            let q = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
+            q.push(item);
+            localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify(q));
+          }
+        }
+      }
+    }
+    window.addEventListener('online', processChatQueue);
+
     async function sendChatMessage() {
       const input = document.getElementById('chat-input');
       const msg = input.value.trim();
@@ -4636,7 +4664,7 @@
           reply_to_id: replyingToId,
           reactions: {},
           sent_at: new Date().toISOString(),
-          is_pending: !navigator.onLine,
+          is_pending: true, // Start as pending
           delivered_to: [],
           read_by: []
         };
@@ -4649,6 +4677,14 @@
         } else {
           chatUnread++;
           updateChatBadge();
+        }
+
+        if (!navigator.onLine) {
+          let chatSyncQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
+          chatSyncQueue.push({ mockId: mockMsg.id, payload: payload });
+          localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify(chatSyncQueue));
+          cancelReply();
+          return;
         }
 
         const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, payload);
@@ -4669,9 +4705,19 @@
           scrollChatToBottom(true);
         }
       } catch (e) {
-        showToast('Failed to send message', 'error');
-        input.value = msg;
-        updateSendBtnVisibility();
+        if (!navigator.onLine || e.message === 'Failed to fetch') {
+          let chatSyncQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
+          chatSyncQueue.push({ mockId: chatMessages[chatMessages.length - 1].id, payload: { message: msg, reply_to_id: replyingToId } });
+          localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify(chatSyncQueue));
+          cancelReply();
+        } else {
+          showToast('Failed to send message', 'error');
+          input.value = msg;
+          updateSendBtnVisibility();
+          // Remove the mock message if it failed due to bad request
+          chatMessages.pop();
+          if (chatOpen) renderChatMessages(); // re-render to clear mock message
+        }
       }
       requestAnimationFrame(() => {
         input.focus({ preventScroll: true });
