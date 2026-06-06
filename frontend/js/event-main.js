@@ -4736,10 +4736,7 @@
           updateMessageNode(realMsg, mockMsg.id);
         }
 
-        if (msg.toLowerCase().startsWith('@ai ')) {
-          window._aiLoadingShownAt = Date.now();
-          showAITypingIndicator();
-        }
+
         if (chatOpen) {
           scrollChatToBottom(true);
         }
@@ -5164,4 +5161,5 @@
         doc.save(filename);
       }
     }
+
 
