@@ -2970,8 +2970,6 @@
       display: inline-block;
       width: 74px; /* Width of timestamp + ticks + 1 character space */
       height: 10px;
-      float: right;
-      margin-left: -74px;
       background: transparent;
     }
 
