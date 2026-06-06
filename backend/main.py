@@ -801,6 +801,7 @@ User question: {question}
     ai_text = None
     if not api_key:
         print("AI Chat Error: GEMINI_KEY_1 is missing.")
+        ai_text = "AI Advisor configuration error: API key is missing."
     else:
         payload = {
             "contents": [{"parts": [{"text": context}]}],
@@ -819,10 +820,14 @@ User question: {question}
                     print(f"AI rate limited ({resp.status_code}), retrying in {wait_sec}s (attempt {attempt+1})")
                     time.sleep(wait_sec)
                 else:
-                    ai_text = f"Sorry, the AI Advisor is currently unavailable. ({resp.status_code})"
+                    try:
+                        err_msg = resp.json().get('error', {}).get('message', 'Unknown Error')
+                    except:
+                        err_msg = resp.text[:100]
+                    ai_text = f"AI API Error ({resp.status_code}): {err_msg}"
                     break
             except Exception as e:
-                ai_text = f"Sorry, the AI request timed out or failed. ({type(e).__name__})"
+                ai_text = f"AI connection failed: {type(e).__name__}"
                 break
     
     if not ai_text:
