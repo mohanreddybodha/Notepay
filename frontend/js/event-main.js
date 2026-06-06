@@ -4635,7 +4635,51 @@
 
 
 
+    let isSendingChat = false;
+    const chatOutgoingQueue = [];
+
+    async function processChatOutgoingQueue() {
+      if (isSendingChat || chatOutgoingQueue.length === 0) return;
+      isSendingChat = true;
+
+      while (chatOutgoingQueue.length > 0) {
+        const { payload, mockMsgId, originalMsgText } = chatOutgoingQueue[0];
+        try {
+          const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, payload);
+          
+          const idx = chatMessages.findIndex(m => m.id === mockMsgId);
+          if (idx !== -1) {
+            chatMessages[idx] = realMsg;
+            updateMessageNode(realMsg, mockMsgId);
+          }
+          if (chatOpen) {
+            scrollChatToBottom(true);
+          }
+        } catch (e) {
+          console.error("Chat send error:", e);
+          showToast('Failed to send message', 'error');
+          
+          const idx = chatMessages.findIndex(m => m.id === mockMsgId);
+          if (idx !== -1) chatMessages.splice(idx, 1);
+          if (chatOpen) renderChatMessages();
+          
+          const input = document.getElementById('chat-input');
+          if (input && !input.value.trim()) {
+            input.value = originalMsgText;
+            updateSendBtnVisibility();
+          }
+        }
+        chatOutgoingQueue.shift();
+      }
+      isSendingChat = false;
+    }
+
     async function sendChatMessage() {
+      if (!navigator.onLine) {
+        showToast('Please check your internet connection to send messages.', 'error');
+        return;
+      }
+
       const input = document.getElementById('chat-input');
       const msg = input.value.trim();
       if (!msg) return;
@@ -4651,7 +4695,7 @@
         
         const myId = parseInt(localStorage.getItem('np_my_id'));
         const mockMsg = {
-          id: -Date.now(),
+          id: -(Date.now() + Math.floor(Math.random() * 10000)),
           event_id: eventId,
           user_id: myId,
           sender_name: localStorage.getItem('np_my_name') || 'You',
@@ -4659,10 +4703,11 @@
           reply_to_id: replyingToId,
           reactions: {},
           sent_at: new Date().toISOString(),
-          is_pending: true, // Start as pending
+          is_pending: true,
           delivered_to: [],
           read_by: []
         };
+        
         chatMessages.push(mockMsg);
         if (chatOpen) {
           const container = document.getElementById('chat-messages');
@@ -4674,37 +4719,14 @@
           updateChatBadge();
         }
 
-        const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, payload);
+        chatOutgoingQueue.push({ payload, mockMsgId: mockMsg.id, originalMsgText: msg });
         cancelReply();
         
-        // Update mock message to real one if we haven't received it via WebSocket yet
-        const idx = chatMessages.findIndex(m => m.id === mockMsg.id);
-        if (idx !== -1) {
-          chatMessages[idx] = realMsg;
-          updateMessageNode(realMsg, mockMsg.id);
-        }
-
-
-        if (chatOpen) {
-          scrollChatToBottom(true);
-        }
+        processChatOutgoingQueue();
       } catch (e) {
-        const isNetworkError = !navigator.onLine || e.name === 'TypeError' || (e.message && (e.message.toLowerCase().includes('fetch') || e.message.toLowerCase().includes('network')));
-        if (isNetworkError) {
-          let chatSyncQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
-          chatSyncQueue.push({ mockId: mockMsg.id, payload: { message: msg, reply_to_id: replyingToId } });
-          localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify(chatSyncQueue));
-          cancelReply();
-        } else {
-          showToast('Failed to send message', 'error');
-          input.value = msg;
-          updateSendBtnVisibility();
-          // Remove the mock message if it failed due to bad request
-          const idx = chatMessages.findIndex(m => m.id === mockMsg.id);
-          if (idx !== -1) chatMessages.splice(idx, 1);
-          if (chatOpen) renderChatMessages(); // re-render to clear mock message
-        }
+        console.error("Failed to queue chat message", e);
       }
+      
       requestAnimationFrame(() => {
         input.focus({ preventScroll: true });
         applyChatVisualViewport();
