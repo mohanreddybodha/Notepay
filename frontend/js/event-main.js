@@ -4636,11 +4636,6 @@
 
 
     async function sendChatMessage() {
-      if (!navigator.onLine) {
-        showToast('Please check your internet connection to send messages.', 'error');
-        return;
-      }
-
       const input = document.getElementById('chat-input');
       const msg = input.value.trim();
       if (!msg) return;
