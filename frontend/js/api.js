@@ -58,8 +58,8 @@ async function apiFetch(method, path, body = null) {
     }
   }
 
-  // 2. Intercept write mutations optimistically if navigator is explicitly offline
-  if (isWrite && !navigator.onLine) {
+  // 2. Intercept write mutations optimistically if navigator is explicitly offline or we are currently syncing
+  if (isWrite && (!navigator.onLine || (typeof isSyncing !== 'undefined' && isSyncing))) {
     return handleOfflineWrite(method, path, body);
   }
 
@@ -514,7 +514,11 @@ async function syncOfflineQueue() {
     }
   }
 
-  localStorage.setItem("np_offline_queue", JSON.stringify(remaining));
+  // Merge remaining with any NEW items that were added during the sync
+  const currentQueue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+  const newItems = currentQueue.filter(newItem => !queue.some(oldItem => oldItem.id === newItem.id));
+  
+  localStorage.setItem("np_offline_queue", JSON.stringify([...remaining, ...newItems]));
   isSyncing = false;
 
   if (remaining.length === 0) {
