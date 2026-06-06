@@ -161,6 +161,23 @@ function handleOfflineWrite(method, path, body) {
   }
 
   const eventId = path.split("/")[2] || "";
+  
+  if (path.endsWith("/chat")) {
+    return {
+      id: mockId,
+      event_id: eventId,
+      user_id: parseInt(localStorage.getItem('np_my_id')) || 0,
+      sender_name: localStorage.getItem('np_my_name') || 'You (Offline)',
+      message: body?.message || "",
+      reply_to_id: body?.reply_to_id || null,
+      reactions: {},
+      sent_at: new Date().toISOString(),
+      is_pending: true,
+      delivered_to: [],
+      read_by: []
+    };
+  }
+
   return {
     id: mockId,
     event_id: eventId,

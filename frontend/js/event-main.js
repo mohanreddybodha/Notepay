@@ -4222,7 +4222,10 @@
       if (isAI) html += `<div class="chat-msg-row" style="margin: 16px 0; max-width: 100%;">`; // Extra spacing for AI
 
       const animateClass = isNew ? 'animate-in' : '';
-      html += `<div class="chat-msg ${isOwn ? 'chat-msg-own' : 'chat-msg-other'} ${showSender ? 'chat-msg-first' : ''} ${isDeleted ? 'chat-msg-deleted' : ''} ${animateClass}" id="chat-msg-${m.id}" ${isAI ? 'style="width: 100%; max-width: 100%;"' : ''}>`;
+      const baseClass = isAI ? 'chat-msg-ai' : (isOwn ? 'chat-msg-own' : 'chat-msg-other');
+      const tailClass = showSender && !isAI ? 'chat-msg-first' : '';
+      
+      html += `<div class="chat-msg ${baseClass} ${tailClass} ${isDeleted ? 'chat-msg-deleted' : ''} ${animateClass}" id="chat-msg-${m.id}" ${isAI ? 'style="width: 100%; max-width: 100%;"' : ''}>`;
       
       const aiBubbleStyle = isAI ? 'width: 100%; max-width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);' : '';
       
@@ -4630,54 +4633,7 @@
       if (el) { el.style.display = 'none'; el.innerHTML = ''; }
     }
 
-    async function processChatQueue() {
-      if (!navigator.onLine) return;
-      let chatSyncQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
-      if (chatSyncQueue.length === 0) return;
-      
-      const queue = [...chatSyncQueue];
-      localStorage.setItem(`np_chat_sync_${eventId}`, '[]');
-      
-      let anySent = false;
-      let failedItems = [];
-      
-      for (let i = 0; i < queue.length; i++) {
-        let item = queue[i];
-        try {
-          const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, item.payload);
-          anySent = true;
-          const idx = chatMessages.findIndex(m => m.id === item.mockId);
-          if (idx !== -1) {
-            chatMessages[idx] = realMsg;
-            if (chatOpen) updateMessageNode(realMsg, item.mockId);
-          }
-        } catch(e) {
-          if (!navigator.onLine || e.name === 'TypeError' || (e.message && (e.message.toLowerCase().includes('fetch') || e.message.toLowerCase().includes('network')))) {
-            // Network error: stop processing, put this item AND all remaining items back in order
-            failedItems = queue.slice(i);
-            break;
-          }
-        }
-      }
 
-      if (failedItems.length > 0) {
-        let currentQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
-        // Prepend failed items to whatever new items were added while we were processing
-        localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify([...failedItems, ...currentQueue]));
-      }
-
-      // After all queued messages are sent, do a fresh chat reload to ensure server-side ordering
-      if (anySent) {
-        chatMessages = chatMessages.filter(m => typeof m.id === 'number' && m.id > 0);
-        chatHistoryLoaded = false;
-        chatOldestId = null;
-        chatLoading = false;
-        await loadChatHistory(false, !chatOpen);
-      }
-    }
-    window.addEventListener('online', () => {
-      processChatQueue(); // Will handle fresh reload internally after sending
-    });
 
     async function sendChatMessage() {
       const input = document.getElementById('chat-input');
@@ -4716,14 +4672,6 @@
         } else {
           chatUnread++;
           updateChatBadge();
-        }
-
-        if (!navigator.onLine) {
-          let chatSyncQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
-          chatSyncQueue.push({ mockId: mockMsg.id, payload: payload });
-          localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify(chatSyncQueue));
-          cancelReply();
-          return;
         }
 
         const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, payload);
