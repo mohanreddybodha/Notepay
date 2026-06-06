@@ -4175,22 +4175,25 @@
       // Status Icons Logic
       let statusIcon = '';
       if (isOwn && !isDeleted) {
-        if (m.is_pending) {
-          statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
-        } else {
-          const membersCount = (typeof eventData !== 'undefined' && eventData && eventData.members) ? eventData.members.length : 1;
-          const readCount = m.read_by ? m.read_by.length : 0;
-          const deliveredCount = m.delivered_to ? m.delivered_to.length : 0;
-          const requiredCount = Math.max(0, membersCount - 1);
-          
+        if (m.is_pending || m.id < 0) {
+          // 1. TIMER — offline / not yet sent
+          statusIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon" style="opacity:0.6"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        } else if (m.id > 0) {
+          // Count only unrestricted non-sender members
+          const myId2 = parseInt(localStorage.getItem('np_my_id') || '0');
+          const unrestrictedOthers = (typeof eventData !== 'undefined' && eventData && eventData.members)
+            ? eventData.members.filter(mem => !mem.is_restricted && mem.user_id !== myId2)
+            : [];
+          const requiredCount = unrestrictedOthers.length;
+          const readIds = m.read_by || [];
+          const readCount = unrestrictedOthers.filter(mem => readIds.includes(mem.user_id)).length;
+
           if (requiredCount > 0 && readCount >= requiredCount) {
-            statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon msg-status-blue"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
-          } else if (requiredCount > 0 && deliveredCount >= requiredCount) {
-            statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
-          } else if (m.id > 0) {
-            statusIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            // 3. BLUE DOUBLE TICK — all unrestricted members have seen the message
+            statusIcon = `<svg width="18" height="14" viewBox="-2 0 28 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon msg-status-blue"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
           } else {
-            statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+            // 2. DOUBLE GRAY TICK — sent and in database
+            statusIcon = `<svg width="18" height="14" viewBox="-2 0 28 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="msg-status-icon" style="opacity:0.65"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
           }
         }
       }
