@@ -336,6 +336,10 @@
         if (msg.type === "CHAT_STATUS_UPDATE" && msg.data) {
           handleIncomingChatStatus(msg.data);
         }
+        if (msg.type === "AI_TYPING") {
+          window._aiLoadingShownAt = Date.now();
+          showAITypingIndicator();
+        }
       };
 
       ws.onclose = () => {
@@ -4171,13 +4175,14 @@
         if (m.is_pending) {
           statusIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
         } else {
-          const membersCount = typeof eventMembers !== 'undefined' ? eventMembers.length : 1;
+          const membersCount = (typeof eventData !== 'undefined' && eventData && eventData.members) ? eventData.members.length : 1;
           const readCount = m.read_by ? m.read_by.length : 0;
           const deliveredCount = m.delivered_to ? m.delivered_to.length : 0;
+          const requiredCount = Math.max(0, membersCount - 1);
           
-          if (membersCount > 1 && readCount >= membersCount - 1) {
+          if (membersCount === 1 || readCount >= requiredCount) {
             statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" class="msg-status-icon msg-status-blue"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
-          } else if (membersCount > 1 && deliveredCount >= membersCount - 1) {
+          } else if (deliveredCount >= requiredCount) {
             statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><path d="M18 6 7 17l-5-5"></path><path d="m22 10-7.5 7.5L13 16"></path></svg>`;
           } else if (m.id > 0) {
             statusIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-status-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
@@ -4254,7 +4259,7 @@
 
       if (chatFullyLoaded) {
         html += `<div class="chat-retention-info" style="text-align:center; padding:10px 14px; margin:8px 12px; font-size:11px; font-weight:700; color:var(--text3); background:var(--surf-var); border-radius:10px; border:1px solid var(--border2); line-height:1.4;">
-          NotePay Chat preserves the latest 200 messages. Older messages are automatically deleted by the server.
+          All chat messages in this event are securely preserved.
         </div>`;
       } else if (chatMessages.length >= 50) {
         html += `<div class="chat-load-more" onclick="loadChatHistory(true)">Load older messages </div>`;

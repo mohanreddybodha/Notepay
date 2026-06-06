@@ -796,43 +796,36 @@ User question: {question}
 """
         
     import os
-    raw_keys = [
-        os.environ.get("GEMINI_KEY_1", ""),
-        os.environ.get("GEMINI_KEY_2", "")
-    ]
-    keys = [k for k in raw_keys if k]  # filter out empty/missing keys
-    if not keys:
-        print("AI Chat Error: No Gemini API keys configured in environment.")
-        return
-    
-    payload = {
-        "contents": [{"parts": [{"text": context}]}],
-        "generationConfig": {"temperature": 0.4}
-    }
+    api_key = os.environ.get("GEMINI_KEY_1")
     
     ai_text = None
-    for attempt in range(4):  # Up to 4 attempts
-        attempt_key = keys[attempt % len(keys)]
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={attempt_key}"
-        try:
-            resp = requests.post(url, json=payload, timeout=60)
-            if resp.status_code == 200:
-                ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-                break
-            elif resp.status_code in (429, 503):
-                wait_sec = (2 ** attempt) * 5  # 5s, 10s, 20s, 40s
-                print(f"AI rate limited ({resp.status_code}), retrying in {wait_sec}s (attempt {attempt+1})")
-                time.sleep(wait_sec)
-            else:
-                ai_text = f"Sorry, the AI Advisor is currently unavailable. ({resp.status_code})"
-                break
-        except Exception as e:
-            if attempt < 3:
-                time.sleep(5 * (attempt + 1))
-            else:
+    if not api_key:
+        print("AI Chat Error: GEMINI_KEY_1 is missing.")
+    else:
+        payload = {
+            "contents": [{"parts": [{"text": context}]}],
+            "generationConfig": {"temperature": 0.4}
+        }
+        
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        for attempt in range(4):  # Up to 4 attempts
+            try:
+                resp = requests.post(url, json=payload, timeout=60)
+                if resp.status_code == 200:
+                    ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+                    break
+                elif resp.status_code in (429, 503):
+                    wait_sec = (2 ** attempt) * 5  # 5s, 10s, 20s, 40s
+                    print(f"AI rate limited ({resp.status_code}), retrying in {wait_sec}s (attempt {attempt+1})")
+                    time.sleep(wait_sec)
+                else:
+                    ai_text = f"Sorry, the AI Advisor is currently unavailable. ({resp.status_code})"
+                    break
+            except Exception as e:
                 ai_text = f"Sorry, the AI request timed out or failed. ({type(e).__name__})"
+                break
     
-    if ai_text is None:
+    if not ai_text:
         ai_text = "Sorry, the AI Advisor is currently overloaded. Please try again in a minute."
         
     # Save AI response as chat message
@@ -881,6 +874,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
         question = clean_msg[4:].strip()
         if question:
             loop = asyncio.get_running_loop()
+            await manager.broadcast_change(event_id, {"type": "AI_TYPING"})
             background_tasks.add_task(process_ai_chat, event_id, question, loop, msg["id"])
             
     return msg
