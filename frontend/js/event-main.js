@@ -4637,7 +4637,10 @@
       localStorage.setItem(`np_chat_sync_${eventId}`, '[]');
       
       let anySent = false;
-      for (let item of queue) {
+      let failedItems = [];
+      
+      for (let i = 0; i < queue.length; i++) {
+        let item = queue[i];
         try {
           const realMsg = await apiFetch('POST', `/events/${eventId}/chat`, item.payload);
           anySent = true;
@@ -4647,12 +4650,18 @@
             if (chatOpen) updateMessageNode(realMsg, item.mockId);
           }
         } catch(e) {
-          if (!navigator.onLine || e.message === 'Failed to fetch') {
-            let q = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
-            q.push(item);
-            localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify(q));
+          if (!navigator.onLine || e.name === 'TypeError' || (e.message && (e.message.toLowerCase().includes('fetch') || e.message.toLowerCase().includes('network')))) {
+            // Network error: stop processing, put this item AND all remaining items back in order
+            failedItems = queue.slice(i);
+            break;
           }
         }
+      }
+
+      if (failedItems.length > 0) {
+        let currentQueue = JSON.parse(localStorage.getItem(`np_chat_sync_${eventId}`) || '[]');
+        // Prepend failed items to whatever new items were added while we were processing
+        localStorage.setItem(`np_chat_sync_${eventId}`, JSON.stringify([...failedItems, ...currentQueue]));
       }
 
       // After all queued messages are sent, do a fresh chat reload to ensure server-side ordering
