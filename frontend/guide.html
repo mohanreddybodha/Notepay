@@ -13,27 +13,17 @@
   <link rel="stylesheet" href="css/icons.css?v=4">
   
   <style>
-    /* Header */
     .ab { background: var(--primary-dk); display: flex; align-items: center; padding: 10px 16px 14px; gap: 8px; z-index: 100; flex-shrink: 0; }
     .back { color: rgba(255,255,255,.85); font-size: 22px; cursor: pointer; padding: 3px 7px; border-radius: 8px; line-height: 1; }
     .ab-ttl { flex: 1; color: white; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; }
-    
-    /* Scrollable Content */
     .scr { flex: 1; overflow-y: auto; padding: 24px; background: var(--surface); color: var(--text); -webkit-overflow-scrolling: touch; }
-    
-    /* Typography & Layout */
     .section-title { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; color: var(--text); margin: 32px 0 12px; display: flex; align-items: center; gap: 8px; }
     .section-title:first-of-type { margin-top: 0; }
     .section-title span { color: var(--primary); }
-    
     .para { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; font-weight: 600; }
     .para strong { color: var(--text); font-weight: 800; }
-    
-    /* Important Note Box */
     .important-box { background: rgba(33, 150, 243, 0.08); border-left: 4px solid #2196F3; padding: 16px; border-radius: 0 8px 8px 0; margin: 24px 0; }
     .important-box .para { margin-bottom: 0; color: var(--text); font-size: 14px; }
-    
-    /* Ordered Steps */
     .step-list { margin-bottom: 24px; padding-left: 0; list-style-type: none; counter-reset: my-counter; }
     .step-list li { position: relative; padding-left: 36px; font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; font-weight: 600; }
     .step-list li::before { 
@@ -43,19 +33,12 @@
         font-weight: 900; border-radius: 50%; display: flex; align-items: center; justify-content: center;
         font-size: 12px;
     }
-    
-    /* Bullet List */
     .bullet-list { padding-left: 20px; margin-bottom: 24px; }
     .bullet-list li { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 10px; font-weight: 600; }
-    
-    /* Card Layout for Roles */
     .role-card { background: var(--bg); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.05); }
     .role-title { font-weight: 900; color: var(--text); font-size: 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     .role-desc { font-size: 13.5px; color: var(--text2); font-weight: 600; line-height: 1.5; }
-    
     .footer { text-align: center; padding: 30px 0 10px; font-size: 12px; color: var(--text3); font-weight: 700; }
-    
-    /* Dark Mode Overrides */
     body.dark .role-card { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05); }
     body.dark .important-box { background: rgba(33, 150, 243, 0.15); }
   </style>
@@ -63,82 +46,130 @@
 <body style="margin:0; padding:0; overflow:hidden;">
 
 <div class="page">
-  <!-- Top App Bar -->
   <div class="ab">
     <div class="back" onclick="history.back()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
     <div class="ab-ttl">User Guide</div>
   </div>
   
-  <!-- Content Area -->
   <div class="scr">
     
     <div class="important-box">
-      <div class="para">Welcome to <strong>Notepay!</strong> This comprehensive guide details every feature available in the app and precisely how to use them.</div>
+      <div class="para">Welcome to <strong>Notepay!</strong> This guide walks you through every feature of the app with exact steps so you always know where to tap.</div>
     </div>
 
-    <!-- Section 1 -->
+    <!-- Section 1: Getting Started -->
     <div class="section-title"><span data-np-icon="flag" data-np-size="22"></span> Getting Started</div>
     <ul class="step-list">
-      <li><strong>Login & Registration:</strong> Enter your 10-digit mobile number on the login screen. You will receive an OTP via SMS. After entering the OTP, you can set up your profile.</li>
-      <li><strong>Dashboard:</strong> After logging in, you will land on the Dashboard. This shows all the events you are currently participating in.</li>
-      <li><strong>Profile Settings:</strong> Tap the profile icon on the top right of the dashboard. Here, you can toggle <strong>Dark Mode</strong>, click your name to <strong>Edit your Profile</strong> (Name & Gender), and log out of the app.</li>
+      <li><strong>Login:</strong> Enter your 10-digit mobile number on the login screen and tap <strong>Send OTP</strong>. Enter the 6-digit OTP you receive via SMS to verify your identity.</li>
+      <li><strong>Profile Setup:</strong> If you are a first-time user, you will be taken to the Profile Setup screen after OTP verification. Enter your full name, select your gender, and tap <strong>Continue</strong> to complete registration.</li>
+      <li><strong>Dashboard:</strong> After logging in, you land on the Dashboard. It has three swipeable tabs: <strong>My Events</strong> (events you created), <strong>Shared Events</strong> (events you joined via code), and <strong>Visited Events</strong> (public events you have viewed). You can swipe left or right to switch between tabs, or tap the tab names at the top.</li>
+      <li><strong>Search Events:</strong> Use the search bar at the top of the dashboard to quickly find any event by its name or description.</li>
     </ul>
 
-    <!-- Section 2 -->
+    <!-- Section 2: Creating & Joining Events -->
     <div class="section-title"><span data-np-icon="users" data-np-size="22"></span> Creating & Joining Events</div>
     <ul class="step-list">
-      <li><strong>Create an Event:</strong> On your dashboard, tap the <strong>+ New Event</strong> button at the bottom of the screen, then choose <strong>Create Event</strong>. Give your event a name and description. You will automatically become the Organizer.</li>
-      <li><strong>Find the Invite Code:</strong> Open your event. Tap the three vertical dots (⋮) in the top-right corner, then tap <strong>Code Settings</strong>. Share this 6-letter code with friends. Organizers can also regenerate the code here.</li>
-      <li><strong>Join an Event:</strong> On your dashboard, tap the <strong>+ New Event</strong> button, then choose <strong>Join by Event Code</strong>. Paste the Invite Code to join instantly!</li>
+      <li><strong>Create an Event:</strong> On the dashboard, tap the <strong>+ New Event</strong> button at the bottom of the screen. A bottom sheet will slide up with two options. Tap <strong>Create Event</strong>. Fill in the event name and description, then tap <strong>Create</strong>. You will automatically become the Organizer of this event.</li>
+      <li><strong>Join an Event:</strong> Tap the <strong>+ New Event</strong> button at the bottom of the dashboard. Tap <strong>Join by Event Code</strong>. Enter the 6-letter invite code shared by the organizer. You will instantly join the event as a Collector.</li>
+      <li><strong>View the Invite Code:</strong> Open your event. Tap the <strong>three vertical dots (⋮)</strong> in the top-right corner of the app bar. Tap <strong>Code Settings</strong> from the dropdown menu. You will see the 6-letter join code and a copy button. Organizers can also tap <strong>Regenerate Code</strong> to create a new code (the old code will stop working).</li>
     </ul>
 
-    <!-- Section 3 -->
-    <div class="section-title"><span data-np-icon="settings" data-np-size="22"></span> Event Settings & Members</div>
-    <div class="para">Inside any event, tap the three vertical dots (⋮) in the top-right corner to access powerful tools:</div>
+    <!-- Section 3: Event Page Overview -->
+    <div class="section-title"><span data-np-icon="layout" data-np-size="22"></span> Inside an Event</div>
+    <div class="para">When you open an event, you will see the event name in the app bar, the description and date below it, and a <strong>Members</strong> badge. The page has three tabs at the top:</div>
     <ul class="bullet-list">
-      <li><strong>Members:</strong> Tap here to see all participants. Organizers can tap a member's name to <strong>Restrict</strong> them or transfer ownership. Restricted members cannot view or add entries.</li>
-      <li><strong>Public Access:</strong> Turn this ON to generate a Share View Link. Anyone with this link can view the event ledger in a read-only state without logging in.</li>
-      <li><strong>Download PDF Report:</strong> Organizers can tap this to generate and download a comprehensive, professional PDF summary of all collections and expenses.</li>
+      <li><strong>Collections:</strong> Track money received (donations). Each row shows the donor name, amount, who collected it, and when.</li>
+      <li><strong>Expenses:</strong> Track money spent. Each row shows the expense description, amount, who added it, and when.</li>
+      <li><strong>Summary:</strong> A read-only overview showing total collected, total spent, remaining balance, top donors, and per-member contribution breakdowns.</li>
     </ul>
 
-    <!-- Section 4 -->
-    <div class="section-title"><span data-np-icon="rupee" data-np-size="22"></span> Logging Finances</div>
+    <!-- Section 4: Adding Entries -->
+    <div class="section-title"><span data-np-icon="rupee" data-np-size="22"></span> Adding & Managing Entries</div>
     <ul class="step-list">
-      <li><strong>Collections & Expenses:</strong> Tap the "+" button in the Collections or Expenses tab to add an entry. The app calculates your Live Balance automatically.</li>
-      <li><strong>Custom Columns:</strong> Need to track extra info like "House Number"? When adding a new entry, scroll down to the "Custom Fields" section and tap the <strong>+ Add Column</strong> button.</li>
-      <li><strong>Hide Columns:</strong> To keep your view clean, tap the three vertical dots (⋮) in the event header and choose <strong>Hide Collections Table</strong> or <strong>Hide Expenses Table</strong>.</li>
+      <li><strong>Add a New Entry:</strong> At the bottom of the Collections or Expenses table, tap the green <strong>+ New entry</strong> row. A form will appear inline where you can type the name and amount. Tap <strong>Save</strong> to add the entry, or <strong>Save & Next</strong> to save and immediately start adding another one.</li>
+      <li><strong>Edit an Entry:</strong> Tap on any row in the table to select it. An edit form will appear where you can change the name, amount, and any custom fields. Tap <strong>Save</strong> to update. Note: Collectors can only edit their own entries. Organizers can edit any entry.</li>
+      <li><strong>Delete an Entry:</strong> While editing an entry, tap the delete option. A confirmation popup will appear asking you to confirm. Note: Collectors can only delete their own entries. Organizers can delete any entry.</li>
+      <li><strong>Duplicate Warning:</strong> If you try to add an entry with the same name and amount as an existing one, Notepay will show a warning popup asking if you want to add it anyway.</li>
     </ul>
 
-    <!-- Section 5 -->
-    <div class="section-title"><span data-np-icon="layout" data-np-size="22"></span> Viewing, Sorting & Theater Mode</div>
+    <!-- Section 5: Custom Columns -->
+    <div class="section-title"><span data-np-icon="settings" data-np-size="22"></span> Custom Columns</div>
     <ul class="step-list">
-      <li><strong>Summary Tab:</strong> At the bottom of the event screen, tap the <strong>Summary</strong> tab to see a breakdown of your event's health, top donors, and your personal contributions.</li>
-      <li><strong>Search & Filter:</strong> Tap the Search bar in the top-right to find specific names or entries. Tap the <strong>Filter icon</strong> (slider lines) next to the search bar to Sort By Time, Amount, or Name, and to filter only "My Entries".</li>
-      <li><strong>Theater Mode:</strong> For a wide, spreadsheet-like view, simply rotate your phone horizontally, OR tap the circular rotate icon next to the "+" button. This opens a wide-screen view where you can effortlessly switch between Collections, Expenses, and Summary tabs.</li>
+      <li><strong>Add a Custom Column:</strong> Below the search bar in Collections or Expenses, tap the <strong>+ Add Column</strong> button. Enter a column name (e.g., "House No."), choose a width (Narrow, Medium, or Wide), and tap <strong>Add Column</strong>. The new column will appear at the end of the table for all members.</li>
+      <li><strong>Edit or Hide a Column:</strong> Tap on a custom column header in the table. You can rename it, change its width, or tap <strong>Hide</strong> to remove it from the table view. Hidden column data is preserved and can be restored.</li>
+      <li><strong>Restore Hidden Columns:</strong> Open the Add Column sheet (tap <strong>+ Add Column</strong>), then tap the <strong>Hidden Cols</strong> button at the bottom. You will see all hidden columns with a <strong>Restore</strong> button next to each one.</li>
     </ul>
 
-    <!-- Section 6 -->
-    <div class="section-title"><span data-np-icon="cpu" data-np-size="22"></span> The AI Assistant</div>
-    <div class="para">Notepay features an intelligent assistant right inside your event chat!</div>
+    <!-- Section 6: Search, Sort & Filter -->
+    <div class="section-title"><span data-np-icon="search" data-np-size="22"></span> Search, Sort & Filter</div>
     <ul class="step-list">
-      <li><strong>How to use:</strong> Open the event Chat tab. Type <code>@ai</code> followed by your question and hit send.</li>
-      <li><strong>Financial Summaries:</strong> Ask the AI questions like <em>"@ai who donated the most?"</em> or <em>"@ai what is our current remaining balance?"</em></li>
-      <li><strong>Event Advice:</strong> Ask questions like <em>"@ai how should I politely ask members for their pending donations?"</em></li>
+      <li><strong>Search:</strong> At the top of the Collections or Expenses tab, use the search bar to find entries by name or description instantly.</li>
+      <li><strong>Sort & Filter:</strong> Tap the <strong>filter icon</strong> (three slider lines) next to the search bar. A bottom sheet opens with sorting options: Time Newest First, Default (Oldest First), Amount High to Low, Amount Low to High, and Name A to Z. You can also check <strong>My Entries Only</strong> to filter and see only entries you added.</li>
     </ul>
 
-    <!-- Section 7 -->
-    <div class="section-title"><span data-np-icon="shield" data-np-size="22"></span> Member Roles Explained</div>
+    <!-- Section 7: Theater Mode -->
+    <div class="section-title"><span data-np-icon="maximize" data-np-size="22"></span> Theater Mode</div>
+    <ul class="step-list">
+      <li><strong>Enter Theater Mode:</strong> Tap the circular <strong>rotate icon</strong> next to the "Total" amount on any table. The screen will rotate to a wide, landscape-style spreadsheet view. You can also enter Theater Mode by rotating your phone horizontally.</li>
+      <li><strong>Navigate in Theater Mode:</strong> At the top, you can switch between <strong>Collections</strong>, <strong>Expenses</strong>, and <strong>Summary</strong> tabs. A search bar and filter icon are available at the top. Tap <strong>Close</strong> in the top-right to exit.</li>
+    </ul>
+
+    <!-- Section 8: Chat & AI -->
+    <div class="section-title"><span data-np-icon="message-square" data-np-size="22"></span> Chat & AI Assistant</div>
+    <ul class="step-list">
+      <li><strong>Open Chat:</strong> Inside any event, tap the <strong>chat bubble icon</strong> floating at the bottom-right corner of the screen. A chat drawer will slide open from the right.</li>
+      <li><strong>Send Messages:</strong> Type your message in the text field at the bottom of the chat drawer and tap send. You can reply to specific messages and react with emojis by long-pressing on a message.</li>
+      <li><strong>Use the AI Assistant:</strong> Type <code>@ai</code> followed by your question and send it. For example: <em>"@ai who donated the most?"</em> or <em>"@ai what is the remaining balance?"</em>. The AI reads the event's financial data and replies directly in the chat.</li>
+    </ul>
+
+    <!-- Section 9: Organizer Menu -->
+    <div class="section-title"><span data-np-icon="star" data-np-size="22"></span> Organizer Menu (⋮)</div>
+    <div class="para">If you are the Organizer, tap the <strong>three vertical dots (⋮)</strong> in the top-right corner of the event page. The dropdown menu includes:</div>
+    <ul class="bullet-list">
+      <li><strong>Rename Event:</strong> Change the event's name and description.</li>
+      <li><strong>Code Settings:</strong> View the invite code, copy it, or regenerate a new one.</li>
+      <li><strong>Members:</strong> See all members with their roles. Tap a member's name to <strong>Restrict</strong> them (blocks all access), <strong>Promote to Organizer</strong>, or <strong>Demote</strong> an existing organizer back to collector.</li>
+      <li><strong>Public Access:</strong> Toggle this ON to generate a shareable public link. Anyone with the link can view the event in read-only mode. Toggle it OFF to make the event private again.</li>
+      <li><strong>Share View Link:</strong> Appears only when Public Access is ON. Copies the public link so you can share it.</li>
+      <li><strong>Download PDF Report:</strong> Generates a professional PDF with all collections, expenses, and summary data for the event.</li>
+      <li><strong>Hide Collections Table / Hide Expenses Table:</strong> Temporarily hides a table from the event view. Tap again to show it.</li>
+      <li><strong>Deactivate Event:</strong> Locks the event. All collectors are immediately blocked. The join code will change when reactivated.</li>
+      <li><strong>Delete Event:</strong> Permanently deletes the event and all its data. This cannot be undone.</li>
+    </ul>
+
+    <!-- Section 10: Collector Menu -->
+    <div class="section-title"><span data-np-icon="user" data-np-size="22"></span> Collector Menu</div>
+    <div class="para">If you are a Collector, the three vertical dots (⋮) menu shows:</div>
+    <ul class="bullet-list">
+      <li><strong>Exit Event:</strong> Leave the event. You will need a new invite code to rejoin. Your previous entries will not be deleted.</li>
+    </ul>
+
+    <!-- Section 11: Member Roles -->
+    <div class="section-title"><span data-np-icon="shield" data-np-size="22"></span> Member Roles</div>
     <div class="role-card">
       <div class="role-title" style="color: #4CAF50;"><span data-np-icon="star" data-np-size="18"></span> Organizer</div>
-      <div class="role-desc">The creator of the event. They have full control: they can edit or delete the event, generate PDFs, modify any financial records, regenerate invite codes, and restrict members.</div>
+      <div class="role-desc">The creator or promoted member. Full control: rename, delete, deactivate, download PDF, manage members, toggle public access, edit/delete any entry, and regenerate invite codes.</div>
     </div>
     <div class="role-card">
       <div class="role-title" style="color: #2196F3;"><span data-np-icon="user" data-np-size="18"></span> Collector</div>
-      <div class="role-desc">A standard member. They can read all event data, send chat messages, and add new Donations or Expenses. They can only edit or delete their <em>own</em> entries.</div>
+      <div class="role-desc">A member who joined via invite code. Can view all data, add new entries, edit/delete only their own entries, send chat messages, and use the AI assistant.</div>
     </div>
     <div class="role-card">
       <div class="role-title" style="color: #F44336;"><span data-np-icon="lock" data-np-size="18"></span> Restricted</div>
-      <div class="role-desc">A member whose access has been paused by the Organizer. They cannot see the event ledger, chat, or add entries until the Organizer restores their access.</div>
+      <div class="role-desc">A member restricted by the Organizer. They cannot view the event data, add entries, or use the chat. Only the Organizer can restore their access.</div>
+    </div>
+
+    <!-- Section 12: Profile & Settings -->
+    <div class="section-title"><span data-np-icon="user" data-np-size="22"></span> Profile & Settings</div>
+    <ul class="step-list">
+      <li><strong>Open Profile:</strong> On the dashboard, tap the <strong>circular avatar</strong> (your initials) in the top-right corner of the app bar. This opens the Profile page.</li>
+      <li><strong>Edit Profile:</strong> On the Profile page, tap the <strong>Edit Profile</strong> button below your name. You can change your Full Name and Gender.</li>
+      <li><strong>Dark Mode:</strong> On the Profile page, under the <strong>Preferences</strong> section, toggle the <strong>Dark Mode</strong> switch on or off. Your preference is saved automatically.</li>
+      <li><strong>Logout:</strong> On the Profile page, scroll to the <strong>Session</strong> section and tap <strong>Logout</strong>. A confirmation popup will appear before signing you out.</li>
+    </ul>
+
+    <div class="important-box" style="border-left-color: var(--primary);">
+      <div class="para"><strong>Need Help?</strong> If you encounter any issues, contact the app administrator or revisit this guide anytime from your Profile page under <strong>Help & Support</strong>.</div>
     </div>
 
     <div class="footer">Thank you for using Notepay!</div>
