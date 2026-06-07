@@ -1610,12 +1610,16 @@
       transition: all .15s;
     }
 
-    .add-col-btn:hover {
-      background: var(--teal);
-      color: white;
+    @media (hover: hover) {
+      .add-col-btn:hover {
+        background: var(--teal);
+        color: white;
+      }
     }
 
     .add-col-btn:active {
+      background: var(--teal);
+      color: white;
       transform: translateY(1px);
       box-shadow: none;
     }
@@ -1882,12 +1886,16 @@
       transition: all 0.15s;
     }
 
-    .rot-add-btn:hover {
-      background: var(--primary);
-      color: white;
+    @media (hover: hover) {
+      .rot-add-btn:hover {
+        background: var(--primary);
+        color: white;
+      }
     }
 
     .rot-add-btn:active {
+      background: var(--primary);
+      color: white;
       transform: scale(0.96);
     }
 
