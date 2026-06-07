@@ -888,7 +888,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     clean_msg = data.message.strip()
     
     if clean_msg.lower().startswith("@ai "):
-        verify_rate_limit(f"user:{user_id}:ai_chat", limit=10, window=3600)
+        verify_rate_limit(f"user:{user_id}:ai_chat", limit=10, window=86400)
     
     msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
     # Broadcast to all connected clients via WebSocket
