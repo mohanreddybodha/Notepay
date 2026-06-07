@@ -1711,6 +1711,23 @@
       height: 100dvh;
     }
 
+    .rot-banner {
+      display: none;
+      background: var(--blue);
+      color: #fff;
+      text-align: center;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    @media (orientation: portrait) {
+      .rot-banner {
+        display: block;
+      }
+    }
+
     .rot-ov-top {
       height: 44px;
       display: flex;
