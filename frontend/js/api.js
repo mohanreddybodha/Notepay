@@ -227,11 +227,6 @@ async function apiFetchWithToken(method, path, token, body = null) {
       ? await res.json()
       : null;
 
-    if (!res.ok) {
-      const msg = data?.detail || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
     return { status: res.status, data };
   } catch (e) {
     clearTimeout(timeoutId);
