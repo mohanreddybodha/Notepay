@@ -1652,24 +1652,40 @@
         newRowDom.className = "tr" + ((isDon ? donations.length : expenses.length) % 2 ? " alt" : "");
         newRowDom.setAttribute('data-id', newEntry.id || newEntry._id);
 
-        const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
-        const customCells = customCols.map(col => {
-          const colName = typeof col === "string" ? col : col.n;
-          const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-          const val = (newEntry.custom_fields && newEntry.custom_fields[colName]) || "";
-          return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
-        }).join("");
+          const customCols = isDon ? (eventData.donation_custom_columns || []) : (eventData.expense_custom_columns || []);
+          
+          const hideDate = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_date" : "_sys_exp_date") && c.hidden);
+          const hideColBy = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_colby" : "_sys_exp_colby") && c.hidden);
+          const hideAmt = customCols.some(c => (typeof c === "string" ? c : c.n) === (isDon ? "_sys_don_amt" : "_sys_exp_amt") && c.hidden);
+          
+          const visibleCustomCols = customCols.filter(c => {
+            const n = typeof c === 'string' ? c : c.n;
+            return !n.startsWith('_sys_') && !(c.hidden === true);
+          });
 
-        newRowDom.innerHTML = `
-            <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
-              <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"></div>
-              <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(isDon ? newEntry.donor_name : newEntry.description)}</div>
-            </div>
-            <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px;"><span class="${isDon ? 'cg' : 'cr'}">${newEntry.amount ? formatINR(newEntry.amount) : '₹0'}</span></div>
-            <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px;font-size:11px;">${formatDate(newEntry.collected_at)}</div>
-            <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px;font-size:11px;" title="${escHtml(newEntry.collected_by_name || "—")}">${escHtml(newEntry.collected_by_name || "—")}</div>
-            ${customCells}
-          `;
+          const customCells = visibleCustomCols.map(col => {
+            const colName = typeof col === "string" ? col : col.n;
+            const colWidth = typeof col === "string" ? 180 : (col.w || 180);
+            const val = (newEntry.custom_fields && newEntry.custom_fields[colName]) || "";
+            return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
+          }).join("");
+  
+          let innerHTML = `
+              <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
+                <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"></div>
+                <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(isDon ? newEntry.donor_name : newEntry.description)}</div>
+              </div>
+              <div class="sc" style="width:${getColWidth(isDon ? 'don_amt' : 'exp_amt', 90)}px; display:${hideAmt ? 'none !important' : 'flex'};"><span class="${isDon ? 'cg' : 'cr'}">${newEntry.amount ? formatINR(newEntry.amount) : '₹ 0'}</span></div>`;
+          
+          if (!hideDate) {
+            innerHTML += `\n              <div class="sc" style="width:${getColWidth(isDon ? 'don_date' : 'exp_date', 100)}px;font-size:11px;">${formatDate(newEntry.collected_at)}</div>`;
+          }
+          if (!hideColBy) {
+            innerHTML += `\n              <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px;font-size:11px;" title="${escHtml(newEntry.collected_by_name || "—")}">${escHtml(newEntry.collected_by_name || "—")}</div>`;
+          }
+          
+          innerHTML += `\n              ${customCells}\n            `;
+          newRowDom.innerHTML = innerHTML;
         newRowDom.addEventListener("contextmenu", ev => { ev.preventDefault(); openCtx(ev, type, newEntry); });
         newRowDom.addEventListener("dblclick", ev => { openCtx(ev, type, newEntry); });
 
