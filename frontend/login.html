@@ -262,10 +262,26 @@ function showPhoneError(msg) {
   phoneError.classList.add("visible");
 }
 
+function checkLocalRateLimit(key, limit, windowMs) {
+  const now = Date.now();
+  let timestamps = JSON.parse(localStorage.getItem(key) || "[]");
+  const cutoff = now - windowMs;
+  timestamps = timestamps.filter(t => t > cutoff);
+  if (timestamps.length >= limit) return false;
+  timestamps.push(now);
+  localStorage.setItem(key, JSON.stringify(timestamps));
+  return true;
+}
+
 async function sendOTP() {
   const num = phoneInput.value.trim();
   if (!num || num.length < 10) { showPhoneError("Enter a valid 10-digit mobile number."); return; }
   if (!/^[6-9]\d{9}$/.test(num)) { showPhoneError("Enter a valid Indian mobile number (starts with 6–9)."); return; }
+
+  if (!checkLocalRateLimit("otp_send_attempts", 5, 3600000)) {
+    showPhoneError("You have exceeded the maximum of 5 OTP requests per hour. Please try again later.");
+    return;
+  }
 
   sendBtn.classList.add("loading"); sendBtn.disabled = true;
   phoneError.classList.remove("visible");
@@ -388,7 +404,16 @@ async function verifyOTP() {
   } catch(err) {
     console.error("verifyOTP error:", err);
     try { await auth.signOut(); resetAuthCache(); } catch (e) { /* ignore */ }
-    showOTPError(getFriendlyError(err));
+    
+    let errorMsg = getFriendlyError(err);
+    if (err && err.code === 'auth/invalid-verification-code') {
+        if (!checkLocalRateLimit("otp_fail_attempts", 5, 3600000)) {
+            errorMsg = "Too many incorrect attempts (max 5 per hour). Please try again later.";
+            otpHidden.disabled = true;
+        }
+    }
+    
+    showOTPError(errorMsg);
     verifyBtn.classList.remove("loading"); verifyBtn.disabled = false;
     otpHidden.value = "";
     updateBoxes("");

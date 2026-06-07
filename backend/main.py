@@ -270,9 +270,14 @@ async def logout_user(
     return {"message": "Logged out successfully"}
 
 
+@app.get("/health", tags=["System"])
+def health_check():
+    """Simple health check for deployment pipelines."""
+    return {"status": "ok"}
+
 async def register_rate_limit(request: Request):
     client_ip = request.client.host if request.client else "unknown"
-    verify_rate_limit(f"ip:{client_ip}:register", limit=10, window=60)
+    verify_rate_limit(f"ip:{client_ip}:register", limit=5, window=3600)
 
 #  USER / PROFILE 
 @app.post("/users", response_model=schemas.UserResponse, tags=["Profile"])
@@ -427,7 +432,7 @@ async def reactivate_event(event_id: str, db: Session = Depends(get_db), user_id
 async def regenerate_invite_code(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Generate a brand new invite code. Old code becomes permanently invalid."""
     verify_membership(db, event_id, user_id, require_organizer=True)
-    verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=60)
+    verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=3600)
     return crud.regenerate_invite_code(db, event_id)
 @app.get("/events/watched", tags=["Events"])
 def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -758,7 +763,6 @@ def process_ai_chat(event_id: str, question: str, loop: asyncio.AbstractEventLoo
         return
     finally:
         db.close()
-        
     context = f"""
 You are a friendly, helpful event management and financial assistant inside Notepay. Notepay is an app where friends and family work together to organize events, track shared expenses, and collect money.
 
@@ -771,7 +775,12 @@ Follow these rules strictly:
 5. Format your answer with clear bullet points.
 6. When answering questions about the event's current numbers, ONLY use the exact data provided below. Do not make up any financial numbers.
 7. You are allowed and encouraged to give general advice, ideas, and suggestions for event management (e.g., how to collect donations, how to organize activities, how to handle members).
-8. Keep your response under 250 words.
+8. Keep your response under 150 words.
+
+KNOWLEDGE BASE: NOTEPAY MEMBER ROLES
+- Organizer: The creator of the event. They can edit the event, delete the event, add/delete/edit any financial entries, and promote/restrict members.
+- Collector: A normal member. They can read everything, add new donations/expenses, and edit/delete their own entries.
+- Restricted Member: A member whose access has been temporarily blocked by the Organizer. They have absolutely ZERO permissions. They cannot read the finances, they cannot write, and they cannot add collections until they are unrestricted.
 
 CRITICAL RULE: You must ONLY answer questions related to this event, its finances, its members, or general event management/organization advice.
 If the user asks a completely unrelated question (e.g., "what is the capital of india?"), you MUST reply with EXACTLY this exact sentence and nothing else:
@@ -877,6 +886,10 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     
     clean_msg = data.message.strip()
+    
+    if clean_msg.lower().startswith("@ai "):
+        verify_rate_limit(f"user:{user_id}:ai_chat", limit=10, window=3600)
+    
     msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
     # Broadcast to all connected clients via WebSocket
     await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": jsonable_encoder(msg)})

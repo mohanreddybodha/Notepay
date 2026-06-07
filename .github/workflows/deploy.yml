@@ -71,7 +71,9 @@ jobs:
           DATABASE_URL=$DATABASE_URL alembic upgrade head
 
       - name: SAM Build
-        run: sam build
+        run: |
+          sam build
+          rm -f backend/service_account.json
 
       - name: SAM Deploy
         run: |
@@ -81,6 +83,44 @@ jobs:
                      --resolve-s3 \
                      --capabilities CAPABILITY_IAM \
                      --region ap-southeast-1
+
+      - name: Health Check After Deploy
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name notepay-stack \
+            --query "Stacks[0].Outputs[?OutputKey=='HttpApiUrl'].OutputValue" \
+            --output text)
+          
+          echo "Testing health endpoint at $API_URL/health..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            "$API_URL/health")
+          
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Health check failed with status $HTTP_STATUS"
+            echo "Rolling back Lambda to previous version is required..."
+            exit 1
+          fi
+          
+          echo "✅ Health check passed — status $HTTP_STATUS"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Notepay backend deploy failed on commit ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: test-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-1
 
       - name: Deploy Frontend to S3 and CloudFront
         run: |
@@ -92,8 +132,8 @@ jobs:
           CF_DOMAIN=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDomain'].OutputValue" --output text)
           
           # 2. Inject the real API/WebSocket URLs into the frontend code before uploading
-          sed -i "s|https://replace-with-your-function-url.aws.dev|$API_URL|g" frontend/js/api.js
-          sed -i "s|wss://replace-with-your-websocket-api.execute-api.ap-south-1.amazonaws.com/prod|$WS_URL|g" frontend/js/api.js
+          sed -i "s|API_PLACEHOLDER|$API_URL|g" frontend/js/api.js
+          sed -i "s|WSS_PLACEHOLDER|$WS_URL|g" frontend/js/api.js
 
           # 3. Auto-bump all asset version tags (?v=N) using the short git commit SHA.
           #    This ensures browsers always download the latest JS and CSS after each deploy —
@@ -134,3 +174,8 @@ jobs:
           echo "🌐 Live URL: $CF_DOMAIN"
           echo "📦 S3 Bucket: $BUCKET_NAME"
           echo "🔖 Version: $SHORT_SHA"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Notepay frontend deploy failed on commit ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
