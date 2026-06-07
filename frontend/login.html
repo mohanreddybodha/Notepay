@@ -279,7 +279,7 @@ async function sendOTP() {
   if (!/^[6-9]\d{9}$/.test(num)) { showPhoneError("Enter a valid Indian mobile number (starts with 6–9)."); return; }
 
   if (!checkLocalRateLimit("otp_send_attempts", 5, 3600000)) {
-    showPhoneError("Security Alert: You have reached the maximum limit of 5 OTP requests per hour. Please try again later.");
+    showPhoneError("Security Alert: You have reached the maximum limit of OTP requests per hour. Please try again later.");
     return;
   }
 
@@ -408,7 +408,7 @@ async function verifyOTP() {
     let errorMsg = getFriendlyError(err);
     if (err && err.code === 'auth/invalid-verification-code') {
         if (!checkLocalRateLimit("otp_fail_attempts", 5, 3600000)) {
-            errorMsg = "You have entered an incorrect OTP 5 times. For your security, please generate a new OTP.";
+            errorMsg = "You have reached the maximum number of incorrect OTP attempts. For your security, please generate a new OTP.";
             // Don't disable the hidden input permanently, force them back to phone screen
             setTimeout(() => {
                 goBackToPhone();
