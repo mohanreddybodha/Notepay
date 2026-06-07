@@ -1713,14 +1713,16 @@
 
     .rot-banner {
       display: none;
-      background: var(--blue);
+      background: var(--primary);
       color: #fff;
       text-align: center;
-      padding: 8px 12px;
+      padding: calc(env(safe-area-inset-top, 12px) + 8px) 12px 12px 12px;
       font-size: 13px;
       font-weight: 700;
       width: 100%;
       box-sizing: border-box;
+      z-index: 20000;
+      flex-shrink: 0;
     }
     @media (orientation: portrait) {
       .rot-banner {
