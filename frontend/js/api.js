@@ -20,6 +20,13 @@ if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.match(/^[0-
   WS_BASE = "WSS_PLACEHOLDER".replace(/\/$/, "");
 }
 
+// Hide .html extension from URL bar in production
+if (IS_PRODUCTION && window.location.pathname.endsWith('.html')) {
+  let cleanPath = window.location.pathname.replace(/\.html$/, '');
+  if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}
+
 // ── Core fetch wrapper — attaches Bearer token automatically ──
 // ── Core fetch wrapper — attaches Bearer token automatically ──
 async function apiFetch(method, path, body = null) {

@@ -123,6 +123,26 @@ Resources:
         SigningBehavior: always
         SigningProtocol: sigv4
 
+  UrlRewriteFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: UrlRewrite
+      AutoPublish: true
+      FunctionConfig:
+        Comment: "Rewrite clean URLs to append .html"
+        Runtime: cloudfront-js-1.0
+      FunctionCode: |
+        function handler(event) {
+            var request = event.request;
+            var uri = request.uri;
+            if (uri.endsWith('/')) {
+                request.uri += 'login.html';
+            } else if (!uri.includes('.')) {
+                request.uri += '.html';
+            }
+            return request;
+        }
+
   FrontendDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -140,6 +160,9 @@ Resources:
           ViewerProtocolPolicy: redirect-to-https
           AllowedMethods: [GET, HEAD, OPTIONS]
           CachedMethods: [GET, HEAD]
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt UrlRewriteFunction.FunctionARN
           ForwardedValues:
             # QueryString: true allows ?v=4 cache-busting to work correctly
             QueryString: true
