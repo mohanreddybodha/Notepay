@@ -262,16 +262,21 @@ function showPhoneError(msg) {
   phoneError.classList.add("visible");
 }
 
-function checkLocalRateLimit(key, limit, windowMs) {
-  const now = Date.now();
-  let timestamps = JSON.parse(localStorage.getItem(key) || "[]");
-  const cutoff = now - windowMs;
-  timestamps = timestamps.filter(t => t > cutoff);
-  if (timestamps.length >= limit) return false;
-  timestamps.push(now);
-  localStorage.setItem(key, JSON.stringify(timestamps));
-  return true;
-}
+  function checkLocalRateLimit(key, limit, windowMs) {
+    const now = Date.now();
+    let timestamps = JSON.parse(localStorage.getItem(key) || "[]");
+    const cutoff = now - windowMs;
+    timestamps = timestamps.filter(t => t > cutoff);
+    
+    // Always save the clean, filtered list back to storage
+    localStorage.setItem(key, JSON.stringify(timestamps));
+    
+    if (timestamps.length >= limit) return false;
+    
+    timestamps.push(now);
+    localStorage.setItem(key, JSON.stringify(timestamps));
+    return true;
+  }
 
 async function sendOTP() {
   const num = phoneInput.value.trim();
