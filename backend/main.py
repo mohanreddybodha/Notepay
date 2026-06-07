@@ -775,7 +775,7 @@ Follow these rules strictly:
 5. Format your answer with clear bullet points.
 6. When answering questions about the event's current numbers, ONLY use the exact data provided below. Do not make up any financial numbers.
 7. You are allowed and encouraged to give general advice, ideas, and suggestions for event management (e.g., how to collect donations, how to organize activities, how to handle members).
-8. Keep your response under 150 words.
+8. Keep your response under 250 words.
 
 KNOWLEDGE BASE: NOTEPAY MEMBER ROLES
 - Organizer: The creator of the event. They can edit the event, delete the event, add/delete/edit any financial entries, and promote/restrict members.
