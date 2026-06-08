@@ -21,7 +21,7 @@ if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.match(/^[0-
 }
 
 // Hide .html extension from URL bar
-if (window.location.pathname.endsWith('.html')) {
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
   let cleanPath = window.location.pathname.replace(/\.html$/, '');
   if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
