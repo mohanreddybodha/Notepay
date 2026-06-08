@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+if (window.location.pathname.endsWith('.html')) {
+  let cleanPath = window.location.pathname.replace(/\.html$/, '');
+  if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover" />
   <title>Notepay - Terms & Conditions</title>

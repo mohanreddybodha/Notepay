@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script>
+if (window.location.pathname.endsWith('.html')) {
+  let cleanPath = window.location.pathname.replace(/\.html$/, '');
+  if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}
+</script>
   <meta charset="UTF-8">
   <title>Redirecting...</title>
   <script>
