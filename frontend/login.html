@@ -12,7 +12,7 @@
   <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=4"/>
+  <link rel="stylesheet" href="css/global.css?v=30"/>
   <link rel="manifest" href="manifest.json" />
   <style>
     .page{min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);}
@@ -20,8 +20,9 @@
     .form-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 24px 24px;}
 
     /* ── Logo ── */
-    .logo-icon{width:76px;height:76px;background:white;border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(13,43,85,.13);margin-bottom:14px;border:1px solid var(--border);}
-    .logo-icon svg{width:42px;height:42px;}
+    .logo-icon{width:76px;height:76px;background:#FFFFFF;border-radius:22px;display:flex;align-items:center;justify-content:center;padding:10px;box-shadow:0 4px 20px rgba(13,43,85,.13);margin-bottom:14px;border:1px solid var(--border);transition:background .3s,border-color .3s,box-shadow 0.3s;}
+    body.dark-mode .logo-icon{background:#FFFFFF;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,.3);}
+    .logo-img{width:100%;height:100%;object-fit:contain;border-radius:inherit;transition:filter .3s;}
     .logo-name{font-family:'Nunito',sans-serif;font-size:28px;font-weight:900;color:var(--primary-dk);}
     .logo-tag{font-size:12.5px;color:var(--text3);margin-top:3px;margin-bottom:24px;font-weight:600;}
     .divider{width:100%;height:1.5px;background:var(--border2);margin-bottom:24px;}
@@ -88,10 +89,8 @@
   <!-- SPLASH SCREEN to mask Auth Check -->
   <div id="app-splash">
     <div class="splash-logo-box">
-      <img src="assets/icon_vector.svg?v=3" alt="Notepay" style="width: 100%; height: 100%; object-fit: contain; border-radius: inherit;" />
+      <img class="logo-img" src="assets/icon.png?v=4" alt="Notepay" />
     </div>
-    <div class="splash-title">Notepay</div>
-    <div class="splash-sub">Loading...</div>
   </div>
 
 <div class="page" id="page-login">
@@ -99,7 +98,7 @@
 
     <!-- Logo (always visible) -->
     <div class="logo-icon">
-      <img src="assets/icon_vector.svg?v=3" alt="Notepay" style="width: 100%; height: 100%; object-fit: contain; border-radius: inherit;" />
+      <img class="logo-img" src="assets/icon.png?v=4" alt="Notepay" />
     </div>
     <div class="logo-name">Notepay</div>
     <div class="logo-tag">Event Donation &amp; Expense Tracker</div>
