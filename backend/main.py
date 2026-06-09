@@ -823,8 +823,8 @@ User question: {question}
             "generationConfig": {"temperature": 0.4}
         }
         
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-        for attempt in range(4):  # Up to 4 attempts
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        for attempt in range(2):  # Up to 2 attempts
             try:
                 resp = requests.post(url, json=payload, timeout=60)
                 if resp.status_code == 200:
