@@ -26,7 +26,7 @@ try:
 except ImportError:
     cache = None
 from database import engine, get_db
-from limiter import verify_rate_limit
+from limiter import verify_rate_limit, check_rate_limit
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -810,48 +810,65 @@ FINANCIAL POSITION:
 User question: {question}
 """
         
-    import os
-    api_key = os.environ.get("GEMINI_KEY_1")
+    groq_api_key = os.environ.get("GROQ_API_KEY")
+    gemini_api_key = os.environ.get("GEMINI_KEY_1")
     
     ai_text = None
-    if not api_key:
-        print("AI Chat Error: GEMINI_KEY_1 is missing.")
-        ai_text = "AI Advisor configuration error: API key is missing."
+    if not groq_api_key and not gemini_api_key:
+        print("AI Chat Error: Both GROQ_API_KEY and GEMINI_KEY_1 are missing.")
+        ai_text = "AI Advisor configuration error: API keys are missing."
     else:
-        payload = {
-            "contents": [{"parts": [{"text": context}]}],
-            "generationConfig": {"temperature": 0.4}
-        }
-        
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-        for attempt in range(2):  # Up to 2 attempts
+        # 1. Attempt Groq
+        if groq_api_key:
+            groq_payload = {
+                "model": "llama3-8b-8192",
+                "messages": [
+                    {"role": "system", "content": "You are NotePay's AI financial advisor. Be extremely concise. Give brief, direct answers."},
+                    {"role": "user", "content": context}
+                ],
+                "temperature": 0.4
+            }
             try:
-                resp = requests.post(url, json=payload, timeout=60)
-                if resp.status_code == 200:
-                    ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-                    break
-                elif resp.status_code in (429, 503):
-                    wait_sec = (2 ** attempt) * 5  # 5s, 10s
-                    print(f"AI rate limited ({resp.status_code}), retrying in {wait_sec}s (attempt {attempt+1})")
-                    time.sleep(wait_sec)
-                    try:
-                        err_msg = resp.json().get('error', {}).get('message', 'Rate limited')
-                    except:
-                        err_msg = "Rate limited by Google AI"
-                    ai_text = f"AI API Error ({resp.status_code}): {err_msg}"
+                # Groq is fast, timeout is 30s
+                groq_resp = requests.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {groq_api_key}"},
+                    json=groq_payload,
+                    timeout=30
+                )
+                if groq_resp.status_code == 200:
+                    ai_text = groq_resp.json()["choices"][0]["message"]["content"]
                 else:
-                    try:
-                        err_msg = resp.json().get('error', {}).get('message', 'Unknown Error')
-                    except:
-                        err_msg = resp.text[:100]
-                    ai_text = f"AI API Error ({resp.status_code}): {err_msg}"
-                    break
+                    print(f"Groq API Error {groq_resp.status_code}: {groq_resp.text[:100]}")
             except Exception as e:
-                ai_text = f"AI connection failed: {type(e).__name__}"
-                break
+                print(f"Groq connection failed: {type(e).__name__} - {e}")
+                
+        # 2. Attempt Gemini Fallback if Groq failed or is unavailable
+        if not ai_text and gemini_api_key:
+            gemini_payload = {
+                "contents": [{"parts": [{"text": context}]}],
+                "generationConfig": {"temperature": 0.4}
+            }
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
+            for attempt in range(2):
+                try:
+                    resp = requests.post(url, json=gemini_payload, timeout=60)
+                    if resp.status_code == 200:
+                        ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+                        break
+                    elif resp.status_code in (429, 503):
+                        wait_sec = (2 ** attempt) * 5
+                        print(f"Gemini rate limited ({resp.status_code}), retrying in {wait_sec}s (attempt {attempt+1})")
+                        time.sleep(wait_sec)
+                    else:
+                        print(f"Gemini API Error {resp.status_code}: {resp.text[:100]}")
+                        break
+                except Exception as e:
+                    print(f"Gemini connection failed: {type(e).__name__} - {e}")
+                    break
     
     if not ai_text:
-        ai_text = "Sorry, the AI Advisor is currently overloaded. Please try again in a minute."
+        ai_text = "I'm experiencing some technical difficulties right now. Please try asking again in a few minutes! 🛠️"
         
     # Save AI response as chat message
     db2 = SessionLocal()
@@ -901,8 +918,10 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     
     clean_msg = data.message.strip()
     
+    ai_limit_reached = False
     if clean_msg.lower().startswith("@ai "):
-        verify_rate_limit(f"event:{event_id}:user:{user_id}:ai_chat", limit=10, window=86400, detail="you have reached max ai queries per event today")
+        if not check_rate_limit(f"event:{event_id}:user:{user_id}:ai_chat", limit=10, window=86400):
+            ai_limit_reached = True
     
     msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
     
@@ -912,12 +931,34 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     # Broadcast to all connected clients via WebSocket
     await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": jsonable_encoder(msg)})
     
+    # Process AI response asynchronously
     if clean_msg.lower().startswith("@ai "):
-        question = clean_msg[4:].strip()
-        if question:
+        if ai_limit_reached:
+            # Friendly rate limit message
+            friendly_text = "Hey! You've reached your AI query limit for today. I need to take a nap! 😴"
             loop = asyncio.get_running_loop()
             await manager.broadcast_change(event_id, {"type": "AI_TYPING"})
-            background_tasks.add_task(process_ai_chat, event_id, question, loop, msg["id"])
+            
+            async def send_friendly_nap():
+                await asyncio.sleep(1.5)
+                from database import SessionLocal
+                db2 = SessionLocal()
+                try:
+                    nap_msg = crud.create_chat_message(db2, event_id, None, friendly_text, msg.id)
+                    nap_data = jsonable_encoder(nap_msg)
+                    asyncio.run_coroutine_threadsafe(
+                        manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": nap_data}), loop
+                    )
+                finally:
+                    db2.close()
+                    
+            background_tasks.add_task(send_friendly_nap)
+        else:
+            question = clean_msg[4:].strip()
+            if question:
+                loop = asyncio.get_running_loop()
+                await manager.broadcast_change(event_id, {"type": "AI_TYPING"})
+                background_tasks.add_task(process_ai_chat, event_id, question, loop, msg.id)
             
     return msg
 
