@@ -4673,7 +4673,8 @@
           }
         } catch (e) {
           console.error("Chat send error:", e);
-          showToast('Failed to send message', 'error');
+          const errMsg = (e && e.message && e.message !== "Failed to fetch") ? e.message : 'Failed to send message';
+          showToast(errMsg, 'error');
           
           const idx = chatMessages.findIndex(m => m.id === mockMsgId);
           if (idx !== -1) chatMessages.splice(idx, 1);
@@ -4694,6 +4695,11 @@
       const input = document.getElementById('chat-input');
       const msg = input.value.trim();
       if (!msg) return;
+
+      if (msg.toLowerCase().startsWith('@ai ') && !navigator.onLine) {
+        showToast("AI queries cannot be sent while offline.", "error");
+        return;
+      }
 
       input.value = '';
       input.style.height = 'auto';

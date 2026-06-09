@@ -50,12 +50,12 @@ def check_rate_limit(key: str, limit: int, window: int) -> bool:
     cache.set(local_key, timestamps, expire=window)
     return True
 
-def verify_rate_limit(key: str, limit: int, window: int):
+def verify_rate_limit(key: str, limit: int, window: int, detail: str = "Too many requests. Please try again later."):
     """
     Raises HTTP 429 exception if rate limit is exceeded.
     """
     if not check_rate_limit(key, limit, window):
         raise HTTPException(
             status_code=429,
-            detail="Too many requests. Please try again later."
+            detail=detail
         )

@@ -823,7 +823,7 @@ User question: {question}
             "generationConfig": {"temperature": 0.4}
         }
         
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
         for attempt in range(4):  # Up to 4 attempts
             try:
                 resp = requests.post(url, json=payload, timeout=60)
@@ -888,7 +888,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     clean_msg = data.message.strip()
     
     if clean_msg.lower().startswith("@ai "):
-        verify_rate_limit(f"user:{user_id}:ai_chat", limit=10, window=86400)
+        verify_rate_limit(f"event:{event_id}:user:{user_id}:ai_chat", limit=10, window=86400, detail="you have reached max ai queries per event today")
     
     msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
     # Broadcast to all connected clients via WebSocket
