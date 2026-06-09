@@ -187,6 +187,7 @@ class UserFullDashboardResponse(BaseModel):
 class ChatMessageCreate(BaseModel):
     message: str
     reply_to_id: Optional[int] = None
+    idempotency_key: Optional[str] = None
 
 class ChatReplySnippet(BaseModel):
     id: int

@@ -889,6 +889,15 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     verify_rate_limit(f"user:{user_id}:chat", limit=20, window=60)
     if not data.message or not data.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
+        
+    if hasattr(data, "idempotency_key") and data.idempotency_key and cache:
+        local_key = f"idemp:{user_id}:{data.idempotency_key}"
+        existing = cache.get(local_key)
+        if existing:
+            existing_id = int(existing)
+            existing_msg = db.query(models.ChatMessage).filter(models.ChatMessage.id == existing_id).first()
+            if existing_msg:
+                return existing_msg
     
     clean_msg = data.message.strip()
     
@@ -896,6 +905,10 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
         verify_rate_limit(f"event:{event_id}:user:{user_id}:ai_chat", limit=10, window=86400, detail="you have reached max ai queries per event today")
     
     msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
+    
+    if hasattr(data, "idempotency_key") and data.idempotency_key and cache:
+        cache.set(f"idemp:{user_id}:{data.idempotency_key}", msg.id, expire=86400)
+        
     # Broadcast to all connected clients via WebSocket
     await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": jsonable_encoder(msg)})
     

@@ -4725,6 +4725,8 @@
           read_by: []
         };
         
+        payload.idempotency_key = mockMsg.id.toString();
+        
         chatMessages.push(mockMsg);
         if (chatOpen) {
           const container = document.getElementById('chat-messages');
