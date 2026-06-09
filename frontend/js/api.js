@@ -89,7 +89,7 @@ async function apiFetch(method, path, body = null) {
   let isNetworkError = false;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
     opts.signal = controller.signal;
     
     res = await fetch(`${API_BASE}${path}`, opts);
@@ -211,7 +211,7 @@ async function apiFetchWithToken(method, path, token, body = null) {
   if (body) opts.body = JSON.stringify(body);
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
   opts.signal = controller.signal;
 
   try {
