@@ -65,10 +65,12 @@ async function apiFetch(method, path, body = null) {
     }
   }
 
-  const isAIChat = isWrite && path.endsWith("/chat") && body?.message?.toLowerCase().startsWith("@ai ");
+  const isChat = isWrite && path.endsWith("/chat");
+  const isAIChat = isChat && body?.message?.toLowerCase().startsWith("@ai ");
 
   // 2. Intercept write mutations optimistically if navigator is explicitly offline or we are currently syncing
-  if (isWrite && !isAIChat && (!navigator.onLine || (typeof isSyncing !== 'undefined' && isSyncing))) {
+  if (isWrite && (!navigator.onLine || (typeof isSyncing !== 'undefined' && isSyncing))) {
+    if (isChat) throw new Error("NP_OFFLINE");
     return handleOfflineWrite(method, path, body);
   }
 
@@ -112,9 +114,8 @@ async function apiFetch(method, path, body = null) {
 
   // 3. Fallback optimistically if request failed due to a network connection error
   if (isWrite && isNetworkError) {
-    if (isAIChat) {
-      throw new Error("Timeout waiting for AI. Your request is likely still processing!");
-    }
+    if (isAIChat) throw new Error("Timeout waiting for AI. Your request is likely still processing!");
+    if (isChat) throw new Error("NP_OFFLINE");
     return handleOfflineWrite(method, path, body);
   }
 

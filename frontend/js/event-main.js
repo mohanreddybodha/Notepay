@@ -4671,7 +4671,13 @@
           if (chatOpen) {
             scrollChatToBottom(true);
           }
+          chatOutgoingQueue.shift();
         } catch (e) {
+          if (e.message === "NP_OFFLINE" || !navigator.onLine) {
+            // Stop processing and keep message in the queue for later
+            break;
+          }
+          
           console.error("Chat send error:", e);
           const errMsg = (e && e.message && e.message !== "Failed to fetch") ? e.message : 'Failed to send message';
           showToast(errMsg, 'error');
@@ -4685,11 +4691,15 @@
             input.value = originalMsgText;
             updateSendBtnVisibility();
           }
+          chatOutgoingQueue.shift();
         }
-        chatOutgoingQueue.shift();
       }
       isSendingChat = false;
     }
+    
+    window.addEventListener('online', () => {
+      if (typeof processChatOutgoingQueue === 'function') processChatOutgoingQueue();
+    });
 
     async function sendChatMessage() {
       const input = document.getElementById('chat-input');
