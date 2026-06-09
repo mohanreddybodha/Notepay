@@ -481,7 +481,15 @@ if (localStorage.getItem("np_dark")) {
 let isSyncing = false;
 async function syncOfflineQueue() {
   if (isSyncing || !navigator.onLine) return;
-  const queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+  let queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+  
+  // Purge any stuck AI messages from older versions
+  const originalLength = queue.length;
+  queue = queue.filter(item => !(item.path.endsWith("/chat") && item.body?.message?.toLowerCase().startsWith("@ai ")));
+  if (queue.length !== originalLength) {
+    localStorage.setItem("np_offline_queue", JSON.stringify(queue));
+  }
+
   if (!queue.length) return;
 
   isSyncing = true;
