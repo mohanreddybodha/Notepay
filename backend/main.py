@@ -828,20 +828,33 @@ FINANCIAL POSITION:
                 ],
                 "temperature": 0.4
             }
-            try:
-                # Groq is fast, timeout is 30s
-                groq_resp = requests.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {groq_api_key}"},
-                    json=groq_payload,
-                    timeout=30
-                )
-                if groq_resp.status_code == 200:
-                    ai_text = groq_resp.json()["choices"][0]["message"]["content"]
-                else:
-                    print(f"Groq API Error {groq_resp.status_code}: {groq_resp.text[:100]}")
-            except Exception as e:
-                print(f"Groq connection failed: {type(e).__name__} - {e}")
+            for attempt in range(2):
+                try:
+                    # Groq is fast, timeout is 30s
+                    groq_resp = requests.post(
+                        "https://api.groq.com/openai/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {groq_api_key}"},
+                        json=groq_payload,
+                        timeout=30
+                    )
+                    if groq_resp.status_code == 200:
+                        ai_text = groq_resp.json()["choices"][0]["message"]["content"]
+                        break
+                    elif groq_resp.status_code == 429:
+                        retry_after = groq_resp.headers.get("retry-after")
+                        if retry_after and float(retry_after) <= 5.0 and attempt == 0:
+                            print(f"Groq 429 Limit Hit. Retrying after {retry_after}s...")
+                            time.sleep(float(retry_after))
+                            continue
+                        else:
+                            print(f"Groq API 429 Error (Retry-After: {retry_after}s). Falling back to Gemini.")
+                            break
+                    else:
+                        print(f"Groq API Error {groq_resp.status_code}: {groq_resp.text[:100]}")
+                        break
+                except Exception as e:
+                    print(f"Groq connection failed: {type(e).__name__} - {e}")
+                    break
                 
         # 2. Attempt Gemini Fallback if Groq failed or is unavailable
         if not ai_text and gemini_api_key:
