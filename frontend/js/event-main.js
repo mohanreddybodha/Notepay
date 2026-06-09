@@ -4767,6 +4767,8 @@
       if (input && chatOpen) input.focus({ preventScroll: true });
     }
 
+    const pendingStatusUpdates = {};
+
     function handleIncomingChatMsg(data) {
       const myId = parseInt(localStorage.getItem('np_my_id') || '0');
       
@@ -4779,6 +4781,14 @@
         const mockIdx = chatMessages.findIndex(m => m.id < 0 && m.message === data.message && m.reply_to_id === data.reply_to_id);
         if (mockIdx !== -1) {
           const oldMockId = chatMessages[mockIdx].id;
+          
+          // Merge any pending status updates that arrived before the HTTP response
+          if (pendingStatusUpdates[data.id]) {
+            data.delivered_to = pendingStatusUpdates[data.id].delivered_to;
+            data.read_by = pendingStatusUpdates[data.id].read_by;
+            delete pendingStatusUpdates[data.id];
+          }
+          
           chatMessages[mockIdx] = data;
           updateMessageNode(data, oldMockId);
           return;
@@ -4830,7 +4840,7 @@
       const idx = chatMessages.findIndex(m => m.id === data.id);
       if (idx !== -1) {
         chatMessages[idx] = data;
-        if (chatOpen) updateMessageNode(data);
+        if (chatOpen) updateMessageNode(data, data.id);
       }
     }
 
@@ -4838,7 +4848,9 @@
       const idx = chatMessages.findIndex(m => m.id === data.id);
       if (idx !== -1) {
         chatMessages[idx] = data;
-        if (chatOpen) updateMessageNode(data);
+        if (chatOpen) updateMessageNode(data, data.id);
+      } else {
+        pendingStatusUpdates[data.id] = data;
       }
     }
 
