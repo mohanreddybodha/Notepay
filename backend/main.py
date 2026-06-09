@@ -926,7 +926,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
     
     if hasattr(data, "idempotency_key") and data.idempotency_key and cache:
-        cache.set(f"idemp:{user_id}:{data.idempotency_key}", msg.id, expire=86400)
+        cache.set(f"idemp:{user_id}:{data.idempotency_key}", msg["id"], expire=86400)
         
     # Broadcast to all connected clients via WebSocket
     await manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": jsonable_encoder(msg)})
@@ -944,7 +944,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
                 from database import SessionLocal
                 db2 = SessionLocal()
                 try:
-                    nap_msg = crud.create_chat_message(db2, event_id, None, friendly_text, msg.id)
+                    nap_msg = crud.create_chat_message(db2, event_id, None, friendly_text, msg["id"])
                     nap_data = jsonable_encoder(nap_msg)
                     asyncio.run_coroutine_threadsafe(
                         manager.broadcast_change(event_id, {"type": "NEW_CHAT_MSG", "data": nap_data}), loop
@@ -958,7 +958,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
             if question:
                 loop = asyncio.get_running_loop()
                 await manager.broadcast_change(event_id, {"type": "AI_TYPING"})
-                background_tasks.add_task(process_ai_chat, event_id, question, loop, msg.id)
+                background_tasks.add_task(process_ai_chat, event_id, question, loop, msg["id"])
             
     return msg
 
