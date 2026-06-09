@@ -4945,6 +4945,8 @@
       // Basic markdown parsing for AI responses
       escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
       escaped = escaped.replace(/\*(.*?)\*/g, '<i>$1</i>');
+      // Convert Markdown list items to bullet points (•)
+      escaped = escaped.replace(/^[\s]*[\*\-]\s+/gm, '&bull; ');
       escaped = escaped.replace(/\n/g, '<br/>');
       
       return escaped.replace(

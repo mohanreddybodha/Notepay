@@ -820,10 +820,17 @@ User question: {question}
     else:
         # 1. Attempt Groq
         if groq_api_key:
+            system_prompt = (
+                "You are NotePay's AI financial advisor. "
+                "CRITICAL RULE: You MUST ONLY answer questions related to the event, its finances, its members, or general event management/organization advice. "
+                "If the user asks ANY completely unrelated question (e.g. general knowledge, coding, writing essays), you MUST refuse and reply exactly: "
+                "\"I'm your friendly Notepay assistant for the event! I can help you with your event's finances, members, and give you general advice for organizing your event.\"\n"
+                "Be extremely concise, brief, and direct. Use bullet points where appropriate."
+            )
             groq_payload = {
                 "model": "llama-3.1-8b-instant",
                 "messages": [
-                    {"role": "system", "content": "You are NotePay's AI financial advisor. Be extremely concise. Give brief, direct answers."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": context}
                 ],
                 "temperature": 0.4
