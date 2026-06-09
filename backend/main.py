@@ -818,43 +818,48 @@ FINANCIAL POSITION:
         print("AI Chat Error: Both GROQ_API_KEY and GEMINI_KEY_1 are missing.")
         ai_text = "AI Advisor configuration error: API keys are missing."
     else:
-        # 1. Attempt Groq
+        # 1. Attempt Groq with multi-model fallback
         if groq_api_key:
-            groq_payload = {
-                "model": "llama-3.1-8b-instant",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": question}
-                ],
-                "temperature": 0.4
-            }
-            for attempt in range(2):
-                try:
-                    # Groq is fast, timeout is 30s
-                    groq_resp = requests.post(
-                        "https://api.groq.com/openai/v1/chat/completions",
-                        headers={"Authorization": f"Bearer {groq_api_key}"},
-                        json=groq_payload,
-                        timeout=30
-                    )
-                    if groq_resp.status_code == 200:
-                        ai_text = groq_resp.json()["choices"][0]["message"]["content"]
-                        break
-                    elif groq_resp.status_code == 429:
-                        retry_after = groq_resp.headers.get("retry-after")
-                        if retry_after and float(retry_after) <= 5.0 and attempt == 0:
-                            print(f"Groq 429 Limit Hit. Retrying after {retry_after}s...")
-                            time.sleep(float(retry_after))
-                            continue
-                        else:
-                            print(f"Groq API 429 Error (Retry-After: {retry_after}s). Falling back to Gemini.")
+            groq_models = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768"]
+            for model_id in groq_models:
+                groq_payload = {
+                    "model": model_id,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": question}
+                    ],
+                    "temperature": 0.4
+                }
+                for attempt in range(2):
+                    try:
+                        # Groq is fast, timeout is 30s
+                        groq_resp = requests.post(
+                            "https://api.groq.com/openai/v1/chat/completions",
+                            headers={"Authorization": f"Bearer {groq_api_key}"},
+                            json=groq_payload,
+                            timeout=30
+                        )
+                        if groq_resp.status_code == 200:
+                            ai_text = groq_resp.json()["choices"][0]["message"]["content"]
                             break
-                    else:
-                        print(f"Groq API Error {groq_resp.status_code}: {groq_resp.text[:100]}")
+                        elif groq_resp.status_code == 429:
+                            retry_after = groq_resp.headers.get("retry-after")
+                            if retry_after and float(retry_after) <= 4.0 and attempt == 0:
+                                print(f"Groq 429 Hit on {model_id}. Retrying after {retry_after}s...")
+                                time.sleep(float(retry_after))
+                                continue
+                            else:
+                                print(f"Groq {model_id} hit hard rate limit. Trying next model...")
+                                break
+                        else:
+                            print(f"Groq API Error {groq_resp.status_code} on {model_id}: {groq_resp.text[:100]}")
+                            break
+                    except Exception as e:
+                        print(f"Groq connection failed for {model_id}: {type(e).__name__} - {e}")
                         break
-                except Exception as e:
-                    print(f"Groq connection failed: {type(e).__name__} - {e}")
-                    break
+                        
+                if ai_text:
+                    break # Success! Exit the model loop
                 
         # 2. Attempt Gemini Fallback if Groq failed or is unavailable
         if not ai_text and gemini_api_key:
