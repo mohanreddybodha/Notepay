@@ -681,6 +681,8 @@ def create_chat_message(db: Session, event_id: str, user_id: int, message: str, 
         oldest = db.query(models.ChatMessage.id).filter(models.ChatMessage.event_id == event_id).order_by(models.ChatMessage.id.asc()).limit(to_delete).all()
         oldest_ids = [row[0] for row in oldest]
         if oldest_ids:
+            # Clear foreign key references to prevent psycopg2.errors.ForeignKeyViolation
+            db.query(models.ChatMessage).filter(models.ChatMessage.reply_to_id.in_(oldest_ids)).update({models.ChatMessage.reply_to_id: None}, synchronize_session=False)
             db.query(models.ChatMessage).filter(models.ChatMessage.id.in_(oldest_ids)).delete(synchronize_session=False)
             db.commit()
 
