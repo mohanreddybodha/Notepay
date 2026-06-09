@@ -821,7 +821,7 @@ User question: {question}
         # 1. Attempt Groq
         if groq_api_key:
             groq_payload = {
-                "model": "llama3-8b-8192",
+                "model": "llama-3.1-8b-instant",
                 "messages": [
                     {"role": "system", "content": "You are NotePay's AI financial advisor. Be extremely concise. Give brief, direct answers."},
                     {"role": "user", "content": context}
