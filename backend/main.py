@@ -831,9 +831,14 @@ User question: {question}
                     ai_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
                     break
                 elif resp.status_code in (429, 503):
-                    wait_sec = (2 ** attempt) * 5  # 5s, 10s, 20s, 40s
+                    wait_sec = (2 ** attempt) * 5  # 5s, 10s
                     print(f"AI rate limited ({resp.status_code}), retrying in {wait_sec}s (attempt {attempt+1})")
                     time.sleep(wait_sec)
+                    try:
+                        err_msg = resp.json().get('error', {}).get('message', 'Rate limited')
+                    except:
+                        err_msg = "Rate limited by Google AI"
+                    ai_text = f"AI API Error ({resp.status_code}): {err_msg}"
                 else:
                     try:
                         err_msg = resp.json().get('error', {}).get('message', 'Unknown Error')
