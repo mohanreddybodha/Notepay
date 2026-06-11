@@ -129,7 +129,8 @@ def delete_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Dep
     db.query(models.Donation).filter(models.Donation.collected_by == user_id).update({"collected_by": None})
     db.query(models.Expense).filter(models.Expense.collected_by == user_id).update({"collected_by": None})
     db.query(models.WatchedEvent).filter(models.WatchedEvent.user_id == user_id).delete()
-    db.query(models.ChatMessage).filter(models.ChatMessage.sender_id == user_id).delete()
+    db.query(models.ChatMessage).filter(models.ChatMessage.user_id == user_id).delete()
+    db.query(models.Feedback).filter(models.Feedback.user_id == user_id).delete()
     
     # Delete the user completely so they can re-register
     db.delete(user)
