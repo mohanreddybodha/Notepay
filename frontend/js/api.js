@@ -133,6 +133,16 @@ async function apiFetch(method, path, body = null) {
       window.location.replace("profile-setup.html");
       throw new Error("Redirecting to profile setup...");
     }
+    if (res.status === 403 && msg.toLowerCase().includes("banned")) {
+      document.body.innerHTML = `
+        <div style="height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--surface); padding:24px; text-align:center;">
+          <div style="font-size:64px; margin-bottom:16px;">🚨</div>
+          <h1 style="font-family:'Nunito', sans-serif; font-size:24px; font-weight:900; color:var(--text); margin-bottom:12px;">Account Suspended</h1>
+          <p style="font-size:15px; color:var(--text3); line-height:1.6; max-width:320px;">${msg}</p>
+        </div>
+      `;
+      throw new Error("Account Banned");
+    }
     throw new Error(msg);
   }
 
