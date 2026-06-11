@@ -136,7 +136,8 @@ class AdminUser(Base):
     __tablename__ = "admin_users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String, nullable=True)
     password_hash = Column(String, nullable=False)
     role = Column(String, default="admin")
     created_at = Column(DateTime, default=datetime.utcnow)

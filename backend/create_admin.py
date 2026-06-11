@@ -16,10 +16,12 @@ def create_admin():
         print(f"Admin {email} already exists!")
         return
 
+    name = input("Enter admin name (for audit logs): ")
     password = input("Enter admin password: ")
     
     admin = AdminUser(
         email=email,
+        name=name,
         password_hash=get_password_hash(password),
         role="admin"
     )
