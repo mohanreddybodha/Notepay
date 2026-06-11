@@ -242,15 +242,23 @@ async function loadAudit() {
   tbody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
   try {
     const logs = await apiCall('/audit-logs');
-    tbody.innerHTML = logs.map(l => `
-      <tr>
-        <td>${new Date(l.created_at).toLocaleString()}</td>
-        <td>Admin ${l.admin_id}</td>
-        <td><span class="badge badge-primary">${l.action}</span></td>
-        <td>${l.target_type}/${l.target_id}</td>
-        <td>${l.details ? JSON.stringify(l.details) : ''}</td>
-      </tr>
-    `).join("");
+    tbody.innerHTML = logs.map(l => {
+      let detailsTxt = '';
+      if (l.details && l.details.reason) {
+        detailsTxt = `<strong>Reason:</strong> ${l.details.reason}`;
+      } else if (l.details) {
+        detailsTxt = JSON.stringify(l.details);
+      }
+      return `
+        <tr>
+          <td>${new Date(l.created_at).toLocaleString()}</td>
+          <td>Admin ${l.admin_id}</td>
+          <td><span class="badge badge-primary">${l.action}</span></td>
+          <td>${l.target_type}/${l.target_id}</td>
+          <td>${detailsTxt}</td>
+        </tr>
+      `;
+    }).join("");
   } catch (e) {}
 }
 
@@ -263,10 +271,22 @@ function hideModal() {
   document.getElementById('admin-modal').style.display = 'none';
 }
 
+function getReason(idPrefix) {
+  const inp = document.getElementById(`${idPrefix}-reason`);
+  const err = document.getElementById(`${idPrefix}-error`);
+  if (!inp.value.trim()) {
+    err.style.display = 'block';
+    return null;
+  }
+  err.style.display = 'none';
+  return inp.value.trim();
+}
+
 function promptBanUser(id, name) {
   showModal(`
     <div class="modal-title">Ban User: ${name}</div>
-    <input type="text" id="ban-reason" placeholder="Reason for ban" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
+    <input type="text" id="ban-reason" placeholder="Reason for ban (Mandatory)" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc; margin-bottom:5px;">
+    <div id="ban-error" style="color:var(--admin-danger); font-size:12px; display:none; margin-bottom:10px;">A reason is required to ban a user.</div>
     <div class="modal-actions">
       <button class="btn-outline" onclick="hideModal()">Cancel</button>
       <button class="btn" style="background:var(--admin-danger);" onclick="executeBan(${id})">Confirm Ban</button>
@@ -275,23 +295,39 @@ function promptBanUser(id, name) {
 }
 
 async function executeBan(id) {
-  const reason = document.getElementById('ban-reason').value || "Violation of terms";
+  const reason = getReason('ban');
+  if (!reason) return;
   await apiCall(`/users/${id}/ban`, 'POST', { reason });
   hideModal();
   loadUsers();
 }
 
-async function unbanUser(id) {
-  if(confirm("Are you sure you want to unban this user?")) {
-    await apiCall(`/users/${id}/unban`, 'POST');
-    loadUsers();
-  }
+function unbanUser(id) {
+  showModal(`
+    <div class="modal-title">Unban User</div>
+    <input type="text" id="unban-reason" placeholder="Reason for unban (Mandatory)" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc; margin-bottom:5px;">
+    <div id="unban-error" style="color:var(--admin-danger); font-size:12px; display:none; margin-bottom:10px;">A reason is required to unban a user.</div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="hideModal()">Cancel</button>
+      <button class="btn" style="background:var(--admin-primary);" onclick="executeUnban(${id})">Confirm Unban</button>
+    </div>
+  `);
+}
+
+async function executeUnban(id) {
+  const reason = getReason('unban');
+  if (!reason) return;
+  await apiCall(`/users/${id}/unban`, 'POST', { reason });
+  hideModal();
+  loadUsers();
 }
 
 function promptDeleteUser(id, name) {
   showModal(`
     <div class="modal-title">Delete User: ${name}</div>
-    <p style="color:var(--admin-danger); font-weight:bold;">Warning: This completely deletes the user and their events.</p>
+    <p style="color:var(--admin-danger); font-weight:bold; margin-bottom:10px;">Warning: This completely deletes the user and their events.</p>
+    <input type="text" id="deluser-reason" placeholder="Reason for deletion (Mandatory)" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc; margin-bottom:5px;">
+    <div id="deluser-error" style="color:var(--admin-danger); font-size:12px; display:none; margin-bottom:10px;">A reason is required to delete a user.</div>
     <div class="modal-actions">
       <button class="btn-outline" onclick="hideModal()">Cancel</button>
       <button class="btn" style="background:var(--admin-danger);" onclick="executeDeleteUser(${id})">Delete Forever</button>
@@ -299,20 +335,40 @@ function promptDeleteUser(id, name) {
   `);
 }
 async function executeDeleteUser(id) {
-  await apiCall(`/users/${id}`, 'DELETE');
+  const reason = getReason('deluser');
+  if (!reason) return;
+  await apiCall(`/users/${id}`, 'DELETE', { reason });
   hideModal();
   loadUsers();
 }
 
-async function toggleEventStatus(id) {
-  await apiCall(`/events/${id}/deactivate`, 'POST');
+function toggleEventStatus(id) {
+  showModal(`
+    <div class="modal-title">Toggle Event Status</div>
+    <p style="margin-bottom:10px;">Are you sure you want to change the active status of this event?</p>
+    <input type="text" id="tglevent-reason" placeholder="Reason for status change (Mandatory)" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc; margin-bottom:5px;">
+    <div id="tglevent-error" style="color:var(--admin-danger); font-size:12px; display:none; margin-bottom:10px;">A reason is required to toggle event status.</div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="hideModal()">Cancel</button>
+      <button class="btn" style="background:var(--admin-warning);" onclick="executeToggleEventStatus('${id}')">Confirm Change</button>
+    </div>
+  `);
+}
+
+async function executeToggleEventStatus(id) {
+  const reason = getReason('tglevent');
+  if (!reason) return;
+  await apiCall(`/events/${id}/deactivate`, 'POST', { reason });
+  hideModal();
   loadEvents();
 }
 
 function promptDeleteEvent(id, name) {
   showModal(`
     <div class="modal-title">Delete Event: ${name}</div>
-    <p style="color:var(--admin-danger); font-weight:bold;">Warning: This deletes all data for this event permanently.</p>
+    <p style="color:var(--admin-danger); font-weight:bold; margin-bottom:10px;">Warning: This deletes all data for this event permanently.</p>
+    <input type="text" id="delevent-reason" placeholder="Reason for deletion (Mandatory)" style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc; margin-bottom:5px;">
+    <div id="delevent-error" style="color:var(--admin-danger); font-size:12px; display:none; margin-bottom:10px;">A reason is required to delete an event.</div>
     <div class="modal-actions">
       <button class="btn-outline" onclick="hideModal()">Cancel</button>
       <button class="btn" style="background:var(--admin-danger);" onclick="executeDeleteEvent('${id}')">Delete Event</button>
@@ -320,7 +376,9 @@ function promptDeleteEvent(id, name) {
   `);
 }
 async function executeDeleteEvent(id) {
-  await apiCall(`/events/${id}`, 'DELETE');
+  const reason = getReason('delevent');
+  if (!reason) return;
+  await apiCall(`/events/${id}`, 'DELETE', { reason });
   hideModal();
   loadEvents();
 }

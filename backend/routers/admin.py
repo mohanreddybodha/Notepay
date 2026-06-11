@@ -87,7 +87,7 @@ def get_users(page: int = 1, limit: int = 50, search: str = None, db: Session = 
     return users
 
 @router.post("/users/{user_id}/ban")
-def ban_user(user_id: int, req: schemas.AdminBanRequest, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
+def ban_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
@@ -98,18 +98,18 @@ def ban_user(user_id: int, req: schemas.AdminBanRequest, db: Session = Depends(g
     return {"status": "success", "message": "User banned"}
 
 @router.post("/users/{user_id}/unban")
-def unban_user(user_id: int, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
+def unban_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
     user.is_banned = False
     user.ban_reason = None
     db.commit()
-    log_admin_action(db, current_admin.id, "unban_user", "user", str(user_id))
+    log_admin_action(db, current_admin.id, "unban_user", "user", str(user_id), {"reason": req.reason})
     return {"status": "success", "message": "User unbanned"}
 
 @router.delete("/users/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
+def delete_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
@@ -127,7 +127,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_admin: mode
     db.delete(user)
     db.commit()
     
-    log_admin_action(db, current_admin.id, "delete_user", "user", str(user_id))
+    log_admin_action(db, current_admin.id, "delete_user", "user", str(user_id), {"reason": req.reason})
     return {"status": "success", "message": "User deleted"}
 
 @router.get("/events")
@@ -136,7 +136,7 @@ def get_events(page: int = 1, limit: int = 50, search: str = None, db: Session =
     if search:
         query = query.filter(
             or_(
-                models.Event.name.ilike(f"%{search}%"),
+                models.Event.name.ilike(f"%{{search}}%"),
                 models.Event.id == search
             )
         )
@@ -150,7 +150,7 @@ def get_events(page: int = 1, limit: int = 50, search: str = None, db: Session =
     return res
 
 @router.post("/events/{event_id}/deactivate")
-def deactivate_event(event_id: str, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
+def deactivate_event(event_id: str, req: schemas.AdminActionRequest, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
         raise HTTPException(404, "Event not found")
@@ -160,11 +160,11 @@ def deactivate_event(event_id: str, db: Session = Depends(get_db), current_admin
     db.commit()
     
     action = "deactivate_event" if not event.is_active else "reactivate_event"
-    log_admin_action(db, current_admin.id, action, "event", event_id)
+    log_admin_action(db, current_admin.id, action, "event", event_id, {"reason": req.reason})
     return {"status": "success", "is_active": event.is_active}
 
 @router.delete("/events/{event_id}")
-def delete_event(event_id: str, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
+def delete_event(event_id: str, req: schemas.AdminActionRequest, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
         raise HTTPException(404, "Event not found")
@@ -178,7 +178,7 @@ def delete_event(event_id: str, db: Session = Depends(get_db), current_admin: mo
     db.delete(event)
     db.commit()
     
-    log_admin_action(db, current_admin.id, "delete_event", "event", event_id)
+    log_admin_action(db, current_admin.id, "delete_event", "event", event_id, {"reason": req.reason})
     return {"status": "success", "message": "Event deleted"}
 
 @router.get("/errors", response_model=list[schemas.AdminErrorLogResponse])

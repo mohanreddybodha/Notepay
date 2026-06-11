@@ -224,7 +224,7 @@ class AdminToken(BaseModel):
     token_type: str
     role: str
 
-class AdminBanRequest(BaseModel):
+class AdminActionRequest(BaseModel):
     reason: str
 
 class AdminDashboardStats(BaseModel):
