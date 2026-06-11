@@ -117,11 +117,11 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_admin: mode
     # User might have created events
     db.query(models.Event).filter(models.Event.organizer_id == user_id).update({"is_active": False})
     
-    # Remove all their data
     db.query(models.EventMember).filter(models.EventMember.user_id == user_id).delete()
     db.query(models.Donation).filter(models.Donation.collected_by == user_id).delete()
     db.query(models.Expense).filter(models.Expense.collected_by == user_id).delete()
     db.query(models.WatchedEvent).filter(models.WatchedEvent.user_id == user_id).delete()
+    db.query(models.ChatMessage).filter(models.ChatMessage.sender_id == user_id).delete()
     
     # Delete the user completely so they can re-register
     db.delete(user)

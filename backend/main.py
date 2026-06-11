@@ -175,8 +175,6 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Firebase Bearer token scheme
 _bearer = HTTPBearer(auto_error=False)
 
-_uid_to_internal_id_cache = {}
-
 async def get_current_user_id(
     db: Session = Depends(get_db),
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
@@ -186,30 +184,21 @@ async def get_current_user_id(
     
     decoded = await auth.verify_token(credentials)
     uid = decoded["uid"]
-    
-    if uid in _uid_to_internal_id_cache:
-        return _uid_to_internal_id_cache[uid]
-    
     phone = decoded.get("phone_number")
-    user = crud.get_user_by_firebase_uid(db, uid)
     
+    user = crud.get_user_by_firebase_uid(db, uid)
     if not user:
         if phone:
             user = crud.get_user_by_phone(db, phone)
             if user:
                 user = crud.update_user_firebase_uid(db, user, uid)
-                _uid_to_internal_id_cache[uid] = user.id
-                return user.id
             else:
                 raise HTTPException(status_code=404, detail="User not found")
         else:
             raise HTTPException(status_code=404, detail="User not found")
             
-    _uid_to_internal_id_cache[uid] = user.id
-    
-    # Keep cache from growing infinitely
-    if len(_uid_to_internal_id_cache) > 10000:
-        _uid_to_internal_id_cache.clear()
+    if getattr(user, 'is_banned', False):
+        raise HTTPException(status_code=403, detail=f"Your account has been banned. Reason: {user.ban_reason or 'No reason provided.'}")
         
     return user.id
 
