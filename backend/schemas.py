@@ -232,6 +232,10 @@ class AdminDashboardStats(BaseModel):
     total_events: int
     total_donations_collected: float
     new_users_today: int
+    total_expenses_tracked: float
+    active_events: int
+    banned_users: int
+    errors_today: int
 
 class AdminErrorLogResponse(BaseModel):
     id: int

@@ -50,15 +50,24 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_admin: models.Adm
     
     # Calculate donations collected total
     total_donations = db.query(func.sum(models.Donation.amount)).scalar() or 0.0
+    total_expenses = db.query(func.sum(models.Expense.amount)).scalar() or 0.0
     
     today = datetime.utcnow().date()
     new_users_today = db.query(models.User).filter(func.date(models.User.created_at) == today).count()
+    
+    active_events = db.query(models.Event).filter(models.Event.is_active == True).count()
+    banned_users = db.query(models.User).filter(models.User.is_banned == True).count()
+    errors_today = db.query(models.ErrorLog).filter(func.date(models.ErrorLog.created_at) == today).count()
     
     return {
         "total_users": total_users,
         "total_events": total_events,
         "total_donations_collected": total_donations,
-        "new_users_today": new_users_today
+        "new_users_today": new_users_today,
+        "total_expenses_tracked": total_expenses,
+        "active_events": active_events,
+        "banned_users": banned_users,
+        "errors_today": errors_today
     }
 
 @router.get("/users", response_model=list[schemas.AdminUserResponse])
