@@ -252,7 +252,7 @@ async function loadAudit() {
       return `
         <tr>
           <td>${new Date(l.created_at).toLocaleString()}</td>
-          <td>Admin ${l.admin_id}</td>
+          <td><strong>${l.admin_name || 'Admin ' + l.admin_id}</strong> <span style="font-size:11px; color:var(--text3);">(ID: ${l.admin_id})</span></td>
           <td><span class="badge badge-primary">${l.action}</span></td>
           <td>${l.target_type}/${l.target_id}</td>
           <td>${detailsTxt}</td>

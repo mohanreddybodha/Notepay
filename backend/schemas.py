@@ -249,6 +249,7 @@ class AdminErrorLogResponse(BaseModel):
 class AdminAuditLogResponse(BaseModel):
     id: int
     admin_id: int
+    admin_name: Optional[str] = None
     action: str
     target_type: str
     target_id: str

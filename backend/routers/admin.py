@@ -186,10 +186,16 @@ def get_errors(limit: int = 50, db: Session = Depends(get_db), current_admin: mo
     errors = db.query(models.ErrorLog).order_by(desc(models.ErrorLog.created_at)).limit(limit).all()
     return errors
 
-@router.get("/audit-logs", response_model=list[schemas.AdminAuditLogResponse])
+@router.get("/audit-logs")
 def get_audit_logs(limit: int = 50, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
-    logs = db.query(models.AdminAuditLog).order_by(desc(models.AdminAuditLog.created_at)).limit(limit).all()
-    return logs
+    logs = db.query(models.AdminAuditLog, models.AdminUser.name.label("admin_name")).outerjoin(models.AdminUser, models.AdminAuditLog.admin_id == models.AdminUser.id).order_by(desc(models.AdminAuditLog.created_at)).limit(limit).all()
+    
+    res = []
+    for log, admin_name in logs:
+        log_dict = {c.name: getattr(log, c.name) for c in log.__table__.columns}
+        log_dict["admin_name"] = admin_name or f"Admin {log.admin_id}"
+        res.append(log_dict)
+    return res
 
 @router.get("/search")
 def global_search(q: str, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
