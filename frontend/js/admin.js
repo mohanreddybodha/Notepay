@@ -113,10 +113,13 @@ async function loadDashboard() {
     document.getElementById('stat-users').innerText = stats.total_users;
     document.getElementById('stat-events').innerText = stats.total_events;
     document.getElementById('stat-new-users').innerText = stats.new_users_today;
-    document.getElementById('stat-money').innerText = `₹${stats.total_donations_collected.toLocaleString()}`;
+    document.getElementById('stat-donations').innerText = `₹${stats.total_donations_collected.toLocaleString()}`;
     
     // New stats
     document.getElementById('stat-expenses').innerText = `₹${(stats.total_expenses_tracked || 0).toLocaleString()}`;
+    const moneyTracked = stats.total_donations_collected - (stats.total_expenses_tracked || 0);
+    document.getElementById('stat-money').innerText = `₹${moneyTracked.toLocaleString()}`;
+    
     document.getElementById('stat-active-events').innerText = stats.active_events || 0;
     document.getElementById('stat-banned-users').innerText = stats.banned_users || 0;
     document.getElementById('stat-errors-today').innerText = stats.errors_today || 0;

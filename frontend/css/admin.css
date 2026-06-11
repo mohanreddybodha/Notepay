@@ -281,15 +281,14 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
 }
 
-.stat-card.highlight {
-  background: var(--admin-primary);
-  color: white;
-  border-color: var(--admin-primary);
-}
+.stat-card.bg-primary { background: var(--admin-primary) !important; color: white !important; border-color: var(--admin-primary) !important; }
+.stat-card.bg-danger { background: var(--admin-danger) !important; color: white !important; border-color: var(--admin-danger) !important; }
+.stat-card.bg-success { background: var(--admin-success) !important; color: white !important; border-color: var(--admin-success) !important; }
 
-.stat-card.highlight .stat-title,
-.stat-card.highlight .stat-sub {
-  color: rgba(255,255,255,0.8);
+.stat-card.bg-primary .stat-title, .stat-card.bg-primary .stat-sub,
+.stat-card.bg-danger .stat-title, .stat-card.bg-danger .stat-sub,
+.stat-card.bg-success .stat-title, .stat-card.bg-success .stat-sub {
+  color: rgba(255,255,255,0.8) !important;
 }
 
 .stat-title {

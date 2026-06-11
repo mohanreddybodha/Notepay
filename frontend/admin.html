@@ -11,7 +11,7 @@
   
   <link rel="stylesheet" href="css/global.css?v=4">
   <link rel="stylesheet" href="css/icons.css?v=4">
-  <link rel="stylesheet" href="css/admin.css?v=1">
+  <link rel="stylesheet" href="css/admin.css?v=2">
 </head>
 <body class="admin-body">
 
@@ -96,15 +96,19 @@
             <div class="stat-value" id="stat-new-users">-</div>
             <div class="stat-sub">In the last 24h</div>
           </div>
-          <div class="stat-card highlight">
-            <div class="stat-title">Total Money Tracked</div>
-            <div class="stat-value" id="stat-money">-</div>
+          <div class="stat-card bg-success">
+            <div class="stat-title">Total Donations Tracked</div>
+            <div class="stat-value" id="stat-donations">-</div>
             <div class="stat-sub">Across all events</div>
           </div>
-          
-          <div class="stat-card highlight" style="background:var(--admin-warning);">
+          <div class="stat-card bg-danger">
             <div class="stat-title">Total Expenses Tracked</div>
             <div class="stat-value" id="stat-expenses">-</div>
+            <div class="stat-sub">Across all events</div>
+          </div>
+          <div class="stat-card bg-primary">
+            <div class="stat-title">Total Money Tracked</div>
+            <div class="stat-value" id="stat-money">-</div>
             <div class="stat-sub">Across all events</div>
           </div>
           <div class="stat-card clickable" onclick="switchTab('events', document.querySelector('.nav-links li:nth-child(4)'))">
@@ -133,7 +137,7 @@
       <section id="tab-search" class="tab-pane">
         <div class="search-container" style="display:flex; width:100%; gap:10px;">
           <input type="text" id="global-search-input" class="massive-search" style="flex:1;" placeholder="Search by name, phone, or event id..." onkeyup="handleGlobalSearch(event)">
-          <button class="btn" style="white-space:nowrap;" onclick="performGlobalSearch()">Search</button>
+          <button class="btn" style="white-space:nowrap; width:auto; padding-left:30px; padding-right:30px;" onclick="performGlobalSearch()">Search</button>
         </div>
         <div id="search-results" class="search-results-area"></div>
       </section>
@@ -142,7 +146,7 @@
       <section id="tab-users" class="tab-pane">
         <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
           <input type="text" id="user-search" placeholder="Search users..." style="flex:1;" onkeyup="if(event.key==='Enter') loadUsers()">
-          <button class="btn-outline" onclick="loadUsers()">Refresh</button>
+          <button class="btn-outline" style="width:auto; padding-left:20px; padding-right:20px;" onclick="loadUsers()">Refresh</button>
         </div>
         <div class="table-responsive">
           <table class="admin-table">
@@ -166,7 +170,7 @@
       <section id="tab-events" class="tab-pane">
         <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
           <input type="text" id="event-search" placeholder="Search events..." style="flex:1;" onkeyup="if(event.key==='Enter') loadEvents()">
-          <button class="btn-outline" onclick="loadEvents()">Refresh</button>
+          <button class="btn-outline" style="width:auto; padding-left:20px; padding-right:20px;" onclick="loadEvents()">Refresh</button>
         </div>
         <div class="table-responsive">
           <table class="admin-table">
@@ -213,13 +217,13 @@
 
       <!-- FEEDBACK TAB -->
       <section id="tab-feedback" class="tab-pane">
-        <div class="table-toolbar">
-          <select id="feedback-filter" onchange="loadFeedback()" style="padding:8px; border-radius:4px;">
+        <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
+          <select id="feedback-filter" onchange="loadFeedback()" style="padding:8px; border-radius:4px; flex:1;">
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="resolved">Resolved</option>
           </select>
-          <button class="btn-outline" onclick="loadFeedback()">Refresh</button>
+          <button class="btn-outline" style="width:auto; padding-left:20px; padding-right:20px;" onclick="loadFeedback()">Refresh</button>
         </div>
         <div class="table-responsive">
           <table class="admin-table">
@@ -230,7 +234,7 @@
                 <th>Type</th>
                 <th>Message</th>
                 <th>Status</th>
-                <th>Action</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="feedback-tbody"></tbody>
@@ -250,6 +254,6 @@
 </div>
 
 <script src="js/icons.js?v=4"></script>
-<script src="js/admin.js?v=1"></script>
+<script src="js/admin.js?v=2"></script>
 </body>
 </html>
