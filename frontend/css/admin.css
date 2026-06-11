@@ -400,6 +400,33 @@
 .btn-unban { color: var(--admin-success); background: rgba(27,197,189,0.1); }
 .btn-del { color: white; background: var(--admin-danger); }
 
+.btn {
+  background: var(--admin-primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+.btn:hover { opacity: 0.9; }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--admin-primary);
+  color: var(--admin-primary);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-outline:hover {
+  background: var(--admin-primary);
+  color: white;
+}
+
 /* Global Search */
 .search-container {
   display: flex;
@@ -504,7 +531,7 @@
     display: block;
   }
 }
-body.dark-mode { --admin-bg: #151521; --admin-card: #1e1e2d; --admin-border: #2b2b40; --admin-text-dark: #ffffff; --admin-text-muted: #a2a3b7; }
+body.dark-mode { --admin-bg: #000000; --admin-card: #111111; --admin-border: #222222; --admin-sidebar: #0a0a0a; --admin-text-dark: #ffffff; --admin-text-muted: #888888; }
 body.dark-mode .topbar, body.dark-mode .sidebar-header, body.dark-mode .result-card, body.dark-mode .error-item, body.dark-mode .table-responsive, body.dark-mode .admin-table th, body.dark-mode .modal-content, body.dark-mode input.massive-search, body.dark-mode .table-toolbar input, body.dark-mode .stat-card { background: var(--admin-card); color: var(--admin-text-dark); border-color: var(--admin-border); }
-body.dark-mode .admin-table tbody tr:hover { background: #2b2b40; }
+body.dark-mode .admin-table tbody tr:hover { background: #1a1a1a; }
 body.dark-mode .form-group input { background: var(--admin-card); color: var(--admin-text-dark); border-color: var(--admin-border); }

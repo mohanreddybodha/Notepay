@@ -74,12 +74,12 @@ body.dark-mode {
   --btn-danger-bg: #F87171;
   --btn-danger-text: #0A0A0A;
   
-  --surface:      #1A1A1A;
-  --surf-var:     #242424;
-  --surf-var2:    #2C2C2C;
-  --card:         #222222;
-  --border:       #333333;
-  --border2:      #2E2E2E;
+  --surface:      #000000;
+  --surf-var:     #0a0a0a;
+  --surf-var2:    #111111;
+  --card:         #111111;
+  --border:       #222222;
+  --border2:      #1a1a1a;
   --text:         #E8E8E8;
   --text2:        #AAAAAA;
   --text3:        #777777;
@@ -87,16 +87,16 @@ body.dark-mode {
   --green2:       #19a06e;
   --red:          #E05252;
   --amber:        #E0A020;
-  --input-bg:     #2A2A2A;
-  --input-border: #444444;
+  --input-bg:     #111111;
+  --input-border: #333333;
   --input-focus:  #5A9BE8;
-  --row-alt:      #262626;
-  --row-new:      #1A2E28;
-  --row-mod:      #1A2440;
-  --row-lp:       #2E2010;
-  --scroll-thumb: #555555;
+  --row-alt:      #0a0a0a;
+  --row-new:      #08120e;
+  --row-mod:      #080c16;
+  --row-lp:       #140e07;
+  --scroll-thumb: #333333;
   --tab-active:   #5A9BE8;
-  --tog-off:      #444444;
+  --tog-off:      #333333;
   --tog-on:       #12C5C5;
   --deact-bar:    #8a5400;
 }
