@@ -256,6 +256,22 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* Dashboard Stats */
 .stats-grid {
   display: grid;
@@ -531,6 +547,6 @@
   }
 }
 body.dark-mode { --admin-bg: #000000; --admin-card: #111111; --admin-border: #222222; --admin-sidebar: #0a0a0a; --admin-text-dark: #ffffff; --admin-text-muted: #888888; }
-body.dark-mode .topbar, body.dark-mode .sidebar-header, body.dark-mode .result-card, body.dark-mode .error-item, body.dark-mode .table-responsive, body.dark-mode .admin-table th, body.dark-mode .modal-content, body.dark-mode input.massive-search, body.dark-mode .table-toolbar input, body.dark-mode .stat-card { background: var(--admin-card); color: var(--admin-text-dark); border-color: var(--admin-border); }
+body.dark-mode .topbar, body.dark-mode .sidebar-header, body.dark-mode .result-card, body.dark-mode .error-item, body.dark-mode .table-responsive, body.dark-mode .admin-table th, body.dark-mode .modal-content, body.dark-mode input.massive-search, body.dark-mode .table-toolbar input, body.dark-mode .stat-card, body.dark-mode select { background: var(--admin-card); color: var(--admin-text-dark); border-color: var(--admin-border); }
 body.dark-mode .admin-table tbody tr:hover { background: #1a1a1a; }
 body.dark-mode .form-group input { background: var(--admin-card); color: var(--admin-text-dark); border-color: var(--admin-border); }

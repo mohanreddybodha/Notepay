@@ -144,9 +144,9 @@
 
       <!-- USERS TAB -->
       <section id="tab-users" class="tab-pane">
-        <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
-          <input type="text" id="user-search" placeholder="Search users..." style="flex:1;" onkeyup="if(event.key==='Enter') loadUsers()">
-          <button class="btn-outline" style="width:auto; padding-left:20px; padding-right:20px;" onclick="loadUsers()">Refresh</button>
+        <div class="table-toolbar" style="display:flex; width:100%; gap:10px; align-items:center;">
+          <input type="text" id="user-search" class="massive-search" placeholder="Search users..." style="flex:1;" onkeyup="if(event.key==='Enter') loadUsers()">
+          <button class="btn-outline" style="width:auto; padding-left:30px; padding-right:30px;" onclick="loadUsers()">Refresh</button>
         </div>
         <div class="table-responsive">
           <table class="admin-table">
@@ -168,9 +168,9 @@
 
       <!-- EVENTS TAB -->
       <section id="tab-events" class="tab-pane">
-        <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
-          <input type="text" id="event-search" placeholder="Search events..." style="flex:1;" onkeyup="if(event.key==='Enter') loadEvents()">
-          <button class="btn-outline" style="width:auto; padding-left:20px; padding-right:20px;" onclick="loadEvents()">Refresh</button>
+        <div class="table-toolbar" style="display:flex; width:100%; gap:10px; align-items:center;">
+          <input type="text" id="event-search" class="massive-search" placeholder="Search events..." style="flex:1;" onkeyup="if(event.key==='Enter') loadEvents()">
+          <button class="btn-outline" style="width:auto; padding-left:30px; padding-right:30px;" onclick="loadEvents()">Refresh</button>
         </div>
         <div class="table-responsive">
           <table class="admin-table">
@@ -253,7 +253,7 @@
   </div>
 </div>
 
-<script src="js/icons.js?v=4"></script>
-<script src="js/admin.js?v=2"></script>
+<script src="js/icons.js?v=5"></script>
+<script src="js/admin.js?v=3"></script>
 </body>
 </html>

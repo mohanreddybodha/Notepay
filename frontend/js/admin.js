@@ -117,7 +117,7 @@ async function loadDashboard() {
     
     // New stats
     document.getElementById('stat-expenses').innerText = `₹${(stats.total_expenses_tracked || 0).toLocaleString()}`;
-    const moneyTracked = stats.total_donations_collected - (stats.total_expenses_tracked || 0);
+    const moneyTracked = stats.total_donations_collected + (stats.total_expenses_tracked || 0);
     document.getElementById('stat-money').innerText = `₹${moneyTracked.toLocaleString()}`;
     
     document.getElementById('stat-active-events').innerText = stats.active_events || 0;
