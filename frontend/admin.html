@@ -71,17 +71,17 @@
       <!-- DASHBOARD TAB -->
       <section id="tab-dashboard" class="tab-pane active">
         <div class="stats-grid">
-          <div class="stat-card">
+          <div class="stat-card clickable" onclick="switchTab('users', document.querySelector('.nav-links li:nth-child(3)'))">
             <div class="stat-title">Total Users</div>
             <div class="stat-value" id="stat-users">-</div>
-            <div class="stat-sub">Registered accounts</div>
+            <div class="stat-sub">Registered accounts (Click to view)</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" onclick="switchTab('events', document.querySelector('.nav-links li:nth-child(4)'))">
             <div class="stat-title">Total Events</div>
             <div class="stat-value" id="stat-events">-</div>
-            <div class="stat-sub">Created platform-wide</div>
+            <div class="stat-sub">Created platform-wide (Click to view)</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" onclick="switchTab('users', document.querySelector('.nav-links li:nth-child(3)'))">
             <div class="stat-title">New Users Today</div>
             <div class="stat-value" id="stat-new-users">-</div>
             <div class="stat-sub">In the last 24h</div>
@@ -97,20 +97,20 @@
             <div class="stat-value" id="stat-expenses">-</div>
             <div class="stat-sub">Across all events</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" onclick="switchTab('events', document.querySelector('.nav-links li:nth-child(4)'))">
             <div class="stat-title">Active Events</div>
             <div class="stat-value" id="stat-active-events">-</div>
             <div class="stat-sub">Currently running</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" onclick="switchTab('users', document.querySelector('.nav-links li:nth-child(3)'))">
             <div class="stat-title">Banned Users</div>
             <div class="stat-value" id="stat-banned-users">-</div>
             <div class="stat-sub">Suspended accounts</div>
           </div>
-          <div class="stat-card" style="border-left:4px solid var(--admin-danger);">
+          <div class="stat-card clickable" style="border-left:4px solid var(--admin-danger);" onclick="switchTab('errors', document.querySelector('.nav-links li:nth-child(5)'))">
             <div class="stat-title">System Errors</div>
             <div class="stat-value" id="stat-errors-today">-</div>
-            <div class="stat-sub">Logged in last 24h</div>
+            <div class="stat-sub">Logged in last 24h (Click to view)</div>
           </div>
         </div>
       </section>
