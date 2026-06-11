@@ -148,11 +148,6 @@ jobs:
             sed -i -E "s|\?v=[a-zA-Z0-9]+|?v=$SHORT_SHA|g" {} \;
 
           # 4. Upload main frontend files to S3 (excluding admin files).
-          # Explicitly remove admin files from the main bucket if they were uploaded previously
-          aws s3 rm s3://$BUCKET_NAME/admin.html || true
-          aws s3 rm s3://$BUCKET_NAME/css/admin.css || true
-          aws s3 rm s3://$BUCKET_NAME/js/admin.js || true
-
           aws s3 sync frontend/ s3://$BUCKET_NAME/ \
             --delete \
             --cache-control "no-cache, no-store, must-revalidate" \
