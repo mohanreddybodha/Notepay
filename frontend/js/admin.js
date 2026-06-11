@@ -132,12 +132,16 @@ async function loadDashboard() {
 
 function toggleAdminTheme() {
   document.body.classList.toggle('dark-mode');
-  const icon = document.getElementById('admin-theme-icon');
+  const sun = document.getElementById('sun-icon');
+  const moon = document.getElementById('moon-icon');
+  
   if (document.body.classList.contains('dark-mode')) {
-    icon.innerText = '☀️';
+    if(sun) sun.style.display = 'block';
+    if(moon) moon.style.display = 'none';
     localStorage.setItem('np_admin_theme', 'dark');
   } else {
-    icon.innerText = '🌙';
+    if(sun) sun.style.display = 'none';
+    if(moon) moon.style.display = 'block';
     localStorage.setItem('np_admin_theme', 'light');
   }
 }
@@ -145,8 +149,10 @@ function toggleAdminTheme() {
 // Restore theme
 if(localStorage.getItem('np_admin_theme') === 'dark') {
   document.body.classList.add('dark-mode');
-  const icon = document.getElementById('admin-theme-icon');
-  if(icon) icon.innerText = '☀️';
+  const sun = document.getElementById('sun-icon');
+  const moon = document.getElementById('moon-icon');
+  if(sun) sun.style.display = 'block';
+  if(moon) moon.style.display = 'none';
 }
 
 // Users
