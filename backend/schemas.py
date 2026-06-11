@@ -21,8 +21,8 @@ class UserResponse(BaseModel):
     id: int
     phone_number: Optional[str] = None
     full_name: Optional[str] = None
-    gender: GenderEnum
-    created_at: datetime
+    gender: Optional[str] = None
+    created_at: Optional[datetime] = None
     class Config:
         from_attributes = True
 
@@ -30,8 +30,8 @@ class UserPublicResponse(BaseModel):
     """User fields safe to expose to other event members (no phone)."""
     id: int
     full_name: Optional[str] = None
-    gender: GenderEnum
-    created_at: datetime
+    gender: Optional[str] = None
+    created_at: Optional[datetime] = None
     class Config:
         from_attributes = True
 
@@ -258,7 +258,7 @@ class AdminAuditLogResponse(BaseModel):
         from_attributes = True
 
 class AdminUserResponse(UserResponse):
-    is_banned: bool
+    is_banned: Optional[bool] = False
     ban_reason: Optional[str] = None
     events_count: Optional[int] = 0
     class Config:

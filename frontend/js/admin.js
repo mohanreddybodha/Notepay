@@ -149,7 +149,10 @@ async function loadUsers() {
         </td>
       </tr>
     `).join("");
-  } catch (e) {}
+  } catch (e) {
+    console.error("Failed to load users:", e);
+    tbody.innerHTML = `<tr><td colspan='7' style="color:var(--admin-danger);">Error loading users: ${e.message}</td></tr>`;
+  }
 }
 
 // Events
@@ -187,17 +190,32 @@ async function performGlobalSearch() {
     if (res.users.length) {
       html += `<h4>Users Found</h4>`;
       res.users.forEach(u => {
-        html += `<div class="result-card"><div><strong>${u.full_name}</strong> (${u.phone_number})</div></div>`;
+        html += `<div class="result-card clickable" onclick="navigateToSearch('users', '${u.phone_number || u.full_name}')"><div><strong>${u.full_name}</strong> (${u.phone_number})</div></div>`;
       });
     }
     if (res.events.length) {
       html += `<h4>Events Found</h4>`;
       res.events.forEach(e => {
-        html += `<div class="result-card"><div><strong>${e.name}</strong> (ID: ${e.id})</div></div>`;
+        html += `<div class="result-card clickable" onclick="navigateToSearch('events', '${e.id}')"><div><strong>${e.name}</strong> (ID: ${e.id})</div></div>`;
       });
     }
     area.innerHTML = html || "No results found.";
-  } catch (e) {}
+  } catch (e) {
+    console.error("Global search failed:", e);
+    area.innerHTML = `<div style="color:var(--admin-danger);">Search error: ${e.message}</div>`;
+  }
+}
+
+function navigateToSearch(tabId, query) {
+  const nth = tabId === 'users' ? 3 : 4;
+  switchTab(tabId, document.querySelector(`.nav-links li:nth-child(${nth})`));
+  if (tabId === 'users') {
+    document.getElementById('user-search').value = query;
+    loadUsers();
+  } else if (tabId === 'events') {
+    document.getElementById('event-search').value = query;
+    loadEvents();
+  }
 }
 function handleGlobalSearch(e) {
   if(e.key === 'Enter') performGlobalSearch();
