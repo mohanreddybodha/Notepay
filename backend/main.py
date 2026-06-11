@@ -1082,6 +1082,9 @@ async def websocket_dashboard(websocket: WebSocket):
     except Exception:
         manager.disconnect_dashboard(websocket)
 
+from routers import admin
+app.include_router(admin.router)
+
 #  AWS SERVERLESS HANDLER 
 from mangum import Mangum
 mangum_handler = Mangum(app)

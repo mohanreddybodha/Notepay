@@ -212,3 +212,50 @@ class ChatReactionRequest(BaseModel):
 
 class MessageStatusUpdate(BaseModel):
     status: str  # 'delivered' or 'read'
+
+
+#  ADMIN SCHEMAS 
+class AdminLogin(BaseModel):
+    email: str
+    password: str
+
+class AdminToken(BaseModel):
+    access_token: str
+    token_type: str
+    role: str
+
+class AdminBanRequest(BaseModel):
+    reason: str
+
+class AdminDashboardStats(BaseModel):
+    total_users: int
+    total_events: int
+    total_donations_collected: float
+    new_users_today: int
+
+class AdminErrorLogResponse(BaseModel):
+    id: int
+    endpoint: str
+    error_message: str
+    traceback: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class AdminAuditLogResponse(BaseModel):
+    id: int
+    admin_id: int
+    action: str
+    target_type: str
+    target_id: str
+    details: Optional[Dict[str, Any]] = None
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class AdminUserResponse(UserResponse):
+    is_banned: bool
+    ban_reason: Optional[str] = None
+    events_count: Optional[int] = 0
+    class Config:
+        from_attributes = True

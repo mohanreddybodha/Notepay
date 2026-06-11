@@ -3737,7 +3737,9 @@
       doc.setFont("helvetica", "normal");
       doc.setTextColor(TEXT_MAIN[0], TEXT_MAIN[1], TEXT_MAIN[2]);
       doc.text(`DATE OF EVENT: ${formatDate(eventData.event_date).toUpperCase()}`, 15, 51);
-      doc.text(`ORGANIZER: ${(eventData.organizer_name ? eventData.organizer_name.toUpperCase() : 'Creator of Event')}`, 15, 56);
+      const organizer = typeof members !== 'undefined' ? members.find(m => m.role === 'organizer' || m.role === 'Organizer') : null;
+      const orgName = organizer && organizer.user ? organizer.user.full_name : 'Creator of Event';
+      doc.text(`ORGANIZER: ${(eventData.organizer_name || orgName).toUpperCase()}`, 15, 56);
       doc.text(`REPORT ISSUED: ${new Date().toLocaleString().toUpperCase()}`, pageWidth - 15, 51, { align: "right" });
 
       // --- FINANCIAL SUMMARY BOX ---

@@ -23,6 +23,8 @@ class User(Base):
     full_name = Column(String)
     gender = Column(SQLEnum(GenderEnum))
     created_at = Column(DateTime, default=datetime.utcnow)
+    is_banned = Column(Boolean, default=False)
+    ban_reason = Column(String, nullable=True)
 
     memberships = relationship("EventMember", back_populates="user")
     donations_collected = relationship("Donation", back_populates="collector_user")
@@ -128,3 +130,43 @@ class ChatMessage(Base):
     user = relationship("User")
     event = relationship("Event")
     reply_to = relationship("ChatMessage", remote_side=[id], uselist=False)
+
+
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    password_hash = Column(String, nullable=False)
+    role = Column(String, default="admin")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class AdminAuditLog(Base):
+    __tablename__ = "admin_audit_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    admin_id = Column(Integer, ForeignKey("admin_users.id"), index=True)
+    action = Column(String, nullable=False)
+    target_type = Column(String)
+    target_id = Column(String)
+    details = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    type = Column(String)
+    message = Column(String)
+    status = Column(String, default="pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class ErrorLog(Base):
+    __tablename__ = "error_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    endpoint = Column(String)
+    error_message = Column(String)
+    traceback = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
