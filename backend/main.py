@@ -938,7 +938,8 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     
     ai_limit_reached = False
     if clean_msg.lower().startswith("@ai "):
-        if not check_rate_limit(f"event:{event_id}:user:{user_id}:ai_chat", limit=10, window=86400):
+        today_str = datetime.utcnow().strftime('%Y-%m-%d')
+        if not check_rate_limit(f"event:{event_id}:user:{user_id}:ai_chat:{today_str}", limit=10, window=86400):
             ai_limit_reached = True
     
     msg = crud.create_chat_message(db, event_id, user_id, clean_msg, data.reply_to_id)
