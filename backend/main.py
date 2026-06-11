@@ -43,6 +43,10 @@ _DEFAULT_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,http://localhost
 env_origins = os.getenv("ALLOWED_ORIGINS")
 if os.getenv("ENVIRONMENT") == "production":
     _ALLOWED_ORIGINS = [o.strip() for o in env_origins.split(",")] if env_origins else []
+    admin_domain = os.getenv("ADMIN_DOMAIN")
+    if admin_domain:
+        _ALLOWED_ORIGINS.append(admin_domain)
+    _ALLOWED_ORIGINS.append("https://admin.notepay.in")
 else:
     _ALLOWED_ORIGINS = [o.strip() for o in (env_origins or _DEFAULT_ORIGINS).split(",") if o.strip()]
 

@@ -82,6 +82,7 @@ Resources:
           DATABASE_URL: '{{resolve:ssm:/notepay/database_url}}'
           REDIS_URL: '{{resolve:ssm:/notepay/redis_url}}'
           ALLOWED_ORIGINS: '{{resolve:ssm:/notepay/allowed_origins}}'
+          ADMIN_DOMAIN: !Join ['', ['https://', !GetAtt AdminFrontendDistribution.DomainName]]
           GEMINI_KEY_1: '{{resolve:ssm:/notepay/gemini_key_1}}'
           GROQ_API_KEY: '{{resolve:ssm:/notepay/groq_key}}'
       Policies:

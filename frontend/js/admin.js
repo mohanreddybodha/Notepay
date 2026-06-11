@@ -1,4 +1,4 @@
-const API_BASE = "API_PLACEHOLDER/api/v1";
+const API_BASE = "API_PLACEHOLDER".replace(/\/$/, "") + "/api/v1";
 const ADMIN_API = `${API_BASE}/admin`;
 
 let adminToken = localStorage.getItem('np_admin_token');
