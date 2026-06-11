@@ -236,6 +236,8 @@ class AdminDashboardStats(BaseModel):
     active_events: int
     banned_users: int
     errors_today: int
+    pending_feedback: int = 0
+    admin_name: Optional[str] = None
 
 class AdminErrorLogResponse(BaseModel):
     id: int

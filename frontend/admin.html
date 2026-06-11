@@ -42,7 +42,11 @@
   <!-- Sidebar Navigation -->
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <div class="logo">NotePay Admin</div>
+      <div class="logo" style="display:flex; align-items:center; gap:8px;">
+        <div style="background:var(--primary); color:white; width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900;">N</div>
+        <div>NotePay</div>
+      </div>
+      <div id="sidebar-admin-name" style="font-size:12px; color:var(--text3); margin-top:4px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Admin</div>
       <button class="mobile-close" onclick="toggleSidebar()">✕</button>
     </div>
     <ul class="nav-links">
@@ -64,6 +68,8 @@
     <header class="topbar">
       <button class="mobile-menu-btn" onclick="toggleSidebar()"><span data-np-icon="menu" data-np-size="24"></span></button>
       <h1 id="page-title">Dashboard</h1>
+      <div style="flex:1;"></div>
+      <div class="theme-toggle" onclick="toggleAdminTheme()" style="cursor:pointer; font-size:22px; margin-right:15px; user-select:none;" id="admin-theme-icon">🌙</div>
       <div class="admin-badge">Admin Mode</div>
     </header>
 
@@ -113,22 +119,26 @@
             <div class="stat-value" id="stat-errors-today">-</div>
             <div class="stat-sub">Logged in last 24h (Click to view)</div>
           </div>
+          <div class="stat-card clickable" style="border-left:4px solid var(--primary);" onclick="switchTab('feedback', document.querySelector('.nav-links li:nth-child(7)'))">
+            <div class="stat-title">Pending Feedback</div>
+            <div class="stat-value" id="stat-feedback">-</div>
+            <div class="stat-sub">Needs your attention (Click to view)</div>
+          </div>
         </div>
       </section>
 
-      <!-- SEARCH TAB -->
       <section id="tab-search" class="tab-pane">
-        <div class="search-container">
-          <input type="text" id="global-search-input" class="massive-search" placeholder="Search by name, phone, or event id..." onkeyup="handleGlobalSearch(event)">
-          <button class="btn" onclick="performGlobalSearch()">Search</button>
+        <div class="search-container" style="display:flex; width:100%; gap:10px;">
+          <input type="text" id="global-search-input" class="massive-search" style="flex:1;" placeholder="Search by name, phone, or event id..." onkeyup="handleGlobalSearch(event)">
+          <button class="btn" style="white-space:nowrap;" onclick="performGlobalSearch()">Search</button>
         </div>
         <div id="search-results" class="search-results-area"></div>
       </section>
 
       <!-- USERS TAB -->
       <section id="tab-users" class="tab-pane">
-        <div class="table-toolbar">
-          <input type="text" id="user-search" placeholder="Search users..." onkeyup="if(event.key==='Enter') loadUsers()">
+        <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
+          <input type="text" id="user-search" placeholder="Search users..." style="flex:1;" onkeyup="if(event.key==='Enter') loadUsers()">
           <button class="btn-outline" onclick="loadUsers()">Refresh</button>
         </div>
         <div class="table-responsive">
@@ -151,8 +161,8 @@
 
       <!-- EVENTS TAB -->
       <section id="tab-events" class="tab-pane">
-        <div class="table-toolbar">
-          <input type="text" id="event-search" placeholder="Search events..." onkeyup="if(event.key==='Enter') loadEvents()">
+        <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
+          <input type="text" id="event-search" placeholder="Search events..." style="flex:1;" onkeyup="if(event.key==='Enter') loadEvents()">
           <button class="btn-outline" onclick="loadEvents()">Refresh</button>
         </div>
         <div class="table-responsive">

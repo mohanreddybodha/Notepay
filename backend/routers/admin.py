@@ -58,6 +58,7 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_admin: models.Adm
     active_events = db.query(models.Event).filter(models.Event.is_active == True).count()
     banned_users = db.query(models.User).filter(models.User.is_banned == True).count()
     errors_today = db.query(models.ErrorLog).filter(func.date(models.ErrorLog.created_at) == today).count()
+    pending_feedback = db.query(models.Feedback).filter(models.Feedback.status == "pending").count()
     
     return {
         "total_users": total_users,
@@ -67,7 +68,9 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_admin: models.Adm
         "total_expenses_tracked": total_expenses,
         "active_events": active_events,
         "banned_users": banned_users,
-        "errors_today": errors_today
+        "errors_today": errors_today,
+        "pending_feedback": pending_feedback,
+        "admin_name": current_admin.name or f"Admin {current_admin.id}"
     }
 
 @router.get("/users", response_model=list[schemas.AdminUserResponse])

@@ -107,7 +107,6 @@ function switchTab(tabId, el) {
   if(tabId === 'feedback') loadFeedback();
 }
 
-// Dashboard
 async function loadDashboard() {
   try {
     const stats = await apiCall('/dashboard/stats');
@@ -121,9 +120,33 @@ async function loadDashboard() {
     document.getElementById('stat-active-events').innerText = stats.active_events || 0;
     document.getElementById('stat-banned-users').innerText = stats.banned_users || 0;
     document.getElementById('stat-errors-today').innerText = stats.errors_today || 0;
+    if(document.getElementById('stat-feedback')) document.getElementById('stat-feedback').innerText = stats.pending_feedback || 0;
+    
+    if(document.getElementById('sidebar-admin-name') && stats.admin_name) {
+      document.getElementById('sidebar-admin-name').innerText = stats.admin_name;
+    }
   } catch (e) {
     console.error("Dashboard load failed:", e);
   }
+}
+
+function toggleAdminTheme() {
+  document.body.classList.toggle('dark-mode');
+  const icon = document.getElementById('admin-theme-icon');
+  if (document.body.classList.contains('dark-mode')) {
+    icon.innerText = '☀️';
+    localStorage.setItem('np_admin_theme', 'dark');
+  } else {
+    icon.innerText = '🌙';
+    localStorage.setItem('np_admin_theme', 'light');
+  }
+}
+
+// Restore theme
+if(localStorage.getItem('np_admin_theme') === 'dark') {
+  document.body.classList.add('dark-mode');
+  const icon = document.getElementById('admin-theme-icon');
+  if(icon) icon.innerText = '☀️';
 }
 
 // Users
