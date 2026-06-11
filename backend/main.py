@@ -335,6 +335,20 @@ async def update_my_profile(data: schemas.UserUpdate, db: Session = Depends(get_
     return user
 
 
+@app.post("/feedback", response_model=dict, tags=["Profile"])
+async def submit_feedback(data: schemas.FeedbackCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Submit a bug report, feature request, or security issue."""
+    verify_rate_limit(f"user:{user_id}:feedback", limit=3, window=3600)
+    new_feedback = models.Feedback(
+        user_id=user_id,
+        type=data.type,
+        message=data.message,
+        status="pending"
+    )
+    db.add(new_feedback)
+    db.commit()
+    return {"message": "Feedback submitted successfully"}
+
 #  EVENTS 
 @app.post("/events", response_model=schemas.EventResponse, tags=["Events"])
 async def create_event(event: schemas.EventCreate,

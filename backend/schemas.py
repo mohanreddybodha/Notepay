@@ -264,3 +264,18 @@ class AdminUserResponse(UserResponse):
     events_count: Optional[int] = 0
     class Config:
         from_attributes = True
+
+class FeedbackCreate(BaseModel):
+    type: str
+    message: str
+
+class AdminFeedbackResponse(BaseModel):
+    id: int
+    user_id: Optional[int] = None
+    user_name: Optional[str] = None
+    type: str
+    message: str
+    status: str
+    created_at: datetime
+    class Config:
+        from_attributes = True

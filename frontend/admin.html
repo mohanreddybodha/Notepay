@@ -52,6 +52,7 @@
       <li onclick="switchTab('events', this)"><span data-np-icon="flag" data-np-size="18"></span> Events</li>
       <li onclick="switchTab('errors', this)"><span data-np-icon="alert-circle" data-np-size="18"></span> Error Logs</li>
       <li onclick="switchTab('audit', this)"><span data-np-icon="shield" data-np-size="18"></span> Audit Logs</li>
+      <li onclick="switchTab('feedback', this)"><span data-np-icon="message-square" data-np-size="18"></span> Feedback</li>
     </ul>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="logout()">Logout</button>
@@ -193,6 +194,33 @@
               </tr>
             </thead>
             <tbody id="audit-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- FEEDBACK TAB -->
+      <section id="tab-feedback" class="tab-pane">
+        <div class="table-toolbar">
+          <select id="feedback-filter" onchange="loadFeedback()" style="padding:8px; border-radius:4px;">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="resolved">Resolved</option>
+          </select>
+          <button class="btn-outline" onclick="loadFeedback()">Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="feedback-tbody"></tbody>
           </table>
         </div>
       </section>

@@ -115,6 +115,10 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
       <div class="psec" style="margin-top:12px;"><div class="psec-lbl">Help & Support</div>
         <div class="pcard">
+          <div class="prow prow-c" onclick="document.getElementById('feedback-pop').style.display='flex'">
+            <div><div class="pr-val" style="margin-top:0;">Submit Feedback</div></div>
+            <div class="pr-arrow"><span data-np-icon="chevron-right" data-np-size="20"></span></div>
+          </div>
           <div class="prow prow-c" onclick="window.location.href='guide.html'">
             <div><div class="pr-val" style="margin-top:0;">User Guide</div></div>
             <div class="pr-arrow"><span data-np-icon="chevron-right" data-np-size="20"></span></div>
@@ -144,6 +148,24 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       </div>
 
       <div class="footer">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Popup -->
+<div class="pop-ov" id="feedback-pop" style="display:none;">
+  <div class="pop-box" style="max-width:340px;">
+    <div class="pop-t" style="text-align:left; margin-bottom:15px;">Submit Feedback</div>
+    <select id="fb-type" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:12px; background:var(--surface); color:var(--text); font-family:inherit; outline:none;">
+      <option value="Feature Request">Feature Request</option>
+      <option value="Bug Report">Bug Report</option>
+      <option value="Security Issue">Security Issue</option>
+      <option value="General Feedback">General Feedback</option>
+    </select>
+    <textarea id="fb-msg" placeholder="Tell us what you think or report an issue..." rows="4" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:15px; background:var(--surface); color:var(--text); font-family:inherit; outline:none; resize:none;"></textarea>
+    <div class="pop-btns">
+      <div class="btn btn-text-secondary" onclick="document.getElementById('feedback-pop').style.display='none'">Cancel</div>
+      <div class="btn btn-solid-primary" id="fb-submit" onclick="submitFeedback()">Submit</div>
     </div>
   </div>
 </div>
@@ -193,6 +215,29 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   // Restore dark mode preference
   if (localStorage.getItem("np_dark")) {
     document.getElementById("dark-toggle")?.classList.add("on");
+  }
+
+  async function submitFeedback() {
+    const type = document.getElementById('fb-type').value;
+    const msg = document.getElementById('fb-msg').value.trim();
+    if(!msg) return showToast("Message cannot be empty", "error");
+    
+    const btn = document.getElementById('fb-submit');
+    const oldTxt = btn.innerText;
+    btn.innerText = "Sending...";
+    btn.style.pointerEvents = 'none';
+    
+    try {
+      await apiFetch("POST", "/feedback", { type: type, message: msg });
+      showToast("Feedback submitted successfully!", "success");
+      document.getElementById('feedback-pop').style.display = 'none';
+      document.getElementById('fb-msg').value = '';
+    } catch(e) {
+      showToast(e.message || "Failed to submit feedback", "error");
+    } finally {
+      btn.innerText = oldTxt;
+      btn.style.pointerEvents = 'auto';
+    }
   }
 
   function showLogoutPop() { document.getElementById("logout-pop").style.display="flex"; }
