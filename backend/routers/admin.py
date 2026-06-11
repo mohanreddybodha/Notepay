@@ -114,12 +114,20 @@ def delete_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Dep
     if not user:
         raise HTTPException(404, "User not found")
         
-    # User might have created events
-    db.query(models.Event).filter(models.Event.organizer_id == user_id).update({"is_active": False})
+    # Delete all events organized by the user completely
+    user_events = db.query(models.Event).filter(models.Event.organizer_id == user_id).all()
+    for ev in user_events:
+        db.query(models.EventMember).filter(models.EventMember.event_id == ev.id).delete()
+        db.query(models.Donation).filter(models.Donation.event_id == ev.id).delete()
+        db.query(models.Expense).filter(models.Expense.event_id == ev.id).delete()
+        db.query(models.WatchedEvent).filter(models.WatchedEvent.event_id == ev.id).delete()
+        db.query(models.ChatMessage).filter(models.ChatMessage.event_id == ev.id).delete()
+        db.delete(ev)
     
+    # Remove their footprints in other events (preserve financial data by setting collected_by to None)
     db.query(models.EventMember).filter(models.EventMember.user_id == user_id).delete()
-    db.query(models.Donation).filter(models.Donation.collected_by == user_id).delete()
-    db.query(models.Expense).filter(models.Expense.collected_by == user_id).delete()
+    db.query(models.Donation).filter(models.Donation.collected_by == user_id).update({"collected_by": None})
+    db.query(models.Expense).filter(models.Expense.collected_by == user_id).update({"collected_by": None})
     db.query(models.WatchedEvent).filter(models.WatchedEvent.user_id == user_id).delete()
     db.query(models.ChatMessage).filter(models.ChatMessage.sender_id == user_id).delete()
     
