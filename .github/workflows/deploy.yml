@@ -131,48 +131,76 @@ jobs:
           CF_ID=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
           CF_DOMAIN=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDomain'].OutputValue" --output text)
           
+          ADMIN_BUCKET=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='AdminBucketName'].OutputValue" --output text)
+          ADMIN_CF_ID=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='AdminCloudFrontDistributionId'].OutputValue" --output text)
+          ADMIN_CF_DOMAIN=$(aws cloudformation describe-stacks --stack-name notepay-stack --query "Stacks[0].Outputs[?OutputKey=='AdminCloudFrontDomain'].OutputValue" --output text)
+
           # 2. Inject the real API/WebSocket URLs into the frontend code before uploading
           sed -i "s|API_PLACEHOLDER|$API_URL|g" frontend/js/api.js
+          sed -i "s|API_PLACEHOLDER|$API_URL|g" frontend/js/admin.js
           sed -i "s|WSS_PLACEHOLDER|$WS_URL|g" frontend/js/api.js
 
           # 3. Auto-bump all asset version tags (?v=N) using the short git commit SHA.
-          #    This ensures browsers always download the latest JS and CSS after each deploy —
-          #    no manual version number changes required.
           DEPLOY_VERSION="${{ github.sha }}"
           SHORT_SHA="${DEPLOY_VERSION:0:8}"
           echo "Bumping asset versions to: ?v=$SHORT_SHA"
           find frontend/ -name "*.html" -exec \
             sed -i -E "s|\?v=[a-zA-Z0-9]+|?v=$SHORT_SHA|g" {} \;
 
-          # 4. Upload all frontend files to S3.
-          #    HTML files: no-cache (always fresh). JS/CSS: long cache (busted by ?v= tag).
+          # 4. Upload main frontend files to S3 (excluding admin files).
           aws s3 sync frontend/ s3://$BUCKET_NAME/ \
             --delete \
             --cache-control "no-cache, no-store, must-revalidate" \
-            --exclude "*.js" --exclude "*.css"
+            --exclude "*.js" --exclude "*.css" \
+            --exclude "admin.html" --exclude "css/admin.css" --exclude "js/admin.js"
 
           aws s3 sync frontend/ s3://$BUCKET_NAME/ \
             --delete \
             --cache-control "public, max-age=31536000, immutable" \
             --exclude "*.html" --exclude "*.json" \
-            --include "*.js" --include "*.css"
+            --include "*.js" --include "*.css" \
+            --exclude "css/admin.css" --exclude "js/admin.js"
 
-          # 5. Invalidate CloudFront cache and wait for completion
-          #    so users see the new version immediately after this workflow finishes.
-          echo "Creating CloudFront invalidation..."
+          # 5. Upload Admin frontend files to Admin S3.
+          aws s3 sync frontend/ s3://$ADMIN_BUCKET/ \
+            --delete \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --exclude "*" \
+            --include "admin.html"
+
+          aws s3 sync frontend/ s3://$ADMIN_BUCKET/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*" \
+            --include "css/admin.css" --include "js/admin.js" \
+            --include "css/global.css" --include "css/icons.css" --include "js/icons.js"
+
+          # 6. Invalidate CloudFront caches and wait for completion
+          echo "Creating CloudFront invalidation for main site..."
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id $CF_ID \
             --paths "/*" \
             --query "Invalidation.Id" --output text)
 
-          echo "Waiting for invalidation $INVALIDATION_ID to complete..."
+          echo "Creating CloudFront invalidation for admin site..."
+          ADMIN_INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id $ADMIN_CF_ID \
+            --paths "/*" \
+            --query "Invalidation.Id" --output text)
+
+          echo "Waiting for main invalidation $INVALIDATION_ID to complete..."
           aws cloudfront wait invalidation-completed \
             --distribution-id $CF_ID \
             --id $INVALIDATION_ID
 
+          echo "Waiting for admin invalidation $ADMIN_INVALIDATION_ID to complete..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id $ADMIN_CF_ID \
+            --id $ADMIN_INVALIDATION_ID
+
           echo "✅ Deployment complete!"
-          echo "🌐 Live URL: $CF_DOMAIN"
-          echo "📦 S3 Bucket: $BUCKET_NAME"
+          echo "🌐 Main Live URL: $CF_DOMAIN"
+          echo "🌐 Admin Live URL: $ADMIN_CF_DOMAIN"
           echo "🔖 Version: $SHORT_SHA"
 
       - name: Notify on failure

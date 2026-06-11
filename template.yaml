@@ -197,6 +197,65 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${FrontendDistribution.Id}"
 
+  # -----------------------------------------------------
+  # 4. Admin Frontend Hosting (S3 + CloudFront)
+  # -----------------------------------------------------
+  AdminFrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  AdminCloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-Admin-OAC"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AdminFrontendDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: admin.html
+        Origins:
+          - DomainName: !GetAtt AdminFrontendBucket.RegionalDomainName
+            Id: S3OriginAdmin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt AdminCloudFrontOAC.Id
+        DefaultCacheBehavior:
+          TargetOriginId: S3OriginAdmin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+
+  AdminFrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AdminFrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${AdminFrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${AdminFrontendDistribution.Id}"
+
 Outputs:
   HttpApiUrl:
     Description: "HTTP API Endpoint URL (Function URL)"
@@ -213,3 +272,12 @@ Outputs:
   CloudFrontDistributionId:
     Description: "CloudFront Distribution ID"
     Value: !Ref FrontendDistribution
+  AdminBucketName:
+    Description: "Admin Frontend S3 Bucket Name"
+    Value: !Ref AdminFrontendBucket
+  AdminCloudFrontDomain:
+    Description: "CloudFront URL for Admin Frontend"
+    Value: !Join ['', ['https://', !GetAtt AdminFrontendDistribution.DomainName]]
+  AdminCloudFrontDistributionId:
+    Description: "CloudFront Distribution ID for Admin"
+    Value: !Ref AdminFrontendDistribution
