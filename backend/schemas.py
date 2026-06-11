@@ -19,8 +19,8 @@ class UserCreate(BaseModel):
 #  Public response  firebase_uid deliberately excluded
 class UserResponse(BaseModel):
     id: int
-    phone_number: str
-    full_name: str
+    phone_number: Optional[str] = None
+    full_name: Optional[str] = None
     gender: GenderEnum
     created_at: datetime
     class Config:
@@ -29,7 +29,7 @@ class UserResponse(BaseModel):
 class UserPublicResponse(BaseModel):
     """User fields safe to expose to other event members (no phone)."""
     id: int
-    full_name: str
+    full_name: Optional[str] = None
     gender: GenderEnum
     created_at: datetime
     class Config:

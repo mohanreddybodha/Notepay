@@ -82,14 +82,9 @@ def get_users(page: int = 1, limit: int = 50, search: str = None, db: Session = 
         )
     users = query.order_by(desc(models.User.created_at)).offset((page - 1) * limit).limit(limit).all()
     
-    result = []
     for u in users:
-        u_dict = {c.name: getattr(u, c.name) for c in u.__table__.columns}
-        # Get events count
-        events_count = db.query(models.EventMember).filter(models.EventMember.user_id == u.id).count()
-        u_dict["events_count"] = events_count
-        result.append(u_dict)
-    return result
+        u.events_count = db.query(models.EventMember).filter(models.EventMember.user_id == u.id).count()
+    return users
 
 @router.post("/users/{user_id}/ban")
 def ban_user(user_id: int, req: schemas.AdminBanRequest, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
