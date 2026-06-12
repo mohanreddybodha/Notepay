@@ -28,8 +28,8 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <link rel="stylesheet" href="css/global.css?v=30" />
-  <link rel="stylesheet" href="css/icons.css?v=23" />
-  <script src="js/icons.js?v=23"></script>
+  <link rel="stylesheet" href="css/icons.css?v=24" />
+  <script src="js/icons.js?v=2"></script>
   <link rel="stylesheet" href="css/event.css?v=27">
 </head>
 
@@ -396,16 +396,20 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
           <div class="dd-lbl" id="privacy-lbl">Public Access: OFF</div>
         </div>
         <div class="dd-item" id="share-link-btn" style="display:none;" onclick="sharePublicLink()">
-          <div class="dd-ic"><span data-np-icon="link" data-np-size="18"></span></div>
+          <div class="dd-ic"><span data-np-icon="share" data-np-size="18"></span></div>
           <div class="dd-lbl">Share View Link</div>
         </div>
+        <div class="dd-item" id="upi-setup-btn" onclick="closeDD();openUpiSheet()">
+          <div class="dd-ic"><span data-np-icon="smartphone" data-np-size="18"></span></div>
+          <div class="dd-lbl">Receive Donations (QR)</div>
+        </div>
         <div class="dd-item" id="pdf-report-btn" style="display:none;" onclick="closeDD();exportPDF()">
-          <div class="dd-ic"><span data-np-icon="file-text" data-np-size="18"></span></div>
+          <div class="dd-ic"><span data-np-icon="download" data-np-size="18"></span></div>
           <div class="dd-lbl">Download PDF Report</div>
         </div>
 
         <div class="dd-item" id="don-visibility-btn" onclick="closeDD();toggleTableVisibility('don')">
-          <div class="dd-ic"><span data-np-icon="download" data-np-size="18"></span></div>
+          <div class="dd-ic"><span data-np-icon="bar-chart" data-np-size="18"></span></div>
           <div class="dd-lbl" id="don-vis-lbl">Hide Collections Table</div>
         </div>
         <div class="dd-item" id="exp-visibility-btn" onclick="closeDD();toggleTableVisibility('exp')">
@@ -470,6 +474,48 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         <div class="pop-btns">
           <button class="pbc" onclick="closePrivacyPop()">Cancel</button>
           <button class="btn btn-solid-primary" onclick="confirmPrivacyToggle()">Enable</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPI Setup Sheet -->
+    <div id="upi-sheet" class="sov" style="display:none;" onclick="closeUpiSheet()">
+      <div class="sbox" onclick="event.stopPropagation()">
+        <div class="sbox-header">
+          <div class="sh-handle"></div>
+          <div class="sh-title">Auto-Donations Setup</div>
+        </div>
+        <div class="sbox-body">
+          <div class="ef-field">
+            <div class="ef-label">Your UPI ID <span style="color:var(--red);">*</span></div>
+            <input class="ef-input" id="upi-id-input" type="text" placeholder="e.g. yourname@upi" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <div id="upi-id-error" style="color:var(--red); font-size:12px; margin-top:4px; display:none;"></div>
+          </div>
+          <div class="ef-field" style="margin-top:12px;">
+            <div class="ef-label">Payment Receiver Name <span style="color:var(--red);">*</span></div>
+            <input class="ef-input" id="upi-owner-name-input" type="text" placeholder="e.g. John Doe" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <div id="upi-name-error" style="color:var(--red); font-size:12px; margin-top:4px; display:none;"></div>
+            <p style="font-size:12px; color:var(--text3); margin-top:8px;">This exact name will be shown to donors.<br><strong style="color:var(--red);">Important:</strong> Our AI will scan donor receipts. If the 'Paid To' name on their screenshot doesn't match this name, the receipt will be rejected.</p>
+          </div>
+          
+          <div id="upi-share-section" style="display:none; margin-top:20px;">
+            <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Your Public Donation Link</div>
+            <div style="display:flex; align-items:center; background:var(--bg); border:2px solid var(--primary); border-radius:8px; padding:10px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);">
+              <div id="upi-link-text" style="flex:1; font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+              <button onclick="copyDonationLink(this)" style="background:none; border:none; cursor:pointer; color:var(--primary); padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <span data-np-icon="copy" data-np-size="18"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="sbox-footer">
+          <div class="ef-btns">
+            <button class="btn btn-text-secondary" id="btn-upi-cancel" onclick="closeUpiSheet()">Cancel</button>
+            <button class="btn btn-solid-primary" id="btn-upi-save" onclick="saveUpiId()">Save</button>
+            <button class="btn btn-solid-primary" id="btn-upi-share" onclick="shareDonationLink()" style="display:none;">
+              <span data-np-icon="share-2" data-np-size="16" style="margin-right:6px;"></span> Share
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -641,7 +687,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
             style="background:var(--card);border-radius:12px;border:1.5px solid var(--border2);overflow:hidden;padding:0 14px;margin-bottom:12px;">
           </div>
           <div
-            style="font-size:12px;color:var(--text);text-align:center;margin-top:10px;font-weight:700;padding:8px;background:var(--row-alt);border-radius:8px;font-family:'Nunito',sans-serif;">
+            style="font-size:12px;color:var(--text3);text-align:center;margin-top:10px;font-weight:700;padding:8px;border-radius:8px;font-family:'Nunito',sans-serif;">
             Restricted members cannot view or add entries.</div>
         </div>
         <div class="sbox-footer" style="padding-bottom:16px;">
@@ -945,7 +991,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <script src="js/auth-guard.js?v=23"></script>
   <script src="js/pull-to-refresh.js?v=23"></script>
 
-  <script src="js/event-main.js?v=23"></script>
+  <script src="js/event-main.js?v=28"></script>
 </body>
 </html>
 

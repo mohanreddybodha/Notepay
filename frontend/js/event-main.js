@@ -939,7 +939,7 @@
           <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
             ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
           </div>
-          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(d.donor_name)}</div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(d.donor_name)}</div>
         </div>
         <div class="sc" style="width:${getColWidth('don_amt', 90)}px;"><span class="cg">${d.amount ? formatINR(d.amount) : '₹0'}</span></div>`;
         
@@ -1083,7 +1083,7 @@
           <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
             ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
           </div>
-          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(e.description)}</div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(e.description)}</div>
         </div>
         <div class="sc" style="width:${getColWidth('exp_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '₹0'}</span></div>`;
         
@@ -2917,6 +2917,14 @@
 
     // ── Helpers ──
     function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function formatPrefixes(s) {
+      if (!s) return "";
+      let html = escHtml(s);
+      html = html.replace(/^\(M\)\s*/i, '<span style="color:#ef4444;font-weight:800;font-size:11px;margin-right:4px;">(M)</span>');
+      html = html.replace(/^\(AI\)\s*/i, '<span style="color:#3b82f6;font-weight:800;font-size:11px;margin-right:4px;">(AI)</span>');
+      html = html.replace(/^\(AI-P\)\s*/i, '<span style="color:#f97316;font-weight:800;font-size:11px;margin-right:4px;">(AI-P)</span>');
+      return html;
+    }
     function getInitials(n) { return n.split(" ").map(x => x[0]).join("").toUpperCase().slice(0, 2); }
 
     // ── Custom Column Management ──
@@ -3293,7 +3301,7 @@
             <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
               ${isPinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
             </div>
-            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${escHtml(entry.donor_name || entry.description)}</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(entry.donor_name || entry.description)}</div>
           </div>
           <div class="sc" style="width:${getColWidth(type === "don" ? 'don_amt' : 'exp_amt', 90)}px;">
             <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>
@@ -5178,3 +5186,116 @@
     }
 
 
+
+// --- PUBLIC DONATION PORTAL ---
+function openUpiSheet() {
+  document.getElementById('upi-sheet').style.display = 'flex';
+  document.getElementById('upi-id-input').value = eventData.upi_id || '';
+  document.getElementById('upi-owner-name-input').value = eventData.upi_owner_name || '';
+  if (eventData.upi_id && eventData.upi_owner_name) {
+    const link = window.location.origin + '/donate.html?event_id=' + eventId;
+    document.getElementById('upi-link-text').innerText = link;
+    document.getElementById('upi-share-section').style.display = 'block';
+    document.getElementById('btn-upi-save').style.display = 'none';
+    document.getElementById('btn-upi-share').style.display = '';
+    document.getElementById('btn-upi-cancel').innerText = 'Close';
+  } else {
+    document.getElementById('upi-share-section').style.display = 'none';
+    document.getElementById('btn-upi-save').style.display = '';
+    document.getElementById('btn-upi-share').style.display = 'none';
+    document.getElementById('btn-upi-cancel').innerText = 'Cancel';
+  }
+}
+
+function closeUpiSheet() {
+  document.getElementById('upi-sheet').style.display = 'none';
+}
+
+async function saveUpiId() {
+  const upiId = document.getElementById('upi-id-input').value.trim();
+  const upiOwnerName = document.getElementById('upi-owner-name-input').value.trim();
+
+  const idError = document.getElementById('upi-id-error');
+  const nameError = document.getElementById('upi-name-error');
+  idError.style.display = 'none';
+  nameError.style.display = 'none';
+
+  if (upiId || upiOwnerName) {
+    let hasError = false;
+    if (!upiId) {
+      idError.innerText = 'Please enter your UPI ID';
+      idError.style.display = 'block';
+      hasError = true;
+    }
+    if (!upiOwnerName) {
+      nameError.innerText = 'Please enter the Payment Receiver Name';
+      nameError.style.display = 'block';
+      hasError = true;
+    }
+    if (hasError) return;
+  }
+
+  try {
+    const res = await apiFetch('PUT', '/events/' + eventId, { upi_id: upiId, upi_owner_name: upiOwnerName });
+    eventData.upi_id = res.upi_id || '';
+    eventData.upi_owner_name = res.upi_owner_name || '';
+    
+    if (eventData.upi_id && eventData.upi_owner_name) {
+      const link = window.location.origin + '/donate.html?event_id=' + eventId;
+      document.getElementById('upi-link-text').innerText = link;
+      document.getElementById('upi-share-section').style.display = 'block';
+      document.getElementById('btn-upi-save').style.display = 'none';
+      document.getElementById('btn-upi-share').style.display = '';
+      document.getElementById('btn-upi-cancel').innerText = 'Close';
+      showToast('UPI ID saved! Donation link is ready.');
+    } else {
+      document.getElementById('upi-share-section').style.display = 'none';
+      document.getElementById('btn-upi-save').style.display = '';
+      document.getElementById('btn-upi-share').style.display = 'none';
+      document.getElementById('btn-upi-cancel').innerText = 'Cancel';
+      showToast('UPI ID removed.');
+    }
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function shareDonationLink() {
+  const link = window.location.origin + '/donate.html?event_id=' + eventId;
+  if (navigator.share) {
+    navigator.share({
+      title: 'Support ' + (eventData.name || 'our event'),
+      text: 'Please support our event by donating here! It only takes 30 seconds.',
+      url: link
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(link);
+    showToast('Donation link copied to clipboard!');
+  }
+}
+
+function copyDonationLink(btnElement) {
+  const link = window.location.origin + '/donate.html?event_id=' + eventId;
+  navigator.clipboard.writeText(link);
+  
+  if (btnElement) {
+    const originalHTML = btnElement.innerHTML;
+    btnElement.innerHTML = '<span data-np-icon="check" data-np-size="18" data-np-tone="green"></span>';
+    if (typeof npIcons !== 'undefined') npIcons.render();
+    setTimeout(() => {
+      btnElement.innerHTML = originalHTML;
+      if (typeof npIcons !== 'undefined') npIcons.render();
+    }, 2000);
+  } else {
+    showToast('Donation link copied to clipboard!');
+  }
+}
+
+function resetUpiUI() {
+  document.getElementById('upi-share-section').style.display = 'none';
+  document.getElementById('btn-upi-share').style.display = 'none';
+  document.getElementById('btn-upi-save').style.display = '';
+  document.getElementById('btn-upi-cancel').innerText = 'Cancel';
+}
+document.getElementById('upi-id-input').addEventListener('input', resetUpiUI);
+document.getElementById('upi-owner-name-input').addEventListener('input', resetUpiUI);

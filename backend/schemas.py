@@ -60,6 +60,20 @@ class EventResponse(EventCreate):
     show_expenses: bool = True
     donation_custom_columns: Any = []
     expense_custom_columns: Any = []
+    upi_id: Optional[str] = None
+    upi_owner_name: Optional[str] = None
+    upi_verified_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+
+class PublicEventResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    event_date: datetime
+    organizer_name: Optional[str] = None
+    upi_id: Optional[str] = None
+    upi_owner_name: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -67,6 +81,9 @@ class DonationCreate(BaseModel):
     donor_name: str
     amount: Optional[float] = None
     custom_fields: Optional[Dict[str, Any]] = None
+    entry_source: Optional[str] = None  # "ai", "manual", "collector"
+    transaction_date: Optional[datetime] = None  # Date from screenshot
+    collector_name: Optional[str] = None  # Who collected (organizer name)
 
 class DonationResponse(DonationCreate):
     id: int
@@ -76,6 +93,19 @@ class DonationResponse(DonationCreate):
     collected_at: datetime
     class Config:
         from_attributes = True
+
+class ManualDonationEntry(BaseModel):
+    """Schema for manual donation entry when AI extraction fails."""
+    donor_name: str
+    amount: float
+    receipt_session_id: Optional[str] = None
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "donor_name": "BODA MOHAN REDDY",
+                "amount": 110.00
+            }
+        }
 
 class ExpenseCreate(BaseModel):
     description: str
@@ -118,6 +148,7 @@ class RecentTransaction(BaseModel):
     type: str  # 'donation' or 'expense'
     title: str # donor_name or expense description
     amount: float
+    receipt_session_id: Optional[str] = None
     date: datetime
     collected_by_name: str
 
@@ -143,6 +174,9 @@ class EventUpdate(BaseModel):
     donation_custom_columns: Optional[List[Any]] = None
     expense_custom_columns: Optional[List[Any]] = None
     is_public: Optional[bool] = None
+    upi_id: Optional[str] = None
+    upi_owner_name: Optional[str] = None
+    upi_verified_at: Optional[datetime] = None
 
 class DonationUpdate(BaseModel):
     donor_name: Optional[str] = None

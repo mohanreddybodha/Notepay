@@ -45,6 +45,11 @@ class Event(Base):
     # Who created it
     organizer_id = Column(Integer, ForeignKey("users.id"))
     
+    # Public Donation Portal
+    upi_id = Column(String, nullable=True)
+    upi_owner_name = Column(String, nullable=True)
+    upi_verified_at = Column(DateTime, nullable=True)
+    
     # Table visibility  organizer can hide Donations or Expenses
     show_donations = Column(Boolean, default=True)
     show_expenses = Column(Boolean, default=True)

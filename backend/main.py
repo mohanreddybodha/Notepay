@@ -1191,3 +1191,333 @@ async def websocket_endpoint(websocket: WebSocket, event_id: str):
             await websocket.receive_text()
     except Exception:
         manager.disconnect(websocket, event_id)
+
+
+# --- RECOVERED ENDPOINTS ---
+from fastapi import UploadFile, File
+
+
+@app.post("/api/public/event/{event_id}/upload_receipt", tags=["Public Portal"])
+async def upload_receipt(event_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    event = crud.get_event(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if not event.upi_id or not event.upi_owner_name:
+        raise HTTPException(status_code=409, detail="The organizer must verify the event UPI ID before accepting donations")
+    
+    if not file.content_type or not file.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    try:
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail="File is empty")
+        
+        if len(contents) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+        
+        prompt = '''You are analyzing an Indian UPI payment receipt screenshot. Extract these 5 fields:
+1. amount: The payment amount in INR as a number (e.g., 10.00, 110.00)
+2. sender_name: The person who SENT the money (the payer)
+3. receiver_name: The person or business who RECEIVED the money (the payee)
+4. transaction_date: The date in YYYY-MM-DD format
+5. status: "success" if this is a payment receipt, "unrelated_image" if the image is NOT a payment receipt (e.g., selfie, scenery, random text).
+
+KEY RULES FOR DIFFERENT UPI APPS:
+
+PhonePe receipts:
+- "Banking Name: John Doe" → receiver_name is "John Doe" (this is the RECEIVER\'s account name)
+- "Debited from" section = the SENDER\'s bank account
+- "Transfer to" section = the RECEIVER\'s bank account
+- The name under "Banking Name" in the "Transfer to" section = receiver_name
+
+Google Pay receipts:
+- "Paid to [Name]" or "To [Name]" = receiver_name
+- "From: [Name]" or "Sender: [Name]" = sender_name
+- "Banking name: [Name]" = receiver_name if in paid-to section
+
+Paytm/BHIM/Other receipts:
+- "Paid To", "Beneficiary", "To", "Merchant" = receiver_name
+- "From", "Debited", "Your Account" = sender_name
+
+GENERAL RULES:
+- receiver_name: Look for "Banking Name", "Paid to", "To", "Transfer to", "Merchant", "Beneficiary"
+- sender_name: Look for "From", "Debited from", "Paid by", "Your name" - must be a PERSON NAME not bank name
+- If sender_name is NOT clearly visible, return null for sender_name - DO NOT guess
+- NEVER confuse sender and receiver
+- transaction_date: Look for dates near "Transaction", time stamps at top of screen (e.g., "04:44 pm on 12 Jun 2026" → "2026-06-12")
+
+Return ONLY valid JSON:
+{"amount": 10.00, "sender_name": null, "receiver_name": "Boda Mohan Reddy", "transaction_date": "2026-06-12", "status": "success"}'''
+
+        extracted_text = None
+        extraction_api = None
+
+        groq_key = os.getenv("GROQ_API_KEY")
+        if groq_key:
+            try:
+                from groq import Groq as GroqClient
+                import base64
+                groq_client = GroqClient(api_key=groq_key)
+                image_b64 = base64.standard_b64encode(contents).decode("utf-8")
+                
+                response = groq_client.chat.completions.create(
+                    model="meta-llama/llama-4-scout-17b-16e-instruct",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}
+                                }
+                            ]
+                        }
+                    ],
+                    temperature=0.1,
+                    response_format={"type": "json_object"},
+                    max_completion_tokens=256
+                )
+                extracted_text = response.choices[0].message.content.strip()
+                extraction_api = "groq"
+            except Exception as e:
+                print(f"Groq failed: {e}")
+
+        if not extracted_text:
+            gemini_key = os.getenv("GEMINI_KEY_1") or os.getenv("GEMINI_API_KEY")
+            if gemini_key:
+                try:
+                    import google.generativeai as genai
+                    import PIL.Image, io
+                    genai.configure(api_key=gemini_key)
+                    image = PIL.Image.open(io.BytesIO(contents))
+                    
+                    model = genai.GenerativeModel('gemini-2.0-flash')
+                    response = model.generate_content([image, prompt])
+                    extracted_text = response.text.strip()
+                    extraction_api = "gemini"
+                except Exception as e:
+                    print(f"Gemini failed: {e}")
+
+        if not extracted_text:
+            return {
+                "status": "extraction_failed",
+                "extraction_failed": True,
+                "message": "AI services are currently unavailable. Please enter manually."
+            }
+
+        import re, json
+        json_match = re.search(r'\{.*?\}', extracted_text, re.DOTALL)
+        if not json_match:
+            return {
+                "status": "extraction_failed",
+                "extraction_failed": True,
+                "message": "AI failed to return structured data. Please enter manually."
+            }
+
+        parsed_data = json.loads(json_match.group(0))
+        
+        if parsed_data.get("status") == "unrelated_image":
+            return {
+                "status": "unrelated_image",
+                "message": "Please upload a valid payment screenshot. The uploaded image does not appear to be a UPI receipt."
+            }
+            
+        amount = float(parsed_data.get("amount", 0)) if parsed_data.get("amount") else 0
+        donor_name = str(parsed_data.get("sender_name", "") or "")[:100].strip()
+        receiver_name = str(parsed_data.get("receiver_name", "") or "")[:100].strip()
+        transaction_date_str = parsed_data.get("transaction_date")
+
+        if amount <= 0:
+            return {
+                "status": "extraction_failed",
+                "extraction_failed": True,
+                "message": "Could not automatically extract the payment amount. Please enter manually."
+            }
+
+        # Validate receiver name (Flexible Match)
+        owner_name = event.upi_owner_name or ""
+        rn_clean = re.sub(r'[^a-zA-Z0-9]', '', receiver_name).lower()
+        owner_clean = re.sub(r'[^a-zA-Z0-9]', '', owner_name).lower()
+
+        if not rn_clean:
+            # AI could not extract receiver name at all — don't reject, allow manual entry
+            return {
+                "status": "extraction_failed",
+                "extraction_failed": True,
+                "message": "Could not identify the receiver name on this receipt. Please enter your details manually."
+            }
+
+        if owner_clean and (rn_clean not in owner_clean and owner_clean not in rn_clean):
+            # AI found a receiver name but it doesn't match — genuine rejection
+            return {
+                "status": "rejected",
+                "message": f"Payment was made to '{receiver_name}', but this collection is for '{owner_name}'. Please upload the correct receipt."
+            }
+
+        # Check donor name
+        dn_clean = re.sub(r'[^a-zA-Z0-9]', '', donor_name).lower()
+        if dn_clean and rn_clean and (dn_clean in rn_clean or rn_clean in dn_clean):
+            donor_name = ""  # Same person
+        if donor_name.lower() in ["none", "null", "unknown"]:
+            donor_name = ""
+
+        from datetime import datetime
+        try:
+            transaction_date = datetime.strptime(transaction_date_str, "%Y-%m-%d") if transaction_date_str else datetime.now()
+        except:
+            transaction_date = datetime.now()
+
+        # If donor name missing, initiate Partial Success flow
+        if not donor_name:
+            import uuid
+            session_id = str(uuid.uuid4())
+            try:
+                from cache import cache
+                cache.set(f"receipt:{session_id}", {
+                    "amount": amount,
+                    "transaction_date": transaction_date.isoformat(),
+                    "receiver_name": receiver_name,
+                    "extraction_api": extraction_api
+                }, expire=900) # 15 minutes
+            except Exception as e:
+                print(f"Failed to cache receipt session: {e}")
+
+            return {
+                "status": "partial_success",
+                "amount": amount,
+                "receipt_session_id": session_id,
+                "message": "Receipt valid! Please enter your name to complete the donation."
+            }
+
+        # Full Success - Create Donation Automatically
+        donor_name_with_prefix = f"(AI) {donor_name}"
+        
+        new_donation = schemas.DonationCreate(
+            donor_name=donor_name_with_prefix,
+            amount=amount,
+            entry_source="ai",
+            transaction_date=transaction_date,
+            collector_name=event.upi_owner_name,
+            custom_fields={
+                "method": f"UPI Auto-Receipt ({extraction_api.upper()})",
+                "status": "ai_verified",
+                "receiver_name": event.upi_owner_name,
+                "receipt_receiver_name": receiver_name,
+                "verified_upi_id": event.upi_id,
+                "extraction_api": extraction_api
+            }
+        )
+        
+        res = crud.create_donation(db, event_id, event.organizer_id, new_donation)
+        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_auto"})
+        
+        return {
+            "message": "Success",
+            "donation": res,
+            "verification": "ai_verified",
+            "extraction_api": extraction_api
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error processing receipt: {str(e)}")
+
+@app.post("/api/public/event/{event_id}/submit_manual_donation", tags=["Public Portal"])
+async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntry, db: Session = Depends(get_db)):
+    event = crud.get_event(db, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if not event.upi_id or not event.upi_owner_name:
+        raise HTTPException(status_code=409, detail="The organizer must verify the event UPI ID before accepting donations")
+    
+    try:
+        donor_name = data.donor_name.strip()
+        amount = float(data.amount)
+        if not donor_name or len(donor_name) < 2:
+            raise ValueError("Donor name must be at least 2 characters")
+        if amount <= 0:
+            raise ValueError("Amount must be greater than 0")
+        if amount > 1000000:
+            raise ValueError("Amount seems too high (max ₹10,00,000)")
+            
+        from datetime import datetime
+        transaction_date = datetime.now()
+        entry_source = "manual"
+        status = "manual_entry"
+        method = "Manual Entry"
+        receipt_receiver_name = None
+        extraction_api = None
+        
+        # Secure Partial AI Validation Logic
+        if data.receipt_session_id:
+            try:
+                from cache import cache
+                cached_data = cache.get(f"receipt:{data.receipt_session_id}")
+                if cached_data:
+                    # Enforce cached values
+                    amount = float(cached_data.get("amount", amount))
+                    try:
+                        transaction_date = datetime.fromisoformat(cached_data.get("transaction_date"))
+                    except:
+                        pass
+                    entry_source = "ai_partial"
+                    status = "ai_partial_verified"
+                    extraction_api = cached_data.get("extraction_api")
+                    method = f"UPI Partial Auto ({str(extraction_api).upper()})"
+                    receipt_receiver_name = cached_data.get("receiver_name")
+                    # Clear cache to prevent replay
+                    cache.delete(f"receipt:{data.receipt_session_id}")
+            except Exception as e:
+                print(f"Error reading cache for partial ai: {e}")
+
+        donor_name_with_prefix = f"(M) {donor_name}" if entry_source == "manual" else f"(AI-P) {donor_name}"
+        
+        custom_fields = {
+            "method": method,
+            "status": status,
+            "receiver_name": event.upi_owner_name,
+            "verified_upi_id": event.upi_id
+        }
+        if receipt_receiver_name:
+            custom_fields["receipt_receiver_name"] = receipt_receiver_name
+        if extraction_api:
+            custom_fields["extraction_api"] = extraction_api
+
+        new_donation = schemas.DonationCreate(
+            donor_name=donor_name_with_prefix,
+            amount=amount,
+            entry_source=entry_source,
+            transaction_date=transaction_date,
+            collector_name=event.upi_owner_name,
+            custom_fields=custom_fields
+        )
+        res = crud.create_donation(db, event_id, event.organizer_id, new_donation)
+        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_manual"})
+        return {
+            "message": "Success",
+            "donation": res,
+            "verification": status
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/public/event/{event_id}", tags=["Public Portal"])
+def get_public_event(event_id: str, db: Session = Depends(get_db)):
+    event = crud.get_event(db, event_id)
+    if not event or not event.is_active:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    organizer = crud.get_user_profile(db, event.organizer_id)
+    
+    return {
+        "id": event.id,
+        "name": event.name,
+        "description": event.description,
+        "upi_id": event.upi_id,
+        "upi_owner_name": event.upi_owner_name,
+        "organizer_name": organizer.full_name if organizer else "Organizer"
+    }

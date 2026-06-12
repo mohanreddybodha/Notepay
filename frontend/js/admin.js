@@ -192,7 +192,7 @@ async function loadUsers() {
 async function loadEvents() {
   const q = document.getElementById('event-search').value;
   const tbody = document.getElementById('events-tbody');
-  tbody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+  tbody.innerHTML = "<tr><td colspan='7'>Loading...</td></tr>";
   try {
     const events = await apiCall(`/events?search=${encodeURIComponent(q)}`);
     tbody.innerHTML = events.map(e => `
@@ -202,7 +202,9 @@ async function loadEvents() {
         <td>${e.organizer_name}</td>
         <td>${new Date(e.created_at).toLocaleDateString()}</td>
         <td>${e.is_active ? `<span class="badge badge-success">Active</span>` : `<span class="badge badge-danger">Inactive</span>`}</td>
+        <td>${e.upi_id ? `<span class="badge" style="background:#10b981;">UPI Set</span>` : `<span class="badge" style="background:#9ca3af;">No UPI</span>`}</td>
         <td>
+          <button class="action-btn btn-primary" onclick="editEventModal('${e.id}', '${e.name}', '${e.upi_id || ''}')">Edit</button>
           <button class="action-btn btn-warning" onclick="toggleEventStatus('${e.id}')">${e.is_active ? 'Deactivate' : 'Reactivate'}</button>
           <button class="action-btn btn-del" onclick="promptDeleteEvent('${e.id}', '${e.name}')">Delete</button>
         </td>
@@ -418,6 +420,107 @@ function toggleEventStatus(id) {
       <button class="btn" style="background:var(--admin-warning);" onclick="executeToggleEventStatus('${id}')">Confirm Change</button>
     </div>
   `);
+}
+
+// Edit Event - UPI ID and other fields
+function editEventModal(id, name, upiId) {
+  showModal(`
+    <div class="modal-title">Edit Event: ${name}</div>
+    <form id="edit-event-form" onsubmit="handleEditEvent(event, '${id}')">
+      <div class="form-group">
+        <label>Event Name</label>
+        <input type="text" id="edit-event-name" value="${name}" placeholder="Event Name">
+      </div>
+      <div class="form-group">
+        <label>UPI ID (for public donations) *</label>
+        <input type="text" id="edit-event-upi" value="${upiId}" placeholder="example@upi" style="font-family: monospace;">
+        <small style="color: #6b7280; display: block; margin-top: 8px; line-height: 1.5;">
+          <strong>Format:</strong> phoneNumber@bank or username@bank<br>
+          <strong>Example:</strong> 9876543210@okhdfcbank<br>
+          <strong>Note:</strong> When donors scan the QR code, they will see <strong>YOUR NAME</strong> as the beneficiary (receiver). The QR encodes your UPI, so donors are paying TO YOU.
+        </small>
+        <div id="upi-error" style="color: #dc2626; font-size: 12px; margin-top: 8px; display: none;"></div>
+      </div>
+      <div class="form-group">
+        <button type="button" class="btn-outline" onclick="copyShareLink('${id}')">📋 Copy Share Link</button>
+        <small style="color: #6b7280; display: block; margin-top: 5px;">Share with donors: notepay.in/donate.html?event_id=${id}</small>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" onclick="hideModal()">Cancel</button>
+        <button type="submit" class="btn" style="background:var(--primary);">Save Changes</button>
+      </div>
+    </form>
+  `);
+}
+
+// UPI Format Validator
+function validateUpiFormat(upi) {
+  if (!upi) return true; // Empty is allowed (optional)
+  
+  // UPI format: 10-digit phone or username @ bank code
+  const upiRegex = /^[a-zA-Z0-9._-]{3,60}@[a-zA-Z]{3,10}$/;
+  
+  if (!upiRegex.test(upi)) {
+    return {
+      valid: false,
+      error: "Invalid UPI format. Use: 9876543210@okhdfcbank or name@bank"
+    };
+  }
+  
+  // Additional checks
+  const parts = upi.split('@');
+  if (parts[1].length < 3 || parts[1].length > 10) {
+    return {
+      valid: false,
+      error: "Bank code should be 3-10 characters (e.g., okhdfcbank)"
+    };
+  }
+  
+  return { valid: true };
+}
+
+async function handleEditEvent(e, eventId) {
+  e.preventDefault();
+  const name = document.getElementById('edit-event-name').value;
+  const upiId = document.getElementById('edit-event-upi').value.trim();
+  const errorEl = document.getElementById('upi-error');
+  
+  if (!name) {
+    alert("Event name is required");
+    return;
+  }
+  
+  // Validate UPI format if provided
+  if (upiId) {
+    const validation = validateUpiFormat(upiId);
+    if (!validation.valid) {
+      errorEl.innerText = validation.error;
+      errorEl.style.display = 'block';
+      return;
+    }
+  }
+  
+  errorEl.style.display = 'none';
+  
+  try {
+    await apiCall(`/events/${eventId}`, 'PUT', {
+      name: name,
+      upi_id: upiId || null
+    });
+    hideModal();
+    loadEvents();
+  } catch (error) {
+    alert("Error updating event: " + error.message);
+  }
+}
+
+function copyShareLink(eventId) {
+  const link = `${window.location.origin}/donate.html?event_id=${eventId}`;
+  navigator.clipboard.writeText(link).then(() => {
+    alert("Donation link copied: " + link);
+  }).catch(() => {
+    alert("Could not copy. Here's the link: " + link);
+  });
 }
 
 async function executeToggleEventStatus(id) {

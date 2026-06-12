@@ -311,6 +311,8 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
     if data.show_donations is not None: event.show_donations = data.show_donations
     if data.show_expenses is not None: event.show_expenses = data.show_expenses
     if data.is_public is not None: event.is_public = data.is_public
+    if data.upi_id is not None: event.upi_id = data.upi_id
+    if data.upi_owner_name is not None or data.upi_id == "": event.upi_owner_name = data.upi_owner_name
     db.commit()
     db.refresh(event)
     # Invalidate full cache
@@ -838,3 +840,11 @@ def get_user_full_dashboard(db: Session, user_id: int):
     v = cache.cache.get_global_version()
     cache.cache.set(f"dash:{user_id}:{v}", res, expire=300)
     return res
+
+def update_user_firebase_uid(db: Session, user_id: int, uid: str):
+    user = get_user_profile(db, user_id)
+    if user:
+        user.firebase_uid = uid
+        db.commit()
+        db.refresh(user)
+    return user
