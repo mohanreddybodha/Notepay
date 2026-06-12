@@ -1,10 +1,19 @@
+// Extract Event ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const eventId = urlParams.get('event_id');
+
+// Hide .html extension from URL bar
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
+  const cleanPath = window.location.pathname.slice(0, -5);
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}
+
 // Helper to get query params
 function getQueryParam(param) {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get(param);
 }
 
-const eventId = getQueryParam('event_id');
 let currentUpiId = null;
 let currentUpiOwnerName = null;
 let currentEventName = null;
@@ -69,12 +78,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         e.preventDefault();
         document.getElementById('upi-confirm-name').innerText = currentUpiOwnerName;
         document.getElementById('upi-confirm-id').innerText = 'UPI: ' + currentUpiId;
+        
+        const proceedBtn = document.getElementById('upi-confirm-proceed');
+        proceedBtn.href = upiUrl; // Setting the href of the anchor directly allows native OS intent handling
+        proceedBtn.onclick = () => {
+          modal.style.display = 'none';
+        };
+
         const modal = document.getElementById('upi-confirm-modal');
         modal.style.display = 'flex';
-        document.getElementById('upi-confirm-proceed').onclick = () => {
-          modal.style.display = 'none';
-          window.location.href = upiUrl;
-        };
       });
 
       // Draw QR Code
