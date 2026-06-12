@@ -2136,6 +2136,13 @@
     let ctxEntry = null, ctxType = null;
     function openCtx(e, type, entry) {
       if (isVisitor) return;
+      
+      // Fetch latest entry from array to prevent stale closure data if previously inline-edited
+      const entryIdStr = String(entry.id || entry._id);
+      const latest = type === 'don' 
+        ? donations.find(x => String(x.id || x._id) === entryIdStr) 
+        : expenses.find(x => String(x.id || x._id) === entryIdStr);
+      if (latest) entry = latest;
       // SECURITY: Collector can only edit/delete their own entries. Organizer can do anything.
       if (!isOrganizer && entry.collected_by !== myUserId && !isVisitor) {
         // Collectors can see the menu even if they didn't collect it, but ONLY for pinning
