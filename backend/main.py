@@ -1358,7 +1358,12 @@ Return ONLY valid JSON:
                 "message": "Could not identify the receiver name on this receipt. Please enter your details manually."
             }
 
-        if owner_clean and (rn_clean not in owner_clean and owner_clean not in rn_clean):
+        rn_words = set(re.findall(r'[a-z0-9]+', receiver_name.lower()))
+        owner_words = set(re.findall(r'[a-z0-9]+', owner_name.lower()))
+        shared_significant_words = {w for w in rn_words.intersection(owner_words) if len(w) > 2}
+        is_substring = (rn_clean in owner_clean or owner_clean in rn_clean)
+
+        if owner_clean and not is_substring and not shared_significant_words:
             # AI found a receiver name but it doesn't match — genuine rejection
             return {
                 "status": "rejected",
@@ -1530,3 +1535,4 @@ def get_public_event(event_id: str, db: Session = Depends(get_db)):
         "upi_owner_name": event.upi_owner_name,
         "organizer_name": organizer.full_name if organizer else "Organizer"
     }
+

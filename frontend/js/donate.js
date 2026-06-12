@@ -60,7 +60,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById('btn-deep-link').style.display = "none";
     } else {
       // Generate standard UPI URL
-      const upiUrl = `upi://pay?pa=${currentUpiId}&pn=${encodeURIComponent(currentUpiOwnerName)}&cu=INR`;
+      const safeUpiId = currentUpiId.trim();
+      const safeOwnerName = encodeURIComponent(currentUpiOwnerName.trim());
+      const upiUrl = `upi://pay?pa=${safeUpiId}&pn=${safeOwnerName}&cu=INR&tn=Donation`;
       
       // Wire up deep-link button to native confirmation modal
       document.getElementById('btn-deep-link').addEventListener('click', (e) => {
