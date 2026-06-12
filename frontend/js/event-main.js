@@ -5204,7 +5204,7 @@ function openUpiSheet() {
   document.getElementById('upi-id-input').value = eventData.upi_id || '';
   document.getElementById('upi-owner-name-input').value = eventData.upi_owner_name || '';
   if (eventData.upi_id && eventData.upi_owner_name) {
-    const link = window.location.origin + '/donate.html?event_id=' + eventId;
+    const link = window.location.origin + '/donate?event_id=' + eventId;
     document.getElementById('upi-link-text').innerText = link;
     document.getElementById('upi-share-section').style.display = 'block';
     document.getElementById('btn-upi-save').style.display = 'none';
@@ -5252,7 +5252,7 @@ async function saveUpiId() {
     eventData.upi_owner_name = res.upi_owner_name || '';
     
     if (eventData.upi_id && eventData.upi_owner_name) {
-      const link = window.location.origin + '/donate.html?event_id=' + eventId;
+      const link = window.location.origin + '/donate?event_id=' + eventId;
       document.getElementById('upi-link-text').innerText = link;
       document.getElementById('upi-share-section').style.display = 'block';
       document.getElementById('btn-upi-save').style.display = 'none';
@@ -5272,7 +5272,7 @@ async function saveUpiId() {
 }
 
 function shareDonationLink() {
-  const link = window.location.origin + '/donate.html?event_id=' + eventId;
+  const link = window.location.origin + '/donate?event_id=' + eventId;
   if (navigator.share) {
     navigator.share({
       title: 'Support ' + (eventData.name || 'our event'),
@@ -5286,7 +5286,7 @@ function shareDonationLink() {
 }
 
 function copyDonationLink(btnElement) {
-  const link = window.location.origin + '/donate.html?event_id=' + eventId;
+  const link = window.location.origin + '/donate?event_id=' + eventId;
   navigator.clipboard.writeText(link);
   
   if (btnElement) {

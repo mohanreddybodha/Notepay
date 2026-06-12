@@ -138,6 +138,7 @@ jobs:
           # 2. Inject the real API/WebSocket URLs into the frontend code before uploading
           sed -i "s|API_PLACEHOLDER|$API_URL|g" frontend/js/api.js
           sed -i "s|API_PLACEHOLDER|$API_URL|g" frontend/js/admin.js
+          sed -i "s|API_PLACEHOLDER|$API_URL|g" frontend/js/donate.js
           sed -i "s|WSS_PLACEHOLDER|$WS_URL|g" frontend/js/api.js
 
           # 3. Auto-bump all asset version tags (?v=N) using the short git commit SHA.

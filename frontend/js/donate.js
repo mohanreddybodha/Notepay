@@ -22,9 +22,9 @@ function showRejectionPopup(message) {
 }
 
 // Determine backend URL (works on local and prod)
-const API_BASE = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
-  ? 'http://127.0.0.1:8000' 
-  : 'https://api.notepay.in';
+const API_BASE = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.hostname.match(/^[0-9.]+$/)
+  ? `http://${window.location.hostname}:8000` 
+  : "API_PLACEHOLDER".replace(/\/$/, "");
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (!eventId) {
