@@ -1254,6 +1254,15 @@ Return ONLY valid JSON:
         extraction_api = None
 
         groq_key = os.getenv("GROQ_API_KEY")
+        if not groq_key:
+            try:
+                # Default boto3 region should be handled by AWS config, but fallback to us-east-1 or ap-south-1 if needed.
+                ssm = boto3.client('ssm')
+                ssm_param = ssm.get_parameter(Name='/notepay/groq_key_for_payment', WithDecryption=True)
+                groq_key = ssm_param['Parameter']['Value']
+            except Exception as e:
+                print(f"SSM fetch failed: {e}")
+
         if groq_key:
             try:
                 from groq import Groq as GroqClient

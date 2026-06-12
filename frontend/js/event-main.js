@@ -1598,9 +1598,9 @@
       if (!skipDupCheck) {
         let existing = null;
         if (isDon) {
-          existing = donations.find(d => d.donor_name.toLowerCase() === name.toLowerCase());
+          existing = donations.find(d => stripPrefixes(d.donor_name) === stripPrefixes(name));
         } else {
-          existing = expenses.find(e => e.description.toLowerCase() === name.toLowerCase());
+          existing = expenses.find(e => stripPrefixes(e.description) === stripPrefixes(name));
         }
         if (existing) {
           const existingName = isDon ? existing.donor_name : existing.description;
@@ -1972,9 +1972,9 @@
         let existing = null;
         const currentIdStr = String(id);
         if (isDon) {
-          existing = donations.find(d => String(d.id || d._id) !== currentIdStr && d.donor_name.toLowerCase().trim() === name.toLowerCase().trim());
+          existing = donations.find(d => String(d.id || d._id) !== currentIdStr && stripPrefixes(d.donor_name) === stripPrefixes(name));
         } else {
-          existing = expenses.find(e => String(e.id || e._id) !== currentIdStr && e.description.toLowerCase().trim() === name.toLowerCase().trim());
+          existing = expenses.find(e => String(e.id || e._id) !== currentIdStr && stripPrefixes(e.description) === stripPrefixes(name));
         }
         if (existing) {
           const existingName = type === "don" ? existing.donor_name : existing.description;
@@ -2070,9 +2070,9 @@
         const amtVal = amount ? parseFloat(amount) : null;
         let existing = null;
         if (entryType === "don") {
-          existing = donations.find(d => d.donor_name.toLowerCase() === name.toLowerCase());
+          existing = donations.find(d => stripPrefixes(d.donor_name) === stripPrefixes(name));
         } else {
-          existing = expenses.find(e => e.description.toLowerCase() === name.toLowerCase());
+          existing = expenses.find(e => stripPrefixes(e.description) === stripPrefixes(name));
         }
         if (existing) {
           const existingName = entryType === "don" ? existing.donor_name : existing.description;
@@ -2252,9 +2252,9 @@
         let existing = null;
         const currentIdStr = String(editTarget.entry.id || editTarget.entry._id);
         if (editTarget.type === "don") {
-          existing = donations.find(d => String(d.id || d._id) !== currentIdStr && d.donor_name.toLowerCase().trim() === name.toLowerCase().trim());
+          existing = donations.find(d => String(d.id || d._id) !== currentIdStr && stripPrefixes(d.donor_name) === stripPrefixes(name));
         } else {
-          existing = expenses.find(e => String(e.id || e._id) !== currentIdStr && e.description.toLowerCase().trim() === name.toLowerCase().trim());
+          existing = expenses.find(e => String(e.id || e._id) !== currentIdStr && stripPrefixes(e.description) === stripPrefixes(name));
         }
         if (existing) {
           const existingName = editTarget.type === "don" ? existing.donor_name : existing.description;
@@ -2924,6 +2924,10 @@
       html = html.replace(/^\(AI\)\s*/i, '<span style="color:#3b82f6;font-weight:800;font-size:11px;margin-right:4px;">(AI)</span>');
       html = html.replace(/^\(AI-P\)\s*/i, '<span style="color:#f97316;font-weight:800;font-size:11px;margin-right:4px;">(AI-P)</span>');
       return html;
+    }
+    function stripPrefixes(s) {
+      if (!s) return "";
+      return String(s).replace(/^\((M|AI|AI-P)\)\s*/i, '').trim().toLowerCase();
     }
     function getInitials(n) { return n.split(" ").map(x => x[0]).join("").toUpperCase().slice(0, 2); }
 
