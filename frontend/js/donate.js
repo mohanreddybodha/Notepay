@@ -98,6 +98,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.H
       });
+
+      // Setup Download QR button
+      document.getElementById('btn-download-qr').addEventListener('click', (e) => {
+        e.preventDefault();
+        const qrBox = document.getElementById("qr-box");
+        let qrCanvas = qrBox.querySelector("canvas");
+        let qrImg = qrBox.querySelector("img");
+        let dataUrl = null;
+        
+        if (qrCanvas) {
+          dataUrl = qrCanvas.toDataURL("image/png");
+        } else if (qrImg && qrImg.src) {
+          dataUrl = qrImg.src;
+        }
+        
+        if (dataUrl) {
+          const a = document.createElement("a");
+          a.href = dataUrl;
+          a.download = `upi-qr-${currentUpiId.split('@')[0]}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      });
     }
 
     // Show Content
