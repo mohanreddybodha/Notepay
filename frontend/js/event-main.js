@@ -5248,6 +5248,13 @@ async function openReceiptModal(donationIdStr, event) {
   
   const img = document.getElementById('receipt-img');
   img.src = '';
+  
+  const donorNameEl = document.getElementById('receipt-donor-name');
+  if (donorNameEl) {
+    let cleanName = d.donor_name.replace(/^\((M|AI|AI-P)\)\s*/, '');
+    donorNameEl.innerText = "Donor: " + cleanName;
+  }
+  
   document.getElementById('receipt-modal').style.display = 'flex';
   
   // Security & Actions Logic
