@@ -2174,13 +2174,13 @@
         ${canModify ? `
           ${type === 'don' ? `
           <div class="ctx-item" onclick="closeCtx();shareReceipt('${escHtml(entry.donor_name).replace(/'/g, "\\'")}', '${entry.amount}', '${entry.collected_at}', '${escHtml(entry.collected_by_name || 'System').replace(/'/g, "\\'")}')">
-            <span data-np-icon="share-2" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
+            <span data-np-icon="share" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Share Receipt
           </div>
           ${!entry.receipt_key ? `
           <div class="ctx-item" onclick="closeCtx();triggerManualReceiptUpload('${entry.id || entry._id}')">
             <span data-np-icon="camera" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
-            Upload Payment Proof
+            Upload Proof
           </div>
           ` : ''}
           ` : ''}
