@@ -13,7 +13,7 @@ load_dotenv()  # Load .env for local development
 # Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Request, Query, Header, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Request, Query, Header, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
@@ -664,6 +664,75 @@ async def delete_donation(event_id: str, donation_id: int,
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_delete"})
     return {"message": "Donation deleted"}
 
+@app.get("/events/{event_id}/donations/{donation_id}/receipt", tags=["Donations"])
+def get_donation_receipt(event_id: str, donation_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Fetch the receipt image securely."""
+    verify_membership(db, event_id, user_id)
+    donation = db.query(models.Donation).filter_by(id=donation_id, event_id=event_id).first()
+    if not donation or not donation.receipt_key:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+        
+    s3_bucket = os.getenv("RECEIPTS_BUCKET")
+    if not s3_bucket or donation.receipt_key.startswith("local://"):
+        # Local fallback
+        local_path = donation.receipt_key.replace("local://", "")
+        # Construct absolute path to backend/uploads
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        abs_local_path = os.path.join(base_dir, local_path)
+        if not os.path.exists(abs_local_path):
+            raise HTTPException(status_code=404, detail="Receipt image not found on local disk")
+        from fastapi.responses import FileResponse
+        return FileResponse(abs_local_path)
+        
+    try:
+        s3_client = boto3.client('s3')
+        obj = s3_client.get_object(Bucket=s3_bucket, Key=donation.receipt_key)
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(obj['Body'], media_type=obj['ContentType'])
+    except Exception as e:
+        print(f"Failed to fetch receipt from S3: {e}")
+        raise HTTPException(status_code=404, detail="Receipt image not found in storage")
+
+@app.post("/events/{event_id}/donations/{donation_id}/receipt", tags=["Donations"])
+async def upload_donation_receipt_manual(event_id: str, donation_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Manually upload a receipt for a donation."""
+    member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
+    donation = db.query(models.Donation).filter_by(id=donation_id, event_id=event_id).first()
+    if not donation:
+        raise HTTPException(status_code=404, detail="Donation not found")
+    if member.role != models.UserRole.organizer and donation.collected_by != user_id:
+        raise HTTPException(status_code=403, detail="You can only upload receipts for your own entries")
+        
+    s3_bucket = os.getenv("RECEIPTS_BUCKET")
+    try:
+        contents = await file.read()
+        import uuid
+        if s3_bucket:
+            receipt_key = f"receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+            s3_client = boto3.client('s3')
+            s3_client.put_object(
+                Bucket=s3_bucket,
+                Key=receipt_key,
+                Body=contents,
+                ContentType=file.content_type or 'image/jpeg'
+            )
+        else:
+            # Local fallback
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            local_dir = os.path.join(base_dir, f"uploads/receipts/{event_id}")
+            os.makedirs(local_dir, exist_ok=True)
+            local_filename = f"uploads/receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+            abs_local_path = os.path.join(base_dir, local_filename)
+            with open(abs_local_path, "wb") as f:
+                f.write(contents)
+            receipt_key = f"local://{local_filename}"
+        donation.receipt_key = receipt_key
+        db.commit()
+        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "receipt_upload"})
+        return {"receipt_key": receipt_key, "message": "Receipt uploaded successfully"}
+    except Exception as e:
+        print(f"Failed to upload manual receipt: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload receipt")
 
 #  EXPENSES 
 @app.get("/events/{event_id}/expenses", response_model=List[schemas.ExpenseResponse], tags=["Expenses"])
@@ -1215,6 +1284,48 @@ async def upload_receipt(event_id: str, file: UploadFile = File(...), db: Sessio
         
         if len(contents) > 5 * 1024 * 1024:
             raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+            
+        receipt_key = None
+        s3_bucket = os.getenv("RECEIPTS_BUCKET")
+        import uuid
+        try:
+            if s3_bucket:
+                s3_client = boto3.client('s3')
+                receipt_key = f"receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+                s3_client.put_object(
+                    Bucket=s3_bucket,
+                    Key=receipt_key,
+                    Body=contents,
+                    ContentType=file.content_type or 'image/jpeg'
+                )
+            else:
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                local_dir = os.path.join(base_dir, f"uploads/receipts/{event_id}")
+                os.makedirs(local_dir, exist_ok=True)
+                local_filename = f"uploads/receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+                abs_local_path = os.path.join(base_dir, local_filename)
+                with open(abs_local_path, "wb") as f:
+                    f.write(contents)
+                receipt_key = f"local://{local_filename}"
+        except Exception as e:
+            print(f"Failed to upload receipt early: {e}")
+
+        def get_fallback_response(msg):
+            session_id = str(uuid.uuid4())
+            try:
+                from cache import cache
+                cache.set(f"receipt:{session_id}", {
+                    "receipt_key": receipt_key,
+                    "extraction_api": "manual_fallback"
+                }, expire=900)
+            except Exception as e:
+                pass
+            return {
+                "status": "extraction_failed",
+                "extraction_failed": True,
+                "message": msg,
+                "receipt_session_id": session_id
+            }
         
         prompt = '''You are analyzing an Indian UPI payment receipt screenshot. Extract these 5 fields:
 1. amount: The payment amount in INR as a number (e.g., 10.00, 110.00)
@@ -1270,28 +1381,35 @@ Return ONLY valid JSON:
                 groq_client = GroqClient(api_key=groq_key)
                 image_b64 = base64.standard_b64encode(contents).decode("utf-8")
                 
-                response = groq_client.chat.completions.create(
-                    model="meta-llama/llama-4-scout-17b-16e-instruct",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": prompt},
+                groq_vision_models = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview", "meta-llama/llama-4-scout-17b-16e-instruct"]
+                for model_id in groq_vision_models:
+                    try:
+                        response = groq_client.chat.completions.create(
+                            model=model_id,
+                            messages=[
                                 {
-                                    "type": "image_url",
-                                    "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": prompt},
+                                        {
+                                            "type": "image_url",
+                                            "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}
+                                        }
+                                    ]
                                 }
-                            ]
-                        }
-                    ],
-                    temperature=0.1,
-                    response_format={"type": "json_object"},
-                    max_completion_tokens=256
-                )
-                extracted_text = response.choices[0].message.content.strip()
-                extraction_api = "groq"
+                            ],
+                            temperature=0.1,
+                            response_format={"type": "json_object"},
+                            max_completion_tokens=256
+                        )
+                        extracted_text = response.choices[0].message.content.strip()
+                        extraction_api = "groq"
+                        break
+                    except Exception as model_e:
+                        print(f"Groq {model_id} failed: {model_e}")
+                        
             except Exception as e:
-                print(f"Groq failed: {e}")
+                print(f"Groq setup failed: {e}")
 
         if not extracted_text:
             gemini_key = os.getenv("GEMINI_KEY_1") or os.getenv("GEMINI_API_KEY")
@@ -1310,20 +1428,12 @@ Return ONLY valid JSON:
                     print(f"Gemini failed: {e}")
 
         if not extracted_text:
-            return {
-                "status": "extraction_failed",
-                "extraction_failed": True,
-                "message": "AI services are currently unavailable. Please enter manually."
-            }
+            return get_fallback_response("AI services are currently unavailable. Please enter manually.")
 
         import re, json
         json_match = re.search(r'\{.*?\}', extracted_text, re.DOTALL)
         if not json_match:
-            return {
-                "status": "extraction_failed",
-                "extraction_failed": True,
-                "message": "AI failed to return structured data. Please enter manually."
-            }
+            return get_fallback_response("AI failed to return structured data. Please enter manually.")
 
         parsed_data = json.loads(json_match.group(0))
         
@@ -1340,9 +1450,8 @@ Return ONLY valid JSON:
 
         if amount <= 0:
             return {
-                "status": "extraction_failed",
-                "extraction_failed": True,
-                "message": "Could not automatically extract the payment amount. Please enter manually."
+                "status": "rejected",
+                "message": "The uploaded image does not appear to be a valid UPI receipt. We could not find a payment amount. Please upload a clear screenshot of a genuine receipt."
             }
 
         # Validate receiver name (Flexible Match)
@@ -1351,11 +1460,9 @@ Return ONLY valid JSON:
         owner_clean = re.sub(r'[^a-zA-Z0-9]', '', owner_name).lower()
 
         if not rn_clean:
-            # AI could not extract receiver name at all — don't reject, allow manual entry
             return {
-                "status": "extraction_failed",
-                "extraction_failed": True,
-                "message": "Could not identify the receiver name on this receipt. Please enter your details manually."
+                "status": "rejected",
+                "message": "The uploaded image does not appear to be a valid UPI receipt. We could not find a receiver name. Please upload a clear screenshot of a genuine receipt."
             }
 
         rn_words = set(re.findall(r'[a-z0-9]+', receiver_name.lower()))
@@ -1367,8 +1474,10 @@ Return ONLY valid JSON:
             # AI found a receiver name but it doesn't match — genuine rejection
             return {
                 "status": "rejected",
-                "message": f"Payment was made to '{receiver_name}', but this collection is for '{owner_name}'. Please upload the correct receipt."
+                "message": f"Payment was made to '{receiver_name}', but the registered name for this QR or UPI ID is '{owner_name}'. Please upload the correct receipt."
             }
+
+        # Validation Passed
 
         # Check donor name
         dn_clean = re.sub(r'[^a-zA-Z0-9]', '', donor_name).lower()
@@ -1393,7 +1502,8 @@ Return ONLY valid JSON:
                     "amount": amount,
                     "transaction_date": transaction_date.isoformat(),
                     "receiver_name": receiver_name,
-                    "extraction_api": extraction_api
+                    "extraction_api": extraction_api,
+                    "receipt_key": receipt_key
                 }, expire=900) # 15 minutes
             except Exception as e:
                 print(f"Failed to cache receipt session: {e}")
@@ -1402,6 +1512,7 @@ Return ONLY valid JSON:
                 "status": "partial_success",
                 "amount": amount,
                 "receipt_session_id": session_id,
+                "receiver_name": receiver_name,
                 "message": "Receipt valid! Please enter your name to complete the donation."
             }
 
@@ -1421,7 +1532,8 @@ Return ONLY valid JSON:
                 "receipt_receiver_name": receiver_name,
                 "verified_upi_id": event.upi_id,
                 "extraction_api": extraction_api
-            }
+            },
+            receipt_key=receipt_key
         )
         
         res = crud.create_donation(db, event_id, event.organizer_id, new_donation)
@@ -1463,6 +1575,7 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
         method = "Manual Entry"
         receipt_receiver_name = None
         extraction_api = None
+        receipt_key = None
         
         # Secure Partial AI Validation Logic
         if data.receipt_session_id:
@@ -1471,22 +1584,31 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
                 cached_data = cache.get(f"receipt:{data.receipt_session_id}")
                 if cached_data:
                     # Enforce cached values
-                    amount = float(cached_data.get("amount", amount))
+                    if cached_data.get("amount"):
+                        amount = float(cached_data.get("amount"))
+                        entry_source = "ai_partial"
+                        status = "ai_partial_verified"
+                        extraction_api = cached_data.get("extraction_api")
+                        method = f"UPI Partial Auto ({str(extraction_api).upper()})"
+                    else:
+                        entry_source = "manual"
+                        status = "manual_entry"
+                        extraction_api = "manual_fallback"
+                        method = "Manual Entry (with image)"
+                        
                     try:
-                        transaction_date = datetime.fromisoformat(cached_data.get("transaction_date"))
+                        if cached_data.get("transaction_date"):
+                            transaction_date = datetime.fromisoformat(cached_data.get("transaction_date"))
                     except:
                         pass
-                    entry_source = "ai_partial"
-                    status = "ai_partial_verified"
-                    extraction_api = cached_data.get("extraction_api")
-                    method = f"UPI Partial Auto ({str(extraction_api).upper()})"
                     receipt_receiver_name = cached_data.get("receiver_name")
+                    receipt_key = cached_data.get("receipt_key")
                     # Clear cache to prevent replay
                     cache.delete(f"receipt:{data.receipt_session_id}")
             except Exception as e:
                 print(f"Error reading cache for partial ai: {e}")
 
-        donor_name_with_prefix = f"(M) {donor_name}" if entry_source == "manual" else f"(AI-P) {donor_name}"
+        donor_name_with_prefix = f"(M) {donor_name}" if entry_source == "manual" else f"(AI) {donor_name}"
         
         custom_fields = {
             "method": method,
@@ -1505,7 +1627,8 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
             entry_source=entry_source,
             transaction_date=transaction_date,
             collector_name=event.upi_owner_name,
-            custom_fields=custom_fields
+            custom_fields=custom_fields,
+            receipt_key=receipt_key
         )
         res = crud.create_donation(db, event_id, event.organizer_id, new_donation)
         await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_manual"})

@@ -55,13 +55,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentUpiOwnerName = event.upi_owner_name;
 
     // Populate UI
-    document.getElementById('lbl-event-name').innerText = event.name;
+    document.getElementById('lbl-event-name').innerText = currentEventName;
     document.getElementById('lbl-organizer').innerText = event.organizer_name || "Organizer";
     document.getElementById('manual-collector').innerText = currentUpiOwnerName || "Not verified";
     
     // Show owner name below QR
     if (currentUpiOwnerName) {
-      document.getElementById('lbl-upi-owner').innerText = currentUpiOwnerName;
+      document.getElementById('lbl-upi-owner').innerHTML = 'UPI Receiver Name: <strong style="color: #10b981; font-weight: 800; font-size: 15px;">' + currentUpiOwnerName + '</strong>';
     }
 
     if (!currentUpiId || !currentUpiOwnerName) {
@@ -108,7 +108,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         let dataUrl = null;
         
         if (qrCanvas) {
-          dataUrl = qrCanvas.toDataURL("image/png");
+          const PADDING = 20;
+          const newCanvas = document.createElement("canvas");
+          newCanvas.width = qrCanvas.width + (PADDING * 2);
+          newCanvas.height = qrCanvas.height + (PADDING * 2);
+          const ctx = newCanvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+          ctx.drawImage(qrCanvas, PADDING, PADDING);
+          dataUrl = newCanvas.toDataURL("image/png");
         } else if (qrImg && qrImg.src) {
           dataUrl = qrImg.src;
         }
@@ -189,7 +197,7 @@ btnSubmit.addEventListener('click', async () => {
     if (data.status === "extraction_failed" || data.extraction_failed === true) {
       console.log("ℹ️ AI extraction failed, showing manual entry form");
       document.getElementById('loader').style.display = 'none';
-      showManualEntryForm();
+      showManualEntryForm(false, null, null, data.receipt_session_id || null);
       return;
     }
     
@@ -198,7 +206,7 @@ btnSubmit.addEventListener('click', async () => {
       console.log("ℹ️ AI partial success, asking for donor name");
       document.getElementById('loader').style.display = 'none';
       currentReceiptSessionId = data.receipt_session_id;
-      showManualEntryForm(true, data.amount);
+      showManualEntryForm(true, data.amount, data.receiver_name);
       return;
     }
 
@@ -253,7 +261,7 @@ btnSubmit.addEventListener('click', async () => {
 });
 
 // Manual Entry Form Functions
-function showManualEntryForm(isPartial = false, lockedAmount = null) {
+function showManualEntryForm(isPartial = false, lockedAmount = null, receiverName = null, fallbackSessionId = null) {
   document.getElementById('manual-entry-modal').style.display = 'flex';
   document.getElementById('manual-name').value = '';
   
@@ -271,19 +279,40 @@ function showManualEntryForm(isPartial = false, lockedAmount = null) {
       note.style.fontSize = '12px';
       note.style.color = '#10b981';
       note.style.marginBottom = '5px';
-      note.innerText = '✅ Receipt validated! Please enter your name.';
+      note.innerText = '✓ Receipt validated! Please enter your name.';
       amountInput.parentNode.insertBefore(note, amountInput);
     } else {
       note.style.display = 'block';
     }
+    
+    if (receiverName) {
+      document.getElementById('manual-collector').innerText = receiverName;
+    }
+    const noteText = document.getElementById('manual-note-text');
+    if (noteText) {
+      noteText.innerHTML = `<strong>Note:</strong> Your donation will be marked as <strong>(AI)</strong> since it was scanned by AI. The receiver name from the receipt will be shown as <strong>Receiver Name</strong>.`;
+    }
+    document.getElementById('manual-collector-label').innerText = "Receiver Name";
+    document.getElementById('manual-collector-sub').style.display = 'none';
   } else {
     amountInput.value = '';
     amountInput.disabled = false;
     amountInput.style.backgroundColor = '';
     amountInput.style.color = '';
-    currentReceiptSessionId = null;
+    currentReceiptSessionId = fallbackSessionId;
     const note = document.getElementById('partial-note');
     if (note) note.style.display = 'none';
+    document.getElementById('manual-collector').innerText = currentUpiOwnerName || "Not verified";
+    const noteText = document.getElementById('manual-note-text');
+    if (noteText) {
+      if (fallbackSessionId) {
+        noteText.innerHTML = `<strong>Note:</strong> AI could not extract the details, but your screenshot is saved for verification. Your donation will be marked as <strong>(M)</strong> for manual entry.`;
+      } else {
+        noteText.innerHTML = `<strong>Note:</strong> Your donation will be marked as <strong>(M)</strong> for manual entry. The verified UPI owner will be shown as <strong>Receiver Name</strong>.`;
+      }
+    }
+    document.getElementById('manual-collector-label').innerText = "Receiver Name";
+    document.getElementById('manual-collector-sub').style.display = 'block';
   }
   
   document.getElementById('manual-name').focus();
@@ -360,7 +389,7 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
         <h2>Thank You!</h2>
         <p>Your donation was successfully recorded.</p>
         <p style="font-size: 13px; color: #6b7280; margin-top: 15px;">
-          ${currentReceiptSessionId ? '✅ AI-Assisted partial entry' : '📝 Manual entry'} (Collected by: ${currentUpiOwnerName})
+          ${currentReceiptSessionId ? '✅ AI-Assisted entry' : '📝 Manual entry'} (Collected by: ${currentUpiOwnerName})
         </p>
         <p style="font-size: 12px; color: #9ca3af;">You may now close this window.</p>
       `;

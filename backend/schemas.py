@@ -84,6 +84,7 @@ class DonationCreate(BaseModel):
     entry_source: Optional[str] = None  # "ai", "manual", "collector"
     transaction_date: Optional[datetime] = None  # Date from screenshot
     collector_name: Optional[str] = None  # Who collected (organizer name)
+    receipt_key: Optional[str] = None
 
 class DonationResponse(DonationCreate):
     id: int
@@ -99,6 +100,7 @@ class ManualDonationEntry(BaseModel):
     donor_name: str
     amount: float
     receipt_session_id: Optional[str] = None
+    receipt_key: Optional[str] = None
     class Config:
         json_schema_extra = {
             "example": {
@@ -149,6 +151,7 @@ class RecentTransaction(BaseModel):
     title: str # donor_name or expense description
     amount: float
     receipt_session_id: Optional[str] = None
+    receipt_key: Optional[str] = None
     date: datetime
     collected_by_name: str
 
@@ -182,6 +185,7 @@ class DonationUpdate(BaseModel):
     donor_name: Optional[str] = None
     amount: Optional[float] = None
     custom_fields: Optional[Dict[str, Any]] = None
+    receipt_key: Optional[str] = None
 
 class ExpenseUpdate(BaseModel):
     description: Optional[str] = None

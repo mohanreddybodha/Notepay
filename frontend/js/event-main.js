@@ -941,7 +941,9 @@
           </div>
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(d.donor_name)}</div>
         </div>
-        <div class="sc" style="width:${getColWidth('don_amt', 90)}px;"><span class="cg">${d.amount ? formatINR(d.amount) : '₹0'}</span></div>`;
+        `;
+        let receiptHtml = d.receipt_key ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${d.id || d._id}', event)"></span>` : '';
+        rowHTML += `<div class="sc" style="width:${getColWidth('don_amt', 90)}px; display:flex; align-items:center;"><span class="cg">${d.amount ? formatINR(d.amount) : '₹0'}</span>${receiptHtml}</div>`;
         
         if (!hideDonDate) {
           rowHTML += `<div class="sc" style="width:${getColWidth('don_date', 100)}px;font-size:11px;">${formatDate(d.collected_at)}</div>`;
@@ -994,6 +996,7 @@
 
       // Auto-trigger active inline entry/edit states
       restoreInlineState(tblBody);
+      if (typeof initIcons === 'function') initIcons();
     }
 
     // ── Expenses ──
@@ -1138,6 +1141,7 @@
 
       // Auto-trigger active inline entry/edit states
       restoreInlineState(tblBody);
+      if (typeof initIcons === 'function') initIcons();
     }
 
     // ── Summary ──
@@ -2159,7 +2163,7 @@
       ctx.className = "ctx";
       const name = type === "don" ? entry.donor_name : entry.description;
       const pinned = isPinned(type, entry.id || entry._id);
-      const canModify = isOrganizer || entry.collected_by === myUserId;
+      const canModify = isOrganizer || String(entry.collected_by) === String(myUserId);
 
       ctx.innerHTML = `
         <div class="ctx-lbl">${escHtml(name)}</div>
@@ -2173,6 +2177,12 @@
             <span data-np-icon="share-2" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Share Receipt
           </div>
+          ${!entry.receipt_key ? `
+          <div class="ctx-item" onclick="closeCtx();triggerManualReceiptUpload('${entry.id || entry._id}')">
+            <span data-np-icon="camera" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
+            Upload Payment Proof
+          </div>
+          ` : ''}
           ` : ''}
           <div class="ctx-item" onclick="closeCtx();openEditForm()">
             <span data-np-icon="edit" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
@@ -3307,6 +3317,8 @@
           return `<div class="sc" style="width:${w}px;">${escHtml(val)}</div>`;
         }).join("");
 
+        let receiptHtml = (type === "don" && entry.receipt_key) ? `<span style="margin-left:auto; color:var(--primary); cursor:pointer; display:flex; align-items:center;" onclick="openReceiptModal('${entry.id || entry._id}', event)">${npIcon("file-text", {size: 14})}</span>` : '';
+
         let rowHTML = `
           <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(type === "don" ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
@@ -3314,8 +3326,8 @@
             </div>
             <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(entry.donor_name || entry.description)}</div>
           </div>
-          <div class="sc" style="width:${getColWidth(type === "don" ? 'don_amt' : 'exp_amt', 90)}px;">
-            <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>
+          <div class="sc" style="width:${getColWidth(type === "don" ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
+            <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>${receiptHtml}
           </div>`;
           
         if (!hideDate) {
@@ -3397,6 +3409,7 @@
       fillTableRows(rowsCont, type);
       container.appendChild(rowsCont);
 
+      if (typeof initIcons === 'function') initIcons();
       return container;
     }
 
@@ -3562,6 +3575,7 @@
           const table = renderTable(tab, true);
           loaderDiv.remove();
           tableContainer.appendChild(table);
+          if (typeof initIcons === 'function') initIcons();
         }, 15);
 
         // Link the top bar search input to this table container
@@ -3575,6 +3589,7 @@
             const oldTbl = tableContainer.querySelector(".tbl-inner");
             if (oldTbl) oldTbl.remove();
             tableContainer.appendChild(renderTable(tab, true));
+            if (typeof initIcons === 'function') initIcons();
           };
         }
 
@@ -5092,6 +5107,7 @@
 
     async function shareReceipt(donorName, amount, dateStr, collectorName) {
       const eventName = typeof eventData !== 'undefined' && eventData ? eventData.name : 'Event';
+      donorName = String(donorName).replace(/^\((M|AI|AI-P)\)\s*/i, '').trim();
       const formattedAmt = parseInt(amount).toLocaleString('en-IN');
       const formattedDate = formatDate(dateStr);
       
@@ -5218,6 +5234,318 @@ function openUpiSheet() {
   }
 }
 
+// ==========================================
+// RECEIPT MODAL & UPLOAD
+// ==========================================
+let activeModalDonationId = null;
+
+async function openReceiptModal(donationIdStr, event) {
+  if (event) event.stopPropagation();
+  const d = donations.find(x => String(x.id || x._id) === donationIdStr);
+  if (!d || !d.receipt_key) return;
+  
+  activeModalDonationId = donationIdStr;
+  
+  const img = document.getElementById('receipt-img');
+  img.src = '';
+  document.getElementById('receipt-modal').style.display = 'flex';
+  
+  // Security & Actions Logic
+  const canModify = isOrganizer || String(d.collected_by) === String(myUserId);
+  const editBtn = document.getElementById('btn-receipt-edit');
+  const actionDiv = document.getElementById('receipt-actions');
+  const verifyBtn = document.getElementById('btn-receipt-verify');
+  const rejectBtn = document.getElementById('btn-receipt-reject');
+  const removeBtn = document.getElementById('btn-receipt-remove');
+  
+  if (canModify) {
+    if (editBtn) editBtn.style.display = 'flex';
+    if (actionDiv) actionDiv.style.display = 'flex';
+    const isUnverified = /^\((M|AI|AI-P)\)\s/.test(d.donor_name);
+    
+    if (isUnverified && isOrganizer) {
+      if (verifyBtn) verifyBtn.style.display = 'flex';
+      if (rejectBtn) rejectBtn.style.display = 'flex';
+      if (removeBtn) removeBtn.style.display = 'none';
+    } else {
+      if (verifyBtn) verifyBtn.style.display = 'none';
+      if (rejectBtn) rejectBtn.style.display = 'none';
+      if (removeBtn) removeBtn.style.display = 'flex';
+    }
+  } else {
+    if (editBtn) editBtn.style.display = 'none';
+    if (actionDiv) actionDiv.style.display = 'none';
+  }
+  
+  try {
+    const token = await getIdToken();
+    const res = await fetch(API_BASE + '/events/' + eventId + '/donations/' + (d.id || d._id) + '/receipt', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error("Receipt fetch failed");
+    const blob = await res.blob();
+    img.src = URL.createObjectURL(blob);
+  } catch (err) {
+    console.error("Failed to load receipt:", err);
+    showToast('Failed to load receipt image');
+  }
+}
+
+function triggerModalReceiptEdit() {
+  if (!activeModalDonationId) return;
+  triggerManualReceiptUpload(activeModalDonationId);
+}
+
+// Global Loading State Dummies
+function showLoading(msg) {
+  // If you have a real spinner, you can show it here
+  console.log('Loading:', msg);
+}
+function hideLoading() {
+  console.log('Finished loading');
+}
+
+// Custom Confirm Modal
+function showConfirmModal(title, message, btnText, btnColor, onConfirm, iconName = null, titleColor = "var(--text)") {
+  let modal = document.getElementById("np-confirm-modal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "np-confirm-modal";
+    modal.className = "pop-ov";
+    modal.style.display = "none";
+    modal.style.zIndex = "100050";
+    modal.innerHTML = `
+      <div class="pop-box">
+        <div id="np-confirm-ic-box" class="pop-ic" style="display:none; justify-content:center; align-items:center; margin-bottom:16px;"></div>
+        <div id="np-confirm-title" class="pop-t"></div>
+        <div id="np-confirm-msg" class="pop-m"></div>
+        <div class="pop-line"></div>
+        <div class="pop-btns">
+          <button class="pbc" id="np-confirm-cancel">Cancel</button>
+          <button class="btn" id="np-confirm-ok" style="border:none;"></button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    document.getElementById("np-confirm-cancel").onclick = () => { modal.style.display = "none"; };
+  }
+  
+  const titleEl = document.getElementById("np-confirm-title");
+  titleEl.innerText = title;
+  titleEl.style.color = titleColor;
+
+  document.getElementById("np-confirm-msg").innerText = message;
+  
+  const okBtn = document.getElementById("np-confirm-ok");
+  okBtn.innerText = btnText;
+  if (btnColor === "#ef4444" || btnColor === "var(--red)") {
+    okBtn.className = "btn btn-solid-danger";
+    okBtn.style.background = ""; // let css handle it
+  } else {
+    okBtn.className = "btn btn-solid-primary";
+    okBtn.style.background = btnColor;
+  }
+  
+  const icBox = document.getElementById("np-confirm-ic-box");
+  if (iconName) {
+    const tone = (btnColor === "#ef4444" || btnColor === "var(--red)") ? "red" : "primary";
+    icBox.innerHTML = `<span data-np-icon="${iconName}" data-np-size="32" data-np-tone="${tone}"></span>`;
+    icBox.style.display = "flex";
+    if (typeof initIcons === 'function') initIcons();
+  } else {
+    icBox.style.display = "none";
+  }
+  
+  okBtn.onclick = () => {
+    modal.style.display = "none";
+    if (onConfirm) onConfirm();
+  };
+  
+  modal.style.display = "flex";
+}
+
+function toggleReceiptZoom() {
+  const img = document.getElementById('receipt-img');
+  if (!img) return;
+  if (img.classList.contains('zoomed')) {
+    img.classList.remove('zoomed');
+    img.style.position = '';
+    img.style.inset = '';
+    img.style.zIndex = '';
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '45vh';
+    img.style.background = 'var(--bg)';
+    img.style.cursor = 'zoom-in';
+  } else {
+    img.classList.add('zoomed');
+    img.style.position = 'fixed';
+    img.style.top = '0';
+    img.style.left = '0';
+    img.style.width = '100vw';
+    img.style.height = '100dvh';
+    img.style.zIndex = '100050';
+    img.style.maxWidth = 'none';
+    img.style.maxHeight = 'none';
+    img.style.objectFit = 'contain';
+    img.style.background = 'rgba(0,0,0,0.9)';
+    img.style.cursor = 'zoom-out';
+  }
+}
+
+async function verifyReceiptDonation() {
+  if (!activeModalDonationId) return;
+  const d = donations.find(x => String(x.id || x._id) === activeModalDonationId);
+  if (!d) return;
+  
+  const donorName = d.donor_name.replace(/^\((M|AI|AI-P)\)\s*/, '');
+  
+  showConfirmModal(
+    "Accept Payment Proof",
+    `Are you sure you want to approve the payment proof for '${donorName}'? This collection entry will be treated as verified.`,
+    "Accept",
+    "#10b981",
+    async () => {
+      const newName = d.donor_name.replace(/^\((M|AI|AI-P)\)\s*/, '');
+      const prevReceiptKey = d.receipt_key;
+      
+      try {
+        const res = await apiFetch('PUT', '/events/' + eventId + '/donations/' + (d.id || d._id), {
+          donor_name: newName,
+          receipt_key: prevReceiptKey
+        });
+        if (res) {
+          showToast('Payment proof accepted!');
+          closeReceiptModal();
+          loadAll(); // reload
+        }
+      } catch (err) {
+        showToast(err.message || 'Failed to accept', 'error');
+        console.error(err);
+      }
+    },
+    "badge-check",
+    "green"
+  );
+}
+
+async function rejectReceiptDonation() {
+  if (!activeModalDonationId) return;
+  const d = donations.find(x => String(x.id || x._id) === activeModalDonationId);
+  if (!d) return;
+  
+  const donorName = d.donor_name.replace(/^\((M|AI|AI-P)\)\s*/, '');
+  
+  showConfirmModal(
+    "Reject Payment Proof",
+    `Are you sure you want to reject this payment proof? This action will completely delete the data of ${donorName} from collections.`,
+    "Reject",
+    "var(--red)",
+    async () => {
+      showLoading('Deleting entry...');
+      try {
+        const res = await apiFetch('DELETE', '/events/' + eventId + '/donations/' + activeModalDonationId);
+        
+        hideLoading();
+        if (res) {
+          showToast('Entry rejected and deleted!');
+          closeReceiptModal();
+          const idx = donations.findIndex(x => String(x.id || x._id) === activeModalDonationId);
+          if (idx !== -1) donations.splice(idx, 1);
+          renderDonations();
+        }
+      } catch(e) {
+        hideLoading();
+        showToast(e.message || 'Failed to delete entry', 'error');
+      }
+    },
+    "trash",
+    "var(--red)"
+  );
+}
+
+async function removeReceiptDonation() {
+  if (!activeModalDonationId) return;
+  const d = donations.find(x => String(x.id || x._id) === activeModalDonationId);
+  if (!d) return;
+  
+  const donorName = d.donor_name.replace(/^\((M|AI|AI-P)\)\s*/, '');
+  
+  showConfirmModal(
+    "Remove Receipt",
+    `Are you sure you want to remove the receipt image from the entry for '${donorName}'? The entry data will be kept.`,
+    "Remove",
+    "var(--red)",
+    async () => {
+      try {
+        const res = await apiFetch('PUT', '/events/' + eventId + '/donations/' + (d.id || d._id), {
+          donor_name: d.donor_name,
+          receipt_key: ""
+        });
+        if (res) {
+          showToast('Receipt removed successfully!');
+          closeReceiptModal();
+          loadAll();
+        }
+      } catch (err) {
+        showToast(err.message || 'Failed to remove receipt', 'error');
+        console.error(err);
+      }
+    },
+    "trash",
+    "var(--red)"
+  );
+}
+
+function closeReceiptModal() {
+  document.getElementById('receipt-modal').style.display = 'none';
+  const img = document.getElementById('receipt-img');
+  if (img.src) URL.revokeObjectURL(img.src);
+  img.src = '';
+}
+
+let pendingReceiptDonationId = null;
+function triggerManualReceiptUpload(donationIdStr) {
+  pendingReceiptDonationId = donationIdStr;
+  document.getElementById('manual-receipt-upload').click();
+}
+
+async function handleManualReceiptUpload(e) {
+  const file = e.target.files[0];
+  if (!file || !pendingReceiptDonationId) return;
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const token = await getIdToken();
+    const res = await fetch(API_BASE + '/events/' + eventId + '/donations/' + pendingReceiptDonationId + '/receipt', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      },
+      body: formData
+    });
+    if (res.ok) {
+      showToast('Receipt uploaded successfully!');
+      // Update local state so icon appears
+      const d = donations.find(x => String(x.id || x._id) === pendingReceiptDonationId);
+      if (d) {
+        const data = await res.json();
+        d.receipt_key = data.receipt_key;
+        renderDonations();
+        if (typeof initIcons === 'function') initIcons();
+      }
+    } else {
+      const data = await res.json();
+      showToast(data.detail || 'Failed to upload receipt');
+    }
+  } catch (err) {
+    hideLoading();
+    showToast('Error uploading receipt');
+  }
+  e.target.value = ''; // reset input
+}
+
 function closeUpiSheet() {
   document.getElementById('upi-sheet').style.display = 'none';
 }
@@ -5308,5 +5636,7 @@ function resetUpiUI() {
   document.getElementById('btn-upi-save').style.display = '';
   document.getElementById('btn-upi-cancel').innerText = 'Cancel';
 }
-document.getElementById('upi-id-input').addEventListener('input', resetUpiUI);
-document.getElementById('upi-owner-name-input').addEventListener('input', resetUpiUI);
+const upiIdInput = document.getElementById('upi-id-input');
+if (upiIdInput) upiIdInput.addEventListener('input', resetUpiUI);
+const upiOwnerInput = document.getElementById('upi-owner-name-input');
+if (upiOwnerInput) upiOwnerInput.addEventListener('input', resetUpiUI);

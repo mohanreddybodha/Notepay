@@ -137,7 +137,8 @@ def create_donation(db: Session, event_id: str, collector_id: int, donation: sch
         donor_name=donation.donor_name,
         amount=donation.amount,
         collected_by=collector_id,
-        custom_fields=donation.custom_fields
+        custom_fields=donation.custom_fields,
+        receipt_key=getattr(donation, 'receipt_key', None)
     )
     db.add(db_donation)
     db.commit()
@@ -350,6 +351,7 @@ def update_donation(db: Session, donation_id: int, data: schemas.DonationUpdate)
     if data.donor_name is not None: donation.donor_name = data.donor_name
     if data.amount is not None: donation.amount = data.amount
     if data.custom_fields is not None: donation.custom_fields = data.custom_fields
+    if data.receipt_key is not None: donation.receipt_key = data.receipt_key if data.receipt_key != "" else None
     db.commit()
     # Invalidate cache for this event
     cache.cache.invalidate_event(donation.event_id)

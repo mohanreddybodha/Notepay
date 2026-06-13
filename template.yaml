@@ -85,6 +85,7 @@ Resources:
           ADMIN_DOMAIN: !Join ['', ['https://', !GetAtt AdminFrontendDistribution.DomainName]]
           GEMINI_KEY_1: '{{resolve:ssm:/notepay/gemini_key_1}}'
           GROQ_API_KEY: '{{resolve:ssm:/notepay/groq_key}}'
+          RECEIPTS_BUCKET: !Ref ReceiptsBucket
       Policies:
         - AmazonSSMReadOnlyAccess
         - Statement:
@@ -92,6 +93,12 @@ Resources:
               Action:
                 - execute-api:ManageConnections
               Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+                - s3:DeleteObject
+              Resource: !Sub "${ReceiptsBucket.Arn}/*"
       # This provides the HTTP endpoint
       FunctionUrlConfig:
         AuthType: NONE
@@ -256,6 +263,18 @@ Resources:
             Condition:
               StringEquals:
                 AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${AdminFrontendDistribution.Id}"
+
+  # -----------------------------------------------------
+  # 5. Private Receipt Storage (S3)
+  # -----------------------------------------------------
+  ReceiptsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
 
 Outputs:
   HttpApiUrl:

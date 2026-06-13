@@ -260,11 +260,9 @@
         Pay via UPI App
       </a>
 
-      <div class="divider"></div>
-
-      <div class="upload-section">
-        <span class="upload-title">Proof of Payment</span>
-        <p class="upload-desc">After payment, upload your screenshot or receipt so we can record your donation. <br><strong style="color:#ef4444;">Important:</strong> The 'Paid To' name on the screenshot must match the receiver name above, or the receipt will be rejected by our AI.</p>
+      <div class="upload-section" style="margin-top: 30px; border-top: 2px dashed #e5e7eb; padding-top: 25px;">
+        <span class="upload-title" style="color: #ef4444; font-size: 15px;">After Payment, Upload Screenshot (Required)</span>
+        <p class="upload-desc">After payment, upload your screenshot or receipt so we can record your donation. <br><strong style="color:#ef4444;">Important:</strong> The 'Receiver' name on the uploaded screenshot must match the receiver name entered above; otherwise, our AI will reject the receipt.</p>
         
         <div class="file-input-wrapper">
           <button class="btn-outline" id="btn-file-select">
@@ -301,12 +299,12 @@
         <input type="number" id="manual-amount" placeholder="Enter amount" min="1" max="100000" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 4px;">
         <div id="err-manual-amount" style="display:none; color:#ef4444; font-size:12px; margin-bottom:12px;"></div>
         
-        <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">Collected By</label>
+        <label id="manual-collector-label" style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">Receiver Name</label>
         <div id="manual-collector" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 8px; background:#f9fafb;">Loading verified UPI owner...</div>
-        <small style="color: #6b7280; display: block; margin-bottom: 16px;">Verified UPI Account Owner</small>
+        <small id="manual-collector-sub" style="color: #6b7280; display: block; margin-bottom: 16px;">Verified UPI Account Owner</small>
         
-        <p style="font-size: 13px; color: #6b7280; margin-bottom: 20px; background: #f3f4f6; padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
-          <strong>Note:</strong> Your donation will be marked as <strong>(M)</strong> for manual entry. The verified UPI owner will be shown as <strong>Collected By</strong>.
+        <p id="manual-note-text" style="font-size: 13px; color: #6b7280; margin-bottom: 20px; background: #f3f4f6; padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
+          <strong>Note:</strong> Your donation will be marked as <strong>(M)</strong> for manual entry. The verified UPI owner will be shown as <strong>Receiver Name</strong>.
         </p>
       </div>
       
@@ -346,6 +344,6 @@
     </div>
   </div>
 
-  <script src="js/donate.js?v=8"></script>
+  <script src="js/donate.js?v=4"></script>
 </body>
 </html>
