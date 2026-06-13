@@ -2196,6 +2196,7 @@
       `;
       document.body.appendChild(ov);
       ov.appendChild(ctx);
+      if (typeof initIcons === 'function') initIcons();
 
       // Smart Positioning
       const menuWidth = 190;
