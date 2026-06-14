@@ -194,6 +194,12 @@ btnSubmit.addEventListener('click', async () => {
       showRejectionPopup(data.message);
       return;
     }
+    if (data.status === "failed") {
+      console.log("AI: failed transaction");
+      document.getElementById('loader').style.display = 'none';
+      showRejectionPopup(data.message);
+      return;
+    }
     if (data.status === "extraction_failed" || data.extraction_failed === true) {
       console.log("ℹ️ AI extraction failed, showing manual entry form");
       document.getElementById('loader').style.display = 'none';
