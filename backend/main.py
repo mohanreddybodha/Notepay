@@ -1354,7 +1354,7 @@ Paytm/BHIM/Other receipts:
 GENERAL RULES:
 - receiver_name: Look for "Banking Name", "Paid to", "To", "Transfer to", "Merchant", "Beneficiary"
 - sender_name: Look for "From", "Debited from", "Paid by", "Your name" - must be a PERSON NAME not bank name
-- If sender_name is NOT clearly and explicitly written on the screen, return null for sender_name - DO NOT guess or hallucinate a name!
+- CRITICAL SENDER NAME RULE: You MUST return null for sender_name unless the sender's name is EXPLICITLY labeled with "From", "Paid by", or "Sender". If the image does not contain the sender's name explicitly, you MUST return null. DO NOT guess, DO NOT use the receiver's name, and DO NOT hallucinate.
 - NEVER confuse sender and receiver
 - transaction_date: Look for dates near "Transaction", time stamps at top of screen (e.g., "04:44 pm on 12 Jun 2026" → "2026-06-12")
 - Transaction Successful Rule: You MUST detect words or messages indicating a successful payment completion (like "Success", "Paid", "Payment Successful", "Transaction Complete", or any other clear success indicator). However, if the screenshot shows "Pending", "Processing", or "Failed", you MUST immediately set status to "failed" and return.
