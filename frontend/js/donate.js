@@ -263,7 +263,7 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
   const amountInput = document.getElementById('manual-amount');
   if (isPartial && lockedAmount) {
     if (verifiedMsg) verifiedMsg.style.display = 'flex';
-    if (descMsg) descMsg.innerHTML = "We found the payment amount and receiver details from your receipt.<br><br>The donor name was not available in the receipt. Please enter your name to complete the donation record.";
+    if (descMsg) descMsg.innerHTML = "We found the payment amount and receiver details from your receipt.<br><br>Sender name was not available in the receipt. Please enter your name to complete the payment record.";
     amountInput.value = lockedAmount;
     amountInput.disabled = true;
     amountInput.style.backgroundColor = '#f3f4f6';

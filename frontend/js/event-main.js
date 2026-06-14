@@ -5626,15 +5626,15 @@ function copyDonationLink(btnElement) {
   navigator.clipboard.writeText(link);
   
   if (btnElement) {
-    const originalHTML = btnElement.innerHTML;
     btnElement.innerHTML = '<span data-np-icon="check" data-np-size="18" data-np-tone="green"></span>';
-    if (typeof npIcons !== 'undefined') npIcons.render();
+    if (typeof window.initIcons !== 'undefined') window.initIcons();
+    showToast('Link copied');
     setTimeout(() => {
-      btnElement.innerHTML = originalHTML;
-      if (typeof npIcons !== 'undefined') npIcons.render();
+      btnElement.innerHTML = '<span data-np-icon="copy" data-np-size="18"></span>';
+      if (typeof window.initIcons !== 'undefined') window.initIcons();
     }, 3000);
   } else {
-    showToast('Donation link copied to clipboard!');
+    showToast('Link copied');
   }
 }
 
