@@ -5632,7 +5632,7 @@ function copyDonationLink(btnElement) {
     setTimeout(() => {
       btnElement.innerHTML = originalHTML;
       if (typeof npIcons !== 'undefined') npIcons.render();
-    }, 2000);
+    }, 3000);
   } else {
     showToast('Donation link copied to clipboard!');
   }
@@ -5648,3 +5648,15 @@ const upiIdInput = document.getElementById('upi-id-input');
 if (upiIdInput) upiIdInput.addEventListener('input', resetUpiUI);
 const upiOwnerInput = document.getElementById('upi-owner-name-input');
 if (upiOwnerInput) upiOwnerInput.addEventListener('input', resetUpiUI);
+
+// Hide Chat FAB when any bottom sheet (.sov) is open
+document.addEventListener('DOMContentLoaded', () => {
+  const sovObserver = new MutationObserver(() => {
+    const anySovOpen = Array.from(document.querySelectorAll('.sov')).some(el => el.style.display && el.style.display !== 'none');
+    const fab = document.getElementById('chat-fab');
+    if (fab) {
+      fab.style.visibility = anySovOpen ? 'hidden' : 'visible';
+    }
+  });
+  document.querySelectorAll('.sov').forEach(el => sovObserver.observe(el, { attributes: true, attributeFilter: ['style'] }));
+});

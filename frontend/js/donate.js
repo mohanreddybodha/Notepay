@@ -254,10 +254,16 @@ btnSubmit.addEventListener('click', async () => {
 // Manual Entry Form Functions
 function showManualEntryForm(isPartial = false, lockedAmount = null, receiverName = null, fallbackSessionId = null) {
   document.getElementById('manual-entry-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
   document.getElementById('manual-name').value = '';
+  
+  const verifiedMsg = document.getElementById('manual-verified-msg');
+  const descMsg = document.getElementById('manual-desc-msg');
   
   const amountInput = document.getElementById('manual-amount');
   if (isPartial && lockedAmount) {
+    if (verifiedMsg) verifiedMsg.style.display = 'flex';
+    if (descMsg) descMsg.innerHTML = "We found the payment amount and receiver details from your receipt.<br><br>The donor name was not available in the receipt. Please enter your name to complete the donation record.";
     amountInput.value = lockedAmount;
     amountInput.disabled = true;
     amountInput.style.backgroundColor = '#f3f4f6';
@@ -273,6 +279,9 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
     document.getElementById('manual-collector-label').innerText = "UPI Receiver Name";
     document.getElementById('manual-collector-sub').style.display = 'none';
   } else {
+    if (verifiedMsg) verifiedMsg.style.display = 'none';
+    if (descMsg) descMsg.innerHTML = "We couldn't extract the payment details automatically. Please enter your details below:";
+    
     amountInput.value = '';
     amountInput.disabled = false;
     amountInput.style.backgroundColor = '';
@@ -298,6 +307,7 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
 
 document.getElementById('btn-manual-cancel').addEventListener('click', () => {
   document.getElementById('manual-entry-modal').style.display = 'none';
+  document.body.style.overflow = '';
 });
 
 document.getElementById('btn-manual-submit').addEventListener('click', async () => {
@@ -323,6 +333,7 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
 
   // Hide modal and show loader
   document.getElementById('manual-entry-modal').style.display = 'none';
+  document.body.style.overflow = '';
   const loader = document.getElementById('loader');
   loader.style.display = 'flex';
   document.getElementById('loader-spinner').style.display = 'block';
