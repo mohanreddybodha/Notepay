@@ -289,10 +289,10 @@
   <div class="loader-overlay" id="manual-entry-modal" style="background: rgba(0,0,0,0.5); z-index: 1000;">
     <div style="background: white; width: 90%; max-width: 400px; border-radius: 16px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
       <h2 style="margin: 0 0 10px 0; color: #1f2937; font-size: 18px;">Enter Payment Details</h2>
-      <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 14px;">Our scanner couldn't extract the data. Please enter your details below:</p>
+      <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 14px;">Your payment receipt has been verified.<br><br>We couldn't identify the sender's name from the receipt. Please enter your name to complete the donation record.</p>
       
       <div style="text-align: left;">
-        <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">Your Name *</label>
+        <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">Donor Name *</label>
         <input type="text" id="manual-name" placeholder="Enter your name" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 4px;">
         <div id="err-manual-name" style="display:none; color:#ef4444; font-size:12px; margin-bottom:12px;"></div>
         
@@ -300,12 +300,12 @@
         <input type="number" id="manual-amount" placeholder="Enter amount" min="1" max="100000" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 4px;">
         <div id="err-manual-amount" style="display:none; color:#ef4444; font-size:12px; margin-bottom:12px;"></div>
         
-        <label id="manual-collector-label" style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">Receiver Name</label>
+        <label id="manual-collector-label" style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">UPI Receiver Name</label>
         <div id="manual-collector" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 8px; background:#f9fafb;">Loading verified UPI owner...</div>
         <small id="manual-collector-sub" style="color: #6b7280; display: block; margin-bottom: 16px;">Verified UPI Account Owner</small>
         
         <p id="manual-note-text" style="font-size: 13px; color: #6b7280; margin-bottom: 20px; background: #f3f4f6; padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
-          <strong>Note:</strong> Your donation will be marked as <strong>(M)</strong> for manual entry. The verified UPI owner will be shown as <strong>Receiver Name</strong>.
+          <strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your donation record.
         </p>
       </div>
       
@@ -345,6 +345,6 @@
     </div>
   </div>
 
-  <script src="js/donate.js?v=4"></script>
+  <script src="js/donate.js?v=5"></script>
 </body>
 </html>

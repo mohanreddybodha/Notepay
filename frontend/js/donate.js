@@ -169,9 +169,9 @@ btnSubmit.addEventListener('click', async () => {
   loader.style.display = 'flex';
   document.getElementById('loader-spinner').style.display = 'block';
   document.getElementById('loader-success').style.display = 'none';
-  document.getElementById('loader-title').innerText = "Verifying Receipt...";
+  document.getElementById('loader-title').innerText = "Verifying Payment...";
   document.getElementById('loader-title').style.color = "#1f2937";
-  document.getElementById('loader-desc').innerText = "Our AI is reading your screenshot to confirm the payment.";
+  document.getElementById('loader-desc').innerText = "Please wait while we verify your payment receipt and record your donation.";
 
   try {
     const res = await fetch(`${API_BASE}/api/public/event/${eventId}/upload_receipt`, {
@@ -224,32 +224,23 @@ btnSubmit.addEventListener('click', async () => {
     console.log("   Donor:", name);
     console.log("   Verification:", verification);
 
-    // Show Success UI
-    document.getElementById('loader-spinner').style.display = 'none';
-    document.getElementById('loader-success').style.display = 'block';
-    document.getElementById('loader-title').innerText = "Payment Verified!";
-    document.getElementById('loader-title').style.color = "#10b981";
-    
-    // Show different message based on verification status
-    if (verification === "ai_verified") {
-      document.getElementById('loader-desc').innerText = `✅ AI Verified!\nThank you ${name}! Your ₹${amount} donation has been recorded automatically.`;
-    } else {
-      document.getElementById('loader-desc').innerText = `Thank you ${name}! Your ₹${amount} donation has been recorded. (Manual entry)`;
-    }
-    
-    // Hide buttons and show final message
-    setTimeout(() => {
-      document.getElementById('content').innerHTML = `
-        <i class="icon-check-circle" style="font-size: 60px; color: #10b981; margin-bottom:15px;"></i>
-        <h2>Thank You!</h2>
-        <p>Your donation was successfully recorded.</p>
-        <p style="font-size: 13px; color: #6b7280; margin-top: 15px;">
-          ${verification === "ai_verified" ? "✅ AI-verified entry" : "📝 Manual entry"}
-        </p>
-        <p style="font-size: 12px; color: #9ca3af;">You may now close this window.</p>
-      `;
-      loader.style.display = 'none';
-    }, 4000);
+    // Show Final Success UI immediately
+    document.getElementById('content').innerHTML = `
+      <i class="icon-check-circle" style="font-size: 60px; color: #10b981; margin-bottom:15px;"></i>
+      <h2 style="margin: 0 0 10px 0; color: #1f2937; font-size: 24px;">Thank You!</h2>
+      <p style="margin: 0 0 20px 0; color: #374151; font-size: 15px;">Your payment has been successfully recorded.</p>
+      
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 20px;">
+        <div style="font-weight: 600; color: #166534; font-size: 14px; margin-bottom: 6px;">✅ Receipt Verified</div>
+        <div style="color: #15803d; font-size: 13px; line-height: 1.5;">Your payment receipt has been processed and added to the event records for organizer review.</div>
+      </div>
+      
+      <p style="font-size: 13px; color: #6b7280; margin-top: 15px; font-weight: 500;">
+        Collected by: ${currentUpiOwnerName || "Organizer"}
+      </p>
+      <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">You may now close this window.</p>
+    `;
+    loader.style.display = 'none';
 
   } catch (error) {
     console.error("❌ Upload Error:", error);
@@ -270,29 +261,16 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
     amountInput.value = lockedAmount;
     amountInput.disabled = true;
     amountInput.style.backgroundColor = '#f3f4f6';
-    amountInput.style.color = '#6b7280';
-    // Add a note above it
-    let note = document.getElementById('partial-note');
-    if (!note) {
-      note = document.createElement('p');
-      note.id = 'partial-note';
-      note.style.fontSize = '12px';
-      note.style.color = '#10b981';
-      note.style.marginBottom = '5px';
-      note.innerText = '✓ Receipt validated! Please enter your name.';
-      amountInput.parentNode.insertBefore(note, amountInput);
-    } else {
-      note.style.display = 'block';
-    }
+    // Add a note above it (Removed partial-note as requested)
     
     if (receiverName) {
       document.getElementById('manual-collector').innerText = receiverName;
     }
     const noteText = document.getElementById('manual-note-text');
     if (noteText) {
-      noteText.innerHTML = `<strong>Note:</strong> Your donation will be marked as <strong>(AI)</strong> since it was scanned by AI. The receiver name from the receipt will be shown as <strong>Receiver Name</strong>.`;
+      noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your donation record.`;
     }
-    document.getElementById('manual-collector-label').innerText = "Receiver Name";
+    document.getElementById('manual-collector-label').innerText = "UPI Receiver Name";
     document.getElementById('manual-collector-sub').style.display = 'none';
   } else {
     amountInput.value = '';
@@ -306,12 +284,12 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
     const noteText = document.getElementById('manual-note-text');
     if (noteText) {
       if (fallbackSessionId) {
-        noteText.innerHTML = `<strong>Note:</strong> AI could not extract the details, but your screenshot is saved for verification. Your donation will be marked as <strong>(M)</strong> for manual entry.`;
+        noteText.innerHTML = `<strong>Note:</strong> We couldn't extract the details automatically. Your screenshot is saved for verification. Your donation will be submitted for organizer review.`;
       } else {
-        noteText.innerHTML = `<strong>Note:</strong> Your donation will be marked as <strong>(M)</strong> for manual entry. The verified UPI owner will be shown as <strong>Receiver Name</strong>.`;
+        noteText.innerHTML = `<strong>Note:</strong> Your donation details will be submitted manually. The verified UPI owner will be shown as <strong>UPI Receiver Name</strong>.`;
       }
     }
-    document.getElementById('manual-collector-label').innerText = "Receiver Name";
+    document.getElementById('manual-collector-label').innerText = "UPI Receiver Name";
     document.getElementById('manual-collector-sub').style.display = 'block';
   }
   
@@ -375,26 +353,23 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
     
     console.log("✅ Manual Donation Recorded:", data);
 
-    // Show Success UI
-    document.getElementById('loader-spinner').style.display = 'none';
-    document.getElementById('loader-success').style.display = 'block';
-    document.getElementById('loader-title').innerText = "Thank You!";
-    document.getElementById('loader-title').style.color = "#10b981";
-    document.getElementById('loader-desc').innerText = `✅ Your ₹${amount} donation has been recorded.\nThank you, ${name}!`;
-    
-    // Hide final message after 4 seconds
-    setTimeout(() => {
-      document.getElementById('content').innerHTML = `
-        <i class="icon-check-circle" style="font-size: 60px; color: #10b981; margin-bottom:15px;"></i>
-        <h2>Thank You!</h2>
-        <p>Your donation was successfully recorded.</p>
-        <p style="font-size: 13px; color: #6b7280; margin-top: 15px;">
-          ${currentReceiptSessionId ? '✅ AI-Assisted entry' : '📝 Manual entry'} (Collected by: ${currentUpiOwnerName})
-        </p>
-        <p style="font-size: 12px; color: #9ca3af;">You may now close this window.</p>
-      `;
-      loader.style.display = 'none';
-    }, 4000);
+    // Show Final Success UI immediately
+    document.getElementById('content').innerHTML = `
+      <i class="icon-check-circle" style="font-size: 60px; color: #10b981; margin-bottom:15px;"></i>
+      <h2 style="margin: 0 0 10px 0; color: #1f2937; font-size: 24px;">Thank You!</h2>
+      <p style="margin: 0 0 20px 0; color: #374151; font-size: 15px;">Your payment has been successfully recorded.</p>
+      
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 20px;">
+        <div style="font-weight: 600; color: #166534; font-size: 14px; margin-bottom: 6px;">✅ Receipt Verified</div>
+        <div style="color: #15803d; font-size: 13px; line-height: 1.5;">Your payment receipt has been processed and added to the event records for organizer review.</div>
+      </div>
+      
+      <p style="font-size: 13px; color: #6b7280; margin-top: 15px; font-weight: 500;">
+        Collected by: ${currentUpiOwnerName || "Organizer"}
+      </p>
+      <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">You may now close this window.</p>
+    `;
+    loader.style.display = 'none';
 
   } catch (error) {
     console.error("Manual Entry Error:", error);

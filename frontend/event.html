@@ -484,19 +484,19 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div class="sbox" onclick="event.stopPropagation()">
         <div class="sbox-header">
           <div class="sh-handle"></div>
-          <div class="sh-title">Auto-Donations Setup</div>
+          <div class="sh-title">Complete Donation Details</div>
         </div>
         <div class="sbox-body">
           <div class="ef-field">
-            <div class="ef-label">Your UPI ID <span style="color:var(--red);">*</span></div>
+            <div class="ef-label">UPI ID <span style="color:var(--red);">*</span></div>
             <input class="ef-input" id="upi-id-input" type="text" placeholder="e.g. yourname@upi" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             <div id="upi-id-error" style="color:var(--red); font-size:12px; margin-top:4px; display:none;"></div>
           </div>
           <div class="ef-field" style="margin-top:12px;">
-            <div class="ef-label">Payment Receiver Name <span style="color:var(--red);">*</span></div>
+            <div class="ef-label">UPI Registered Name <span style="color:var(--red);">*</span></div>
             <input class="ef-input" id="upi-owner-name-input" type="text" placeholder="e.g. John Doe" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             <div id="upi-name-error" style="color:var(--red); font-size:12px; margin-top:4px; display:none;"></div>
-            <p style="font-size:12px; color:var(--text3); margin-top:8px;">This exact name will be shown to donors.<br><strong style="color:var(--red);">Important:</strong> Our AI will scan donor receipts. If the 'Paid To' name on their screenshot doesn't match this name, the receipt will be rejected.</p>
+            <p style="font-size:12px; color:var(--text3); margin-top:8px;">This name will be shown to donors.<br><strong style="color:var(--red);">Important:</strong> The receiver name found in donor payment receipts must match this UPI registered name. Receipts with a different receiver name will be rejected.</p>
           </div>
           
           <div id="upi-share-section" style="display:none; margin-top:20px;">
