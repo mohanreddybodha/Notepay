@@ -887,6 +887,15 @@ FINANCIAL POSITION:
 """
         
     groq_api_key = os.environ.get("GROQ_API_KEY")
+    if not groq_api_key:
+        try:
+            import boto3
+            ssm = boto3.client('ssm')
+            param = ssm.get_parameter(Name='/notepay/groq_key', WithDecryption=True)
+            groq_api_key = param['Parameter']['Value']
+        except Exception as e:
+            print(f"Chat SSM fetch failed: {e}")
+            
     gemini_api_key = os.environ.get("GEMINI_KEY_1")
     
     ai_text = None
