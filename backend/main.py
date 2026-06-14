@@ -1357,7 +1357,7 @@ GENERAL RULES:
 - If sender_name is NOT clearly visible, return null for sender_name - DO NOT guess
 - NEVER confuse sender and receiver
 - transaction_date: Look for dates near "Transaction", time stamps at top of screen (e.g., "04:44 pm on 12 Jun 2026" → "2026-06-12")
-- Transaction Successful Rule: You MUST detect words like "Success", "Paid", "Payment Successful", "Transaction Complete". If the screenshot shows "Pending", "Processing", or "Failed", you MUST set status to "unrelated_image" and return.
+- Transaction Successful Rule: You MUST detect words or messages indicating a successful payment completion (like "Success", "Paid", "Payment Successful", "Transaction Complete", or any other clear success indicator). However, if the screenshot shows "Pending", "Processing", or "Failed", you MUST immediately set status to "unrelated_image" and return.
 
 Return ONLY valid JSON:
 {"amount": 10.00, "sender_name": null, "receiver_name": "Boda Mohan Reddy", "transaction_date": "2026-06-12", "status": "success"}'''
