@@ -1365,24 +1365,43 @@ Return ONLY valid JSON:
         extracted_text = None
         extraction_api = None
 
-        groq_key = os.getenv("GROQ_API_KEY")
-        if not groq_key:
-            try:
-                # Default boto3 region should be handled by AWS config, but fallback to us-east-1 or ap-south-1 if needed.
-                ssm = boto3.client('ssm')
-                ssm_param = ssm.get_parameter(Name='/notepay/groq_key_for_payment', WithDecryption=True)
-                groq_key = ssm_param['Parameter']['Value']
-            except Exception as e:
-                print(f"SSM fetch failed: {e}")
+        # Fetch keys
+        groq_key_1 = os.getenv("GROQ_API_KEY")
+        groq_key_2 = os.getenv("GROQ_API_KEY_2")
 
-        if groq_key:
+        try:
+            ssm = boto3.client('ssm')
+            if not groq_key_1:
+                try:
+                    param = ssm.get_parameter(Name='/notepay/groq_key_for_payment', WithDecryption=True)
+                    groq_key_1 = param['Parameter']['Value']
+                except Exception:
+                    pass
+            if not groq_key_2:
+                try:
+                    param2 = ssm.get_parameter(Name='/notepay/groq_key_for_payment-2', WithDecryption=True)
+                    groq_key_2 = param2['Parameter']['Value']
+                except Exception:
+                    pass
+        except Exception as e:
+            print(f"SSM client failed: {e}")
+
+        # The user wants groq_key_2 to be tried FIRST
+        keys_to_try = []
+        if groq_key_2: keys_to_try.append(groq_key_2)
+        if groq_key_1: keys_to_try.append(groq_key_1)
+
+        groq_vision_models = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview", "meta-llama/llama-4-scout-17b-16e-instruct"]
+
+        for g_key in keys_to_try:
+            if extracted_text:
+                break
             try:
                 from groq import Groq as GroqClient
                 import base64
-                groq_client = GroqClient(api_key=groq_key)
+                groq_client = GroqClient(api_key=g_key)
                 image_b64 = base64.standard_b64encode(contents).decode("utf-8")
                 
-                groq_vision_models = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview", "meta-llama/llama-4-scout-17b-16e-instruct"]
                 for model_id in groq_vision_models:
                     try:
                         response = groq_client.chat.completions.create(
@@ -1405,12 +1424,12 @@ Return ONLY valid JSON:
                         )
                         extracted_text = response.choices[0].message.content.strip()
                         extraction_api = "groq"
-                        break
+                        break  # Break out of model loop if successful
                     except Exception as model_e:
-                        print(f"Groq {model_id} failed: {model_e}")
+                        print(f"Groq {model_id} with key {g_key[:5]}... failed: {model_e}")
                         
             except Exception as e:
-                print(f"Groq setup failed: {e}")
+                print(f"Groq setup failed for key: {e}")
 
         if not extracted_text:
             gemini_key = os.getenv("GEMINI_KEY_1") or os.getenv("GEMINI_API_KEY")
