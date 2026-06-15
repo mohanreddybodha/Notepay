@@ -61,7 +61,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Show owner name below QR
     if (currentUpiOwnerName) {
-      document.getElementById('lbl-upi-owner').innerHTML = 'UPI Receiver Name: <strong style="color: #10b981; font-weight: 800; font-size: 15px;">' + currentUpiOwnerName + '</strong>';
+      document.getElementById('lbl-upi-owner').innerHTML = 'UPI Registered Name: <strong style="color: #10b981; font-weight: 800; font-size: 15px;">' + currentUpiOwnerName + '</strong>';
+      document.getElementById('lbl-upi-id').innerHTML = 'UPI ID: <strong style="color: #6b7280; font-weight: 600; font-size: 13px;">' + currentUpiId + '</strong>';
     }
 
     if (!currentUpiId || !currentUpiOwnerName) {
@@ -282,7 +283,7 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
     if (noteText) {
       noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your donation record.`;
     }
-    document.getElementById('manual-collector-label').innerText = "UPI Receiver Name";
+    document.getElementById('manual-collector-label').innerText = "UPI Registered Name";
     document.getElementById('manual-collector-sub').style.display = 'none';
   } else {
     if (verifiedMsg) verifiedMsg.style.display = 'none';
@@ -301,10 +302,10 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
       if (fallbackSessionId) {
         noteText.innerHTML = `<strong>Note:</strong> We couldn't extract the details automatically. Your screenshot is saved for verification. Your donation will be submitted for organizer review.`;
       } else {
-        noteText.innerHTML = `<strong>Note:</strong> Your donation details will be submitted manually. The verified UPI owner will be shown as <strong>UPI Receiver Name</strong>.`;
+        noteText.innerHTML = `<strong>Note:</strong> Your donation details will be submitted manually. The verified UPI owner will be shown as <strong>UPI Registered Name</strong>.`;
       }
     }
-    document.getElementById('manual-collector-label').innerText = "UPI Receiver Name";
+    document.getElementById('manual-collector-label').innerText = "UPI Registered Name";
     document.getElementById('manual-collector-sub').style.display = 'block';
   }
   
