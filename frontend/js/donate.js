@@ -64,7 +64,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show owner name below QR
     if (currentUpiOwnerName) {
       document.getElementById('lbl-upi-owner').innerHTML = 'UPI Registered Name: <strong style="color: #10b981; font-weight: 800; font-size: 15px;">' + currentUpiOwnerName + '</strong>';
-      document.getElementById('lbl-upi-id').innerHTML = 'UPI ID: <strong style="color: #6b7280; font-weight: 600; font-size: 13px;">' + currentUpiId + '</strong>';
+    }
+
+    // Set UPI Copy ID container values
+    const upiCopyText = document.getElementById('upi-copy-text');
+    const upiCopyContainer = document.getElementById('upi-copy-container');
+    if (upiCopyText && upiCopyContainer && currentUpiId) {
+      upiCopyText.innerText = currentUpiId;
+      upiCopyContainer.style.display = 'flex';
+    }
+
+    const lblUpiId = document.getElementById('lbl-upi-id');
+    if (lblUpiId && currentUpiId) {
+      lblUpiId.innerHTML = 'UPI ID: <strong style="color: #6b7280; font-weight: 600; font-size: 13px;">' + currentUpiId + '</strong>';
     }
 
     if (!currentUpiId || !currentUpiOwnerName) {
@@ -138,6 +150,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show Content
     document.getElementById('skeleton').style.display = 'none';
     document.getElementById('content').style.display = 'block';
+
+    // Copy UPI ID Event Listener
+    const btnCopyUpi = document.getElementById('btn-copy-upi');
+    if (btnCopyUpi) {
+      btnCopyUpi.addEventListener('click', () => {
+        if (!currentUpiId) return;
+        navigator.clipboard.writeText(currentUpiId).then(() => {
+          showToast("UPI ID copied");
+          btnCopyUpi.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+          setTimeout(() => {
+            btnCopyUpi.innerHTML = `<svg class="copy-ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+          }, 2000);
+        }).catch(err => {
+          console.error("Failed to copy UPI ID: ", err);
+        });
+      });
+    }
 
   } catch (error) {
     console.error("Error fetching event:", error);
@@ -476,3 +505,49 @@ window.addEventListener('scroll', () => {
     }
   }
 });
+
+// Toast notification helper
+function showToast(msg) {
+  let toast = document.getElementById('toast-notification');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast-notification';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111827;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      z-index: 9999;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span>${msg}</span>
+  `;
+  
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
+  });
+  
+  // Hide after 2 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(100px)';
+    toast.style.opacity = '0';
+  }, 2000);
+}

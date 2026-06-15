@@ -40,6 +40,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     
     .bullet-list { margin: 0 0 16px; padding-left: 20px; }
     .bullet-list li { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 8px; }
+    .highlight { font-weight: 800; color: var(--primary); }
     
     .important-box { background: var(--input-bg); border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 4px 8px 8px 4px; margin-bottom: 24px; }
     .important-box .para { margin-bottom: 0; font-weight: 600; color: var(--text); }
@@ -57,7 +58,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   
   <!-- Content Area -->
   <div class="scr">
-    <div class="last-updated">Last Updated: May 2026</div>
+    <div class="last-updated">Last Updated: June 2026</div>
 
     <div class="important-box">
       <div class="para">At Notepay, we take your privacy seriously. This Privacy Policy explains what information we collect, how we use it, and how we protect it.</div>
@@ -69,6 +70,8 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <li><strong>Authentication Data:</strong> Your phone number is used exclusively for OTP login and account verification.</li>
       <li><strong>Profile Data:</strong> Your name and profile details are used to identify you within the events you join.</li>
       <li><strong>Event Data:</strong> The financial records, expenses, and donations you log within events are stored securely in our database.</li>
+      <li><strong>UPI Configuration:</strong> Organizers provide their <span class="highlight">UPI ID and UPI Registered Name</span> to enable donor collection links.</li>
+      <li><strong>Receipt Images:</strong> When public donors upload screenshots/proofs of payment via the collection link, we temporarily collect and process the receipt images to verify details and extract transaction records.</li>
     </ul>
 
     <div class="section-title">2. How We Use Your Information</div>
@@ -87,11 +90,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     </ul>
 
     <div class="section-title">4. Artificial Intelligence & Data Processing</div>
-    <div class="para">To provide advanced features like our intelligent `@ai` assistant, Notepay uses third-party AI models (e.g., Google Gemini). By using these features, you agree to the following:</div>
+    <div class="para">To provide features like our intelligent `@ai` chat assistant and automated receipt verification, Notepay uses secure third-party AI models (e.g., Google Gemini). By using these features, you agree to the following:</div>
     <ul class="bullet-list">
-      <li><strong>Data Minimization:</strong> When you interact with the AI, only the specific financial data and context from that individual event are securely transmitted to the AI processor to generate a response.</li>
-      <li><strong>No PII Training:</strong> We strictly prohibit our AI providers from using your Personally Identifiable Information (PII) or your event data to train their public or foundational models.</li>
-      <li><strong>Opt-Out:</strong> If you do not wish for your event data to be processed by our AI features, you may choose to not use the `@ai` command within your events.</li>
+      <li><strong>Receipt Extraction:</strong> Uploaded payment receipt screenshots are processed by AI models to identify and extract the receiver name, sender name, transaction ID, date, and payment amount. These details are used to verify and log collection entries automatically.</li>
+      <li><strong>Data Minimization:</strong> Only the specific ledger entries, chat inputs, or receipt images necessary to complete the verification or response generation are securely transmitted to the AI processor.</li>
+      <li><strong>No PII Training:</strong> We strictly prohibit our AI providers from using your Personally Identifiable Information (PII), uploaded receipt images, or event records to train their foundational or public models.</li>
+      <li><strong>Usage Choice:</strong> If you do not want receipt images or chats processed by AI, you can opt to log entries manually and avoid using the `@ai` command.</li>
     </ul>
 
     <div class="section-title">5. Data Security</div>

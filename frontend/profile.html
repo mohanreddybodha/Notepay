@@ -108,7 +108,10 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div class="psec" style="margin-top:12px;"><div class="psec-lbl">Preferences</div>
         <div class="pcard">
           <div class="prow">
-            <div><div class="pr-val" style="margin-top:0;">Dark Mode</div></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span data-np-icon="theme-toggle" data-np-size="18" style="color:var(--text3);"></span>
+              <div class="pr-val" style="margin-top:0;">Dark Mode</div>
+            </div>
             <div class="toggle" id="dark-toggle" onclick="toggleDark(this)"><div class="toggle-th"></div></div>
           </div>
         </div>
@@ -117,12 +120,16 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div class="psec" style="margin-top:12px;"><div class="psec-lbl">Help & Support</div>
         <div class="pcard">
           <div class="prow prow-c" onclick="document.getElementById('feedback-pop').style.display='flex'">
-            <div><div class="pr-val" style="margin-top:0;">Submit Feedback</div></div>
-            <div class="pr-arrow"><span data-np-icon="chevron-right" data-np-size="20"></span></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span data-np-icon="message-square" data-np-size="18" style="color:var(--text3);"></span>
+              <div class="pr-val" style="margin-top:0;">Submit Feedback</div>
+            </div>
           </div>
           <div class="prow prow-c" onclick="window.location.href='guide.html'">
-            <div><div class="pr-val" style="margin-top:0;">User Guide</div></div>
-            <div class="pr-arrow"><span data-np-icon="chevron-right" data-np-size="20"></span></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span data-np-icon="file-text" data-np-size="18" style="color:var(--text3);"></span>
+              <div class="pr-val" style="margin-top:0;">User Guide</div>
+            </div>
           </div>
         </div>
       </div>
@@ -130,19 +137,24 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div class="psec" style="margin-top:12px;"><div class="psec-lbl">Legal</div>
         <div class="pcard">
           <div class="prow prow-c" onclick="window.location.href='terms.html'">
-            <div><div class="pr-val" style="margin-top:0;">Terms of Service</div></div>
-            <div class="pr-arrow"><span data-np-icon="chevron-right" data-np-size="20"></span></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span data-np-icon="key" data-np-size="18" style="color:var(--text3);"></span>
+              <div class="pr-val" style="margin-top:0;">Terms of Service</div>
+            </div>
           </div>
           <div class="prow prow-c" onclick="window.location.href='privacy.html'">
-            <div><div class="pr-val" style="margin-top:0;">Privacy Policy</div></div>
-            <div class="pr-arrow"><span data-np-icon="chevron-right" data-np-size="20"></span></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span data-np-icon="lock" data-np-size="18" style="color:var(--text3);"></span>
+              <div class="pr-val" style="margin-top:0;">Privacy Policy</div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="logout-sec" style="margin-top:12px;"><div class="psec-lbl">Session</div>
         <div class="pcard">
-          <div class="logout-row" onclick="showLogoutPop()">
+          <div class="logout-row" onclick="showLogoutPop()" style="display:flex; align-items:center; gap:12px;">
+            <span data-np-icon="log-out" data-np-size="18" data-np-tone="red"></span>
             <div><div class="lo-lbl">Logout</div><div class="lo-sub">Sign out from this device</div></div>
           </div>
         </div>
@@ -157,7 +169,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 <div class="pop-ov" id="feedback-pop" style="display:none;">
   <div class="pop-box" style="max-width:340px;">
     <div class="pop-t" style="text-align:left; margin-bottom:15px;">Submit Feedback</div>
-    <select id="fb-type" style="width:100%; padding:12px 35px 12px 12px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:12px; background:var(--surface) url('data:image/png;utf8,<svg fill=%22none%22 stroke=%22%23888%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 viewBox=%220 0 24 24%22 xmlns=%22http://www.w3.org/2000/svg%22><polyline points=%226 9 12 15 18 9%22/></svg>') no-repeat right 12px center; background-size:16px; color:var(--text); font-family:inherit; outline:none; -webkit-appearance:none; appearance:none; font-weight:600; font-size:14px;">
+    <select id="fb-type" style="width:100%; padding:12px 35px 12px 12px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:12px; background:var(--surface) url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e&quot;) no-repeat right 12px center; background-size:16px; color:var(--text); font-family:inherit; outline:none; -webkit-appearance:none; appearance:none; font-weight:600; font-size:14px;">
       <option value="Feature Request">Feature Request</option>
       <option value="Bug Report">Bug Report</option>
       <option value="Security Issue">Security Issue</option>
@@ -174,7 +186,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 <!-- Logout Popup -->
 <div class="pop-ov" id="logout-pop" style="display:none;">
   <div class="pop-box">
-    <div class="pop-ic"><span data-np-icon="smartphone" data-np-size="28"></span></div>
+    <div class="pop-ic"><span data-np-icon="log-out" data-np-size="28" data-np-tone="red"></span></div>
     <div class="pop-t">Logout?</div>
     <div class="pop-m">You will be signed out from this device. Continue?</div>
     <div class="pop-line"></div>
@@ -185,10 +197,10 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   </div>
 </div>
 
-<script src="js/firebase-config.js?v=4"></script>
-<script src="js/icons.js?v=4"></script>
-<script src="js/api.js?v=4"></script>
-<script src="js/auth-guard.js?v=4"></script>
+<script src="js/firebase-config.js?v=25"></script>
+<script src="js/icons.js?v=25"></script>
+<script src="js/api.js?v=25"></script>
+<script src="js/auth-guard.js?v=25"></script>
 <script>
   waitForAuthReady().then(async user => {
     if (!user) return;

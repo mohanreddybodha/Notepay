@@ -27,10 +27,10 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=30" />
+  <link rel="stylesheet" href="css/global.css?v=31" />
   <link rel="stylesheet" href="css/icons.css?v=24" />
-  <script src="js/icons.js?v=3"></script>
-  <link rel="stylesheet" href="css/event.css?v=27">
+  <script src="js/icons.js?v=25"></script>
+  <link rel="stylesheet" href="css/event.css?v=28">
 <link rel="icon" type="image/png" href="favicon.png" />
 </head>
 
@@ -392,6 +392,10 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
           <div class="dd-ic"><span data-np-icon="users" data-np-size="18"></span></div>
           <div class="dd-lbl">Members</div>
         </div>
+        <div class="dd-item" id="upi-setup-btn" onclick="closeDD();openUpiSheet()">
+          <div class="dd-ic"><span data-np-icon="smartphone" data-np-size="18"></span></div>
+          <div class="dd-lbl">Receive Donations (QR)</div>
+        </div>
         <div class="dd-item" id="privacy-toggle-btn" onclick="closeDD();handlePrivacyToggleClick()">
           <div class="dd-ic"><span data-np-icon="globe" data-np-size="18"></span></div>
           <div class="dd-lbl" id="privacy-lbl">Public Access: OFF</div>
@@ -399,10 +403,6 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         <div class="dd-item" id="share-link-btn" style="display:none;" onclick="sharePublicLink()">
           <div class="dd-ic"><span data-np-icon="share" data-np-size="18"></span></div>
           <div class="dd-lbl">Share View Link</div>
-        </div>
-        <div class="dd-item" id="upi-setup-btn" onclick="closeDD();openUpiSheet()">
-          <div class="dd-ic"><span data-np-icon="smartphone" data-np-size="18"></span></div>
-          <div class="dd-lbl">Receive Donations (QR)</div>
         </div>
         <div class="dd-item" id="pdf-report-btn" style="display:none;" onclick="closeDD();exportPDF()">
           <div class="dd-ic"><span data-np-icon="download" data-np-size="18"></span></div>
@@ -512,7 +512,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
             <div id="upi-donor-req-cols-container" style="display:none; margin-top:20px;">
               <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Required columns donor need to fill</div>
-              <div id="upi-donor-req-cols-list" style="max-height: 150px; overflow-y:auto; border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg2); display:flex; flex-direction:column; gap:8px;">
+              <div id="upi-donor-req-cols-list" style="max-height: 150px; overflow-y:auto; border-radius: 8px; padding: 10px; background: var(--bg2); display:flex; flex-direction:column; gap:8px;">
                 <!-- Checkboxes injected via JS -->
               </div>
               <p style="font-size:11px; color:var(--text3); margin-top:6px;">If no columns are selected, donors will only see the default name and amount fields.</p>
@@ -1029,7 +1029,6 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
   <!-- Pull to Refresh Logic -->
   <script src="js/auth-guard.js?v=23"></script>
-  <script src="js/pull-to-refresh.js?v=23"></script>
 
   <script src="js/event-main.js?v=99"></script>
 </body>

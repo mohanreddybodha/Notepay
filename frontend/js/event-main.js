@@ -402,9 +402,11 @@
         const privLbl = document.getElementById("privacy-lbl");
         const shareBtn = document.getElementById("share-link-btn");
         const pdfBtn = document.getElementById("pdf-report-btn");
+        const upiSetupBtn = document.getElementById("upi-setup-btn");
         if (privLbl) privLbl.textContent = eventData.is_public ? "Public Access: ON" : "Public Access: OFF";
         if (shareBtn) shareBtn.style.display = (isOrganizer && eventData.is_public) ? "flex" : "none";
         if (pdfBtn) pdfBtn.style.display = (eventData.is_public) ? "flex" : "none";
+        if (upiSetupBtn) upiSetupBtn.style.display = isOrganizer ? "flex" : "none";
 
         // Table visibility labels
         const showDon = eventData.show_donations !== false;
@@ -2199,7 +2201,14 @@
             <span data-np-icon="trash" data-np-size="16" data-np-tone="red" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Delete
           </div>
-          ` : ''}
+          ` : `
+            ${isOrganizer ? `
+            <div class="ctx-item dng" onclick="closeCtx();openDelPop()">
+              <span data-np-icon="trash" data-np-size="16" data-np-tone="red" style="vertical-align:text-bottom;margin-right:8px;"></span>
+              Delete
+            </div>
+            ` : ''}
+          `}
         ` : ''}
       `;
       document.body.appendChild(ov);
@@ -5279,6 +5288,8 @@ function openUpiSheet() {
     donCols.forEach(col => {
       const colName = typeof col === 'string' ? col : col.n;
       if (colName.startsWith('_sys_')) return; // Skip internal sys columns
+      const isHidden = typeof col === 'object' ? col.hidden === true : false;
+      if (isHidden) return; // Skip hidden columns
       
       hasCustom = true;
       const isReq = typeof col === 'object' ? col.reqByDonor : false;

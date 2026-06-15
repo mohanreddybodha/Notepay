@@ -48,6 +48,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     .footer { text-align: center; padding: 30px 0 10px; font-size: 12px; color: var(--text3); font-weight: 700; }
     body.dark .role-card { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05); }
     body.dark .important-box { background: rgba(33, 150, 243, 0.15); }
+    .highlight { font-weight: 800; color: var(--primary); }
   </style>
 <link rel="icon" type="image/png" href="favicon.png" />
 </head>
@@ -91,7 +92,16 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <li><strong>Summary:</strong> An interactive overview showing total collected, total spent, remaining balance, top donors, and per-member contribution breakdowns. You can engage with different data visualizations to get insights into event finances.</li>
     </ul>
 
-    <!-- Section 4: Adding Entries -->
+    <!-- Section 4: Collection Links & Public Donations -->
+    <div class="section-title"><span data-np-icon="link" data-np-size="22"></span> Collection Links & Public Donations</div>
+    <ul class="step-list">
+      <li><strong>Auto-Donation Setup:</strong> If you are the Organizer, tap the <strong>three vertical dots (⋮)</strong> in the top-right corner of the event, and select <strong>Receive Donations (QR)</strong> to set up your <span class="highlight">UPI ID</span> and <span class="highlight">UPI Registered Name</span>. You can also customize which fields (like Phone, Address, etc.) the donors must fill in. The generated donation link will remain functional even if the event is kept private.</li>
+      <li><strong>Public Donation Link:</strong> Copy the generated public link and share it with your donors. When they open it, they will see a secure payment page with the event name, organizer, and a dynamically generated UPI QR code.</li>
+      <li><strong>Automatic Flow of Collection Entries:</strong> Donors can scan the QR code or click the copy icon beside the UPI ID to instantly copy it and pay using any UPI app. After paying, they must upload a screenshot/receipt of their payment. Notepay's AI assistant immediately verifies the screenshot (checking if the receiver's name matches your UPI Registered Name and validating the transaction). If verified, the entry is automatically logged directly into your event's Collections sheet.</li>
+      <li><strong>Manual Entry Fallback:</strong> If the AI verification fails or cannot extract the receipt details automatically, the donor will be shown a manual form to fill out their name, amount, and <span class="highlight">required custom fields</span>, submitting it safely for organizer review.</li>
+    </ul>
+
+    <!-- Section 5: Adding Entries -->
     <div class="section-title"><span data-np-icon="rupee" data-np-size="22"></span> Adding & Managing Entries</div>
     <ul class="step-list">
       <li><strong>Add a New Entry:</strong> At the bottom of the Collections or Expenses table, tap the green <strong>+ New entry</strong> row. A form will appear inline where you can type the name and amount. Tap <strong>Save</strong> to add the entry.</li>
@@ -100,29 +110,29 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <li><strong>Duplicate Warning:</strong> If you try to add an entry with the same name and amount as an existing one, Notepay will show a warning popup asking if you want to add it anyway.</li>
     </ul>
 
-    <!-- Section 5: Custom Columns -->
+    <!-- Section 6: Custom Columns -->
     <div class="section-title"><span data-np-icon="settings" data-np-size="22"></span> Custom Columns</div>
     <ul class="step-list">
       <li><strong>Add a Custom Column:</strong> In the Collections or Expenses tab, look just below the search bar to find the donor/expense count. Tap the <strong>+ Column</strong> button next to it. Enter a column name (e.g., "House No."), select your desired Column Width (Narrow, Medium, or Wide), and tap <strong>Save</strong>. The new column will instantly appear at the end of the table.</li>
       <li><strong>Edit or Hide a Column:</strong> Tap on the name of any custom column header directly in the table. You can rename it, adjust its width, or tap <strong>Hide</strong> to completely hide it from view without deleting the data.</li>
-      <li><strong>Restore Hidden Columns:</strong> Tap the <strong>+ Column</strong> button, then tap the <strong>Hidden Cols</strong> button. You will see a list of all columns you have hidden. Tap <strong>Restore</strong> to bring them back.</li>
+      <li><strong>Restore or Delete Hidden Columns:</strong> Tap the <strong>+ Column</strong> button, then tap the <strong>Hidden Cols</strong> button. You will see a list of all columns you have hidden. Tap <strong>Restore</strong> to bring them back, or tap the red <strong>Delete</strong> button next to it to permanently remove the column and purge all its data from the database.</li>
     </ul>
 
-    <!-- Section 6: Search, Sort & Filter -->
+    <!-- Section 7: Search, Sort & Filter -->
     <div class="section-title"><span data-np-icon="search" data-np-size="22"></span> Search, Sort & Filter</div>
     <ul class="step-list">
       <li><strong>Search:</strong> At the very top of the Collections or Expenses tab, use the <strong>Search donors…</strong> or <strong>Search expenses…</strong> input box to find specific entries instantly as you type.</li>
       <li><strong>Sort & Filter:</strong> Tap the <strong>filter icon</strong> (the icon with slider lines) located inside the search bar, directly to the right of the search text. A menu will open with Sorting Options: <em>Time Newest First, Time Oldest First, Amount High to Low, Amount Low to High,</em> and <em>Name A to Z</em>. You can also tap the <strong>My Entries Only</strong> checkbox to filter out everything except the entries you personally collected.</li>
     </ul>
 
-    <!-- Section 7: Theater Mode -->
+    <!-- Section 8: Theater Mode -->
     <div class="section-title"><span data-np-icon="maximize" data-np-size="22"></span> Theater Mode</div>
     <ul class="step-list">
       <li><strong>Enter Theater Mode:</strong> Tap the circular <strong>rotate icon</strong> next to the "Total" amount on any table. The screen will rotate to a wide, landscape-style spreadsheet view. You can also enter Theater Mode by rotating your phone horizontally.</li>
       <li><strong>Navigate in Theater Mode:</strong> At the top, you can switch between <strong>Collections</strong>, <strong>Expenses</strong>, and <strong>Summary</strong> tabs. A search bar and filter icon are available at the top. Tap <strong>Close</strong> in the top-right to exit.</li>
     </ul>
 
-    <!-- Section 8: Chat & AI -->
+    <!-- Section 9: Chat & AI -->
     <div class="section-title"><span data-np-icon="message-square" data-np-size="22"></span> Chat & AI Assistant</div>
     <ul class="step-list">
       <li><strong>Open Chat:</strong> Inside any event, tap the <strong>chat bubble icon</strong> floating at the bottom-right corner of the screen. A chat drawer will slide open from the right.</li>
@@ -130,13 +140,14 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <li><strong>Use the AI Assistant:</strong> Type <code>@ai</code> followed by your question and send it. For example: <em>"@ai who donated the most?"</em> or <em>"@ai what is the remaining balance?"</em>. The AI reads the event's financial data and replies directly in the chat.</li>
     </ul>
 
-    <!-- Section 9: Organizer Menu -->
+    <!-- Section 10: Organizer Menu -->
     <div class="section-title"><span data-np-icon="star" data-np-size="22"></span> Organizer Menu (⋮)</div>
     <div class="para">If you are the Organizer, tap the <strong>three vertical dots (⋮)</strong> in the top-right corner of the event page. The dropdown menu includes:</div>
     <ul class="bullet-list">
       <li><strong>Rename Event:</strong> Change the event's name and description.</li>
       <li><strong>Code Settings:</strong> View the invite code, copy it, or regenerate a new one.</li>
       <li><strong>Members:</strong> See all members with their roles. Tap a member's name to <strong>Restrict</strong> them (blocks all access), <strong>Promote to Organizer</strong>, or <strong>Demote</strong> an existing organizer back to collector.</li>
+      <li><strong>Receive Donations (QR):</strong> Tap to set up your <span class="highlight">UPI ID</span> and <span class="highlight">UPI Registered Name</span>, and choose <span class="highlight">donor-required fields</span>. This option is always visible to the Organizer.</li>
       <li><strong>Public Access:</strong> Toggle this ON to generate a shareable public link. Anyone with the link can view the event in read-only mode. Toggle it OFF to make the event private again.</li>
       <li><strong>Share View Link:</strong> Appears only when Public Access is ON. Copies the public link so you can share it.</li>
       <li><strong>Download PDF Report:</strong> Generates a professional PDF with all collections, expenses, and summary data for the event.</li>
@@ -145,14 +156,14 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <li><strong>Delete Event:</strong> Permanently deletes the event and all its data. This cannot be undone.</li>
     </ul>
 
-    <!-- Section 10: Collector Menu -->
+    <!-- Section 11: Collector Menu -->
     <div class="section-title"><span data-np-icon="user" data-np-size="22"></span> Collector Menu</div>
     <div class="para">If you are a Collector, the three vertical dots (⋮) menu shows:</div>
     <ul class="bullet-list">
       <li><strong>Exit Event:</strong> Leave the event. You will need a new invite code to rejoin. Your previous entries will not be deleted.</li>
     </ul>
 
-    <!-- Section 11: Member Roles -->
+    <!-- Section 12: Member Roles -->
     <div class="section-title"><span data-np-icon="shield" data-np-size="22"></span> Member Roles</div>
     <div class="role-card">
       <div class="role-title" style="color: #4CAF50;"><span data-np-icon="star" data-np-size="18"></span> Organizer</div>
@@ -167,7 +178,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div class="role-desc">A member restricted by the Organizer. They cannot view the event data, add entries, or use the chat. Only the Organizer can restore their access.</div>
     </div>
 
-    <!-- Section 12: Profile & Settings -->
+    <!-- Section 13: Profile & Settings -->
     <div class="section-title"><span data-np-icon="user" data-np-size="22"></span> Profile & Settings</div>
     <ul class="step-list">
       <li><strong>Open Profile:</strong> On the dashboard, tap the <strong>circular avatar</strong> (your initials) in the top-right corner of the app bar. This opens the Profile page.</li>
@@ -177,7 +188,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     </ul>
 
     <div class="important-box" style="border-left-color: var(--primary);">
-      <div class="para"><strong>Need Help?</strong> If you encounter any issues, contact the app administrator or revisit this guide anytime from your Profile page under <strong>Help & Support</strong>.</div>
+      <div class="para"><strong>Need Help?</strong> If you encounter any issues, contact the app administrator or revisit this guide anytime from your Profile page under <span class="highlight" style="cursor: pointer; text-decoration: underline;" onclick="openFeedbackPopup(event)">Help & Support</span>.</div>
     </div>
 
     <div class="footer">Thank you for using Notepay!</div>
@@ -185,12 +196,66 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   </div>
 </div>
 
-<script src="js/icons.js?v=4"></script>
+<!-- Feedback Popup -->
+<div class="pop-ov" id="feedback-pop" style="display:none; justify-content:center; align-items:center; z-index:10000; position:fixed;">
+  <div class="pop-box" style="max-width:340px; width: 90%;">
+    <div class="pop-t" style="text-align:left; margin-bottom:15px; font-family:'Nunito',sans-serif; font-size:18px; font-weight:800;">Submit Feedback</div>
+    <select id="fb-type" style="width:100%; padding:12px 35px 12px 12px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:12px; background:var(--surface) url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e&quot;) no-repeat right 12px center; background-size:16px; color:var(--text); font-family:inherit; outline:none; -webkit-appearance:none; appearance:none; font-weight:600; font-size:14px;">
+      <option value="Feature Request">Feature Request</option>
+      <option value="Bug Report">Bug Report</option>
+      <option value="Security Issue">Security Issue</option>
+      <option value="General Feedback">General Feedback</option>
+    </select>
+    <textarea id="fb-msg" placeholder="Tell us what you think or report an issue..." rows="4" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:15px; background:var(--surface); color:var(--text); font-family:inherit; outline:none; resize:none; box-sizing:border-box;"></textarea>
+    <div class="pop-btns" style="display:flex; justify-content:flex-end; gap:8px;">
+      <div class="btn btn-text-secondary" style="cursor:pointer;" onclick="document.getElementById('feedback-pop').style.display='none'">Cancel</div>
+      <div class="btn btn-solid-primary" style="cursor:pointer;" id="fb-submit" onclick="submitFeedback()">Submit</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js?v=25"></script>
+<script src="js/api.js?v=25"></script>
+<script src="js/auth-guard.js?v=25"></script>
+<script src="js/icons.js?v=25"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    if (localStorage.getItem("np_dark") === "1") document.body.classList.add("dark");
+    if (localStorage.getItem("np_dark") === "1") {
+      document.body.classList.add("dark");
+      document.documentElement.classList.add("dark-mode");
+    }
     npIcons.render();
   });
+
+  function openFeedbackPopup(e) {
+    if (e) e.preventDefault();
+    document.getElementById('feedback-pop').style.display = 'flex';
+  }
+
+  async function submitFeedback() {
+    const type = document.getElementById('fb-type').value;
+    const msg = document.getElementById('fb-msg').value.trim();
+    if(!msg) return showToast("Message cannot be empty", "error");
+    
+    const btn = document.getElementById('fb-submit');
+    const oldTxt = btn.innerText;
+    btn.innerText = "Sending...";
+    btn.style.pointerEvents = 'none';
+    
+    try {
+      await apiFetch("POST", "/feedback", { type: type, message: msg });
+      showToast("Feedback submitted successfully!", "success");
+      document.getElementById('feedback-pop').style.display = 'none';
+      document.getElementById('fb-msg').value = '';
+    } catch(e) {
+      showToast(e.message || "Failed to submit feedback", "error");
+    } finally {
+      btn.innerText = oldTxt;
+      btn.style.pointerEvents = 'auto';
+    }
+  }
 </script>
 </body>
 </html>

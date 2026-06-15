@@ -3594,3 +3594,13 @@
         display: block;
       }
     }
+
+#upi-donor-req-cols-list {
+  border: 1px solid var(--border);
+}
+body.dark-mode #upi-donor-req-cols-list {
+  border: 2px solid var(--primary) !important;
+}
+.dark-mode #upi-donor-req-cols-list {
+  border: 2px solid var(--primary) !important;
+}
