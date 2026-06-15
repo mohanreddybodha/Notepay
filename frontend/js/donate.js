@@ -18,6 +18,7 @@ let currentUpiId = null;
 let currentUpiOwnerName = null;
 let currentEventName = null;
 let currentReceiptSessionId = null;
+let donorCustomColumns = [];
 
 function showRejectionPopup(message) {
   document.getElementById('rejection-msg').innerText = message;
@@ -53,6 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentEventName = event.name;
     currentUpiId = event.upi_id;
     currentUpiOwnerName = event.upi_owner_name;
+    donorCustomColumns = event.donation_custom_columns || [];
 
     // Populate UI
     document.getElementById('lbl-event-name').innerText = currentEventName;
@@ -262,7 +264,51 @@ btnSubmit.addEventListener('click', async () => {
 function showManualEntryForm(isPartial = false, lockedAmount = null, receiverName = null, fallbackSessionId = null) {
   document.getElementById('manual-entry-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+  window.scrollTo(0, 0);
   document.getElementById('manual-name').value = '';
+
+  // Render custom fields
+  const container = document.getElementById('dynamic-custom-fields-container');
+  container.innerHTML = "";
+  donorCustomColumns.forEach(col => {
+    if (col && typeof col === 'object' && col.reqByDonor && !col.hidden) {
+      const wrapper = document.createElement('div');
+      wrapper.style.marginBottom = '12px';
+      const label = document.createElement('label');
+      label.style.display = 'block';
+      label.style.fontWeight = '600';
+      label.style.color = '#374151';
+      label.style.marginBottom = '6px';
+      label.style.fontSize = '14px';
+      label.innerText = col.n + " *";
+      
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'donor-custom-field';
+      input.dataset.colName = col.n;
+      input.placeholder = "Enter " + col.n;
+      input.style.width = '100%';
+      input.style.padding = '12px';
+      input.style.border = '1px solid #d1d5db';
+      input.style.borderRadius = '8px';
+      input.style.fontSize = '14px';
+      input.style.boxSizing = 'border-box';
+      
+      const err = document.createElement('div');
+      err.className = 'err-custom-field';
+      err.dataset.colName = col.n;
+      err.style.display = 'none';
+      err.style.color = '#ef4444';
+      err.style.fontSize = '12px';
+      err.style.marginTop = '4px';
+      
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      wrapper.appendChild(err);
+      container.appendChild(wrapper);
+    }
+  });
   
   const verifiedMsg = document.getElementById('manual-verified-msg');
   const descMsg = document.getElementById('manual-desc-msg');
@@ -270,11 +316,10 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
   const amountInput = document.getElementById('manual-amount');
   if (isPartial && lockedAmount) {
     if (verifiedMsg) verifiedMsg.style.display = 'flex';
-    if (descMsg) descMsg.innerHTML = "We found the payment amount and receiver details from your receipt.<br><br>Sender name was not available in the receipt. Please enter your name to complete the payment record.";
+    if (descMsg) descMsg.innerHTML = "We have successfully verified your payment receipt.<br><br>To complete your donation record, please fill out the remaining details below.";
     amountInput.value = lockedAmount;
     amountInput.disabled = true;
     amountInput.style.backgroundColor = '#f3f4f6';
-    // Add a note above it (Removed partial-note as requested)
     
     if (receiverName) {
       document.getElementById('manual-collector').innerText = receiverName;
@@ -284,7 +329,6 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
       noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your donation record.`;
     }
     document.getElementById('manual-collector-label').innerText = "UPI Registered Name";
-    document.getElementById('manual-collector-sub').style.display = 'none';
   } else {
     if (verifiedMsg) verifiedMsg.style.display = 'none';
     if (descMsg) descMsg.innerHTML = "We couldn't extract the payment details automatically. Please enter your details below:";
@@ -306,7 +350,6 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
       }
     }
     document.getElementById('manual-collector-label').innerText = "UPI Registered Name";
-    document.getElementById('manual-collector-sub').style.display = 'block';
   }
   
   document.getElementById('manual-name').focus();
@@ -315,6 +358,7 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
 document.getElementById('btn-manual-cancel').addEventListener('click', () => {
   document.getElementById('manual-entry-modal').style.display = 'none';
   document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
 });
 
 document.getElementById('btn-manual-submit').addEventListener('click', async () => {
@@ -322,25 +366,47 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
   const amount = parseFloat(document.getElementById('manual-amount').value);
 
   // Clear previous errors
-  document.getElementById('err-manual-name').style.display = 'none';
-  document.getElementById('err-manual-amount').style.display = 'none';
+  const errName = document.getElementById('err-manual-name');
+  const errAmt = document.getElementById('err-manual-amount');
+  errName.style.display = 'none';
+  errAmt.style.display = 'none';
+  document.querySelectorAll('.err-custom-field').forEach(el => el.style.display = 'none');
 
   let hasError = false;
-  if (!name) {
-    document.getElementById('err-manual-name').innerText = 'Please enter your name.';
-    document.getElementById('err-manual-name').style.display = 'block';
+  if (!name || name.length < 2) {
+    errName.innerText = 'Please enter a valid name (min 2 characters).';
+    errName.style.display = 'block';
     hasError = true;
   }
   if (!amount || amount <= 0) {
-    document.getElementById('err-manual-amount').innerText = 'Please enter a valid amount greater than 0.';
-    document.getElementById('err-manual-amount').style.display = 'block';
+    errAmt.innerText = 'Please enter a valid amount greater than 0.';
+    errAmt.style.display = 'block';
     hasError = true;
   }
+  
+  // Validate custom fields
+  const customFields = {};
+  document.querySelectorAll('.donor-custom-field').forEach(inp => {
+    const val = inp.value.trim();
+    const colName = inp.dataset.colName;
+    if (!val) {
+      const errDiv = document.querySelector(`.err-custom-field[data-col-name="${colName}"]`);
+      if (errDiv) {
+        errDiv.innerText = `${colName} is required.`;
+        errDiv.style.display = 'block';
+      }
+      hasError = true;
+    } else {
+      customFields[colName] = val;
+    }
+  });
+  
   if (hasError) return;
 
   // Hide modal and show loader
   document.getElementById('manual-entry-modal').style.display = 'none';
   document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
   const loader = document.getElementById('loader');
   loader.style.display = 'flex';
   document.getElementById('loader-spinner').style.display = 'block';
@@ -358,7 +424,8 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
       body: JSON.stringify({
         donor_name: name,
         amount: amount,
-        receipt_session_id: currentReceiptSessionId
+        receipt_session_id: currentReceiptSessionId,
+        custom_fields: Object.keys(customFields).length > 0 ? customFields : undefined
       })
     });
 
@@ -393,5 +460,19 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
     console.error("Manual Entry Error:", error);
     document.getElementById('loader').style.display = 'none';
     showRejectionPopup(error.message || "Failed to record donation. Please try again.");
+  }
+});
+
+// Sticky brand header scroll effect
+window.addEventListener('scroll', () => {
+  const brand = document.querySelector('.top-brand');
+  if (brand) {
+    if (window.scrollY > 5) {
+      brand.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+      brand.style.borderBottom = '1px solid rgba(0, 0, 0, 0.08)';
+    } else {
+      brand.style.boxShadow = 'none';
+      brand.style.borderBottom = '1px solid transparent';
+    }
   }
 });

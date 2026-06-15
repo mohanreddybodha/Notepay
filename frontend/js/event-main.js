@@ -934,12 +934,13 @@
 
           const pinned = isPinned("don", d.id || d._id);
           
+          let donVersionHtml = (d.version && d.version > 1) ? `<span style="font-size:10px; color:var(--text3); margin-left:4px;">v${d.version}</span>` : '';
           let rowHTML = `
         <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('don_name', 140)}px;">
           <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
             ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
           </div>
-          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(d.donor_name)}</div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(d.donor_name)}${donVersionHtml}</div>
         </div>
         `;
         let receiptHtml = d.receipt_key ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${d.id || d._id}', event)"></span>` : '';
@@ -1081,14 +1082,17 @@
 
           const pinned = isPinned("exp", e.id || e._id);
           
+          let expVersionHtml = (e.version && e.version > 1) ? `<span style="font-size:10px; color:var(--text3); margin-left:4px;">v${e.version}</span>` : '';
           let rowHTML = `
         <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;">
           <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
             ${pinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
           </div>
-          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(e.description)}</div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(e.description)}${expVersionHtml}</div>
         </div>
-        <div class="sc" style="width:${getColWidth('exp_amt', 90)}px;"><span class="cr">${e.amount ? formatINR(e.amount) : '₹0'}</span></div>`;
+        `;
+        let receiptHtmlExp = e.receipt_key ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${e.id || e._id}', event, 'exp')"></span>` : '';
+        rowHTML += `<div class="sc" style="width:${getColWidth('exp_amt', 90)}px; display:flex; align-items:center;"><span class="cr">${e.amount ? formatINR(e.amount) : '₹0'}</span>${receiptHtmlExp}</div>`;
         
         if (!hideExpDate) {
           rowHTML += `<div class="sc" style="width:${getColWidth('exp_date', 100)}px;font-size:11px;">${formatDate(e.collected_at)}</div>`;
@@ -2164,6 +2168,8 @@
       const name = type === "don" ? entry.donor_name : entry.description;
       const pinned = isPinned(type, entry.id || entry._id);
       const canModify = isOrganizer || String(entry.collected_by) === String(myUserId);
+      const isUnverified = type === 'don' ? /^\((M|AI|AI-P)\)\s/.test(entry.donor_name) : false;
+      const isAcceptedPublic = type === 'don' && entry.is_public_entry && !isUnverified;
 
       ctx.innerHTML = `
         <div class="ctx-lbl">${escHtml(name)}</div>
@@ -2177,13 +2183,14 @@
             <span data-np-icon="share" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Share Receipt
           </div>
-          ${!entry.receipt_key ? `
-          <div class="ctx-item" onclick="closeCtx();triggerManualReceiptUpload('${entry.id || entry._id}')">
+          ` : ''}
+          ${(!entry.receipt_key && !isAcceptedPublic) ? `
+          <div class="ctx-item" onclick="closeCtx();triggerManualReceiptUpload('${entry.id || entry._id}', '${type}')">
             <span data-np-icon="camera" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Upload Proof
           </div>
           ` : ''}
-          ` : ''}
+          ${!isAcceptedPublic ? `
           <div class="ctx-item" onclick="closeCtx();openEditForm()">
             <span data-np-icon="edit" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Modify
@@ -2192,6 +2199,7 @@
             <span data-np-icon="trash" data-np-size="16" data-np-tone="red" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Delete
           </div>
+          ` : ''}
         ` : ''}
       `;
       document.body.appendChild(ov);
@@ -3001,13 +3009,16 @@
         row.style.justifyContent = "space-between";
         row.style.alignItems = "center";
         row.style.padding = "8px 12px";
-        row.style.background = "var(--row-bg)";
+        row.style.background = "var(--input-bg)";
         row.style.borderRadius = "8px";
-        row.style.border = "1px solid var(--border)";
+        row.style.border = "1px solid var(--input-border)";
         
         row.innerHTML = `
-          <div style="font-size:13px; font-weight:700; color:var(--text1);">${escHtml(dispName)}</div>
-          <button class="btn btn-solid-primary" style="padding: 0 12px; font-size: 11.5px; border-radius: 30px; height: 28px; white-space: nowrap; width: fit-content !important; flex: 0 0 auto; margin: 0;" onclick="restoreHiddenColumn('${name}')">Restore</button>
+          <div style="font-size:13px; font-weight:700; color:var(--text);">${escHtml(dispName)}</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-solid-primary" style="padding: 0 12px; font-size: 11.5px; border-radius: 30px; height: 28px; white-space: nowrap; width: fit-content !important; flex: 0 0 auto; margin: 0;" onclick="restoreHiddenColumn('${name}')">Restore</button>
+            ${isSys ? '' : `<button class="btn btn-solid-danger" style="padding: 0 12px; font-size: 11.5px; border-radius: 30px; height: 28px; white-space: nowrap; width: fit-content !important; flex: 0 0 auto; margin: 0;" onclick="deleteHiddenColumnPermanently('${name}')">Delete</button>`}
+          </div>
         `;
         list.appendChild(row);
       });
@@ -3062,6 +3073,41 @@
         renderHiddenColumns(activeColType);
         showToast("Column restored!");
       } catch (e) { showToast(e.message || "Failed.", "error"); }
+    }
+
+    async function deleteHiddenColumnPermanently(name) {
+      showConfirmModal(
+        "Delete Column Completely?",
+        `Are you sure you want to completely delete '${escHtml(name)}'? <br><br><span style="color:var(--red);">Warning: This will permanently delete this column and all its values from the database for all entries. This cannot be undone.</span>`,
+        "Delete",
+        "var(--red)",
+        async () => {
+          const key = activeColType === "don" ? "donation_custom_columns" : "expense_custom_columns";
+          const existing = eventData[key] || [];
+          const updated = existing.filter(c => {
+            const n = typeof c === "string" ? c : c.n;
+            return n !== name;
+          });
+
+          try {
+            const data = {}; data[key] = updated;
+            const res = await updateEvent(eventId, data);
+            eventData[key] = res[key];
+            clearEventCache();
+            window.schemaChanged = true;
+            preserveInlineState();
+            if (activeTheaterTab) {
+              switchTheaterTab(activeTheaterTab, true);
+            } else {
+              if (activeColType === "don") renderDonations(); else renderExpenses();
+            }
+            renderHiddenColumns(activeColType);
+            showToast("Column deleted completely.");
+          } catch (e) { showToast(e.message || "Failed to delete.", "error"); }
+        },
+        "trash",
+        "var(--red)"
+      );
     }
 
     function updateCharCount(el) {
@@ -3318,14 +3364,15 @@
           return `<div class="sc" style="width:${w}px;">${escHtml(val)}</div>`;
         }).join("");
 
-        let receiptHtml = (type === "don" && entry.receipt_key) ? `<span style="margin-left:auto; color:var(--primary); cursor:pointer; display:flex; align-items:center;" onclick="openReceiptModal('${entry.id || entry._id}', event)">${npIcon("file-text", {size: 14})}</span>` : '';
+        let receiptHtml = entry.receipt_key ? `<span style="margin-left:auto; color:var(--primary); cursor:pointer; display:flex; align-items:center;" onclick="openReceiptModal('${entry.id || entry._id}', event, '${type}')">${npIcon("file-text", {size: 14})}</span>` : '';
+        let versionHtml = (entry.version && entry.version > 1) ? `<span style="font-size:10px; color:var(--text3); margin-left:4px;">v${entry.version}</span>` : '';
 
         let rowHTML = `
           <div class="fc sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(type === "don" ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
               ${isPinned ? `<span style="color:var(--amber);" title="Pinned">${npIcon("pin", { size: 12 })}</span>` : ''}
             </div>
-            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(entry.donor_name || entry.description)}</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(entry.donor_name || entry.description)}${versionHtml}</div>
           </div>
           <div class="sc" style="width:${getColWidth(type === "don" ? 'don_amt' : 'exp_amt', 90)}px; display:flex; align-items:center;">
             <span style="font-weight:800; color:${type === "don" ? "var(--green)" : "var(--red)"};">₹${(entry.amount || 0).toLocaleString()}</span>${receiptHtml}
@@ -5220,17 +5267,61 @@ function openUpiSheet() {
   document.getElementById('upi-sheet').style.display = 'flex';
   document.getElementById('upi-id-input').value = eventData.upi_id || '';
   document.getElementById('upi-owner-name-input').value = eventData.upi_owner_name || '';
+
+  // Render Custom Columns for Donor
+  const donCols = eventData.donation_custom_columns || [];
+  const reqColsContainer = document.getElementById('upi-donor-req-cols-container');
+  const reqColsList = document.getElementById('upi-donor-req-cols-list');
+  
+  if (donCols.length > 0) {
+    let hasCustom = false;
+    reqColsList.innerHTML = '';
+    donCols.forEach(col => {
+      const colName = typeof col === 'string' ? col : col.n;
+      if (colName.startsWith('_sys_')) return; // Skip internal sys columns
+      
+      hasCustom = true;
+      const isReq = typeof col === 'object' ? col.reqByDonor : false;
+      
+      const lbl = document.createElement('label');
+      lbl.style.display = 'flex';
+      lbl.style.alignItems = 'center';
+      lbl.style.gap = '8px';
+      lbl.style.fontSize = '13px';
+      lbl.style.color = 'var(--text)';
+      lbl.style.cursor = 'pointer';
+      
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.className = 'donor-req-cb';
+      cb.value = colName;
+      cb.checked = isReq;
+      
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(colName));
+      reqColsList.appendChild(lbl);
+    });
+    
+    if(hasCustom) {
+      reqColsContainer.style.display = 'block';
+    } else {
+      reqColsContainer.style.display = 'block';
+      reqColsList.innerHTML = '<div style="font-size:12px; color:var(--text3); padding:4px;">No custom columns added yet. Add columns to the Collections table first.</div>';
+    }
+  } else {
+    reqColsContainer.style.display = 'block';
+    reqColsList.innerHTML = '<div style="font-size:12px; color:var(--text3); padding:4px;">No custom columns added yet. Add columns to the Collections table first.</div>';
+  }
+
   if (eventData.upi_id && eventData.upi_owner_name) {
     const link = window.location.origin + '/donate?event_id=' + eventId;
     document.getElementById('upi-link-text').innerText = link;
     document.getElementById('upi-share-section').style.display = 'block';
-    document.getElementById('btn-upi-save').style.display = 'none';
-    document.getElementById('btn-upi-share').style.display = '';
+    document.getElementById('btn-upi-save').style.display = '';
     document.getElementById('btn-upi-cancel').innerText = 'Close';
   } else {
     document.getElementById('upi-share-section').style.display = 'none';
     document.getElementById('btn-upi-save').style.display = '';
-    document.getElementById('btn-upi-share').style.display = 'none';
     document.getElementById('btn-upi-cancel').innerText = 'Cancel';
   }
 }
@@ -5240,20 +5331,25 @@ function openUpiSheet() {
 // ==========================================
 let activeModalDonationId = null;
 
-async function openReceiptModal(donationIdStr, event) {
+let activeModalEntryType = 'don';
+
+async function openReceiptModal(donationIdStr, event, type = 'don') {
   if (event) event.stopPropagation();
-  const d = donations.find(x => String(x.id || x._id) === donationIdStr);
+  const collection = type === 'don' ? donations : expenses;
+  const d = collection.find(x => String(x.id || x._id) === donationIdStr);
   if (!d || !d.receipt_key) return;
   
   activeModalDonationId = donationIdStr;
+  activeModalEntryType = type;
   
   const img = document.getElementById('receipt-img');
   img.src = '';
   
   const donorNameEl = document.getElementById('receipt-donor-name');
   if (donorNameEl) {
-    let cleanName = d.donor_name.replace(/^\((M|AI|AI-P)\)\s*/, '');
-    donorNameEl.innerText = "Donor: " + cleanName;
+    let rawName = type === 'don' ? d.donor_name : d.description;
+    let cleanName = rawName.replace(/^\((M|AI|AI-P)\)\s*/, '');
+    donorNameEl.innerText = (type === 'don' ? "Donor: " : "Expense: ") + cleanName;
   }
   
   document.getElementById('receipt-modal').style.display = 'flex';
@@ -5267,9 +5363,9 @@ async function openReceiptModal(donationIdStr, event) {
   const removeBtn = document.getElementById('btn-receipt-remove');
   
   if (canModify) {
-    if (editBtn) editBtn.style.display = 'flex';
+    if (editBtn) editBtn.style.display = d.is_public_entry ? 'none' : 'flex';
     if (actionDiv) actionDiv.style.display = 'flex';
-    const isUnverified = /^\((M|AI|AI-P)\)\s/.test(d.donor_name);
+    const isUnverified = type === 'don' ? /^\((M|AI|AI-P)\)\s/.test(d.donor_name) : false;
     
     if (isUnverified && isOrganizer) {
       if (verifyBtn) verifyBtn.style.display = 'flex';
@@ -5278,7 +5374,7 @@ async function openReceiptModal(donationIdStr, event) {
     } else {
       if (verifyBtn) verifyBtn.style.display = 'none';
       if (rejectBtn) rejectBtn.style.display = 'none';
-      if (removeBtn) removeBtn.style.display = 'flex';
+      if (removeBtn) removeBtn.style.display = d.is_public_entry ? 'none' : 'flex';
     }
   } else {
     if (editBtn) editBtn.style.display = 'none';
@@ -5287,7 +5383,8 @@ async function openReceiptModal(donationIdStr, event) {
   
   try {
     const token = await getIdToken();
-    const res = await fetch(API_BASE + '/events/' + eventId + '/donations/' + (d.id || d._id) + '/receipt', {
+    const endpoint = type === 'don' ? '/donations/' : '/expenses/';
+    const res = await fetch(API_BASE + '/events/' + eventId + endpoint + (d.id || d._id) + '/receipt', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) throw new Error("Receipt fetch failed");
@@ -5301,7 +5398,7 @@ async function openReceiptModal(donationIdStr, event) {
 
 function triggerModalReceiptEdit() {
   if (!activeModalDonationId) return;
-  triggerManualReceiptUpload(activeModalDonationId);
+  triggerManualReceiptUpload(activeModalDonationId, activeModalEntryType);
 }
 
 // Global Loading State Dummies
@@ -5342,7 +5439,7 @@ function showConfirmModal(title, message, btnText, btnColor, onConfirm, iconName
   titleEl.innerText = title;
   titleEl.style.color = titleColor;
 
-  document.getElementById("np-confirm-msg").innerText = message;
+  document.getElementById("np-confirm-msg").innerHTML = message;
   
   const okBtn = document.getElementById("np-confirm-ok");
   okBtn.innerText = btnText;
@@ -5409,7 +5506,7 @@ async function verifyReceiptDonation() {
   
   showConfirmModal(
     "Accept Payment Proof",
-    `Are you sure you want to approve the payment proof for '${donorName}'? This collection entry will be treated as verified.`,
+    `Are you sure you want to approve the payment proof for '${donorName}'? This collection entry will be treated as verified. <br><br><span style="color:var(--red);">Note: You will not be allowed to delete or modify this entry once accepted.</span>`,
     "Accept",
     "#10b981",
     async () => {
@@ -5473,10 +5570,12 @@ async function rejectReceiptDonation() {
 
 async function removeReceiptDonation() {
   if (!activeModalDonationId) return;
-  const d = donations.find(x => String(x.id || x._id) === activeModalDonationId);
+  const collection = activeModalEntryType === 'don' ? donations : expenses;
+  const d = collection.find(x => String(x.id || x._id) === activeModalDonationId);
   if (!d) return;
   
-  const donorName = d.donor_name.replace(/^\((M|AI|AI-P)\)\s*/, '');
+  const rawName = activeModalEntryType === 'don' ? d.donor_name : d.description;
+  const donorName = rawName.replace(/^\((M|AI|AI-P)\)\s*/, '');
   
   showConfirmModal(
     "Remove Receipt",
@@ -5485,10 +5584,9 @@ async function removeReceiptDonation() {
     "var(--red)",
     async () => {
       try {
-        const res = await apiFetch('PUT', '/events/' + eventId + '/donations/' + (d.id || d._id), {
-          donor_name: d.donor_name,
-          receipt_key: ""
-        });
+        const endpoint = activeModalEntryType === 'don' ? '/donations/' : '/expenses/';
+        const payload = activeModalEntryType === 'don' ? { donor_name: d.donor_name, receipt_key: "" } : { description: d.description, receipt_key: "" };
+        const res = await apiFetch('PUT', '/events/' + eventId + endpoint + (d.id || d._id), payload);
         if (res) {
           showToast('Receipt removed successfully!');
           closeReceiptModal();
@@ -5512,8 +5610,11 @@ function closeReceiptModal() {
 }
 
 let pendingReceiptDonationId = null;
-function triggerManualReceiptUpload(donationIdStr) {
-  pendingReceiptDonationId = donationIdStr;
+let pendingReceiptEntryType = 'don';
+
+function triggerManualReceiptUpload(idStr, type = 'don') {
+  pendingReceiptDonationId = idStr;
+  pendingReceiptEntryType = type;
   document.getElementById('manual-receipt-upload').click();
 }
 
@@ -5526,7 +5627,8 @@ async function handleManualReceiptUpload(e) {
   
   try {
     const token = await getIdToken();
-    const res = await fetch(API_BASE + '/events/' + eventId + '/donations/' + pendingReceiptDonationId + '/receipt', {
+    const endpoint = pendingReceiptEntryType === 'don' ? '/donations/' : '/expenses/';
+    const res = await fetch(API_BASE + '/events/' + eventId + endpoint + pendingReceiptDonationId + '/receipt', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + token
@@ -5535,12 +5637,13 @@ async function handleManualReceiptUpload(e) {
     });
     if (res.ok) {
       showToast('Receipt uploaded successfully!');
-      // Update local state so icon appears
-      const d = donations.find(x => String(x.id || x._id) === pendingReceiptDonationId);
+      const collection = pendingReceiptEntryType === 'don' ? donations : expenses;
+      const d = collection.find(x => String(x.id || x._id) === pendingReceiptDonationId);
       if (d) {
         const data = await res.json();
         d.receipt_key = data.receipt_key;
-        renderDonations();
+        if (pendingReceiptEntryType === 'don') renderDonations();
+        else renderExpenses();
         if (typeof initIcons === 'function') initIcons();
       }
     } else {
@@ -5582,23 +5685,43 @@ async function saveUpiId() {
     if (hasError) return;
   }
 
+    const reqCols = [];
+    document.querySelectorAll('.donor-req-cb:checked').forEach(cb => {
+      reqCols.push(cb.value);
+    });
+    
+    const updatedDonCols = (eventData.donation_custom_columns || []).map(c => {
+      const isObj = typeof c === 'object';
+      const name = isObj ? c.n : c;
+      const req = reqCols.includes(name);
+      if(isObj) {
+        return { ...c, reqByDonor: req };
+      } else {
+        return { n: name, w: 180, hidden: false, reqByDonor: req };
+      }
+    });
+
   try {
-    const res = await apiFetch('PUT', '/events/' + eventId, { upi_id: upiId, upi_owner_name: upiOwnerName });
+    const payload = { 
+      upi_id: upiId, 
+      upi_owner_name: upiOwnerName,
+      donation_custom_columns: updatedDonCols
+    };
+    const res = await apiFetch('PUT', '/events/' + eventId, payload);
     eventData.upi_id = res.upi_id || '';
     eventData.upi_owner_name = res.upi_owner_name || '';
+    eventData.donation_custom_columns = res.donation_custom_columns || updatedDonCols;
     
     if (eventData.upi_id && eventData.upi_owner_name) {
       const link = window.location.origin + '/donate?event_id=' + eventId;
       document.getElementById('upi-link-text').innerText = link;
       document.getElementById('upi-share-section').style.display = 'block';
-      document.getElementById('btn-upi-save').style.display = 'none';
-      document.getElementById('btn-upi-share').style.display = '';
+      document.getElementById('btn-upi-save').style.display = '';
       document.getElementById('btn-upi-cancel').innerText = 'Close';
       showToast('UPI ID saved! Donation link is ready.');
     } else {
       document.getElementById('upi-share-section').style.display = 'none';
       document.getElementById('btn-upi-save').style.display = '';
-      document.getElementById('btn-upi-share').style.display = 'none';
       document.getElementById('btn-upi-cancel').innerText = 'Cancel';
       showToast('UPI ID removed.');
     }
@@ -5640,7 +5763,6 @@ function copyDonationLink(btnElement) {
 
 function resetUpiUI() {
   document.getElementById('upi-share-section').style.display = 'none';
-  document.getElementById('btn-upi-share').style.display = 'none';
   document.getElementById('btn-upi-save').style.display = '';
   document.getElementById('btn-upi-cancel').innerText = 'Cancel';
 }

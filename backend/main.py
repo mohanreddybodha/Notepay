@@ -781,6 +781,77 @@ async def delete_expense(event_id: str, expense_id: int,
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_delete"})
     return {"message": "Expense deleted"}
 
+@app.get("/events/{event_id}/expenses/{expense_id}/receipt", tags=["Expenses"])
+def get_expense_receipt(event_id: str, expense_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Fetch the receipt image securely."""
+    verify_membership(db, event_id, user_id)
+    expense = db.query(models.Expense).filter_by(id=expense_id, event_id=event_id).first()
+    if not expense or not expense.receipt_key:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+        
+    s3_bucket = os.getenv("RECEIPTS_BUCKET")
+    if not s3_bucket or expense.receipt_key.startswith("local://"):
+        local_path = expense.receipt_key.replace("local://", "")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        abs_local_path = os.path.join(base_dir, local_path)
+        if not os.path.exists(abs_local_path):
+            raise HTTPException(status_code=404, detail="Receipt image not found locally")
+        from fastapi.responses import FileResponse
+        return FileResponse(abs_local_path)
+        
+    try:
+        s3_client = boto3.client('s3')
+        url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': s3_bucket, 'Key': expense.receipt_key},
+            ExpiresIn=300
+        )
+        return {"url": url}
+    except Exception as e:
+        print(f"Failed to fetch expense receipt from S3: {e}")
+        raise HTTPException(status_code=404, detail="Receipt image not found in storage")
+
+@app.post("/events/{event_id}/expenses/{expense_id}/receipt", tags=["Expenses"])
+async def upload_expense_receipt_manual(event_id: str, expense_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Manually upload a receipt for an expense."""
+    member = verify_event_active_for_collector(db, event_id, user_id, for_write=True)
+    expense = db.query(models.Expense).filter_by(id=expense_id, event_id=event_id).first()
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    if member.role != models.UserRole.organizer and expense.collected_by != user_id:
+        raise HTTPException(status_code=403, detail="You can only upload receipts for your own entries")
+        
+    s3_bucket = os.getenv("RECEIPTS_BUCKET")
+    try:
+        contents = await file.read()
+        import uuid
+        if s3_bucket:
+            receipt_key = f"receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+            s3_client = boto3.client('s3')
+            s3_client.put_object(
+                Bucket=s3_bucket,
+                Key=receipt_key,
+                Body=contents,
+                ContentType=file.content_type or 'image/jpeg'
+            )
+        else:
+            # Local fallback
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            local_dir = os.path.join(base_dir, f"uploads/receipts/{event_id}")
+            os.makedirs(local_dir, exist_ok=True)
+            local_filename = f"uploads/receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+            abs_local_path = os.path.join(base_dir, local_filename)
+            with open(abs_local_path, "wb") as f:
+                f.write(contents)
+            receipt_key = f"local://{local_filename}"
+        expense.receipt_key = receipt_key
+        db.commit()
+        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_receipt_upload"})
+        return {"receipt_key": receipt_key, "message": "Receipt uploaded successfully"}
+    except Exception as e:
+        print(f"Failed to upload expense manual receipt: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload receipt")
+
 
 #  SUMMARY 
 @app.get("/events/{event_id}/summary", response_model=schemas.EventSummaryResponse, tags=["Summary"])
@@ -1377,6 +1448,7 @@ Return ONLY valid JSON:
         # Fetch keys
         groq_key_1 = os.getenv("GROQ_API_KEY")
         groq_key_2 = os.getenv("GROQ_API_KEY_2")
+        groq_key_3 = os.getenv("GROQ_API_KEY_3")
 
         try:
             ssm = boto3.client('ssm')
@@ -1392,15 +1464,26 @@ Return ONLY valid JSON:
                     groq_key_2 = param2['Parameter']['Value']
                 except Exception:
                     pass
+            if not groq_key_3:
+                try:
+                    param3 = ssm.get_parameter(Name='/notepay/groq_key_for_payment-3', WithDecryption=True)
+                    groq_key_3 = param3['Parameter']['Value']
+                except Exception:
+                    pass
         except Exception as e:
             print(f"SSM client failed: {e}")
 
-        # The user wants groq_key_2 to be tried FIRST
+        # Order: key_2 first, key_3 second fallback, key_1 third fallback
         keys_to_try = []
         if groq_key_2: keys_to_try.append(groq_key_2)
+        if groq_key_3: keys_to_try.append(groq_key_3)
         if groq_key_1: keys_to_try.append(groq_key_1)
 
-        groq_vision_models = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview", "meta-llama/llama-4-scout-17b-16e-instruct"]
+        # Llama 4 Scout is the ONLY vision model on Groq free tier (tested June 2026)
+        # Both API keys have identical model access
+        groq_vision_models = [
+            "meta-llama/llama-4-scout-17b-16e-instruct",  # Only vision model available
+        ]
 
         for g_key in keys_to_try:
             if extracted_text:
@@ -1655,6 +1738,10 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
             custom_fields["receipt_receiver_name"] = receipt_receiver_name
         if extraction_api:
             custom_fields["extraction_api"] = extraction_api
+            
+        if data.custom_fields:
+            # Merge user-filled custom fields
+            custom_fields.update(data.custom_fields)
 
         new_donation = schemas.DonationCreate(
             donor_name=donor_name_with_prefix,
@@ -1665,7 +1752,7 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
             custom_fields=custom_fields,
             receipt_key=receipt_key
         )
-        res = crud.create_donation(db, event_id, event.organizer_id, new_donation)
+        res = crud.create_donation(db, event_id, event.organizer_id, new_donation, is_public_entry=True)
         await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_manual"})
         return {
             "message": "Success",
@@ -1691,6 +1778,7 @@ def get_public_event(event_id: str, db: Session = Depends(get_db)):
         "description": event.description,
         "upi_id": event.upi_id,
         "upi_owner_name": event.upi_owner_name,
-        "organizer_name": organizer.full_name if organizer else "Organizer"
+        "organizer_name": organizer.full_name if organizer else "Organizer",
+        "donation_custom_columns": event.donation_custom_columns
     }
 

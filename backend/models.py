@@ -87,6 +87,8 @@ class Donation(Base):
     collected_at = Column(DateTime, default=datetime.utcnow)
     custom_fields = Column(JSON, nullable=True)
     receipt_key = Column(String, nullable=True)
+    version = Column(Integer, default=1)
+    is_public_entry = Column(Boolean, default=False)
 
     event = relationship("Event", back_populates="donations")
     collector_user = relationship("User", back_populates="donations_collected")
@@ -101,6 +103,8 @@ class Expense(Base):
     collected_by = Column(Integer, ForeignKey("users.id"))
     collected_at = Column(DateTime, default=datetime.utcnow)
     custom_fields = Column(JSON, nullable=True)
+    receipt_key = Column(String, nullable=True)
+    version = Column(Integer, default=1)
 
     event = relationship("Event", back_populates="expenses")
     collector_user = relationship("User", back_populates="expenses_collected")

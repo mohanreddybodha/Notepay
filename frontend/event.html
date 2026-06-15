@@ -497,25 +497,33 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
             <input class="ef-input" id="upi-owner-name-input" type="text" placeholder="e.g. John Doe" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             <div id="upi-name-error" style="color:var(--red); font-size:12px; margin-top:4px; display:none;"></div>
             <p style="font-size:12px; color:var(--text3); margin-top:8px;">This name will be shown to donors.<br><strong style="color:var(--red);">Important:</strong> The receiver name found in donor payment receipts must match this UPI registered name. Receipts with a different receiver name will be rejected.</p>
-          </div>
-          
-          <div id="upi-share-section" style="display:none; margin-top:20px;">
-            <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Your Public Donation Link</div>
-            <div style="display:flex; align-items:center; background:var(--bg); border:2px solid var(--primary); border-radius:8px; padding:10px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);">
-              <div id="upi-link-text" style="flex:1; font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
-              <button onclick="copyDonationLink(this)" style="background:none; border:none; cursor:pointer; color:var(--primary); padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <span data-np-icon="copy" data-np-size="18"></span>
-              </button>
+            <div id="upi-share-section" style="display:none; margin-top:20px; min-width:0; width:100%; box-sizing:border-box;">
+              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Your Public Donation Link</div>
+              <div style="display:flex; align-items:center; min-width:0; width:100%; box-sizing:border-box; background:var(--bg); border:2px solid var(--primary); border-radius:8px; padding:10px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);">
+                <div id="upi-link-text" style="flex:1; min-width:0; font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+                <button onclick="shareDonationLink()" style="background:none; border:none; cursor:pointer; color:var(--primary); padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;" title="Share Link">
+                  <span data-np-icon="share" data-np-size="18"></span>
+                </button>
+                <button onclick="copyDonationLink(this)" style="background:none; border:none; cursor:pointer; color:var(--primary); padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;" title="Copy Link">
+                  <span data-np-icon="copy" data-np-size="18"></span>
+                </button>
+              </div>
+            </div>
+
+            <div id="upi-donor-req-cols-container" style="display:none; margin-top:20px;">
+              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Required columns donor need to fill</div>
+              <div id="upi-donor-req-cols-list" style="max-height: 150px; overflow-y:auto; border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg2); display:flex; flex-direction:column; gap:8px;">
+                <!-- Checkboxes injected via JS -->
+              </div>
+              <p style="font-size:11px; color:var(--text3); margin-top:6px;">If no columns are selected, donors will only see the default name and amount fields.</p>
             </div>
           </div>
+          
         </div>
         <div class="sbox-footer">
           <div class="ef-btns">
             <button class="btn btn-text-secondary" id="btn-upi-cancel" onclick="closeUpiSheet()">Cancel</button>
             <button class="btn btn-solid-primary" id="btn-upi-save" onclick="saveUpiId()">Save</button>
-            <button class="btn btn-solid-primary" id="btn-upi-share" onclick="shareDonationLink()" style="display:none;">
-              <span data-np-icon="share" data-np-size="16" style="margin-right:6px;"></span> Share
-            </button>
           </div>
         </div>
       </div>
@@ -579,7 +587,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
           <!-- View 2: Hidden Columns View -->
           <div id="cc-hidden-view" style="display:none; min-height: 150px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <div style="font-size: 13px; font-weight: 800; color: var(--text1); text-transform: uppercase;">Hidden Columns</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text); text-transform: uppercase;">Hidden Columns</div>
               <button class="btn btn-text-secondary" onclick="toggleHiddenCols()" style="font-size:11.5px; padding: 0 12px; height:28px; border: 1px solid var(--border); border-radius: 30px; background: var(--surf-var); color: var(--text2); width: fit-content !important; flex: 0 0 auto; margin: 0;">Back to Form</button>
             </div>
             <div id="hidden-cols-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-bottom: 24px;">
@@ -1023,7 +1031,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <script src="js/auth-guard.js?v=23"></script>
   <script src="js/pull-to-refresh.js?v=23"></script>
 
-  <script src="js/event-main.js?v=38"></script>
+  <script src="js/event-main.js?v=99"></script>
 </body>
 </html>
 

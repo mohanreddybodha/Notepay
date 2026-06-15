@@ -92,6 +92,8 @@ class DonationResponse(DonationCreate):
     collected_by: int
     collected_by_name: str
     collected_at: datetime
+    version: int
+    is_public_entry: bool
     class Config:
         from_attributes = True
 
@@ -101,6 +103,7 @@ class ManualDonationEntry(BaseModel):
     amount: float
     receipt_session_id: Optional[str] = None
     receipt_key: Optional[str] = None
+    custom_fields: Optional[Dict[str, Any]] = None
     class Config:
         json_schema_extra = {
             "example": {
@@ -120,6 +123,8 @@ class ExpenseResponse(ExpenseCreate):
     collected_by: int
     collected_by_name: str
     collected_at: datetime
+    version: int
+    receipt_key: Optional[str] = None
     class Config:
         from_attributes = True
 

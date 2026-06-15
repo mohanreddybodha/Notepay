@@ -131,14 +131,15 @@ def join_event(db: Session, user_id: int, invite_code: str):
     
     return db_event
 
-def create_donation(db: Session, event_id: str, collector_id: int, donation: schemas.DonationCreate):
+def create_donation(db: Session, event_id: str, collector_id: int, donation: schemas.DonationCreate, is_public_entry: bool = False):
     db_donation = models.Donation(
         event_id=event_id,
         donor_name=donation.donor_name,
         amount=donation.amount,
         collected_by=collector_id,
         custom_fields=donation.custom_fields,
-        receipt_key=getattr(donation, 'receipt_key', None)
+        receipt_key=getattr(donation, 'receipt_key', None),
+        is_public_entry=is_public_entry
     )
     db.add(db_donation)
     db.commit()
@@ -164,7 +165,8 @@ def create_expense(db: Session, event_id: str, collector_id: int, expense: schem
         description=expense.description,
         amount=expense.amount,
         collected_by=collector_id,
-        custom_fields=expense.custom_fields
+        custom_fields=expense.custom_fields,
+        receipt_key=getattr(expense, 'receipt_key', None)
     )
     db.add(db_expense)
     db.commit()
@@ -307,8 +309,84 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
     if data.name is not None: event.name = data.name
     if data.description is not None: event.description = data.description
     if data.event_date is not None: event.event_date = data.event_date
-    if data.donation_custom_columns is not None: event.donation_custom_columns = data.donation_custom_columns
-    if data.expense_custom_columns is not None: event.expense_custom_columns = data.expense_custom_columns
+    if data.donation_custom_columns is not None:
+        old_cols = event.donation_custom_columns or []
+        import json as _json
+        if isinstance(old_cols, str):
+            try: old_cols = _json.loads(old_cols)
+            except: old_cols = []
+        
+        old_names = set()
+        for c in old_cols:
+            if not c: continue
+            if isinstance(c, str):
+                old_names.add(c)
+            elif isinstance(c, dict) and "n" in c:
+                old_names.add(c["n"])
+
+        new_names = set()
+        for c in data.donation_custom_columns:
+            if not c: continue
+            if isinstance(c, str):
+                new_names.add(c)
+            elif isinstance(c, dict) and "n" in c:
+                new_names.add(c["n"])
+
+        deleted_names = old_names - new_names
+        if deleted_names:
+            donations = db.query(models.Donation).filter(models.Donation.event_id == event_id).all()
+            for d in donations:
+                if d.custom_fields and isinstance(d.custom_fields, dict):
+                    modified = False
+                    for name in deleted_names:
+                        if name in d.custom_fields:
+                            del d.custom_fields[name]
+                            modified = True
+                    if modified:
+                        from sqlalchemy.orm.attributes import flag_modified
+                        flag_modified(d, "custom_fields")
+        
+        event.donation_custom_columns = data.donation_custom_columns
+
+    if data.expense_custom_columns is not None:
+        old_cols = event.expense_custom_columns or []
+        import json as _json
+        if isinstance(old_cols, str):
+            try: old_cols = _json.loads(old_cols)
+            except: old_cols = []
+        
+        old_names = set()
+        for c in old_cols:
+            if not c: continue
+            if isinstance(c, str):
+                old_names.add(c)
+            elif isinstance(c, dict) and "n" in c:
+                old_names.add(c["n"])
+
+        new_names = set()
+        for c in data.expense_custom_columns:
+            if not c: continue
+            if isinstance(c, str):
+                new_names.add(c)
+            elif isinstance(c, dict) and "n" in c:
+                new_names.add(c["n"])
+
+        deleted_names = old_names - new_names
+        if deleted_names:
+            expenses = db.query(models.Expense).filter(models.Expense.event_id == event_id).all()
+            for e in expenses:
+                if e.custom_fields and isinstance(e.custom_fields, dict):
+                    modified = False
+                    for name in deleted_names:
+                        if name in e.custom_fields:
+                            del e.custom_fields[name]
+                            modified = True
+                    if modified:
+                        from sqlalchemy.orm.attributes import flag_modified
+                        flag_modified(e, "custom_fields")
+
+        event.expense_custom_columns = data.expense_custom_columns
+
     if data.show_donations is not None: event.show_donations = data.show_donations
     if data.show_expenses is not None: event.show_expenses = data.show_expenses
     if data.is_public is not None: event.is_public = data.is_public
@@ -352,6 +430,7 @@ def update_donation(db: Session, donation_id: int, data: schemas.DonationUpdate)
     if data.amount is not None: donation.amount = data.amount
     if data.custom_fields is not None: donation.custom_fields = data.custom_fields
     if data.receipt_key is not None: donation.receipt_key = data.receipt_key if data.receipt_key != "" else None
+    donation.version += 1
     db.commit()
     # Invalidate cache for this event
     cache.cache.invalidate_event(donation.event_id)
@@ -383,6 +462,7 @@ def update_expense(db: Session, expense_id: int, data: schemas.ExpenseUpdate):
     if data.description is not None: expense.description = data.description
     if data.amount is not None: expense.amount = data.amount
     if data.custom_fields is not None: expense.custom_fields = data.custom_fields
+    expense.version += 1
     db.commit()
     # Invalidate cache for this event
     cache.cache.invalidate_event(expense.event_id)
