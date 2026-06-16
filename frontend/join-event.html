@@ -113,7 +113,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     try {
       await joinEvent(code);
       showToast("Joined event!");
-      window.location.replace("dashboard.html");
+      window.location.replace("dashboard.html?tab=1");
     } catch(e) {
       const msg = e.message || "";
       if (msg.toLowerCase().includes("deactivated")) {
