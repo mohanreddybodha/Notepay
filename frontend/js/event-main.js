@@ -2022,7 +2022,11 @@
           const oRow = row._origRow;
           oRow.style.display = '';
           const nameEl = oRow.querySelector('.fc div:last-child');
-          if (nameEl) nameEl.textContent = isDon ? updatedEntry.donor_name : updatedEntry.description;
+          if (nameEl) {
+            const rawName = isDon ? updatedEntry.donor_name : updatedEntry.description;
+            const versionHtml = (updatedEntry.version && updatedEntry.version > 1) ? `<span style="font-size:10px; color:var(--text3); margin-left:4px;">v${updatedEntry.version}</span>` : '';
+            nameEl.innerHTML = formatPrefixes(rawName) + versionHtml;
+          }
           
           const amtEl = oRow.querySelector('.sc:nth-child(2) span');
           if (amtEl) {
@@ -5630,7 +5634,6 @@ async function removeReceiptDonation() {
 function closeReceiptModal() {
   document.getElementById('receipt-modal').style.display = 'none';
   const img = document.getElementById('receipt-img');
-  if (img.src) URL.revokeObjectURL(img.src);
   img.src = '';
 }
 
@@ -5671,6 +5674,16 @@ async function handleManualReceiptUpload(e) {
           delete d.cached_receipt_url;
         }
         d.receipt_key = data.receipt_key;
+
+        // Generate local object URL from file and cache it
+        const localObjUrl = URL.createObjectURL(file);
+        d.cached_receipt_url = localObjUrl;
+
+        // If modal is open for this entry, update image source immediately
+        if (document.getElementById('receipt-modal').style.display === 'flex' && activeModalDonationId === pendingReceiptDonationId) {
+          document.getElementById('receipt-img').src = localObjUrl;
+        }
+
         if (pendingReceiptEntryType === 'don') renderDonations();
         else renderExpenses();
         if (typeof initIcons === 'function') initIcons();
