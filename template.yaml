@@ -205,6 +205,13 @@ Resources:
       DistributionConfig:
         Enabled: true
         DefaultRootObject: login.html
+        Aliases:
+          - notepay.in
+          - www.notepay.in
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:us-east-1:744746597315:certificate/39e14f5c-b8fd-49e9-9f34-d77fb9042c6b
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
         Origins:
           - DomainName: !GetAtt FrontendBucket.RegionalDomainName
             Id: S3Origin
@@ -280,6 +287,12 @@ Resources:
       DistributionConfig:
         Enabled: true
         DefaultRootObject: admin.html
+        Aliases:
+          - admin.notepay.in
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:us-east-1:744746597315:certificate/39e14f5c-b8fd-49e9-9f34-d77fb9042c6b
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
         Origins:
           - DomainName: !GetAtt AdminFrontendBucket.RegionalDomainName
             Id: S3OriginAdmin
