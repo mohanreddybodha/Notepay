@@ -263,6 +263,15 @@ let recaptchaVerifier  = null;
   if (splash) splash.classList.add('hidden');
 })();
 
+// Automatically redirect if auth state changes to logged-in (e.g. logged in on another tab)
+auth.onAuthStateChanged(user => {
+  if (user) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrl = urlParams.get('return') || 'dashboard.html';
+    window.location.replace(returnUrl);
+  }
+});
+
 // ─────────────────────────────────────────────
 //  Init invisible reCAPTCHA
 // ─────────────────────────────────────────────
