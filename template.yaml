@@ -181,10 +181,10 @@ Resources:
         Name: !Sub "${AWS::StackName}-security-headers"
         Comment: "Security headers for Notepay frontend"
         SecurityHeadersConfig:
-          XFrameOptions:
+          FrameOptions:
             FrameOption: DENY
             Override: true
-          XContentTypeOptions:
+          ContentTypeOptions:
             Override: true
           ReferrerPolicy:
             ReferrerPolicy: strict-origin-when-cross-origin
