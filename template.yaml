@@ -290,7 +290,7 @@ Resources:
         Aliases:
           - admin.notepay.in
         ViewerCertificate:
-          AcmCertificateArn: arn:aws:acm:us-east-1:744746597315:certificate/39e14f5c-b8fd-49e9-9f34-d77fb9042c6b
+          AcmCertificateArn: arn:aws:acm:us-east-1:744746597315:certificate/b10a0b07-d293-4b61-a813-f31eb881661d
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021
         Origins:
