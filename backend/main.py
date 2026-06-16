@@ -1243,6 +1243,12 @@ from mangum import Mangum
 mangum_handler = Mangum(app)
 
 def handler(event, context):
+    # ── EventBridge warmup ping — return immediately to keep Lambda warm ──
+    event_source = event.get("source", "")
+    if event_source in ("notepay-warmup", "aws.events"):
+        print("Lambda warmup ping received — container is warm.")
+        return {"statusCode": 200, "body": "warm"}
+
     request_context = event.get('requestContext', {})
     conn_id = request_context.get('connectionId')
     

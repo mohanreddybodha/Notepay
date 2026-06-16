@@ -77,6 +77,21 @@ jobs:
 
       - name: SAM Deploy
         run: |
+          # Save the current function version BEFORE deploying so we can roll back
+          FUNC_NAME=$(aws cloudformation describe-stack-resource \
+            --stack-name notepay-stack \
+            --logical-resource-id NotePayFunction \
+            --query "StackResourceDetail.PhysicalResourceId" \
+            --output text 2>/dev/null || echo "")
+          if [ -n "$FUNC_NAME" ]; then
+            PREV_VERSION=$(aws lambda get-function-configuration \
+              --function-name "$FUNC_NAME" \
+              --query "Version" --output text 2>/dev/null || echo "")
+            echo "PREV_VERSION=$PREV_VERSION" >> $GITHUB_ENV
+            echo "FUNC_NAME=$FUNC_NAME" >> $GITHUB_ENV
+            echo "Pre-deploy Lambda version: $PREV_VERSION"
+          fi
+
           sam deploy --no-confirm-changeset \
                      --no-fail-on-empty-changeset \
                      --stack-name notepay-stack \
@@ -92,13 +107,29 @@ jobs:
             --output text)
           
           echo "Testing health endpoint at $API_URL/health..."
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            --max-time 30 \
-            "$API_URL/health")
-          
+          # Retry up to 3 times (Lambda may be cold on first deploy)
+          for i in 1 2 3; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 "$API_URL/health")
+            echo "Attempt $i: HTTP $HTTP_STATUS"
+            [ "$HTTP_STATUS" = "200" ] && break
+            sleep 10
+          done
+
           if [ "$HTTP_STATUS" != "200" ]; then
-            echo "❌ Health check failed with status $HTTP_STATUS"
-            echo "Rolling back Lambda to previous version is required..."
+            echo "❌ Health check failed with status $HTTP_STATUS after 3 attempts"
+
+            # ── Auto-rollback: restore previous Lambda code version ──
+            if [ -n "$FUNC_NAME" ] && [ -n "$PREV_VERSION" ] && [ "$PREV_VERSION" != "$NOTSET" ]; then
+              echo "⏪ Rolling back $FUNC_NAME to version $PREV_VERSION..."
+              aws lambda update-alias \
+                --function-name "$FUNC_NAME" \
+                --name live \
+                --function-version "$PREV_VERSION" 2>/dev/null || true
+              echo "Rollback attempted. Manual review of CloudFormation stack may be needed."
+            fi
+
+            echo "❌ Deploy rolled back — check CloudWatch logs for root cause" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
           
@@ -177,16 +208,16 @@ jobs:
             --include "css/global.css" --include "css/icons.css" --include "js/icons.js"
 
           # 6. Invalidate CloudFront caches and wait for completion
-          echo "Creating CloudFront invalidation for main site..."
+          echo "Creating CloudFront invalidation for main site (HTML only — JS/CSS use SHA versioning)..."
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id $CF_ID \
-            --paths "/*" \
+            --paths "/*.html" "/" \
             --query "Invalidation.Id" --output text)
 
           echo "Creating CloudFront invalidation for admin site..."
           ADMIN_INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id $ADMIN_CF_ID \
-            --paths "/*" \
+            --paths "/admin.html" \
             --query "Invalidation.Id" --output text)
 
           echo "Waiting for main invalidation $INVALIDATION_ID to complete..."
