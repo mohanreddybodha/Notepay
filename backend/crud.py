@@ -462,6 +462,7 @@ def update_expense(db: Session, expense_id: int, data: schemas.ExpenseUpdate):
     if data.description is not None: expense.description = data.description
     if data.amount is not None: expense.amount = data.amount
     if data.custom_fields is not None: expense.custom_fields = data.custom_fields
+    if data.receipt_key is not None: expense.receipt_key = data.receipt_key if data.receipt_key != "" else None
     expense.version += 1
     db.commit()
     # Invalidate cache for this event

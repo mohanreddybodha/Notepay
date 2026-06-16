@@ -196,6 +196,7 @@ class ExpenseUpdate(BaseModel):
     description: Optional[str] = None
     amount: Optional[float] = None
     custom_fields: Optional[Dict[str, Any]] = None
+    receipt_key: Optional[str] = None
 
 
 class MemberRoleUpdate(BaseModel):
