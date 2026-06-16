@@ -22,7 +22,7 @@
       let res = [...list];
       if (myEntriesOnly && myUserId) {
         if (type === 'don') res = res.filter(d => d.collected_by === myUserId);
-        else res = res.filter(e => e.spent_by === myUserId);
+        else res = res.filter(e => e.collected_by === myUserId);
       }
       res.sort((a, b) => {
         if (currentSort === 'time_asc') return new Date(a.collected_at) - new Date(b.collected_at);
@@ -846,7 +846,7 @@
       let str = (obj.donor_name || obj.description || '') + ' ' + 
                 (obj.amount || '') + ' ' + 
                 (obj.collected_by_name || 'System') + ' ' +
-                (obj.spent_by_name || 'System');
+                (obj.collected_by_name || 'System');
       if (obj.custom_fields) {
         str += ' ' + Object.values(obj.custom_fields).join(' ');
       }
@@ -5392,6 +5392,11 @@ async function openReceiptModal(donationIdStr, event, type = 'don') {
     if (actionDiv) actionDiv.style.display = 'none';
   }
   
+  if (d.cached_receipt_url) {
+    img.src = d.cached_receipt_url;
+    return;
+  }
+
   try {
     const token = await getIdToken();
     const endpoint = type === 'don' ? '/donations/' : '/expenses/';
@@ -5400,7 +5405,8 @@ async function openReceiptModal(donationIdStr, event, type = 'don') {
     });
     if (!res.ok) throw new Error("Receipt fetch failed");
     const blob = await res.blob();
-    img.src = URL.createObjectURL(blob);
+    d.cached_receipt_url = URL.createObjectURL(blob);
+    img.src = d.cached_receipt_url;
   } catch (err) {
     console.error("Failed to load receipt:", err);
     showToast('Failed to load receipt image');
@@ -5517,7 +5523,7 @@ async function verifyReceiptDonation() {
   
   showConfirmModal(
     "Accept Payment Proof",
-    `Are you sure you want to approve the payment proof for '${donorName}'? This collection entry will be treated as verified. <br><br><span style="color:var(--red);">Note: You will not be allowed to delete or modify this entry once accepted.</span>`,
+    `Are you sure you want to approve the payment proof for '${donorName}'? This collection entry will be treated as verified. <br><br><span style="color:var(--red);">Note: You will not be allowed to modify this entry once accepted.</span>`,
     "Accept",
     "#10b981",
     async () => {
@@ -5564,6 +5570,10 @@ async function rejectReceiptDonation() {
         hideLoading();
         if (res) {
           showToast('Entry rejected and deleted!');
+          if (d.cached_receipt_url) {
+            URL.revokeObjectURL(d.cached_receipt_url);
+            delete d.cached_receipt_url;
+          }
           closeReceiptModal();
           const idx = donations.findIndex(x => String(x.id || x._id) === activeModalDonationId);
           if (idx !== -1) donations.splice(idx, 1);
@@ -5600,6 +5610,10 @@ async function removeReceiptDonation() {
         const res = await apiFetch('PUT', '/events/' + eventId + endpoint + (d.id || d._id), payload);
         if (res) {
           showToast('Receipt removed successfully!');
+          if (d.cached_receipt_url) {
+            URL.revokeObjectURL(d.cached_receipt_url);
+            delete d.cached_receipt_url;
+          }
           closeReceiptModal();
           loadAll();
         }
@@ -5652,6 +5666,10 @@ async function handleManualReceiptUpload(e) {
       const d = collection.find(x => String(x.id || x._id) === pendingReceiptDonationId);
       if (d) {
         const data = await res.json();
+        if (d.cached_receipt_url) {
+          URL.revokeObjectURL(d.cached_receipt_url);
+          delete d.cached_receipt_url;
+        }
         d.receipt_key = data.receipt_key;
         if (pendingReceiptEntryType === 'don') renderDonations();
         else renderExpenses();

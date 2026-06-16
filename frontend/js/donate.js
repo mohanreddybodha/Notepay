@@ -244,7 +244,7 @@ btnSubmit.addEventListener('click', async () => {
       console.log("ℹ️ AI partial success, asking for donor name");
       document.getElementById('loader').style.display = 'none';
       currentReceiptSessionId = data.receipt_session_id;
-      showManualEntryForm(true, data.amount, data.receiver_name);
+      showManualEntryForm(true, data.amount, data.receiver_name, null, data.donor_name || null);
       return;
     }
 
@@ -290,12 +290,12 @@ btnSubmit.addEventListener('click', async () => {
 });
 
 // Manual Entry Form Functions
-function showManualEntryForm(isPartial = false, lockedAmount = null, receiverName = null, fallbackSessionId = null) {
+function showManualEntryForm(isPartial = false, lockedAmount = null, receiverName = null, fallbackSessionId = null, prefilledDonorName = null) {
   document.getElementById('manual-entry-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   document.documentElement.style.overflow = 'hidden';
   window.scrollTo(0, 0);
-  document.getElementById('manual-name').value = '';
+  document.getElementById('manual-name').value = prefilledDonorName || '';
 
   // Render custom fields
   const container = document.getElementById('dynamic-custom-fields-container');
@@ -355,7 +355,11 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
     }
     const noteText = document.getElementById('manual-note-text');
     if (noteText) {
-      noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your donation record.`;
+      if (prefilledDonorName) {
+        noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted. Please verify the details, fill out any required custom fields, and submit to complete your donation.`;
+      } else {
+        noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your donation record.`;
+      }
     }
     document.getElementById('manual-collector-label').innerText = "UPI Registered Name";
   } else {

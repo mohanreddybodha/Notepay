@@ -801,12 +801,9 @@ def get_expense_receipt(event_id: str, expense_id: int, db: Session = Depends(ge
         
     try:
         s3_client = boto3.client('s3')
-        url = s3_client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': s3_bucket, 'Key': expense.receipt_key},
-            ExpiresIn=300
-        )
-        return {"url": url}
+        obj = s3_client.get_object(Bucket=s3_bucket, Key=expense.receipt_key)
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(obj['Body'], media_type=obj['ContentType'])
     except Exception as e:
         print(f"Failed to fetch expense receipt from S3: {e}")
         raise HTTPException(status_code=404, detail="Receipt image not found in storage")
@@ -1434,7 +1431,7 @@ Paytm/BHIM/Other receipts:
 GENERAL RULES:
 - receiver_name: Look for "Banking Name", "Paid to", "To", "Transfer to", "Merchant", "Beneficiary"
 - sender_name: Look for "From", "Debited from", "Paid by", "Your name" - must be a PERSON NAME not bank name
-- CRITICAL SENDER NAME RULE: You MUST return null for sender_name unless the sender's name is EXPLICITLY labeled with "From", "Paid by", or "Sender". If the image does not contain the sender's name explicitly, you MUST return null. DO NOT guess, DO NOT use the receiver's name, and DO NOT hallucinate.
+- CRITICAL SENDER NAME RULE: You MUST return null for sender_name unless the sender's name is EXPLICITLY labeled with "From", "Paid by", "Sender", "Payer", "Debited from", or "From A/C". If the image does not contain the sender's name explicitly, you MUST return null. DO NOT guess, DO NOT use the receiver's name, and DO NOT hallucinate.
 - NEVER confuse sender and receiver
 - transaction_date: Look for dates near "Transaction", time stamps at top of screen (e.g., "04:44 pm on 12 Jun 2026" → "2026-06-12")
 - Transaction Successful Rule: You MUST detect words or messages indicating a successful payment completion (like "Success", "Paid", "Payment Successful", "Transaction Complete", or any other clear success indicator). However, if the screenshot shows "Pending", "Processing", or "Failed", you MUST immediately set status to "failed" and return.
@@ -1599,7 +1596,7 @@ Return ONLY valid JSON:
 
         # Check donor name
         dn_clean = re.sub(r'[^a-zA-Z0-9]', '', donor_name).lower()
-        if dn_clean and rn_clean and (dn_clean in rn_clean or rn_clean in dn_clean):
+        if dn_clean and rn_clean and (dn_clean == rn_clean):
             donor_name = ""  # Same person
         if donor_name.lower() in ["none", "null", "unknown"]:
             donor_name = ""
@@ -1610,8 +1607,22 @@ Return ONLY valid JSON:
         except:
             transaction_date = datetime.now()
 
-        # If donor name missing, initiate Partial Success flow
-        if not donor_name:
+        # Check if there are any required donor custom columns
+        has_required_donor_cols = False
+        cols = event.donation_custom_columns or []
+        if isinstance(cols, str):
+            try:
+                import json
+                cols = json.loads(cols)
+            except:
+                cols = []
+        for col in cols:
+            if isinstance(col, dict) and col.get("reqByDonor") and not col.get("hidden"):
+                has_required_donor_cols = True
+                break
+
+        # If donor name missing or required custom columns exist, initiate Partial Success flow
+        if not donor_name or has_required_donor_cols:
             import uuid
             session_id = str(uuid.uuid4())
             try:
@@ -1631,7 +1642,8 @@ Return ONLY valid JSON:
                 "amount": amount,
                 "receipt_session_id": session_id,
                 "receiver_name": receiver_name,
-                "message": "Receipt valid! Please enter your name to complete the donation."
+                "donor_name": donor_name if donor_name else "",
+                "message": "Receipt valid! Please complete the required details."
             }
 
         # Full Success - Create Donation Automatically
