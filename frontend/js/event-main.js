@@ -21,8 +21,9 @@
     function applySortAndFilter(list, type) {
       let res = [...list];
       if (myEntriesOnly && myUserId) {
-        if (type === 'don') res = res.filter(d => d.collected_by === myUserId);
-        else res = res.filter(e => e.collected_by === myUserId);
+        const targetUserId = Number(myUserId);
+        if (type === 'don') res = res.filter(d => Number(d.collected_by) === targetUserId);
+        else res = res.filter(e => Number(e.collected_by) === targetUserId);
       }
       res.sort((a, b) => {
         if (currentSort === 'time_asc') return new Date(a.collected_at) - new Date(b.collected_at);
@@ -842,21 +843,43 @@
 
     function searchMatch(obj, q) {
       if (!q) return true;
-      const q2 = q.toLowerCase();
-      let str = (obj.donor_name || obj.description || '') + ' ' + 
-                (obj.amount || '') + ' ' + 
-                (obj.collected_by_name || 'System') + ' ' +
-                (obj.collected_by_name || 'System');
+      const qNormalized = q.toLowerCase().trim();
+      const qStripped = stripPrefixes(q);
+      
+      const donorName = obj.donor_name || '';
+      const donorNameStripped = stripPrefixes(donorName);
+      const description = obj.description || '';
+      const descriptionStripped = stripPrefixes(description);
+      const collectedByName = obj.collected_by_name || 'System';
+      const amount = String(obj.amount || '');
+      
+      // Check raw match
+      let strRaw = (donorName + ' ' + description + ' ' + amount + ' ' + collectedByName).toLowerCase();
       if (obj.custom_fields) {
-        str += ' ' + Object.values(obj.custom_fields).join(' ');
+        strRaw += ' ' + Object.values(obj.custom_fields).join(' ').toLowerCase();
       }
-      return str.toLowerCase().includes(q2);
+      
+      if (strRaw.includes(qNormalized)) return true;
+      
+      // Check stripped match (e.g. ignoring prefixes like (AI), (M), (AI-P))
+      let strStripped = (donorNameStripped + ' ' + descriptionStripped + ' ' + amount + ' ' + collectedByName.toLowerCase());
+      if (obj.custom_fields) {
+        strStripped += ' ' + Object.values(obj.custom_fields).join(' ').toLowerCase();
+      }
+      
+      if (strStripped.includes(qStripped)) return true;
+      
+      return false;
     }
 
     // ── Donations ──
-    function renderDonations(q = "") {
+    function renderDonations(q = null) {
       const tblBody = document.getElementById("don-tbl-body");
       captureInlineState(tblBody, "don");
+      if (q === null) {
+        const inp = document.getElementById("don-search");
+        q = inp ? inp.value : "";
+      }
       const q2 = q.trim().toLowerCase();
 
       // Combined Pinned List (Local only)
@@ -1003,9 +1026,13 @@
     }
 
     // ── Expenses ──
-    function renderExpenses(q = "") {
+    function renderExpenses(q = null) {
       const tblBody = document.getElementById("exp-tbl-body");
       captureInlineState(tblBody, "exp");
+      if (q === null) {
+        const inp = document.getElementById("exp-search");
+        q = inp ? inp.value : "";
+      }
       const q2 = q.trim().toLowerCase();
 
       const storageKey = `np_pinned_${eventId}_exp`;
@@ -2955,7 +2982,7 @@
     function openRenameSheet() { window.location.href = `create-event.html?edit=${eventId}`; }
 
     // ── Helpers ──
-    function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
     function formatPrefixes(s) {
       if (!s) return "";
       let html = escHtml(s);
