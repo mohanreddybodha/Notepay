@@ -141,7 +141,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div class="logo-text">Notepay</div>
     </div>
     <div class="spacer"></div>
-    <a href="profile.html" class="av-btn" id="av-btn" aria-label="My Profile">?</a>
+    <a href="#" onclick="window.location.href=getCleanUrl('profile.html'); return false;" class="av-btn" id="av-btn" aria-label="My Profile">?</a>
   </div>
 
   <!-- Tabs -->
@@ -211,11 +211,11 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <div class="sheet-box" onclick="event.stopPropagation()">
     <div class="sh-handle"></div>
     <div class="sh-title">Add New Event</div>
-    <div class="choice" onclick="navSmooth('create-event.html')">
+    <div class="choice" onclick="navSmooth(getCleanUrl('create-event.html'))">
       <div class="ch-t">Create Event</div>
       <div class="ch-s">Start a new event as organizer · You manage donations and expenses</div>
     </div>
-    <div class="choice" onclick="navSmooth('join-event.html')">
+    <div class="choice" onclick="navSmooth(getCleanUrl('join-event.html'))">
       <div class="ch-t">Join by Event Code</div>
       <div class="ch-s">Enter code shared by organizer · Join as a collector</div>
     </div>
@@ -441,7 +441,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   }
 
   function openEvent(id) {
-    window.location.href = `event.html?id=${id}`;
+    window.location.href = getCleanUrl(`event.html?id=${id}`);
   }
 
   // ── Tabs ──

@@ -256,7 +256,7 @@ let recaptchaVerifier  = null;
   if (user) {
     const urlParams = new URLSearchParams(window.location.search);
     const returnUrl = urlParams.get('return') || 'dashboard.html';
-    window.location.replace(returnUrl);
+    window.location.replace(getCleanUrl(returnUrl));
     return;
   }
   // Otherwise, user is truly logged out, hide splash and stay on login page.
@@ -269,7 +269,7 @@ auth.onAuthStateChanged(user => {
   if (user) {
     const urlParams = new URLSearchParams(window.location.search);
     const returnUrl = urlParams.get('return') || 'dashboard.html';
-    window.location.replace(returnUrl);
+    window.location.replace(getCleanUrl(returnUrl));
   }
 });
 
@@ -431,9 +431,9 @@ async function verifyOTP() {
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get("return");
       if (returnUrl) {
-        window.location.replace(decodeURIComponent(returnUrl));
+        window.location.replace(getCleanUrl(decodeURIComponent(returnUrl)));
       } else {
-        window.location.replace("dashboard.html");
+        window.location.replace(getCleanUrl("dashboard.html"));
       }
     } else if (status === 404) {
       // New user → Profile Setup
@@ -444,7 +444,7 @@ async function verifyOTP() {
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get("return");
       if (returnUrl) nextUrl += "?return=" + encodeURIComponent(returnUrl);
-      window.location.replace(nextUrl);
+      window.location.replace(getCleanUrl(nextUrl));
     } else {
       const errMsg = (data && data.detail) ? (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail)) : `Unexpected server response (${status}).`;
       throw new Error(errMsg);

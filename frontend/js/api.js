@@ -76,7 +76,7 @@ async function apiFetch(method, path, body = null) {
 
   const token = await getIdToken();
   if (!token) {
-    window.location.href = "login.html";
+    window.location.href = getCleanUrl("login.html");
     throw new Error("Not authenticated");
   }
   
@@ -120,7 +120,7 @@ async function apiFetch(method, path, body = null) {
   }
 
   if (res.status === 401) {
-    window.location.href = "login.html";
+    window.location.href = getCleanUrl("login.html");
     throw new Error("Session expired");
   }
 
@@ -235,7 +235,7 @@ async function apiFetchWithToken(method, path, token, body = null) {
     clearTimeout(timeoutId);
     if (res.status === 401) {
       localStorage.removeItem("np_token_tmp");
-      window.location.href = "login.html";
+      window.location.href = getCleanUrl("login.html");
       throw new Error("Session expired");
     }
 

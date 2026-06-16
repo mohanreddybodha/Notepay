@@ -124,7 +124,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <span class="btn-text">Create Event</span>
       <span class="spinner"></span>
     </button>
-    <button type="button" class="btn btn-text-secondary" onclick="window.location.href='dashboard.html'">Cancel</button>
+    <button type="button" class="btn btn-text-secondary" onclick="window.location.href=getCleanUrl('dashboard.html')">Cancel</button>
 
     <div class="footer">Notepay v1.0 &middot; Made with <span data-np-icon="heart" data-np-size="14"></span> in India</div>
   </div>
@@ -229,7 +229,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       } else {
         await createEvent(name, desc, date, showDon, showExp);
         showToast("Event created!");
-        window.location.replace("dashboard.html");
+        window.location.replace(getCleanUrl("dashboard.html"));
       }
     } catch(err) {
       showToast(err.message || "Failed to save event. Please try again.", "error");

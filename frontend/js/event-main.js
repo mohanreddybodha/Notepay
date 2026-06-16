@@ -62,7 +62,7 @@
             <div style="font-size:48px; margin-bottom:20px;">❌</div>
             <div style="font-weight:900; font-size:22px; margin-bottom:10px;">Invalid event link</div>
             <div style="color:var(--text3); line-height:1.6; margin-bottom:20px;">This event could not be opened because the page URL is missing a valid event ID.</div>
-            <button class="btn" onclick="window.location.href='dashboard.html'" style="padding:12px 28px; border-radius:14px;">Back to Dashboard</button>
+            <button class="btn" onclick="window.location.href=getCleanUrl('dashboard.html')" style="padding:12px 28px; border-radius:14px;">Back to Dashboard</button>
           </div>
         `;
       }
@@ -266,7 +266,7 @@
                 <div style="font-size:72px; margin-bottom:20px;">🔒</div>
                 <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Event is Private</div>
                 <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">The organizer has turned off public access.</div>
-                <button onclick="window.location.href='dashboard.html'" class="btn" 
+                <button onclick="window.location.href=getCleanUrl('dashboard.html')" class="btn" 
                   style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                   ← Back to Dashboard
                 </button>
@@ -469,7 +469,7 @@
                 <div style="margin-bottom:20px;">${icon}</div>
                 <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">${msg}</div>
                 <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">${sub}</div>
-                <button onclick="window.location.href='dashboard.html'" class="btn" 
+                <button onclick="window.location.href=getCleanUrl('dashboard.html')" class="btn" 
                   style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                   ← Back to Dashboard
                 </button>

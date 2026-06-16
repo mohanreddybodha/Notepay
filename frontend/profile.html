@@ -96,7 +96,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         <div class="prof-av" id="prof-av">?</div>
         <div class="prof-nm" id="prof-nm">—</div>
         <div class="prof-phone" id="prof-phone">—</div>
-        <button class="prof-edit-btn" onclick="window.location.href='edit-profile.html'">Edit Profile</button>
+        <button class="prof-edit-btn" onclick="window.location.href=getCleanUrl('edit-profile.html')">Edit Profile</button>
       </div>
 
       <div class="psec" style="margin-top:16px;"><div class="psec-lbl">Account Info</div>
@@ -126,7 +126,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
               <div class="pr-val" style="margin-top:0;">Submit Feedback</div>
             </div>
           </div>
-          <div class="prow prow-c" onclick="window.location.href='guide.html'">
+          <div class="prow prow-c" onclick="window.location.href=getCleanUrl('guide.html')">
             <div style="display:flex; align-items:center; gap:12px;">
               <span data-np-icon="file-text" data-np-size="18" style="color:var(--text3);"></span>
               <div class="pr-val" style="margin-top:0;">User Guide</div>
@@ -137,13 +137,13 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
       <div class="psec" style="margin-top:12px;"><div class="psec-lbl">Legal</div>
         <div class="pcard">
-          <div class="prow prow-c" onclick="window.location.href='terms.html'">
+          <div class="prow prow-c" onclick="window.location.href=getCleanUrl('terms.html')">
             <div style="display:flex; align-items:center; gap:12px;">
               <span data-np-icon="key" data-np-size="18" style="color:var(--text3);"></span>
               <div class="pr-val" style="margin-top:0;">Terms of Service</div>
             </div>
           </div>
-          <div class="prow prow-c" onclick="window.location.href='privacy.html'">
+          <div class="prow prow-c" onclick="window.location.href=getCleanUrl('privacy.html')">
             <div style="display:flex; align-items:center; gap:12px;">
               <span data-np-icon="lock" data-np-size="18" style="color:var(--text3);"></span>
               <div class="pr-val" style="margin-top:0;">Privacy Policy</div>
@@ -273,7 +273,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       localStorage.clear();
       if (darkMode) localStorage.setItem("np_dark", darkMode);
 
-      window.location.replace("login.html");
+      window.location.replace(getCleanUrl("login.html"));
     } catch(e) {
       showToast("Logout failed.", "error");
       document.getElementById("logout-pop").style.display = "none";

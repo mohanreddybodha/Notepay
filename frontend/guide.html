@@ -239,9 +239,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       history.back();
     } else {
       if (currentUser) {
-        window.location.href = "dashboard.html";
+        window.location.href = getCleanUrl("profile.html");
       } else {
-        window.location.href = "login.html";
+        window.location.href = getCleanUrl("login.html");
       }
     }
   }
@@ -251,7 +251,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     if (!currentUser) {
       showToast("Please login to submit feedback.", "error");
       setTimeout(() => {
-        window.location.href = `login.html?return=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+        window.location.href = getCleanUrl(`login.html?return=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       }, 1500);
       return;
     }

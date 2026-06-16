@@ -119,7 +119,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   // Wait for Firebase auth
   waitForAuthReady().then(user => {
     if (!user) {
-      window.location.replace("login.html");
+      window.location.replace(getCleanUrl("login.html"));
       return;
     }
     // Try to get phone from Firebase user, fallback to sessionStorage
@@ -168,9 +168,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         if (returnUrl) {
           const decoded = decodeURIComponent(returnUrl);
           const safe = decoded.startsWith("/") && !decoded.startsWith("//") ? decoded : "dashboard.html";
-          window.location.replace(safe.startsWith("/") ? safe.slice(1) : safe);
+          window.location.replace(getCleanUrl(safe.startsWith("/") ? safe.slice(1) : safe));
         } else {
-          window.location.replace("dashboard.html");
+          window.location.replace(getCleanUrl("dashboard.html"));
         }
       } else {
         if (data?.detail && Array.isArray(data.detail)) {

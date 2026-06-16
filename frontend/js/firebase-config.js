@@ -29,6 +29,13 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 
+// ── Clean URL routing helper (localhost compatibility) ──
+function getCleanUrl(url) {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+  if (isLocal) return url;
+  return url.replace(/\.html(\?|#|$)/, '$1');
+}
+
 // ── Get a fresh Firebase ID token (cached for 50 min to avoid repeated calls) ──
 let _cachedToken = null;
 let _tokenExpiry = 0;
