@@ -193,9 +193,9 @@ async def get_current_user_id(
             if user:
                 user = crud.update_user_firebase_uid(db, user, uid)
             else:
-                raise HTTPException(status_code=404, detail="User not found")
+                raise HTTPException(status_code=404, detail="User not registered")
         else:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=404, detail="User not registered")
             
     if getattr(user, 'is_banned', False):
         raise HTTPException(status_code=403, detail=f"Your account has been banned. Reason: {user.ban_reason or 'No reason provided.'}")

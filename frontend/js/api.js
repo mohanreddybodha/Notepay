@@ -129,7 +129,7 @@ async function apiFetch(method, path, body = null) {
 
   if (!res.ok && res.status !== 304) {
     const msg = data?.detail || `HTTP ${res.status}`;
-    if (res.status === 404 && msg.includes("User not registered")) {
+    if (res.status === 404 && (msg.includes("User not registered") || msg.includes("User not found"))) {
       window.location.replace("profile-setup.html");
       throw new Error("Redirecting to profile setup...");
     }
