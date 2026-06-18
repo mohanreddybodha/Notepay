@@ -20,10 +20,27 @@ let currentEventName = null;
 let currentReceiptSessionId = null;
 let donorCustomColumns = [];
 
+function setBackgroundScroll(locked) {
+  if (locked) {
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+  } else {
+    const loaderVisible = document.getElementById('loader') && document.getElementById('loader').style.display === 'flex';
+    const manualVisible = document.getElementById('manual-entry-modal') && document.getElementById('manual-entry-modal').style.display === 'flex';
+    const rejectionVisible = document.getElementById('rejection-modal') && document.getElementById('rejection-modal').style.display === 'flex';
+    
+    if (!loaderVisible && !manualVisible && !rejectionVisible) {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+  }
+}
+
 function showRejectionPopup(message) {
   document.getElementById('rejection-msg').innerText = message;
   const modal = document.getElementById('rejection-modal');
   modal.style.display = 'flex';
+  setBackgroundScroll(true);
   // Restart animation
   const box = modal.querySelector('div');
   box.style.animation = 'none';
@@ -182,6 +199,7 @@ btnSubmit.addEventListener('click', async () => {
   // Show Loader
   const loader = document.getElementById('loader');
   loader.style.display = 'flex';
+  setBackgroundScroll(true);
   document.getElementById('loader-spinner').style.display = 'block';
   document.getElementById('loader-success').style.display = 'none';
   document.getElementById('loader-title').innerText = "Verifying Payment...";
@@ -200,24 +218,28 @@ btnSubmit.addEventListener('click', async () => {
     if (data.status === "rejected") {
       console.log("AI rejected receipt:", data.message);
       document.getElementById('loader').style.display = 'none';
+      setBackgroundScroll(false);
       showRejectionPopup(data.message);
       return;
     }
     if (data.status === "unrelated_image") {
       console.log("AI: unrelated image");
       document.getElementById('loader').style.display = 'none';
+      setBackgroundScroll(false);
       showRejectionPopup(data.message);
       return;
     }
     if (data.status === "failed") {
       console.log("AI: failed transaction");
       document.getElementById('loader').style.display = 'none';
+      setBackgroundScroll(false);
       showRejectionPopup(data.message);
       return;
     }
     if (data.status === "extraction_failed" || data.extraction_failed === true) {
       console.log("ℹ️ AI extraction failed, showing manual entry form");
       document.getElementById('loader').style.display = 'none';
+      setBackgroundScroll(false);
       showManualEntryForm(false, null, null, data.receipt_session_id || null);
       return;
     }
@@ -226,6 +248,7 @@ btnSubmit.addEventListener('click', async () => {
     if (data.status === "partial_success") {
       console.log("ℹ️ AI partial success, asking for donor name");
       document.getElementById('loader').style.display = 'none';
+      setBackgroundScroll(false);
       currentReceiptSessionId = data.receipt_session_id;
       showManualEntryForm(true, data.amount, data.receiver_name, null, data.donor_name || null);
       return;
@@ -262,10 +285,12 @@ btnSubmit.addEventListener('click', async () => {
       <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">You may now close this window.</p>
     `;
     loader.style.display = 'none';
+    setBackgroundScroll(false);
 
   } catch (error) {
     console.error("❌ Upload Error:", error);
     document.getElementById('loader').style.display = 'none';
+    setBackgroundScroll(false);
     
     // Show manual entry form as fallback
     showManualEntryForm();
@@ -275,8 +300,7 @@ btnSubmit.addEventListener('click', async () => {
 // Manual Entry Form Functions
 function showManualEntryForm(isPartial = false, lockedAmount = null, receiverName = null, fallbackSessionId = null, prefilledDonorName = null) {
   document.getElementById('manual-entry-modal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
+  setBackgroundScroll(true);
   window.scrollTo(0, 0);
   document.getElementById('manual-name').value = prefilledDonorName || '';
 
@@ -373,8 +397,7 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
 
 document.getElementById('btn-manual-cancel').addEventListener('click', () => {
   document.getElementById('manual-entry-modal').style.display = 'none';
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
+  setBackgroundScroll(false);
 });
 
 document.getElementById('btn-manual-submit').addEventListener('click', async () => {
@@ -421,10 +444,9 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
 
   // Hide modal and show loader
   document.getElementById('manual-entry-modal').style.display = 'none';
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
   const loader = document.getElementById('loader');
   loader.style.display = 'flex';
+  setBackgroundScroll(true);
   document.getElementById('loader-spinner').style.display = 'block';
   document.getElementById('loader-success').style.display = 'none';
   document.getElementById('loader-title').innerText = "Recording Donation...";

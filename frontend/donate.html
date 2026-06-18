@@ -380,7 +380,7 @@
       </div>
       <h3 style="margin:0 0 10px 0; font-size:17px; font-weight:700; color:#111827;">Receipt Not Accepted</h3>
       <p id="rejection-msg" style="margin:0 0 24px 0; font-size:14px; color:#4b5563; line-height:1.6;"></p>
-      <button onclick="document.getElementById('rejection-modal').style.display='none'" style="width:100%; padding:13px; background:var(--primary,#4f46e5); color:white; border:none; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer;">OK, Got It</button>
+      <button onclick="document.getElementById('rejection-modal').style.display='none'; if (typeof setBackgroundScroll === 'function') setBackgroundScroll(false);" style="width:100%; padding:13px; background:var(--primary,#4f46e5); color:white; border:none; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer;">OK, Got It</button>
     </div>
   </div>
 
