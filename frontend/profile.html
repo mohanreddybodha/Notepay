@@ -90,7 +90,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     <div style="width:32px"></div>
   </div>
   <div class="scr">
-    <div id="loading"><div class="loader"></div></div>
+    <!-- SPLASH SCREEN to mask Auth Check -->
+    <div id="app-splash">
+      <div class="splash-logo-box">
+        <img class="logo-img" src="favicon.svg" alt="Notepay Logo" />
+      </div>
+    </div>
     <div id="content" style="display:none;">
       <div class="prof-hdr">
         <div class="prof-av" id="prof-av">?</div>
@@ -215,7 +220,11 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       // Store for edit page
       localStorage.setItem("np_profile", JSON.stringify(p));
     } catch(e) { showToast("Failed to load profile.","error"); }
-    document.getElementById("loading").style.display = "none";
+    const splash = document.getElementById("app-splash");
+    if (splash) {
+      splash.classList.add("hidden");
+      setTimeout(() => splash.style.display = "none", 150);
+    }
     document.getElementById("content").style.display = "block";
   });
 

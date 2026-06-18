@@ -1116,6 +1116,11 @@
       visibility: hidden;
       pointer-events: none;
     }
+    @keyframes pulse-splash {
+      0% { transform: scale(0.95); opacity: 0.85; }
+      50% { transform: scale(1.05); opacity: 1; box-shadow: 0 12px 36px rgba(26, 78, 140, 0.3); }
+      100% { transform: scale(0.95); opacity: 0.85; }
+    }
     .splash-logo-box {
       width: 80px;
       height: 80px;
@@ -1126,6 +1131,7 @@
       justify-content: center;
       padding: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      animation: pulse-splash 1.8s infinite ease-in-out;
     }
     .splash-logo-box img {
       width: 100%;
