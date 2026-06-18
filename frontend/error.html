@@ -4,7 +4,7 @@
 <script>
 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
   let cleanPath = window.location.pathname.replace(/\.html$/, '');
-  if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
+  if (cleanPath === '/index') cleanPath = '/';
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
 }
 </script>
@@ -18,10 +18,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     var hash = window.location.hash;
 
     // Map clean paths back to .html files
-    var knownPages = ['/event', '/dashboard', '/login', '/join-event', '/create-event', '/profile', '/edit-profile', '/profile-setup', '/privacy', '/terms'];
+    var knownPages = ['/event', '/dashboard', '/login', '/join-event', '/create-event', '/profile', '/edit-profile', '/profile-setup', '/privacy', '/terms', '/guide', '/contact'];
     var matched = knownPages.find(function(p) { return path === p || path.startsWith(p + '?'); });
 
-    if (matched) {
+    if (path === '/signup') {
+      window.location.replace('/login.html' + search + hash);
+    } else if (matched) {
       window.location.replace(matched + '.html' + search + hash);
     } else {
       window.location.replace('/login.html');

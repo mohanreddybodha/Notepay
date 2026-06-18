@@ -166,7 +166,7 @@ Resources:
             var request = event.request;
             var uri = request.uri;
             if (uri.endsWith('/')) {
-                request.uri += 'login.html';
+                request.uri += 'index.html';
             } else if (!uri.includes('.')) {
                 request.uri += '.html';
             }
@@ -204,7 +204,7 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
-        DefaultRootObject: login.html
+        DefaultRootObject: index.html
         Aliases:
           - notepay.in
           - www.notepay.in

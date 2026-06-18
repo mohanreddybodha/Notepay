@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Notepay - Collaborative Event Donation & Expense Tracker</title>
+  <meta name="description" content="Create shared event ledgers, invite collectors by code, track donations and expenses in real time, and share read-only event summaries with your community.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Firebase SDK and Auth Redirect check -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js?v=4"></script>
+  <script>
+    (async () => {
+      if (localStorage.getItem("np_my_id")) {
+        const user = await waitForAuthReady();
+        if (user) {
+          window.location.replace(getCleanUrl('dashboard.html'));
+          return;
+        }
+      }
+      const hideSplash = () => {
+        const splash = document.getElementById('app-splash');
+        if (splash) splash.classList.add('hidden');
+        else setTimeout(hideSplash, 5);
+      };
+      hideSplash();
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bg: #030712;
+      --card-bg: rgba(17, 24, 39, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-glow: rgba(79, 70, 229, 0.35);
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border-accent: rgba(79, 70, 229, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Grid Overlay */
+    .hero-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 950px;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+      background-position: center top;
+      mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Background Gradients */
+    .bg-glows {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 100%;
+      max-height: 1400px;
+      pointer-events: none;
+      z-index: -2;
+      overflow: hidden;
+    }
+
+    .glow-1 {
+      position: absolute;
+      top: -10%;
+      left: 15%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+      opacity: 0.8;
+      filter: blur(80px);
+      animation: drift 25s infinite alternate;
+    }
+
+    .glow-2 {
+      position: absolute;
+      top: 25%;
+      right: 10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+      opacity: 0.6;
+      filter: blur(70px);
+      animation: drift 30s infinite alternate-reverse;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(80px, 40px) scale(1.15); }
+    }
+
+    /* Navigation */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      z-index: 1000;
+      background: rgba(3, 7, 18, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      transition: all 0.3s ease;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--text-main);
+    }
+
+    .logo img {
+      width: 30px;
+      height: 30px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    @media (max-width: 820px) {
+      .nav-links {
+        display: none; /* Hide standard links on mobile */
+      }
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+
+    .cta-btn {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cta-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.5);
+    }
+
+    .cta-btn-outline {
+      background: transparent;
+      color: var(--text-main);
+      padding: 10px 20px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid var(--card-border);
+    }
+
+    .cta-btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text-muted);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 140px 24px 60px 24px;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(79, 70, 229, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+    }
+
+    .announcement {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(79, 70, 229, 0.15);
+      border: 1px solid var(--border-accent);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #a5b4fc;
+      margin-bottom: 24px;
+      text-decoration: none;
+      animation: pulse-glow 2s infinite;
+    }
+
+    .announcement span {
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 10px;
+    }
+
+    .hero h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      color: var(--text-main);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--primary) 50%, var(--accent-emerald) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 36px;
+      }
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 36px auto;
+      line-height: 1.6;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 60px;
+    }
+
+    /* Mock Dashboard Visual (Highly Detailed) */
+    .dashboard-preview {
+      background: linear-gradient(185deg, rgba(17, 24, 39, 0.85) 0%, rgba(3, 7, 18, 0.95) 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px;
+      text-align: left;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .preview-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-team {
+      display: flex;
+      align-items: center;
+      gap: -6px; /* overlapping avatars */
+    }
+
+    .avatar-mock {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid #111827;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 800;
+      color: white;
+      margin-left: -6px;
+    }
+    .avatar-mock:first-child { margin-left: 0; }
+    .avatar-mock.orange { background: #ea580c; }
+    .avatar-mock.teal { background: #0d9488; }
+
+    /* Summary Bar */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .summary-val {
+      font-size: 18px;
+      font-weight: 800;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .summary-val.green { color: var(--accent-emerald); }
+    .summary-val.red { color: #f87171; }
+
+    /* Burn Rate Warning Card */
+    .alert-chip {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #fbbf24;
+    }
+
+    /* Tabs */
+    .mock-tabs {
+      display: flex;
+      border-bottom: 1.5px solid rgba(255,255,255,0.06);
+      margin-bottom: 16px;
+      gap: 16px;
+    }
+
+    .mock-tab-h {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 13.5px;
+      padding: 8px 4px 12px 4px;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .mock-tab-h:hover {
+      color: var(--text-main);
+    }
+
+    .mock-tab-h.active {
+      color: var(--primary);
+    }
+
+    .mock-tab-h.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1.5px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-cyan);
+    }
+
+    .mock-pane {
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .row-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mock-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.015);
+      border: 1px solid rgba(255,255,255,0.02);
+      font-size: 13px;
+    }
+
+    .mock-row:hover {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.05);
+    }
+
+    .row-main {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .row-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .tr-status-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-tag-verified {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.15);
+    }
+
+    /* Mock Chat Drawer Section */
+    .mock-chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 220px;
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .chat-msg {
+      max-width: 85%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: 2px;
+    }
+
+    .msg-ai {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border-bottom-left-radius: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .chat-input-bar {
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 8px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(3, 7, 18, 0.5);
+    }
+
+    .chat-input-mock {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      padding: 4px 0;
+    }
+
+    .chat-send-mock {
+      background: var(--accent-cyan);
+      color: var(--bg);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    /* Features Grid */
+    .features {
+      max-width: 1200px;
+      margin: 100px auto 120px auto;
+      padding: 0 24px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-title h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .section-title p {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(79, 70, 229, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .card.primary-border:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+
+    .card.emerald-border:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--primary);
+      font-size: 20px;
+    }
+
+    .card.primary-border .card-icon {
+      color: var(--accent-cyan);
+    }
+
+    .card.emerald-border .card-icon {
+      color: var(--accent-emerald);
+    }
+
+    .card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      line-height: 1.6;
+    }
+
+    /* Visual Steps Flow */
+    .how-it-works {
+      background: rgba(17, 24, 39, 0.2);
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      padding: 100px 24px;
+    }
+
+    .steps-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 32px;
+      margin-top: 60px;
+    }
+
+    .step-item {
+      text-align: center;
+    }
+
+    .step-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      margin: 0 auto 20px auto;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .step-item h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .step-item p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    /* Comparison Section */
+    .comparison {
+      max-width: 900px;
+      margin: 120px auto;
+      padding: 0 24px;
+    }
+
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 40px;
+    }
+
+    .comp-table th, .comp-table td {
+      padding: 20px 24px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .comp-table th {
+      background: rgba(255, 255, 255, 0.015);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .comp-table td {
+      font-size: 14.5px;
+      color: var(--text-muted);
+    }
+
+    .comp-table tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .comp-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comp-table td.highlight {
+      color: var(--text-main);
+      font-weight: 600;
+      background: rgba(79, 70, 229, 0.03);
+    }
+
+    .check-icon {
+      color: var(--accent-emerald);
+      font-weight: bold;
+    }
+
+    .cross-icon {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    /* FAQ Section */
+    .faq {
+      max-width: 800px;
+      margin: 120px auto;
+      padding: 0 24px;
+    }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item.active {
+      border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    .faq-question {
+      padding: 20px 24px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .faq-question::after {
+      content: '+';
+      font-size: 20px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .faq-item.active .faq-question::after {
+      content: '−';
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, padding 0.3s ease;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .faq-item.active .faq-answer {
+      max-height: 200px;
+      padding: 0 24px 20px 24px;
+      border-top: 1px solid rgba(255,255,255,0.03);
+    }
+
+    /* Bottom CTA Card */
+    .bottom-cta {
+      max-width: 1000px;
+      margin: 80px auto 120px auto;
+      padding: 0 24px;
+    }
+
+    .cta-card {
+      background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.22) 0%, transparent 60%), var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 60px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .cta-card h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .cta-card p {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 600px;
+      margin: 0 auto 32px auto;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      background: #020617;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-main);
+    }
+
+    @media (max-width: 600px) {
+      .footer-container {
+        flex-direction: column;
+        text-align: center;
+      }
+      .footer-links {
+        justify-content: center;
+      }
+    }
+
+    /* Problem & Solution Styling */
+    .problem-solution {
+      max-width: 1200px;
+      margin: 100px auto;
+      padding: 0 24px;
+    }
+
+    .prob-sol-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    .prob-card, .sol-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .prob-card:hover {
+      border-color: rgba(239, 68, 68, 0.25);
+      box-shadow: 0 20px 40px rgba(239, 68, 68, 0.04);
+    }
+
+    .sol-card:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.04);
+    }
+
+    .prob-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #f87171;
+      margin-bottom: 28px;
+      border-left: 3px solid #ef4444;
+      padding-left: 12px;
+    }
+
+    .sol-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent-emerald);
+      margin-bottom: 28px;
+      border-left: 3px solid var(--accent-emerald);
+      padding-left: 12px;
+    }
+
+    .prob-list, .sol-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .prob-item, .sol-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .prob-item strong, .sol-item strong {
+      font-size: 15px;
+      color: var(--text-main);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .prob-item p, .sol-item p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Who Is It For Styling */
+    .who-is-it-for {
+      max-width: 1200px;
+      margin: 120px auto;
+      padding: 0 24px;
+    }
+
+    .audience-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .audience-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.3s ease;
+    }
+
+    .audience-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .audience-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .audience-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+
+    .audience-card p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Guide Promo Styling */
+    .guide-promo {
+      max-width: 1000px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+
+    .guide-card {
+      background: radial-gradient(circle at top left, rgba(6, 182, 212, 0.15) 0%, transparent 60%), var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .guide-card h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .guide-card p {
+      color: var(--text-muted);
+      font-size: 15.5px;
+      max-width: 620px;
+      margin: 0 auto 28px auto;
+      line-height: 1.6;
+    }
+
+    /* App Splash Screen */
+    #app-splash {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100dvh;
+      background: #030712;
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s ease, visibility 0.2s;
+    }
+    #app-splash.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-logo-box {
+      width: 80px;
+      height: 80px;
+      background: #FFFFFF;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .splash-logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SPLASH SCREEN to mask Auth Check -->
+  <div id="app-splash">
+    <div class="splash-logo-box">
+      <img src="favicon.svg" alt="Notepay Logo" />
+    </div>
+  </div>
+  <script>
+    if (!localStorage.getItem("np_my_id")) {
+      document.getElementById('app-splash').style.display = 'none';
+    }
+  </script>
+
+  <!-- Grid backdrop visual -->
+  <div class="hero-grid"></div>
+
+  <!-- Glow backdrops -->
+  <div class="bg-glows">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+  </div>
+
+  <!-- Header -->
+  <header id="header">
+    <div class="nav-container">
+      <a href="#" class="logo">
+        <img src="favicon.svg" alt="Notepay Logo" />
+        Notepay
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">Workflow</a>
+        <a href="#comparison">Roles</a>
+        <a href="#faq">FAQ</a>
+        <a href="guide.html">User Guide</a>
+      </div>
+      <div class="nav-actions">
+        <a href="login.html" class="cta-btn">Sign up/Log in</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <a href="guide.html" class="announcement">
+      <span>LIVE</span> Shared donation and expense ledgers for event teams &rarr;
+    </a>
+    <h1>Transparent Event Donation &<br><span class="gradient-text">Expense Management</span></h1>
+    <p>
+      Manage donations, expenses, members, and reports for festivals, temple committees, community events, and clubs — all in one place.
+    </p>
+    <div class="hero-ctas">
+      <a href="login.html" class="cta-btn" style="padding: 14px 28px; font-size: 16px;">Get Started</a>
+      <a href="guide.html" class="cta-btn-outline" style="padding: 14px 28px; font-size: 16px;">View Guide</a>
+    </div>
+
+    <!-- Interactive Mockup: Shared Event Dashboard -->
+    <div class="dashboard-preview">
+      <div class="preview-header">
+        <span class="preview-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          Green Park Renovation Ledger
+        </span>
+        <div class="preview-team">
+          <div class="avatar-mock" title="Organizer (Suresh)">S</div>
+          <div class="avatar-mock orange" title="Collector (Priya)">P</div>
+          <div class="avatar-mock teal" title="Collector (Aman)">A</div>
+          <span style="font-size:11px; color:var(--text-muted); margin-left:12px; font-weight:600;">Organizer + 2 Collectors Live</span>
+        </div>
+      </div>
+
+      <!-- Real-time Summary Card -->
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-lbl">Total Donations</span>
+          <span class="summary-val green">₹24,500</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-lbl">Total Expenses</span>
+          <span class="summary-val red">₹14,200</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-lbl">Balance Remaining</span>
+          <span class="summary-val">₹10,300</span>
+        </div>
+        <div class="summary-item" style="align-items: center; justify-content: center; position: relative;">
+          <!-- SVG Progress Ring -->
+          <svg width="40" height="40" viewBox="0 0 36 36">
+            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#222" stroke-width="2.5" />
+            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-cyan)" stroke-dasharray="81, 100" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <div style="position: absolute; font-size:9px; font-weight:800; top:50%; left:50%; transform:translate(-50%, -50%);">81%</div>
+        </div>
+      </div>
+
+      <!-- Event Tabs -->
+      <div class="mock-tabs">
+        <button class="mock-tab-h active" id="m-tab-col" onclick="toggleMockTab('collections')">Donations</button>
+        <button class="mock-tab-h" id="m-tab-exp" onclick="toggleMockTab('expenses')">Expenses</button>
+        <button class="mock-tab-h" id="m-tab-chat" onclick="toggleMockTab('summary')">Summary</button>
+      </div>
+
+      <!-- Collections Pane -->
+      <div class="mock-pane" id="pane-collections">
+        <div class="row-list">
+          <div class="mock-row">
+            <div class="tr-info">
+              <span class="row-main">Rohan M.</span>
+              <span class="row-sub">Collected by Priya · Just now</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-weight:700;">₹1,500</span>
+              <span class="tr-status-tag status-tag-verified">Saved live</span>
+            </div>
+          </div>
+          <div class="mock-row">
+            <div class="tr-info">
+              <span class="row-main">Nisha S.</span>
+              <span class="row-sub">Collected by Suresh · 5 mins ago</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-weight:700;">₹2,000</span>
+              <span class="tr-status-tag status-tag-verified">Saved live</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expenses Pane -->
+      <div class="mock-pane" id="pane-expenses" style="display:none;">
+        <div class="row-list">
+          <div class="mock-row">
+            <div class="tr-info">
+              <span class="row-main">Pipes & Fittings (Plumbing)</span>
+              <span class="row-sub">Spent by Suresh · 2 hours ago</span>
+            </div>
+            <span style="font-weight:700; color:#f87171;">₹4,800</span>
+          </div>
+          <div class="mock-row">
+            <div class="tr-info">
+              <span class="row-main">Soil, Compost & Plants</span>
+              <span class="row-sub">Spent by Aman · 1 day ago</span>
+            </div>
+            <span style="font-weight:700; color:#f87171;">₹9,400</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Pane -->
+      <div class="mock-pane" id="pane-chat" style="display:none;">
+        <div class="summary-grid" style="margin-bottom:0;">
+          <div class="summary-item">
+            <span class="summary-lbl">Donors</span>
+            <span class="summary-val">18</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-lbl">Expense Entries</span>
+            <span class="summary-val">6</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-lbl">Share Link</span>
+            <span class="summary-val" style="font-size:14px;">Read-only</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Problem vs Solution Section -->
+  <section class="problem-solution" id="why-notepay">
+    <div class="section-title">
+      <h2>Managing Events Manually Creates Chaos</h2>
+      <p>Handling cash registers, physical books, and paper receipts is slow, confusing, and prone to errors.</p>
+    </div>
+    <div class="prob-sol-grid">
+      <div class="prob-card">
+        <h3>Managing events manually creates:</h3>
+        <div class="prob-list">
+          <div class="prob-item">
+            <svg class="cross-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div>
+              <strong>Duplicate entries</strong>
+              <p>Multiple collectors logging on paper registers results in duplicate records.</p>
+            </div>
+          </div>
+          <div class="prob-item">
+            <svg class="cross-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div>
+              <strong>Missing records</strong>
+              <p>Physical notebooks get lost, damaged, or entries get forgotten during events.</p>
+            </div>
+          </div>
+          <div class="prob-item">
+            <svg class="cross-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div>
+              <strong>No transparency</strong>
+              <p>Donors and committee members cannot see real-time collection updates.</p>
+            </div>
+          </div>
+          <div class="prob-item">
+            <svg class="cross-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div>
+              <strong>Endless WhatsApp messages</strong>
+              <p>Spamming payment confirmations and transaction screenshots in group chats.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sol-card">
+        <h3>NotePay helps you:</h3>
+        <div class="sol-list">
+          <div class="sol-item">
+            <svg class="check-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Track donations</strong>
+              <p>Log collections instantly from any device with automatic real-time sync.</p>
+            </div>
+          </div>
+          <div class="sol-item">
+            <svg class="check-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Manage expenses</strong>
+              <p>Record and keep track of outflows next to your collections to monitor budgets.</p>
+            </div>
+          </div>
+          <div class="sol-item">
+            <svg class="check-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Share public donation pages</strong>
+              <p>Give donors a secure web portal to view live tracking and upload receipts.</p>
+            </div>
+          </div>
+          <div class="sol-item">
+            <svg class="check-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Verify payment proofs</strong>
+              <p>AI extracts text from transaction receipts to verify entries instantly.</p>
+            </div>
+          </div>
+          <div class="sol-item">
+            <svg class="check-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Generate reports</strong>
+              <p>Access full balance sheet summaries, donor counts, and export data.</p>
+            </div>
+          </div>
+          <div class="sol-item">
+            <svg class="check-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Collaborate with members</strong>
+              <p>Share invite codes so multiple collectors can log entries simultaneously.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="features" id="features">
+    <div class="section-title">
+      <h2>Built for Transparent Event Finance</h2>
+      <p>Give every organizer and collector a clear, live view of donations, expenses, balances, access, and public sharing.</p>
+    </div>
+    <div class="grid">
+      <!-- 1. Auto Donations -->
+      <div class="card primary-border">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+        </div>
+        <h3>Auto Donations</h3>
+        <p>Upload receipt → AI extracts details. Vision models automatically capture donor name, amount, date, and transaction status to prevent manual errors.</p>
+      </div>
+
+      <!-- 2. Expense Tracking -->
+      <div class="card emerald-border">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        </div>
+        <h3>Expense Tracking</h3>
+        <p>Record and manage expenses. Easily log outflows under a separate tab, monitor live net balances, and verify remaining budget runway.</p>
+      </div>
+
+      <!-- 3. Member Collaboration -->
+      <div class="card">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <h3>Member Collaboration</h3>
+        <p>Multiple members can manage events. Share join codes with co-collectors so they can update the shared ledger in real time from their own phones.</p>
+      </div>
+
+      <!-- 4. Reports -->
+      <div class="card primary-border">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </div>
+        <h3>Reports</h3>
+        <p>View balance and collection summaries. Access live collection dashboards, donor statistics, and download comprehensive PDF statement reports.</p>
+      </div>
+
+      <!-- 5. Transparency -->
+      <div class="card emerald-border">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <h3>Transparency</h3>
+        <p>Every entry has proof. Verify screenshots, track logging collectors, and share read-only link access with the public to keep your organization trusted.</p>
+      </div>
+
+      <!-- Existing features kept as is -->
+      <div class="card">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <h3>Phone OTP & Profile Setup</h3>
+        <p>Members sign in with mobile OTP, complete a simple profile once, and can stay securely signed in on trusted devices.</p>
+      </div>
+      <div class="card primary-border">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        </div>
+        <h3>Custom Fields Per Event</h3>
+        <p>Organizers can add optional custom fields separately for Donations and Expenses, so each event can capture the details it actually needs.</p>
+      </div>
+      <div class="card emerald-border">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16v16H4z"></path><path d="M8 8h8"></path><path d="M8 12h8"></path><path d="M8 16h5"></path></svg>
+        </div>
+        <h3>Receipts for Donors</h3>
+        <p>Event members can generate and share clean PDF receipts for donation entries, making it easier to confirm contributions with donors.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Flow -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="steps-container">
+      <div class="section-title" style="margin-bottom: 40px;">
+        <h2>How It Works</h2>
+        <p>Unify your event finance tracking in four simple steps.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <h3>Create Event</h3>
+          <p>Temple festival, club, or community event.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <h3>Share Donation Link</h3>
+          <p>Donors scan QR and pay directly to your UPI.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <h3>Upload Payment Proof</h3>
+          <p>AI extracts details automatically.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <h3>Verify and Manage</h3>
+          <p>Track collections and expenses transparently.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Who Is It For Section -->
+  <section class="who-is-it-for" id="audience">
+    <div class="section-title">
+      <h2>Who Is It For?</h2>
+      <p>NotePay is tailored for community teams and organizers who need clear, collaborative financial ledger management.</p>
+    </div>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="audience-icon">🛕</div>
+        <h3>Temple Committees</h3>
+        <p>Coordinate contributions and expenses for festivals, building renovations, and public programs.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">🎉</div>
+        <h3>Village Festivals</h3>
+        <p>Track local collections transparently and manage organizer task budgets collaboratively.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">🤝</div>
+        <h3>Community Organizations</h3>
+        <p>Manage colony funds, clubs, charity events, and shared neighborhood maintenance collections.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">🎓</div>
+        <h3>College Clubs</h3>
+        <p>Track college fests, club budgets, vendor invoices, and student ticket inflows.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">🏢</div>
+        <h3>Associations</h3>
+        <p>Unify society members under a transparent, real-time shared budget report.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">📋</div>
+        <h3>Event Organizers</h3>
+        <p>Coordinate volunteer teams of collectors and vendors with secure digital ledger codes.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">🏠</div>
+        <h3>PG Owners</h3>
+        <p>Manage room rent and security deposit collections from residents by hiding monthly expenses when not needed.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">📅</div>
+        <h3>Monthly Expenses</h3>
+        <p>Track utilities, rent, groceries, and personal bills cleanly by hiding collections to focus strictly on outflows.</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon">💍</div>
+        <h3>Marriage Expenses</h3>
+        <p>Co-manage wedding budgets, venue costs, catering prepayments, and family gift inflows with multiple collaborators.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Section -->
+  <section class="comparison" id="comparison">
+    <div class="section-title">
+      <h2>Roles & Permissions</h2>
+      <p>Notepay keeps financial control clear by showing the right actions for each type of member.</p>
+    </div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Organizer</th>
+          <th>Collector</th>
+          <th>Read-Only Viewer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">How they join</td>
+          <td class="highlight check-icon">Creates event</td>
+          <td class="check-icon">Joins by code</td>
+          <td class="check-icon">Opens share link</td>
+        </tr>
+        <tr>
+          <td class="highlight">Add donations and expenses</td>
+          <td class="highlight check-icon">Yes</td>
+          <td class="check-icon">Yes</td>
+          <td class="cross-icon">No</td>
+        </tr>
+        <tr>
+          <td class="highlight">View summary totals</td>
+          <td class="highlight check-icon">Yes</td>
+          <td class="check-icon">Yes</td>
+          <td class="check-icon">Yes</td>
+        </tr>
+        <tr>
+          <td class="highlight">Generate event code</td>
+          <td class="highlight check-icon">Yes</td>
+          <td class="cross-icon">No</td>
+          <td class="cross-icon">No</td>
+        </tr>
+        <tr>
+          <td class="highlight">Deactivate or reactivate event</td>
+          <td class="highlight check-icon">Yes</td>
+          <td class="cross-icon">No</td>
+          <td class="cross-icon">No</td>
+        </tr>
+        <tr>
+          <td class="highlight">After event deactivation</td>
+          <td class="highlight check-icon">Read-only access</td>
+          <td class="cross-icon">Locked out</td>
+          <td class="cross-icon">No write access</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Platform Overview -->
+  <section class="comparison" id="product-snapshot">
+    <div class="section-title">
+      <h2>Platform Overview</h2>
+      <p>Everything a new event team needs to understand before creating its first shared ledger.</p>
+    </div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>What Notepay Provides</th>
+          <th>Why It Matters</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">Target users</td>
+          <td>Community, religious, college, charity, and social event teams</td>
+          <td>Built for groups collecting money and tracking event spending together.</td>
+        </tr>
+        <tr>
+          <td class="highlight">Account access</td>
+          <td>Mobile OTP sign-in, profile setup, and persistent device sessions</td>
+          <td>Collectors can join quickly without remembering passwords.</td>
+        </tr>
+        <tr>
+          <td class="highlight">Ledger tabs</td>
+          <td>DONATIONS, EXPENSES, SUMMARY</td>
+          <td>Rows live in their own tabs; Summary keeps only totals and counts.</td>
+        </tr>
+        <tr>
+          <td class="highlight">Real-time behavior</td>
+          <td>Live updates across organizer and collector devices</td>
+          <td>Everyone sees ledger changes almost immediately across devices.</td>
+        </tr>
+        <tr>
+          <td class="highlight">Public sharing</td>
+          <td>Organizer-controlled read-only event links for outside viewers</td>
+          <td>Communities can inspect progress without changing the ledger.</td>
+        </tr>
+        <tr>
+          <td class="highlight">Access control</td>
+          <td>Organizer-owned event codes, deactivation, and reactivation</td>
+          <td>Teams can close access when an event ends or a code should no longer be used.</td>
+        </tr>
+        <tr>
+          <td class="highlight">Receipts and reports</td>
+          <td>Donor receipt sharing and PDF event statements</td>
+          <td>Members can confirm individual donations, while organizers can archive the whole event.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq" id="faq">
+    <div class="section-title">
+      <h2>Frequently Asked Questions</h2>
+      <p>Quick answers about shared ledgers, sign-in, event access, and summaries.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">What problem does NOTEPAY solve?</div>
+      <div class="faq-answer">
+        It replaces a physical donation register. Multiple collectors can update one shared ledger at the same time, while organizers see live totals without carrying a notebook everywhere.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">How does login and session security work?</div>
+      <div class="faq-answer">
+        Every new login requires mobile OTP verification. Sessions can stay active on each device, multiple devices are supported, and signing out requires OTP verification on the next login.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">What happens when an event is deactivated?</div>
+      <div class="faq-answer">
+        Collectors are locked out immediately and the current event code becomes permanently invalid. The organizer can still view data in read-only mode and must generate a new code after reactivation.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">What is shown in the Summary tab?</div>
+      <div class="faq-answer">
+        Summary shows totals only: total donations collected, total expenses spent, balance remaining, number of donors, and number of expense entries. Individual rows stay in their own tabs.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">What are Visited Events?</div>
+      <div class="faq-answer">
+        Public events opened through a shared view link can appear under Visited Events, so users can return to recently viewed public ledgers from the dashboard.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Can members send receipts to donors?</div>
+      <div class="faq-answer">
+        Yes. Donation entries include a receipt-sharing action that creates a clean PDF receipt with donor name, amount, date, collector, and event details.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Can organizers download event records?</div>
+      <div class="faq-answer">
+        Yes. Organizers can download a PDF report for an event with donation rows, expense rows, custom fields, and financial summary totals.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">Can organizers control what public viewers see?</div>
+      <div class="faq-answer">
+        Yes. Public access can be turned on or off, and donation or expense table visibility can be controlled so at least one table remains visible.
+      </div>
+    </div>
+  </section>
+
+  <!-- Guide Promo Section -->
+  <section class="guide-promo" id="guide-promo">
+    <div class="guide-card">
+      <h2>Learn How to Use NotePay</h2>
+      <p>Discover how to create events, generate team invite codes, link your UPI payments, and verify donor screenshots in our step-by-step user guide.</p>
+      <a href="guide.html" class="cta-btn" style="display:inline-block; padding: 14px 32px; font-size: 15px;">Learn How to Use NotePay</a>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="bottom-cta">
+    <div class="cta-card">
+      <h2>Start a Shared Event Ledger</h2>
+      <p>Create an event, invite collectors by code, track every donation and expense live, and share transparent read-only progress with your community.</p>
+      <a href="login.html" class="cta-btn" style="padding: 16px 36px; font-size: 16px; display: inline-block;">Create Event Ledger</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div>
+        <p>&copy; 2026 Notepay.</p>
+        <p style="font-size: 11px; margin-top: 4px; color: rgba(255,255,255,0.3);">Notepay helps event teams maintain transparent donation and expense records. It is not a bank, payment gateway, or payment aggregator.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#why-notepay">About</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+        <a href="guide.html">Guide</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Simple FAQ Accordion Logic
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.parentElement;
+        const isActive = item.classList.contains('active');
+        
+        // Close all items
+        document.querySelectorAll('.faq-item').forEach(el => {
+          el.classList.remove('active');
+          el.querySelector('.faq-answer').style.maxHeight = null;
+        });
+
+        // Toggle clicked item
+        if (!isActive) {
+          item.classList.add('active');
+          const answer = item.querySelector('.faq-answer');
+          answer.style.maxHeight = answer.scrollHeight + "px";
+        }
+      });
+    });
+
+    // Dynamic header styling on scroll
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 20) {
+        header.style.background = 'rgba(3, 7, 18, 0.95)';
+        header.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+      } else {
+        header.style.background = 'rgba(3, 7, 18, 0.8)';
+        header.style.boxShadow = 'none';
+      }
+    });
+
+    // Interactive Mock Dashboard Panel Switcher
+    function toggleMockTab(tabName) {
+      // Hide all panes
+      document.getElementById('pane-collections').style.display = 'none';
+      document.getElementById('pane-expenses').style.display = 'none';
+      document.getElementById('pane-chat').style.display = 'none';
+
+      // Deactivate all tab headers
+      document.getElementById('m-tab-col').classList.remove('active');
+      document.getElementById('m-tab-exp').classList.remove('active');
+      document.getElementById('m-tab-chat').classList.remove('active');
+
+      // Show selected pane and activate tab header
+      if (tabName === 'collections') {
+        document.getElementById('pane-collections').style.display = 'block';
+        document.getElementById('m-tab-col').classList.add('active');
+      } else if (tabName === 'expenses') {
+        document.getElementById('pane-expenses').style.display = 'block';
+        document.getElementById('m-tab-exp').classList.add('active');
+      } else if (tabName === 'summary') {
+        document.getElementById('pane-chat').style.display = 'block';
+        document.getElementById('m-tab-chat').classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>

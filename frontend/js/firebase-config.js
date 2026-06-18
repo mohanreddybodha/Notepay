@@ -112,4 +112,21 @@ auth.onAuthStateChanged(user => {
   if (!user && _authHasSettled) resetAuthCache();
 });
 
-// Removed .html stripping to support refreshing on local IP addresses
+// Clean all anchor hrefs in production to hide .html extension
+document.addEventListener("DOMContentLoaded", () => {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+  if (!isLocal) {
+    document.querySelectorAll("a[href]").forEach(a => {
+      let href = a.getAttribute("href");
+      if (href && !href.startsWith("http://") && !href.startsWith("https://") && !href.startsWith("//")) {
+        if (href.endsWith(".html")) {
+          a.setAttribute("href", href.replace(/\.html$/, ""));
+        } else if (href.includes(".html?")) {
+          a.setAttribute("href", href.replace(/\.html\?/, "?"));
+        } else if (href.includes(".html#")) {
+          a.setAttribute("href", href.replace(/\.html#/, "#"));
+        }
+      }
+    });
+  }
+});

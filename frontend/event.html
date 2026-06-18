@@ -5,7 +5,7 @@
 <script>
 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
   let cleanPath = window.location.pathname.replace(/\.html$/, '');
-  if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
+  if (cleanPath === '/index') cleanPath = '/';
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
 }
 </script>

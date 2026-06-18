@@ -4,7 +4,7 @@
 <script>
 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
   let cleanPath = window.location.pathname.replace(/\.html$/, '');
-  if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
+  if (cleanPath === '/index') cleanPath = '/';
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
 }
 </script>
@@ -132,14 +132,10 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   });
 
   function goBack() {
-    if (document.referrer && document.referrer.includes(window.location.hostname)) {
-      history.back();
+    if (currentUser) {
+      window.location.href = getCleanUrl("profile.html");
     } else {
-      if (currentUser) {
-        window.location.href = getCleanUrl("profile.html");
-      } else {
-        window.location.href = getCleanUrl("login.html");
-      }
+      window.location.href = getCleanUrl("index.html");
     }
   }
 </script>
