@@ -288,6 +288,7 @@
     .gradient-text {
       background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--primary) 50%, var(--accent-emerald) 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -1129,12 +1130,15 @@
       100% { transform: scale(0.95); opacity: 0.85; }
     }
     .splash-logo-box {
-      width: 72px;
-      height: 72px;
-      background: transparent;
+      width: 80px;
+      height: 80px;
+      background: #FFFFFF;
+      border-radius: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       animation: pulse-splash 1.8s infinite ease-in-out;
     }
     .splash-logo-box img,

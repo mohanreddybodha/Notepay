@@ -919,17 +919,24 @@ body.dark-mode .btn-solid-primary { box-shadow: 0 4px 12px rgba(96, 165, 250, 0.
   100% { transform: scale(0.95); opacity: 0.85; }
 }
 .splash-logo-box {
-  width: 72px;
-  height: 72px;
-  background: transparent;
+  width: 80px;
+  height: 80px;
+  background: #FFFFFF;
+  border-radius: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
   animation: pulse-splash 1.8s infinite ease-in-out;
   margin-bottom: 20px;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: background 0.3s, box-shadow 0.3s;
 }
 body.dark-mode .splash-logo-box {
-  background: transparent;
+  background: #FFFFFF;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 .splash-logo-box img,
 .splash-logo-box svg {
