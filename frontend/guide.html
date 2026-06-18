@@ -235,7 +235,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   });
 
   function goBack() {
-    if (localStorage.getItem("np_my_id") || currentUser) {
+    if (document.referrer && document.referrer.includes("profile")) {
+      history.back();
+    } else if (localStorage.getItem("np_my_id") || currentUser) {
       window.location.href = getCleanUrl("profile.html");
     } else {
       window.location.href = getCleanUrl("index.html");
