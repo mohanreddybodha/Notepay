@@ -81,28 +81,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!currentUpiId || !currentUpiOwnerName) {
       document.getElementById('qr-box').innerHTML = "<p style='color:red;'>Organizer hasn't verified a UPI ID yet.</p>";
-      document.getElementById('btn-deep-link').style.display = "none";
     } else {
       // Generate standard UPI URL
       const safeUpiId = currentUpiId.trim();
       const safeOwnerName = encodeURIComponent(currentUpiOwnerName.trim());
       const upiUrl = `upi://pay?pa=${safeUpiId}&pn=${safeOwnerName}&cu=INR&tn=Donation`;
-      
-      // Wire up deep-link button to native confirmation modal
-      document.getElementById('btn-deep-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('upi-confirm-name').innerText = currentUpiOwnerName;
-        document.getElementById('upi-confirm-id').innerText = 'UPI: ' + currentUpiId;
-        
-        const proceedBtn = document.getElementById('upi-confirm-proceed');
-        proceedBtn.href = upiUrl; // Setting the href of the anchor directly allows native OS intent handling
-        proceedBtn.onclick = () => {
-          modal.style.display = 'none';
-        };
-
-        const modal = document.getElementById('upi-confirm-modal');
-        modal.style.display = 'flex';
-      });
 
       // Draw QR Code
       new QRCode(document.getElementById("qr-box"), {
@@ -182,8 +165,8 @@ const btnSubmit = document.getElementById('btn-submit');
 fileInput.addEventListener('change', () => {
   if (fileInput.files.length > 0) {
     btnSelect.innerHTML = `<i class="icon-check"></i> ${fileInput.files[0].name}`;
-    btnSelect.style.borderColor = "var(--primary)";
-    btnSelect.style.color = "var(--primary)";
+    btnSelect.style.backgroundColor = "var(--green, #10b981)";
+    btnSelect.style.color = "#ffffff";
     btnSubmit.style.display = "block"; // Show submit button
   }
 });

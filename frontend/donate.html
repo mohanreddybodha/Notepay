@@ -179,6 +179,26 @@
       gap: 10px;
     }
 
+    .btn-primary-blue {
+      background: var(--primary, #1A4E8C);
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      width: 100%;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .btn-primary-blue:hover {
+      background: var(--primary-dk, #0D2B55);
+    }
+
     .submit-btn {
       width: 100%;
       background: var(--primary);
@@ -276,20 +296,15 @@
 
       <p id="lbl-upi-owner" style="font-size:13px; font-weight:600; color:#374151; margin:0 0 12px 0; letter-spacing:0.01em; word-break: break-word;"></p>
       <div style="background:#fefce8; border:1px solid #fde68a; border-radius:10px; padding:10px 14px; margin-bottom:16px; text-align:left; font-size:12px; color:#78350f; line-height:1.5;">
-        <strong>Note:</strong> You can copy the UPI ID and paste it in any UPI app to make the payment directly. Alternatively, if the direct payment button doesn't open your app, you can save the QR code and scan it within your UPI app to complete your payment seamlessly.
+        <strong>Note:</strong> You can copy the UPI ID and paste it in any UPI app to make the payment directly, or you can save the QR code and scan it within your UPI app to complete your payment seamlessly.
       </div>
-      
-      <a href="#" id="btn-deep-link" class="pay-btn">
-        <i class="icon-upi" style="font-style: normal; font-weight: bold; border: 1px solid white; padding: 2px 5px; border-radius: 4px; font-size: 12px;">UPI</i> 
-        Pay via UPI App
-      </a>
 
       <div class="upload-section" style="margin-top: 30px; border-top: 2px dashed #e5e7eb; padding-top: 25px;">
         <span class="upload-title" style="color: #ef4444; font-size: 15px;">After Payment, Upload Screenshot (Required)</span>
         <p class="upload-desc">After payment, upload your screenshot or receipt so we can record your donation. <br><strong style="color:#ef4444;">Important:</strong> The 'Receiver' name on the uploaded screenshot must match the receiver name entered above; otherwise, our AI will reject the receipt.</p>
         
         <div class="file-input-wrapper">
-          <button class="btn-outline" id="btn-file-select">
+          <button class="btn-primary-blue" id="btn-file-select">
             <i class="icon-camera"></i> Select Screenshot
           </button>
           <input type="file" id="file-input" accept="image/*">
@@ -369,6 +384,6 @@
     </div>
   </div>
 
-  <script src="js/donate.js?v=100"></script>
+  <script src="js/donate.js?v=104"></script>
 </body>
 </html>
