@@ -23,7 +23,6 @@ let donorCustomColumns = [];
 function setBackgroundScroll(locked) {
   if (locked) {
     document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
   } else {
     const loaderVisible = document.getElementById('loader') && document.getElementById('loader').style.display === 'flex';
     const manualVisible = document.getElementById('manual-entry-modal') && document.getElementById('manual-entry-modal').style.display === 'flex';
@@ -31,7 +30,6 @@ function setBackgroundScroll(locked) {
     
     if (!loaderVisible && !manualVisible && !rejectionVisible) {
       document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
     }
   }
 }
@@ -301,7 +299,6 @@ btnSubmit.addEventListener('click', async () => {
 function showManualEntryForm(isPartial = false, lockedAmount = null, receiverName = null, fallbackSessionId = null, prefilledDonorName = null) {
   document.getElementById('manual-entry-modal').style.display = 'flex';
   setBackgroundScroll(true);
-  window.scrollTo(0, 0);
   document.getElementById('manual-name').value = prefilledDonorName || '';
 
   // Render custom fields
