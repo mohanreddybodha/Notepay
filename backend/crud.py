@@ -42,7 +42,8 @@ def create_event(db: Session, event: schemas.EventCreate, organizer_id: int):
         organizer_id=organizer_id,
         invite_code=invite_code,
         show_donations=event.show_donations,
-        show_expenses=event.show_expenses
+        show_expenses=event.show_expenses,
+        goal_amount=event.goal_amount
     )
     db.add(db_event)
     db.commit()
@@ -86,6 +87,11 @@ def get_my_events(db: Session, user_id: int):
         e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
         e_dict["my_role"] = m.role
         e_dict["is_restricted"] = m.is_restricted
+        total_col = sum(d.amount for d in e.donations if d.amount is not None)
+        total_exp = sum(ex.amount for ex in e.expenses if ex.amount is not None)
+        e_dict["total_collections"] = total_col
+        e_dict["total_expenses"] = total_exp
+        e_dict["balance"] = total_col - total_exp
         resp.append(e_dict)
     return resp
 
@@ -101,6 +107,11 @@ def get_shared_events(db: Session, user_id: int):
         e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
         e_dict["my_role"] = m.role
         e_dict["is_restricted"] = m.is_restricted
+        total_col = sum(d.amount for d in e.donations if d.amount is not None)
+        total_exp = sum(ex.amount for ex in e.expenses if ex.amount is not None)
+        e_dict["total_collections"] = total_col
+        e_dict["total_expenses"] = total_exp
+        e_dict["balance"] = total_col - total_exp
         resp.append(e_dict)
     return resp
 
@@ -430,6 +441,7 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
     if data.is_public is not None: event.is_public = data.is_public
     if data.upi_id is not None: event.upi_id = data.upi_id
     if data.upi_owner_name is not None or data.upi_id == "": event.upi_owner_name = data.upi_owner_name
+    if data.goal_amount is not None: event.goal_amount = data.goal_amount
     db.commit()
     db.refresh(event)
     # Invalidate full cache
@@ -760,6 +772,11 @@ def fix_event_json(e):
     # If it's a SQL Alchemy object, convert to dict first
     if hasattr(e, "__table__"):
         e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
+        total_col = sum(d.amount for d in e.donations if d.amount is not None)
+        total_exp = sum(ex.amount for ex in e.expenses if ex.amount is not None)
+        e_dict["total_collections"] = total_col
+        e_dict["total_expenses"] = total_exp
+        e_dict["balance"] = total_col - total_exp
     else:
         e_dict = e
         

@@ -47,6 +47,7 @@ class EventCreate(BaseModel):
     is_public: bool = False
     show_donations: bool = True
     show_expenses: bool = True
+    goal_amount: Optional[int] = 0
 
 class EventResponse(EventCreate):
     id: str
@@ -63,6 +64,9 @@ class EventResponse(EventCreate):
     upi_id: Optional[str] = None
     upi_owner_name: Optional[str] = None
     upi_verified_at: Optional[datetime] = None
+    total_collections: Optional[float] = 0.0
+    total_expenses: Optional[float] = 0.0
+    balance: Optional[float] = 0.0
     class Config:
         from_attributes = True
 
@@ -185,6 +189,7 @@ class EventUpdate(BaseModel):
     upi_id: Optional[str] = None
     upi_owner_name: Optional[str] = None
     upi_verified_at: Optional[datetime] = None
+    goal_amount: Optional[int] = None
     # Rename mapping: {"old_name": "new_name"} — used when renaming custom columns
     # so that existing data is migrated instead of deleted
     column_renames: Optional[Dict[str, str]] = None

@@ -95,6 +95,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div id="ev-date-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>
 
+    <div class="field-wrap">
+      <div class="field-label-out">Goal Collections (₹)</div>
+      <div class="field"><input type="number" id="ev-goal" placeholder="e.g. 5000 (Optional)" min="0" oninput="document.getElementById('ev-goal-error').style.display='none';"/></div>
+      <div id="ev-goal-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
+    </div>
+
     <div class="toggle-section">
       <div class="field-label-out">TABLES TO SHOW</div>
       <div class="toggle-chips">
@@ -165,6 +171,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
           document.getElementById("ev-name").value = ev.name;
           document.getElementById("ev-desc").value = ev.description;
           document.getElementById("ev-date").value = ev.event_date.split("T")[0];
+          document.getElementById("ev-goal").value = ev.goal_amount || "";
           // Restore table visibility toggles
           showDon = ev.show_donations !== false;
           showExp = ev.show_expenses !== false;
@@ -184,6 +191,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     const name  = document.getElementById("ev-name").value.trim();
     const desc  = document.getElementById("ev-desc").value.trim();
     const date  = document.getElementById("ev-date").value;
+    const goal  = document.getElementById("ev-goal").value.trim();
     const btn   = document.getElementById("create-btn");
 
     // Hide all previous errors
@@ -215,15 +223,17 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
     btn.classList.add("loading"); btn.disabled = true;
     try {
+      const goalAmount = goal ? parseInt(goal, 10) : 0;
       if (editId) {
         await updateEvent(editId, {
           name, description: desc, event_date: new Date(date).toISOString(),
-          show_donations: showDon, show_expenses: showExp
+          show_donations: showDon, show_expenses: showExp,
+          goal_amount: goalAmount
         });
         showToast("Event updated!");
         window.history.back();
       } else {
-        await createEvent(name, desc, date, showDon, showExp);
+        await createEvent(name, desc, date, showDon, showExp, goalAmount);
         showToast("Event created!");
         window.location.replace(getCleanUrl("dashboard.html"));
       }

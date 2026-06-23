@@ -136,6 +136,7 @@
 
     function applyData(res, preventRender = false) {
       eventData = res.event;
+      isActive = eventData.is_active;
       donations = res.donations;
       expenses = res.expenses;
       summaryData = res.summary;
@@ -1297,6 +1298,38 @@
       const showDon = eventData.show_donations !== false;
       const showExp = eventData.show_expenses !== false;
 
+      let goalDashboardUI = "";
+      if (eventData.goal_amount > 0) {
+        const collections = s.total_donations || 0;
+        const percent = Math.min(Math.round((collections / eventData.goal_amount) * 100), 999);
+        const strokePercent = Math.min(percent, 100);
+        
+        goalDashboardUI = `
+          <!-- Goal Dashboard Gauge -->
+          <div style="background:var(--card); border:1.5px solid var(--border2); border-radius:18px; padding:16px; margin-bottom:12px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:16px;">
+            <!-- Left Circular Progress Gauge -->
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; flex-shrink: 0;">
+              <svg width="68" height="68" viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--border2)" stroke-width="3" />
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--teal)" stroke-dasharray="${strokePercent}, 100" stroke-width="3" stroke-linecap="round" />
+              </svg>
+              <div style="position: absolute; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 900; color: var(--text);">${percent}%</div>
+            </div>
+            <!-- Right Details -->
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:11px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">COLLECTION GOAL PROGRESS</div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px;">
+                <span style="font-size:18px; font-weight:900; color:var(--text);">${formatINR(collections)}</span>
+                <span style="font-size:12px; font-weight:700; color:var(--text3);">of ${formatINR(eventData.goal_amount)}</span>
+              </div>
+              <div style="height:6px; background:var(--border2); border-radius:10px; overflow:hidden; margin-top:8px;">
+                <div style="height:100%; width:${strokePercent}%; background:var(--teal); border-radius:10px;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       const filterUI = `
         <div style="display:flex; justify-content:center; gap:8px; margin-bottom:15px; padding:0 10px;">
           ${['all', 'month', 'week', 'today'].map(f => `
@@ -1335,6 +1368,7 @@
         </div>
 
         <div class="sum-grid" style="display:flex; flex-direction:column; gap:10px;">
+          ${goalDashboardUI}
           <!-- Spending Efficiency (only if both tables are visible) -->
           ${(showDon && showExp) ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -3016,7 +3050,7 @@
       } catch (e) { showToast(e.message || "Failed.", "error"); }
     }
 
-    function openRenameSheet() { window.location.href = `create-event.html?edit=${eventId}`; }
+    function openRenameSheet() { window.location.href = getCleanUrl('create-event.html') + `?edit=${eventId}`; }
 
     // ── Helpers ──
     function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }

@@ -442,18 +442,67 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     const clickAction = canClick ? `onclick="openEvent('${e.id}')"` : "";
     const cursorStyle = canClick ? "cursor:pointer;" : "cursor:default;";
 
+    // Financial badges
+    const balance = (e.total_collections || 0) - (e.total_expenses || 0);
+    const finBadgeHtml = `
+      <div class="ec-financials" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px; border-top:1.5px solid var(--border2); padding-top:10px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; text-align:left; min-width:0;">
+          <span style="font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Collections</span>
+          <div style="font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:900; color:var(--green);">
+            ₹${(e.total_collections || 0).toLocaleString()}
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; min-width:0;">
+          <span style="font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Expenses</span>
+          <div style="font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:900; color:var(--red);">
+            ₹${(e.total_expenses || 0).toLocaleString()}
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; text-align:right; min-width:0;">
+          <span style="font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Remaining</span>
+          <div style="font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:900; color:#2563eb;">
+            ₹${balance.toLocaleString()}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Goal Ring Progress
+    let goalRingHtml = "";
+    if (e.goal_amount > 0) {
+      const collections = e.total_collections || 0;
+      const percent = Math.min(Math.round((collections / e.goal_amount) * 100), 999);
+      const strokePercent = Math.min(percent, 100);
+      goalRingHtml = `
+        <div class="goal-ring-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; margin-top: 4px; flex-shrink: 0;" title="Goal: ₹${e.goal_amount.toLocaleString()} (${percent}% achieved)">
+          <svg width="46" height="46" viewBox="0 0 36 36" style="transform: rotate(-90deg); width:46px; height:46px;">
+            <circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--border2)" stroke-width="3" />
+            <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#0fa3a3" stroke-dasharray="${strokePercent}, 100" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;">
+            <span style="font-size: 6.5px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px;">Goal</span>
+            <span style="font-size: 10.5px; font-weight: 900; color: var(--text);">${percent}%</span>
+          </div>
+        </div>
+      `;
+    }
+
     return `<div class="ev-card" style="${cursorStyle}" ${clickAction}>
       <div class="ec-body">
-        <div class="ec-top">
-          <div>
-            <div class="ec-name">${escHtml(e.name)}</div>
-            <div class="ec-desc">${escHtml(e.description)}</div>
+        <div class="ec-top" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+          <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+            <div class="ec-name" style="word-break:break-word;">${escHtml(e.name)}</div>
+            ${e.description ? `<div class="ec-desc" style="margin-bottom:2px;">${escHtml(e.description)}</div>` : ''}
+            <div class="ec-meta" style="margin-top:2px;">
+              <span class="np-icon-label" style="font-size:11.5px; color:var(--text3);">${npIcon("calendar", { size: 14 })} ${formatDate(e.event_date)}</span>
+            </div>
           </div>
-          ${badge}
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; min-width:75px;">
+            ${badge}
+            ${goalRingHtml}
+          </div>
         </div>
-        <div class="ec-meta">
-          <span class="np-icon-label">${npIcon("calendar", { size: 14 })} ${formatDate(e.event_date)}</span>
-        </div>
+        ${finBadgeHtml}
       </div>
       ${statusBanner}
       ${statusNote}

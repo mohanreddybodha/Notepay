@@ -53,6 +53,7 @@ class Event(Base):
     # Table visibility  organizer can hide Donations or Expenses
     show_donations = Column(Boolean, default=True)
     show_expenses = Column(Boolean, default=True)
+    goal_amount = Column(Integer, default=0, nullable=True)
     
     # Custom column definitions (Array of names)
     donation_custom_columns = Column(JSON, default=list)
