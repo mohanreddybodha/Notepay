@@ -277,4 +277,27 @@ def global_search(q: str, db: Session = Depends(get_db), current_admin: models.A
         
     return {"users": user_results, "events": event_results}
 
+@router.get("/feedback", response_model=list[schemas.AdminFeedbackResponse])
+def get_feedback(limit: int = 50, status: str = None, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
+    query = db.query(models.Feedback, models.User.full_name.label("user_name")).outerjoin(models.User, models.Feedback.user_id == models.User.id)
+    if status:
+        query = query.filter(models.Feedback.status == status)
+    feedback_items = query.order_by(desc(models.Feedback.created_at)).limit(limit).all()
+    
+    res = []
+    for fb, user_name in feedback_items:
+        fb_dict = {c.name: getattr(fb, c.name) for c in fb.__table__.columns}
+        fb_dict["user_name"] = user_name or fb.name or "Guest"
+        res.append(fb_dict)
+    return res
 
+@router.post("/feedback/{feedback_id}/resolve")
+def resolve_feedback(feedback_id: int, db: Session = Depends(get_db), current_admin: models.AdminUser = Depends(require_admin)):
+    feedback = db.query(models.Feedback).filter(models.Feedback.id == feedback_id).first()
+    if not feedback:
+        raise HTTPException(404, "Feedback not found")
+    
+    feedback.status = "resolved"
+    db.commit()
+    log_admin_action(db, current_admin.id, "resolve_feedback", "feedback", str(feedback_id))
+    return {"status": "success", "message": "Feedback resolved"}

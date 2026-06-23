@@ -92,7 +92,8 @@ function switchTab(tabId, el) {
     'users': 'User Management',
     'events': 'Event Management',
     'errors': 'System Errors',
-    'audit': 'Audit Logs'
+    'audit': 'Audit Logs',
+    'feedback': 'Feedback Center'
   };
   document.getElementById('page-title').innerText = titles[tabId];
   
@@ -103,6 +104,7 @@ function switchTab(tabId, el) {
   if(tabId === 'events') loadEvents();
   if(tabId === 'errors') loadErrors();
   if(tabId === 'audit') loadAudit();
+  if(tabId === 'feedback') loadFeedback();
 }
 
 async function loadDashboard() {
@@ -121,6 +123,7 @@ async function loadDashboard() {
     document.getElementById('stat-active-events').innerText = stats.active_events || 0;
     document.getElementById('stat-banned-users').innerText = stats.banned_users || 0;
     document.getElementById('stat-errors-today').innerText = stats.errors_today || 0;
+    if(document.getElementById('stat-feedback')) document.getElementById('stat-feedback').innerText = stats.pending_feedback || 0;
     
     if(document.getElementById('sidebar-admin-name') && stats.admin_name) {
       document.getElementById('sidebar-admin-name').innerText = stats.admin_name;
@@ -294,7 +297,37 @@ async function loadAudit() {
   } catch (e) {}
 }
 
+async function loadFeedback() {
+  const tbody = document.getElementById('feedback-tbody');
+  const status = document.getElementById('feedback-filter') ? document.getElementById('feedback-filter').value : '';
+  tbody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+  try {
+    const data = await apiCall(`/feedback${status ? '?status='+status : ''}`);
+    tbody.innerHTML = data.map(f => `
+      <tr>
+        <td>${new Date(f.created_at).toLocaleString()}</td>
+        <td>${f.user_name} (ID: ${f.user_id || 'Unknown'})</td>
+        <td><span class="badge ${f.type === 'Bug Report' ? 'badge-danger' : f.type === 'Security Issue' ? 'badge-danger' : 'badge-success'}">${f.type}</span></td>
+        <td style="max-width:300px; white-space:pre-wrap;">${f.message}</td>
+        <td>${f.status === 'resolved' ? '<span class="badge badge-success">Resolved</span>' : '<span class="badge badge-warning">Pending</span>'}</td>
+        <td>
+          ${f.status === 'pending' ? `<button class="action-btn btn-success" onclick="resolveFeedback(${f.id})">Mark Resolved</button>` : ''}
+        </td>
+      </tr>
+    `).join("") || "<tr><td colspan='6'>No feedback found.</td></tr>";
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan='6' style="color:red;">Error: ${e.message}</td></tr>`;
+  }
+}
 
+async function resolveFeedback(id) {
+  try {
+    await apiCall(`/feedback/${id}/resolve`, 'POST');
+    loadFeedback();
+  } catch(e) {
+    alert("Failed to resolve: " + e.message);
+  }
+}
 
 // Modal Actions
 function showModal(html) {

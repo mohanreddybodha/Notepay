@@ -383,7 +383,27 @@ async def update_my_profile(data: schemas.UserUpdate, db: Session = Depends(get_
     return user
 
 
+@app.post("/feedback", response_model=dict, tags=["Profile"])
+async def submit_feedback(data: schemas.FeedbackCreate, db: Session = Depends(get_db), user_id: Optional[int] = Depends(get_optional_current_user_id)):
+    """Submit a bug report, feature request, or security issue."""
+    if user_id is None:
+        if not data.name or not data.email:
+            raise HTTPException(status_code=401, detail="Authentication required or guest details (name/email) must be provided")
+        verify_rate_limit(f"guest:{data.email}:feedback", limit=3, window=3600)
+    else:
+        verify_rate_limit(f"user:{user_id}:feedback", limit=3, window=3600)
 
+    new_feedback = models.Feedback(
+        user_id=user_id,
+        name=data.name,
+        email=data.email,
+        type=data.type,
+        message=data.message,
+        status="pending"
+    )
+    db.add(new_feedback)
+    db.commit()
+    return {"message": "Feedback submitted successfully"}
 
 #  EVENTS 
 @app.post("/events", response_model=schemas.EventResponse, tags=["Events"])
