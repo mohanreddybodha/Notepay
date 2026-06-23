@@ -1797,15 +1797,17 @@
 
     .rot-close {
       background: var(--surf-var);
-      border: 1.5px solid var(--border2);
+      border: 1.5px solid var(--red);
       border-radius: 8px;
       padding: 6px 12px;
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
-      color: var(--text2);
+      color: var(--red);
       display: flex;
       align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
       gap: 6px;
     }
 

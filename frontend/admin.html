@@ -60,7 +60,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-header" style="flex-direction: column; align-items: flex-start; position: relative;">
       <div class="logo" style="display:flex; align-items:center; gap:8px;">
-        <img src="favicon.svg" style="width:28px; height:28px; object-fit:contain; border-radius:4px; background-color: white; padding: 2px;"/>
+        <img src="favicon.png" style="width:28px; height:28px; object-fit:contain; border-radius:4px; background-color: white; padding: 2px;"/>
         <div style="font-size:20px; font-weight:900;">NotePay</div>
       </div>
       <div id="sidebar-admin-name" style="font-size:11px; color:var(--admin-sidebar-text); margin-top:6px; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-left:36px;">Loading...</div>
@@ -73,7 +73,6 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <li onclick="switchTab('events', this)"><span data-np-icon="calendar" data-np-size="18"></span> Events</li>
       <li onclick="switchTab('errors', this)"><span data-np-icon="alert-triangle" data-np-size="18"></span> Error Logs</li>
       <li onclick="switchTab('audit', this)"><span data-np-icon="clock" data-np-size="18"></span> Audit Logs</li>
-      <li onclick="switchTab('feedback', this)"><span data-np-icon="message-square" data-np-size="18"></span> Feedback</li>
     </ul>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="logout()">Logout</button>
@@ -142,11 +141,6 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
             <div class="stat-title">System Errors</div>
             <div class="stat-value" id="stat-errors-today">-</div>
             <div class="stat-sub">Logged in last 24h (Click to view)</div>
-          </div>
-          <div class="stat-card clickable" style="border-left:4px solid var(--primary);" onclick="switchTab('feedback', document.querySelector('.nav-links li:nth-child(7)'))">
-            <div class="stat-title">Pending Feedback</div>
-            <div class="stat-value" id="stat-feedback">-</div>
-            <div class="stat-sub">Needs your attention (Click to view)</div>
           </div>
         </div>
       </section>
@@ -233,32 +227,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         </div>
       </section>
 
-      <!-- FEEDBACK TAB -->
-      <section id="tab-feedback" class="tab-pane">
-        <div class="table-toolbar" style="display:flex; width:100%; gap:10px;">
-          <select id="feedback-filter" onchange="loadFeedback()" style="padding:8px; border-radius:4px; flex:1;">
-            <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="resolved">Resolved</option>
-          </select>
-          <button class="btn-outline" style="width:auto; padding-left:20px; padding-right:20px;" onclick="loadFeedback()">Refresh</button>
-        </div>
-        <div class="table-responsive">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>User</th>
-                <th>Type</th>
-                <th>Message</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="feedback-tbody"></tbody>
-          </table>
-        </div>
-      </section>
+
 
     </div>
   </main>
