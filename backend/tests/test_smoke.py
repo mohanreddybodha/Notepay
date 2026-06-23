@@ -62,9 +62,10 @@ def client(setup_db):
 
 @pytest.fixture
 def auth_client(setup_db):
-    from main import get_current_user_id
+    from main import get_current_user_id, get_optional_current_user_id
     main.app.dependency_overrides[get_db] = override_get_db
     main.app.dependency_overrides[get_current_user_id] = lambda: 1
+    main.app.dependency_overrides[get_optional_current_user_id] = lambda: 1
     with TestClient(main.app, raise_server_exceptions=False) as c:
         yield c
     main.app.dependency_overrides.clear()
@@ -153,6 +154,28 @@ def test_join_event_missing_code(auth_client):
 
 
 def test_feedback_requires_auth(client):
-    """Submitting feedback without auth must be rejected."""
+    """Submitting feedback without auth or guest details must be rejected."""
     res = client.post("/feedback", json={"type": "bug", "message": "test bug"})
     assert res.status_code in (401, 403)
+
+
+def test_feedback_guest_submission(client):
+    """Guest submitting feedback with name/email must succeed."""
+    res = client.post("/feedback", json={
+        "type": "general",
+        "message": "hello guest feedback",
+        "name": "John Doe",
+        "email": "john@example.com"
+    })
+    assert res.status_code == 200
+    assert res.json() == {"message": "Feedback submitted successfully"}
+
+
+def test_feedback_auth_submission(auth_client):
+    """Authenticated user submitting feedback must succeed."""
+    res = auth_client.post("/feedback", json={
+        "type": "bug",
+        "message": "hello auth feedback"
+    })
+    assert res.status_code == 200
+    assert res.json() == {"message": "Feedback submitted successfully"}

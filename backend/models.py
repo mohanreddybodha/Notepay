@@ -168,6 +168,8 @@ class Feedback(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    name = Column(String, nullable=True)
+    email = Column(String, nullable=True)
     type = Column(String)
     message = Column(String)
     status = Column(String, default="pending")

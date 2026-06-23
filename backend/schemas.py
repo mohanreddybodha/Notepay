@@ -185,6 +185,9 @@ class EventUpdate(BaseModel):
     upi_id: Optional[str] = None
     upi_owner_name: Optional[str] = None
     upi_verified_at: Optional[datetime] = None
+    # Rename mapping: {"old_name": "new_name"} — used when renaming custom columns
+    # so that existing data is migrated instead of deleted
+    column_renames: Optional[Dict[str, str]] = None
 
 class DonationUpdate(BaseModel):
     donor_name: Optional[str] = None
@@ -314,11 +317,15 @@ class AdminUserResponse(UserResponse):
 class FeedbackCreate(BaseModel):
     type: str
     message: str
+    name: Optional[str] = None
+    email: Optional[str] = None
 
 class AdminFeedbackResponse(BaseModel):
     id: int
     user_id: Optional[int] = None
     user_name: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[str] = None
     type: str
     message: str
     status: str

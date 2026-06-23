@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
+  let cleanPath = window.location.pathname.replace(/\.html$/, '');
+  if (cleanPath === '/index') cleanPath = '/';
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Notepay - Collaborative Event Donation & Expense Tracker</title>
@@ -17,7 +24,7 @@
   <!-- Firebase SDK and Auth Redirect check -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="js/firebase-config.js?v=4"></script>
+  <script src="js/firebase-config.js?v=26"></script>
   <script>
     (async () => {
       if (localStorage.getItem("np_my_id")) {

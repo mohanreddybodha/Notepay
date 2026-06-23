@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
+  let cleanPath = window.location.pathname.replace(/\.html$/, '');
+  if (cleanPath === '/index') cleanPath = '/';
+  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+}
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Contact Us — Notepay</title>
@@ -271,6 +278,12 @@
   </style>
 </head>
 <body>
+  <!-- SPLASH SCREEN -->
+  <div id="app-splash">
+    <div class="splash-logo-box">
+      <img src="favicon.svg" alt="Notepay Logo" />
+    </div>
+  </div>
 
   <div class="bg-grid"></div>
   <div class="bg-glow"></div>
@@ -299,44 +312,86 @@
       <form id="contact-form" onsubmit="handleContactSubmit(event)">
         <div class="form-group">
           <label class="form-label">Full Name</label>
-          <input type="text" class="form-input" required placeholder="John Doe">
+          <input type="text" id="contact-name" class="form-input" required placeholder="John Doe">
         </div>
         <div class="form-group">
           <label class="form-label">Email Address</label>
-          <input type="email" class="form-input" required placeholder="john@example.com">
+          <input type="email" id="contact-email" class="form-input" required placeholder="john@example.com">
         </div>
         <div class="form-group">
           <label class="form-label">Message</label>
-          <textarea class="form-textarea" required placeholder="How can we help you?"></textarea>
+          <textarea id="contact-message" class="form-textarea" required placeholder="How can we help you?"></textarea>
         </div>
-        <button type="submit" class="submit-btn">Send Message</button>
+        <button type="submit" id="submit-btn" class="submit-btn">Send Message</button>
       </form>
-
-      <div class="contact-info">
-        <div class="info-item">
-          <div class="info-lbl">Email Support</div>
-          <a href="mailto:support@notepay.in" class="info-val">support@notepay.in</a>
-        </div>
-        <div class="info-item">
-          <div class="info-lbl">Office Address</div>
-          <div class="info-val" style="color:var(--text-muted)">Hyderabad, Telangana, India</div>
-        </div>
-      </div>
     </div>
   </div>
 
   <!-- Footer -->
   <footer>
-    <p>&copy; 2026 Notepay. All rights reserved.</p>
+    <p>&copy; 2026 Notepay.</p>
   </footer>
 
   <script>
-    function handleContactSubmit(e) {
+    async function handleContactSubmit(e) {
       e.preventDefault();
-      document.getElementById('contact-form').style.display = 'none';
-      document.getElementById('success-message').style.display = 'block';
+      
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const message = document.getElementById('contact-message').value.trim();
+      const btn = document.getElementById('submit-btn');
+      
+      const originalText = btn.innerText;
+      btn.innerText = "Sending...";
+      btn.disabled = true;
+      
+      // Determine API address based on environment (aligned with api.js)
+      let API_BASE = "";
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.match(/^[0-9.]+$/)) {
+        API_BASE = `http://${hostname}:8000`;
+      } else {
+        API_BASE = "API_PLACEHOLDER".replace(/\/$/, "");
+      }
+      
+      try {
+        const response = await fetch(API_BASE + "/feedback", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            type: "general",
+            message: message
+          })
+        });
+        
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || "Failed to submit feedback");
+        }
+        
+        document.getElementById('contact-form').style.display = 'none';
+        document.getElementById('success-message').style.display = 'block';
+      } catch (err) {
+        alert(err.message || "Something went wrong. Please try again.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
     }
   </script>
 
+  <script>
+    window.addEventListener("load", () => {
+        const splash = document.getElementById("app-splash");
+        if (splash) {
+            splash.classList.add("hidden");
+            setTimeout(() => splash.style.display = "none", 400);
+        }
+    });
+  </script>
 </body>
 </html>
+

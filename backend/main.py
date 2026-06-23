@@ -27,8 +27,28 @@ except ImportError:
     cache = None
 from database import engine, get_db
 from limiter import verify_rate_limit, check_rate_limit
-
 models.Base.metadata.create_all(bind=engine)
+
+def run_migrations():
+    from sqlalchemy import inspect, text
+    inspector = inspect(engine)
+    if "feedback" in inspector.get_table_names():
+        columns = [col["name"] for col in inspector.get_columns("feedback")]
+        with engine.begin() as conn:
+            if "name" not in columns:
+                try:
+                    conn.execute(text("ALTER TABLE feedback ADD COLUMN name VARCHAR"))
+                    print("Added column 'name' to 'feedback' table.")
+                except Exception as e:
+                    print("Error adding 'name' column:", e)
+            if "email" not in columns:
+                try:
+                    conn.execute(text("ALTER TABLE feedback ADD COLUMN email VARCHAR"))
+                    print("Added column 'email' to 'feedback' table.")
+                except Exception as e:
+                    print("Error adding 'email' column:", e)
+
+run_migrations()
 
 app = FastAPI(
     title="NotePay API",
@@ -201,10 +221,38 @@ async def get_current_user_id(
         raise HTTPException(status_code=403, detail=f"Your account has been banned. Reason: {user.ban_reason or 'No reason provided.'}")
         
     return user.id
-
-# Optional user id dependency removed to enforce strict auth.
-
-
+async def get_optional_current_user_id(
+    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials = Depends(_bearer)
+) -> Optional[int]:
+    if not credentials:
+        return None
+    try:
+        decoded = await auth.verify_token(credentials)
+        uid = decoded["uid"]
+        phone = decoded.get("phone_number")
+        
+        user = crud.get_user_by_firebase_uid(db, uid)
+        if not user:
+            if phone:
+                user = crud.get_user_by_phone(db, phone)
+                if user:
+                    user = crud.update_user_firebase_uid(db, user, uid)
+                else:
+                    return None
+            else:
+                return None
+                
+        if getattr(user, 'is_banned', False):
+            raise HTTPException(status_code=403, detail=f"Your account has been banned. Reason: {user.ban_reason or 'No reason provided.'}")
+            
+        return user.id
+    except HTTPException as he:
+        if he.status_code == 403:
+            raise he
+        return None
+    except Exception:
+        return None
 def verify_membership(db: Session, event_id: str, user_id: int,
                       require_organizer: bool = False,
                       require_unrestricted: bool = False,
@@ -259,7 +307,7 @@ async def logout_user(
         import hashlib
         token_hash = hashlib.sha1(credentials.credentials.encode()).hexdigest()
         cache_key = f"auth:{token_hash}"
-        cache.cache.delete(cache_key)
+        cache.delete(cache_key)
     return {"message": "Logged out successfully"}
 
 
@@ -336,11 +384,19 @@ async def update_my_profile(data: schemas.UserUpdate, db: Session = Depends(get_
 
 
 @app.post("/feedback", response_model=dict, tags=["Profile"])
-async def submit_feedback(data: schemas.FeedbackCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+async def submit_feedback(data: schemas.FeedbackCreate, db: Session = Depends(get_db), user_id: Optional[int] = Depends(get_optional_current_user_id)):
     """Submit a bug report, feature request, or security issue."""
-    verify_rate_limit(f"user:{user_id}:feedback", limit=3, window=3600)
+    if user_id is None:
+        if not data.name or not data.email:
+            raise HTTPException(status_code=401, detail="Authentication required or guest details (name/email) must be provided")
+        verify_rate_limit(f"guest:{data.email}:feedback", limit=3, window=3600)
+    else:
+        verify_rate_limit(f"user:{user_id}:feedback", limit=3, window=3600)
+
     new_feedback = models.Feedback(
         user_id=user_id,
+        name=data.name,
+        email=data.email,
         type=data.type,
         message=data.message,
         status="pending"

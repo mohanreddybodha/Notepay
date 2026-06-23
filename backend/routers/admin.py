@@ -28,15 +28,53 @@ def log_admin_action(db: Session, admin_id: int, action: str, target_type: str, 
     db.add(log)
     db.commit()
 
+from fastapi import Request
+import os
+
 @router.post("/login", response_model=schemas.AdminToken)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login_for_access_token(
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    ip = request.client.host if request.client else "unknown"
+    is_prod = os.getenv("ENVIRONMENT") == "production"
+    
+    # Check if IP is blocked in production
+    if is_prod:
+        from cache import cache
+        if cache and cache.get(f"admin_block:{ip}"):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many incorrect login attempts. Please try again after 5 hours."
+            )
+
     admin = db.query(models.AdminUser).filter(models.AdminUser.email == form_data.username).first()
+    
     if not admin or not verify_password(form_data.password, admin.password_hash):
+        if is_prod and cache:
+            failures = cache.get(f"admin_fail:{ip}") or 0
+            failures += 1
+            if failures >= 3:
+                cache.set(f"admin_block:{ip}", "1", expire=5 * 3600)  # Block for 5 hours
+                cache.delete(f"admin_fail:{ip}")
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="Too many incorrect login attempts. Please try again after 5 hours."
+                )
+            else:
+                cache.set(f"admin_fail:{ip}", failures, expire=3600)  # Reset attempts after 1 hour
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+        
+    # Success login - clear failures
+    if is_prod and cache:
+        cache.delete(f"admin_fail:{ip}")
+
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": admin.email, "role": admin.role}, expires_delta=access_token_expires
@@ -249,7 +287,7 @@ def get_feedback(limit: int = 50, status: str = None, db: Session = Depends(get_
     res = []
     for fb, user_name in feedback_items:
         fb_dict = {c.name: getattr(fb, c.name) for c in fb.__table__.columns}
-        fb_dict["user_name"] = user_name or "Unknown User"
+        fb_dict["user_name"] = user_name or fb.name or "Guest"
         res.append(fb_dict)
     return res
 

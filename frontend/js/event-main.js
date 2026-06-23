@@ -3377,6 +3377,11 @@
 
       try {
         const data = {}; data[key] = updated;
+        // Send rename mapping so backend migrates existing data keys
+        if (editingColName !== newName) {
+          data.column_renames = {};
+          data.column_renames[editingColName] = newName;
+        }
         const res = await updateEvent(eventId, data);
         eventData[key] = res[key];
         clearEventCache();

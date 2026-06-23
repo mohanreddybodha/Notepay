@@ -31,9 +31,10 @@ const auth = firebase.auth();
 
 // ── Clean URL routing helper (localhost compatibility) ──
 function getCleanUrl(url) {
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
-  if (isLocal) return url;
-  return url.replace(/\.html(\?|#|$)/, '$1');
+  // We no longer strip .html during JS navigation.
+  // This ensures navigation works on all environments (S3 direct, local networks).
+  // The .html is still hidden from the address bar by the replaceState script in each page's <head>.
+  return url;
 }
 
 // ── Get a fresh Firebase ID token (cached for 50 min to avoid repeated calls) ──
@@ -77,13 +78,30 @@ function waitForAuthReady() {
       resolve(null);
     }, 15000); // 15s — handles slow cold-start DB auth
 
+    let nullWaitTimer = null;
+
     const unsub = auth.onAuthStateChanged(user => {
-      clearTimeout(timer);
-      unsub();
-      _authHasSettled = true;
-      resolve(user);
+      if (user) {
+        clearTimeout(timer);
+        if (nullWaitTimer) clearTimeout(nullWaitTimer);
+        unsub();
+        _authHasSettled = true;
+        resolve(user);
+      } else {
+        // Firebase occasionally fires null briefly before loading IndexedDB session.
+        // Wait 1.5s to see if a valid user object arrives before resolving null.
+        if (!nullWaitTimer) {
+          nullWaitTimer = setTimeout(() => {
+            clearTimeout(timer);
+            unsub();
+            _authHasSettled = true;
+            resolve(null);
+          }, 1500);
+        }
+      }
     }, err => {
       clearTimeout(timer);
+      if (nullWaitTimer) clearTimeout(nullWaitTimer);
       console.error("Firebase Auth Error:", err);
       _authHasSettled = true;
       resolve(null);

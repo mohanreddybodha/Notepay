@@ -265,14 +265,18 @@ a {
 .logo-row { display: flex; align-items: center; gap: 9px; }
 .logo-box {
   width: 34px; height: 34px;
-  background: #FFFFFF;
-  padding: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
   border-radius: 10px;
+  overflow: hidden;
   display: flex; align-items: center; justify-content: center;
 }
-.logo-box svg { width: 20px; height: 20px; }
+.logo-box img,
+.logo-box svg {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
 .logo-text {
   font-family: 'Nunito', sans-serif;
   font-size: 19px;
@@ -696,11 +700,12 @@ body.dark-mode .btn-solid-primary { box-shadow: 0 4px 12px rgba(96, 165, 250, 0.
 .logo-row { display: flex; align-items: center; gap: 9px; }
 .logo-box {
   width: 34px; height: 34px;
-  background: rgba(255,255,255,0.15);
+  background: transparent;
   border-radius: 10px;
+  overflow: hidden;
   display: flex; align-items: center; justify-content: center;
 }
-.logo-box svg { width: 20px; height: 20px; }
+.logo-box img, .logo-box svg { width: 100%; height: 100%; object-fit: cover; }
 .logo-text {
   font-family: 'Nunito', sans-serif;
   font-size: 19px;
@@ -716,18 +721,6 @@ body.dark-mode .btn-solid-primary { box-shadow: 0 4px 12px rgba(96, 165, 250, 0.
     color: var(--color-danger, #e74c3c);
 }
 
-/* --- APP SPLASH SCREEN --- */
-#app-splash {
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100dvh;
-  background: var(--surface);
-  z-index: 999999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.15s;
-}
 /* ── OTP BOXES ── */
 .otp-row { display: flex; gap: 8px; margin: 14px 0 12px; }
 .otp-box {
@@ -913,30 +906,33 @@ body.dark-mode .btn-solid-primary { box-shadow: 0 4px 12px rgba(96, 165, 250, 0.
   visibility: hidden;
   pointer-events: none;
 }
-@keyframes pulse-splash {
-  0% { transform: scale(0.95); opacity: 0.85; }
-  50% { transform: scale(1.05); opacity: 1; box-shadow: 0 12px 36px rgba(26, 78, 140, 0.3); }
-  100% { transform: scale(0.95); opacity: 0.85; }
-}
 .splash-logo-box {
-  width: 80px;
-  height: 80px;
+  width: 54px;
+  height: 54px;
   background: #FFFFFF;
-  border-radius: 22px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-  animation: pulse-splash 1.8s infinite ease-in-out;
-  margin-bottom: 20px;
-  border: 1px solid rgba(0,0,0,0.06);
-  transition: background 0.3s, box-shadow 0.3s;
+  padding: 0;
+  box-shadow: 0 0 0 4px rgba(26, 78, 140, 0.4), 0 0 0 8px rgba(26, 78, 140, 0.2), 0 0 0 12px rgba(26, 78, 140, 0.1);
+  animation: splash-pulse 1.8s infinite alternate ease-in-out;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
 }
 body.dark-mode .splash-logo-box {
   background: #FFFFFF;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 0 8px rgba(255, 255, 255, 0.15), 0 0 0 12px rgba(255, 255, 255, 0.05);
+  animation: splash-pulse-dark 1.8s infinite alternate ease-in-out;
+}
+@keyframes splash-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(26, 78, 140, 0.4), 0 0 0 4px rgba(26, 78, 140, 0.25), 0 0 0 8px rgba(26, 78, 140, 0.1); }
+  100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(26, 78, 140, 0), 0 0 0 16px rgba(26, 78, 140, 0), 0 0 0 24px rgba(26, 78, 140, 0); }
+}
+@keyframes splash-pulse-dark {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.2), 0 0 0 8px rgba(255, 255, 255, 0.1); }
+  100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0), 0 0 0 16px rgba(255, 255, 255, 0), 0 0 0 24px rgba(255, 255, 255, 0); }
 }
 .splash-logo-box img,
 .splash-logo-box svg {
@@ -957,15 +953,6 @@ body.dark-mode .splash-logo-box {
   color: var(--text3);
   font-weight: 600;
 }
-@keyframes splash-pulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(26, 78, 140, 0.25); }
-  100% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(26, 78, 140, 0); }
-}
-@keyframes splash-pulse-dark {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.15); }
-  100% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
-}
-
 .loader {
   width: 28px;
   height: 28px;
@@ -979,16 +966,15 @@ body.dark-mode .splash-logo-box {
 }
 
 body.dark-mode .logo-box {
-  background: #FFFFFF;
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 .logo-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: inherit;
-  transition: filter 0.3s;
 }
 
 #upi-donor-req-cols-list {

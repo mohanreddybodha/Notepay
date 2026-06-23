@@ -309,6 +309,10 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
     if data.name is not None: event.name = data.name
     if data.description is not None: event.description = data.description
     if data.event_date is not None: event.event_date = data.event_date
+
+    # Extract rename mapping (if provided)
+    renames = data.column_renames or {}
+
     if data.donation_custom_columns is not None:
         old_cols = event.donation_custom_columns or []
         import json as _json
@@ -332,7 +336,24 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
             elif isinstance(c, dict) and "n" in c:
                 new_names.add(c["n"])
 
-        deleted_names = old_names - new_names
+        # Apply renames first: migrate data keys in existing donation records
+        donation_renames = {old: new for old, new in renames.items() if old in old_names and new in new_names}
+        if donation_renames:
+            donations = db.query(models.Donation).filter(models.Donation.event_id == event_id).all()
+            for d in donations:
+                if d.custom_fields and isinstance(d.custom_fields, dict):
+                    modified = False
+                    for old_key, new_key in donation_renames.items():
+                        if old_key in d.custom_fields:
+                            d.custom_fields[new_key] = d.custom_fields.pop(old_key)
+                            modified = True
+                    if modified:
+                        from sqlalchemy.orm.attributes import flag_modified
+                        flag_modified(d, "custom_fields")
+
+        # Now compute truly deleted columns (excluding renames)
+        renamed_old_names = set(donation_renames.keys())
+        deleted_names = old_names - new_names - renamed_old_names
         if deleted_names:
             donations = db.query(models.Donation).filter(models.Donation.event_id == event_id).all()
             for d in donations:
@@ -371,7 +392,24 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
             elif isinstance(c, dict) and "n" in c:
                 new_names.add(c["n"])
 
-        deleted_names = old_names - new_names
+        # Apply renames first: migrate data keys in existing expense records
+        expense_renames = {old: new for old, new in renames.items() if old in old_names and new in new_names}
+        if expense_renames:
+            expenses = db.query(models.Expense).filter(models.Expense.event_id == event_id).all()
+            for e in expenses:
+                if e.custom_fields and isinstance(e.custom_fields, dict):
+                    modified = False
+                    for old_key, new_key in expense_renames.items():
+                        if old_key in e.custom_fields:
+                            e.custom_fields[new_key] = e.custom_fields.pop(old_key)
+                            modified = True
+                    if modified:
+                        from sqlalchemy.orm.attributes import flag_modified
+                        flag_modified(e, "custom_fields")
+
+        # Now compute truly deleted columns (excluding renames)
+        renamed_old_names = set(expense_renames.keys())
+        deleted_names = old_names - new_names - renamed_old_names
         if deleted_names:
             expenses = db.query(models.Expense).filter(models.Expense.event_id == event_id).all()
             for e in expenses:

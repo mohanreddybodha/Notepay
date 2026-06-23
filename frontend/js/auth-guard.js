@@ -9,5 +9,12 @@
   if (!user) {
     const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.replace(`login.html?return=${returnUrl}`);
+  } else {
+    // Hide splash screen if present, once auth state is verified
+    const splash = document.getElementById("app-splash");
+    if (splash) {
+      splash.classList.add("hidden");
+      setTimeout(() => splash.style.display = "none", 400);
+    }
   }
 })();
