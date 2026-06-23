@@ -14,6 +14,15 @@
     let expenses = [];
     let members = [];
     
+    function getCustomFieldsObj(obj) {
+      if (!obj || !obj.custom_fields) return {};
+      let cf = obj.custom_fields;
+      if (typeof cf === "string" && cf.trim()) {
+        try { cf = JSON.parse(cf); } catch(e) { cf = {}; }
+      }
+      return (typeof cf === "object" && cf !== null) ? cf : {};
+    }
+    
     // Sort & Filter state
     let currentSort = 'time_asc'; // 'time_asc', 'time_desc', 'amt_desc', 'amt_asc', 'name_asc'
     let myEntriesOnly = false;
@@ -855,16 +864,18 @@
       
       // Check raw match
       let strRaw = (donorName + ' ' + description + ' ' + amount + ' ' + collectedByName).toLowerCase();
-      if (obj.custom_fields) {
-        strRaw += ' ' + Object.values(obj.custom_fields).join(' ').toLowerCase();
+      const cfRaw = getCustomFieldsObj(obj);
+      if (Object.keys(cfRaw).length > 0) {
+        strRaw += ' ' + Object.values(cfRaw).join(' ').toLowerCase();
       }
       
       if (strRaw.includes(qNormalized)) return true;
       
       // Check stripped match (e.g. ignoring prefixes like (AI), (M), (AI-P))
       let strStripped = (donorNameStripped + ' ' + descriptionStripped + ' ' + amount + ' ' + collectedByName.toLowerCase());
-      if (obj.custom_fields) {
-        strStripped += ' ' + Object.values(obj.custom_fields).join(' ').toLowerCase();
+      const cfStripped = getCustomFieldsObj(obj);
+      if (Object.keys(cfStripped).length > 0) {
+        strStripped += ' ' + Object.values(cfStripped).join(' ').toLowerCase();
       }
       
       if (strStripped.includes(qStripped)) return true;
@@ -953,8 +964,9 @@
           const customCells = visibleCustomCols.map(col => {
             const colName = typeof col === "string" ? col : col.n;
             const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-            const val = (d.custom_fields && d.custom_fields[colName]) || "";
-            return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
+            const cf = getCustomFieldsObj(d);
+            const val = cf[colName] || "";
+            return `<div class="sc" data-col="${escHtml(colName)}" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
           }).join("");
 
           const pinned = isPinned("don", d.id || d._id);
@@ -1105,8 +1117,9 @@
           const customCells = visibleCustomCols.map(col => {
             const colName = typeof col === "string" ? col : col.n;
             const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-            const val = (e.custom_fields && e.custom_fields[colName]) || "";
-            return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
+            const cf = getCustomFieldsObj(e);
+            const val = cf[colName] || "";
+            return `<div class="sc" data-col="${escHtml(colName)}" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
           }).join("");
 
           const pinned = isPinned("exp", e.id || e._id);
@@ -1703,7 +1716,8 @@
           const customCells = visibleCustomCols.map(col => {
             const colName = typeof col === "string" ? col : col.n;
             const colWidth = typeof col === "string" ? 180 : (col.w || 180);
-            const val = (newEntry.custom_fields && newEntry.custom_fields[colName]) || "";
+            const cf = getCustomFieldsObj(newEntry);
+            const val = cf[colName] || "";
             return `<div class="sc" style="width:${colWidth}px;font-size:11px;" title="${escHtml(val)}">${escHtml(val)}</div>`;
           }).join("");
   
@@ -1820,7 +1834,8 @@
         if (colName.startsWith("_sys_")) return;
         const colWidth = typeof col === "string" ? 180 : (col.w || 180);
         const isHidden = typeof col === "object" && col.hidden;
-        const cv = (d.custom_fields && d.custom_fields[colName]) ? escHtml(d.custom_fields[colName]) : '';
+        const cf = getCustomFieldsObj(d);
+        const cv = cf[colName] ? escHtml(cf[colName]) : '';
         html += `<div class="sc" style="width:${colWidth}px; display:${isHidden ? 'none !important' : 'flex'}; align-items:center;">
           <input type="search" class="inline-input inl-custom" data-col="${escHtml(colName)}" value="${cv}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
         </div>`;
@@ -2060,6 +2075,21 @@
             amtEl.className = isDon ? 'cg' : 'cr';
             amtEl.innerHTML = updatedEntry.amount ? formatINR(updatedEntry.amount) : '₹0';
           }
+
+          // Update custom field elements in oRow in-place instantly
+          const customInputs = row.querySelectorAll('.inl-custom');
+          customInputs.forEach(inp => {
+            const colName = inp.getAttribute('data-col');
+            let newVal = inp.value.trim();
+            const colCell = oRow.querySelector(`.sc[data-col="${colName}"]`);
+            if (colCell) {
+              if (!newVal && activeTheaterTab) {
+                newVal = "-";
+              }
+              colCell.textContent = newVal;
+              colCell.setAttribute('title', newVal);
+            }
+          });
         }
         
         // 2. Remove the inline edit form row and restore the Add button
@@ -2075,6 +2105,13 @@
         // 4. Update the totals in Theater Mode locally
         summaryData = null;
         updateTheaterStats();
+
+        // Re-render the tables/theater mode to make sure all data (including custom columns) is updated instantly on the UI
+        if (activeTheaterTab) {
+          refreshTheaterTable();
+        } else {
+          if (isDon) renderDonations(); else renderExpenses();
+        }
 
         // 5. The DATA_CHANGED websocket event will handle fetching fresh data automatically.
 
@@ -3400,8 +3437,9 @@
         const customCells = visibleCustomCols.map(c => {
           const n = typeof c === "string" ? c : c.n;
           const w = (typeof c === "string" ? 180 : c.w);
-          const val = (entry.custom_fields && entry.custom_fields[n]) || "-";
-          return `<div class="sc" style="width:${w}px;">${escHtml(val)}</div>`;
+          const cf = getCustomFieldsObj(entry);
+          const val = cf[n] || "-";
+          return `<div class="sc" data-col="${escHtml(n)}" style="width:${w}px;">${escHtml(val)}</div>`;
         }).join("");
 
         let receiptHtml = entry.receipt_key ? `<span style="margin-left:auto; color:var(--primary); cursor:pointer; display:flex; align-items:center;" onclick="openReceiptModal('${entry.id || entry._id}', event, '${type}')">${npIcon("file-text", {size: 14})}</span>` : '';
@@ -3910,7 +3948,8 @@
         const row = [d.donor_name.toUpperCase(), formatPDF_Amt(d.amount)];
         if (!hideDonDate) row.push(formatDate(d.collected_at).toUpperCase());
         if (!hideDonColBy) row.push((d.collected_by_name || '-').toUpperCase());
-        visibleDonCols.forEach(c => row.push((d.custom_fields ? (d.custom_fields[typeof c === 'string' ? c : c.n] || '-') : '-').toUpperCase()));
+        const cf = getCustomFieldsObj(d);
+        visibleDonCols.forEach(c => row.push((cf[typeof c === 'string' ? c : c.n] || '-').toUpperCase()));
         return row;
       });
 
@@ -3970,7 +4009,8 @@
         const row = [e.description.toUpperCase(), formatPDF_Amt(e.amount)];
         if (!hideExpDate) row.push(formatDate(e.collected_at).toUpperCase());
         if (!hideExpAddBy) row.push((e.collected_by_name || '-').toUpperCase());
-        visibleExpCols.forEach(c => row.push((e.custom_fields ? (e.custom_fields[typeof c === 'string' ? c : c.n] || '-') : '-').toUpperCase()));
+        const cf = getCustomFieldsObj(e);
+        visibleExpCols.forEach(c => row.push((cf[typeof c === 'string' ? c : c.n] || '-').toUpperCase()));
         return row;
       });
 

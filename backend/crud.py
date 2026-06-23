@@ -413,6 +413,20 @@ def delete_event(db: Session, event_id: str):
     cache.cache.bump_global_version()
     return True
 
+def fix_custom_fields_dict(obj_dict):
+    if not obj_dict:
+        return obj_dict
+    import json
+    cf = obj_dict.get("custom_fields")
+    if isinstance(cf, str) and cf.strip():
+        try:
+            obj_dict["custom_fields"] = json.loads(cf)
+        except:
+            obj_dict["custom_fields"] = {}
+    elif cf is None:
+        obj_dict["custom_fields"] = {}
+    return obj_dict
+
 def get_donation(db: Session, donation_id: int):
     res = db.query(models.Donation, models.User.full_name).join(
         models.User, models.Donation.collected_by == models.User.id
@@ -421,7 +435,7 @@ def get_donation(db: Session, donation_id: int):
     d, name = res
     d_dict = {c.name: getattr(d, c.name) for c in d.__table__.columns}
     d_dict["collected_by_name"] = name
-    return d_dict
+    return fix_custom_fields_dict(d_dict)
 
 def update_donation(db: Session, donation_id: int, data: schemas.DonationUpdate):
     donation = db.query(models.Donation).filter(models.Donation.id == donation_id).first()
@@ -454,7 +468,7 @@ def get_expense(db: Session, expense_id: int):
     e, name = res
     e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
     e_dict["collected_by_name"] = name
-    return e_dict
+    return fix_custom_fields_dict(e_dict)
 
 def update_expense(db: Session, expense_id: int, data: schemas.ExpenseUpdate):
     expense = db.query(models.Expense).filter(models.Expense.id == expense_id).first()
@@ -644,7 +658,7 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     for d, name in don_results:
         d_dict = {c.name: getattr(d, c.name) for c in d.__table__.columns}
         d_dict["collected_by_name"] = name
-        donations.append(d_dict)
+        donations.append(fix_custom_fields_dict(d_dict))
 
     # Query 3: All expenses + user names (single JOIN)
     exp_results = db.query(models.Expense, models.User.full_name).join(
@@ -655,7 +669,7 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     for e, name in exp_results:
         e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
         e_dict["collected_by_name"] = name
-        expenses.append(e_dict)
+        expenses.append(fix_custom_fields_dict(e_dict))
 
     # === COMPUTE SUMMARY IN PYTHON (0 extra queries!) ===
     total_donations = sum(d.get("amount") or 0 for d in donations)

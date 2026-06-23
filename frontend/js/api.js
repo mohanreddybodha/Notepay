@@ -87,6 +87,11 @@ async function apiFetch(method, path, body = null) {
       "Authorization": `Bearer ${token}`
     }
   };
+  if (method === "GET") {
+    opts.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+    opts.headers["Pragma"] = "no-cache";
+    opts.headers["Expires"] = "0";
+  }
   if (body) opts.body = JSON.stringify(body);
 
   let res;
@@ -96,7 +101,12 @@ async function apiFetch(method, path, body = null) {
     const timeoutId = setTimeout(() => controller.abort(), 45000);
     opts.signal = controller.signal;
     
-    res = await fetch(`${API_BASE}${path}`, opts);
+    let url = `${API_BASE}${path}`;
+    if (method === "GET") {
+      const separator = url.includes("?") ? "&" : "?";
+      url += `${separator}_=${Date.now()}`;
+    }
+    res = await fetch(url, opts);
     clearTimeout(timeoutId);
   } catch (e) {
     if (isWrite) {
