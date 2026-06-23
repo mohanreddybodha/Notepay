@@ -688,6 +688,7 @@ async def add_donation(event_id: str, donation: schemas.DonationCreate, db: Sess
     res = crud.create_donation(db, event_id, user_id, donation)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add"})
+    await manager.broadcast_dashboard_update()
     return res
 
 @app.put("/events/{event_id}/donations/{donation_id}", response_model=schemas.DonationResponse, tags=["Donations"])
@@ -703,6 +704,7 @@ async def update_donation(event_id: str, donation_id: int, data: schemas.Donatio
     result = crud.update_donation(db, donation_id, data)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_update"})
+    await manager.broadcast_dashboard_update()
     return result
 
 @app.delete("/events/{event_id}/donations/{donation_id}", tags=["Donations"])
@@ -718,6 +720,7 @@ async def delete_donation(event_id: str, donation_id: int,
     crud.delete_donation(db, donation_id)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_delete"})
+    await manager.broadcast_dashboard_update()
     return {"message": "Donation deleted"}
 
 @app.get("/events/{event_id}/donations/{donation_id}/receipt", tags=["Donations"])
@@ -805,6 +808,7 @@ async def add_expense(event_id: str, expense: schemas.ExpenseCreate, db: Session
     res = crud.create_expense(db, event_id, user_id, expense)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_add"})
+    await manager.broadcast_dashboard_update()
     return res
 
 @app.put("/events/{event_id}/expenses/{expense_id}", response_model=schemas.ExpenseResponse, tags=["Expenses"])
@@ -820,6 +824,7 @@ async def update_expense(event_id: str, expense_id: int, data: schemas.ExpenseUp
     res = crud.update_expense(db, expense_id, data)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_update"})
+    await manager.broadcast_dashboard_update()
     return res
 
 @app.delete("/events/{event_id}/expenses/{expense_id}", tags=["Expenses"])
@@ -835,6 +840,7 @@ async def delete_expense(event_id: str, expense_id: int,
     crud.delete_expense(db, expense_id)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_delete"})
+    await manager.broadcast_dashboard_update()
     return {"message": "Expense deleted"}
 
 @app.get("/events/{event_id}/expenses/{expense_id}/receipt", tags=["Expenses"])
@@ -1730,6 +1736,7 @@ Return ONLY valid JSON:
         
         res = crud.create_donation(db, event_id, event.organizer_id, new_donation)
         await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_auto"})
+        await manager.broadcast_dashboard_update()
         
         return {
             "message": "Success",
@@ -1828,6 +1835,7 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
         )
         res = crud.create_donation(db, event_id, event.organizer_id, new_donation, is_public_entry=True)
         await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_manual"})
+        await manager.broadcast_dashboard_update()
         return {
             "message": "Success",
             "donation": res,

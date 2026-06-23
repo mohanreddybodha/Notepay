@@ -67,6 +67,7 @@ class EventResponse(EventCreate):
     total_collections: Optional[float] = 0.0
     total_expenses: Optional[float] = 0.0
     balance: Optional[float] = 0.0
+    total_to_collect: Optional[float] = 0.0
     class Config:
         from_attributes = True
 
@@ -89,6 +90,7 @@ class DonationCreate(BaseModel):
     transaction_date: Optional[datetime] = None  # Date from screenshot
     collector_name: Optional[str] = None  # Who collected (organizer name)
     receipt_key: Optional[str] = None
+    payment_received: Optional[bool] = True
 
 class DonationResponse(DonationCreate):
     id: int
@@ -98,6 +100,7 @@ class DonationResponse(DonationCreate):
     collected_at: datetime
     version: int
     is_public_entry: bool
+    payment_received: bool = True
     class Config:
         from_attributes = True
 
@@ -171,6 +174,7 @@ class EventSummaryResponse(BaseModel):
     donations_count: int
     expenses_count: int
     recent_transactions: List[RecentTransaction] = []
+    total_to_collect: float = 0.0
 
 #  UPDATE (PUT) SCHEMAS 
 class UserUpdate(BaseModel):
@@ -199,6 +203,7 @@ class DonationUpdate(BaseModel):
     amount: Optional[float] = None
     custom_fields: Optional[Dict[str, Any]] = None
     receipt_key: Optional[str] = None
+    payment_received: Optional[bool] = None
 
 class ExpenseUpdate(BaseModel):
     description: Optional[str] = None

@@ -90,6 +90,7 @@ class Donation(Base):
     receipt_key = Column(String, nullable=True)
     version = Column(Integer, default=1)
     is_public_entry = Column(Boolean, default=False)
+    payment_received = Column(Boolean, default=True, server_default='1', nullable=False)
 
     event = relationship("Event", back_populates="donations")
     collector_user = relationship("User", back_populates="donations_collected")

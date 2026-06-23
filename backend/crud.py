@@ -87,9 +87,11 @@ def get_my_events(db: Session, user_id: int):
         e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
         e_dict["my_role"] = m.role
         e_dict["is_restricted"] = m.is_restricted
-        total_col = sum(d.amount for d in e.donations if d.amount is not None)
+        total_col = sum(d.amount for d in e.donations if d.amount is not None and d.payment_received is not False)
+        total_to_col = sum(d.amount for d in e.donations if d.amount is not None and d.payment_received is False)
         total_exp = sum(ex.amount for ex in e.expenses if ex.amount is not None)
         e_dict["total_collections"] = total_col
+        e_dict["total_to_collect"] = total_to_col
         e_dict["total_expenses"] = total_exp
         e_dict["balance"] = total_col - total_exp
         resp.append(e_dict)
@@ -107,9 +109,11 @@ def get_shared_events(db: Session, user_id: int):
         e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
         e_dict["my_role"] = m.role
         e_dict["is_restricted"] = m.is_restricted
-        total_col = sum(d.amount for d in e.donations if d.amount is not None)
+        total_col = sum(d.amount for d in e.donations if d.amount is not None and d.payment_received is not False)
+        total_to_col = sum(d.amount for d in e.donations if d.amount is not None and d.payment_received is False)
         total_exp = sum(ex.amount for ex in e.expenses if ex.amount is not None)
         e_dict["total_collections"] = total_col
+        e_dict["total_to_collect"] = total_to_col
         e_dict["total_expenses"] = total_exp
         e_dict["balance"] = total_col - total_exp
         resp.append(e_dict)
@@ -150,13 +154,15 @@ def create_donation(db: Session, event_id: str, collector_id: int, donation: sch
         collected_by=collector_id,
         custom_fields=donation.custom_fields,
         receipt_key=getattr(donation, 'receipt_key', None),
-        is_public_entry=is_public_entry
+        is_public_entry=is_public_entry,
+        payment_received=donation.payment_received if donation.payment_received is not None else True
     )
     db.add(db_donation)
     db.commit()
     db.refresh(db_donation)
     # Invalidate cache for this event
     cache.cache.invalidate_event(event_id)
+    cache.cache.bump_global_version()
     return get_donation(db, db_donation.id)
 
 def get_donations(db: Session, event_id: str):
@@ -184,6 +190,7 @@ def create_expense(db: Session, event_id: str, collector_id: int, expense: schem
     db.refresh(db_expense)
     # Invalidate cache for this event
     cache.cache.invalidate_event(event_id)
+    cache.cache.bump_global_version()
     return get_expense(db, db_expense.id)
 
 def get_expenses(db: Session, event_id: str):
@@ -257,14 +264,23 @@ def get_event_summary(db: Session, event_id: str):
     if cached_sum:
         return schemas.EventSummaryResponse(**cached_sum)
 
-    total_donations = db.query(func.sum(models.Donation.amount)).filter(models.Donation.event_id == event_id).scalar() or 0.0
+    # Only count donations where payment_received is True (or NULL treated as True)
+    total_donations = db.query(func.sum(models.Donation.amount)).filter(
+        models.Donation.event_id == event_id,
+        models.Donation.payment_received != False  # noqa: E712 — SQLAlchemy needs !=
+    ).scalar() or 0.0
+    # Pending donations (payment_received = False) → "to collect"
+    total_to_collect = db.query(func.sum(models.Donation.amount)).filter(
+        models.Donation.event_id == event_id,
+        models.Donation.payment_received == False  # noqa: E712
+    ).scalar() or 0.0
     total_expenses = db.query(func.sum(models.Expense.amount)).filter(models.Expense.event_id == event_id).scalar() or 0.0
     donations_count = db.query(func.count(models.Donation.id)).filter(models.Donation.event_id == event_id).scalar() or 0
     expenses_count = db.query(func.count(models.Expense.id)).filter(models.Expense.event_id == event_id).scalar() or 0
-    
+
     recent_don = db.query(models.Donation, models.User.full_name).join(models.User, models.Donation.collected_by == models.User.id).filter(models.Donation.event_id == event_id).order_by(models.Donation.collected_at.desc()).all()
     recent_exp = db.query(models.Expense, models.User.full_name).join(models.User, models.Expense.collected_by == models.User.id).filter(models.Expense.event_id == event_id).order_by(models.Expense.collected_at.desc()).all()
-    
+
     txns = []
     for d, creator_name in recent_don:
         txns.append(schemas.RecentTransaction(
@@ -284,16 +300,17 @@ def get_event_summary(db: Session, event_id: str):
             date=e.collected_at,
             collected_by_name=creator_name
         ))
-    
+
     txns.sort(key=lambda x: x.date, reverse=True)
-    
+
     resp = schemas.EventSummaryResponse(
         total_donations=total_donations,
         total_expenses=total_expenses,
         balance=total_donations - total_expenses,
         donations_count=donations_count,
         expenses_count=expenses_count,
-        recent_transactions=txns
+        recent_transactions=txns,
+        total_to_collect=total_to_collect
     )
 
     # Save to cache for next time
@@ -494,10 +511,12 @@ def update_donation(db: Session, donation_id: int, data: schemas.DonationUpdate)
     if data.amount is not None: donation.amount = data.amount
     if data.custom_fields is not None: donation.custom_fields = data.custom_fields
     if data.receipt_key is not None: donation.receipt_key = data.receipt_key if data.receipt_key != "" else None
+    if data.payment_received is not None: donation.payment_received = data.payment_received
     donation.version += 1
     db.commit()
     # Invalidate cache for this event
     cache.cache.invalidate_event(donation.event_id)
+    cache.cache.bump_global_version()
     return get_donation(db, donation_id)
 
 def delete_donation(db: Session, donation_id: int):
@@ -508,6 +527,7 @@ def delete_donation(db: Session, donation_id: int):
     db.commit()
     # Invalidate cache for this event
     cache.cache.invalidate_event(eid)
+    cache.cache.bump_global_version()
     return True
 
 def get_expense(db: Session, expense_id: int):
@@ -531,6 +551,7 @@ def update_expense(db: Session, expense_id: int, data: schemas.ExpenseUpdate):
     db.commit()
     # Invalidate cache for this event
     cache.cache.invalidate_event(expense.event_id)
+    cache.cache.bump_global_version()
     return get_expense(db, expense_id)
 
 def delete_expense(db: Session, expense_id: int):
@@ -541,6 +562,7 @@ def delete_expense(db: Session, expense_id: int):
     db.commit()
     # Invalidate cache for this event
     cache.cache.invalidate_event(eid)
+    cache.cache.bump_global_version()
     return True
 
 def exit_event(db: Session, event_id: str, user_id: int):
@@ -722,9 +744,11 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
         expenses.append(fix_custom_fields_dict(e_dict))
 
     # === COMPUTE SUMMARY IN PYTHON (0 extra queries!) ===
-    total_donations = sum(d.get("amount") or 0 for d in donations)
+    # Only sum donations where payment_received is True (or not explicitly False)
+    total_donations = sum(d.get("amount") or 0 for d in donations if d.get("payment_received") is not False)
+    total_to_collect = sum(d.get("amount") or 0 for d in donations if d.get("payment_received") is False)
     total_expenses = sum(e.get("amount") or 0 for e in expenses)
-    
+
     txns = []
     for d in donations:
         txns.append(schemas.RecentTransaction(
@@ -747,7 +771,8 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
         balance=total_donations - total_expenses,
         donations_count=len(donations),
         expenses_count=len(expenses),
-        recent_transactions=txns
+        recent_transactions=txns,
+        total_to_collect=total_to_collect
     )
 
     # Query 4 (lightweight): Members with eager-loaded user relationship
@@ -772,9 +797,11 @@ def fix_event_json(e):
     # If it's a SQL Alchemy object, convert to dict first
     if hasattr(e, "__table__"):
         e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
-        total_col = sum(d.amount for d in e.donations if d.amount is not None)
+        total_col = sum(d.amount for d in e.donations if d.amount is not None and d.payment_received is not False)
+        total_to_col = sum(d.amount for d in e.donations if d.amount is not None and d.payment_received is False)
         total_exp = sum(ex.amount for ex in e.expenses if ex.amount is not None)
         e_dict["total_collections"] = total_col
+        e_dict["total_to_collect"] = total_to_col
         e_dict["total_expenses"] = total_exp
         e_dict["balance"] = total_col - total_exp
     else:

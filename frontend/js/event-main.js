@@ -909,11 +909,12 @@
       });
       pinned.sort((a, b) => a.idx - b.idx);
       const sorted = [...pinned.map(p => p.item), ...unpinned];
-
       const filtered = q2 ? sorted.filter(d => searchMatch(d, q2)) : sorted;
-      const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
+      const total = donations.reduce((sum, d) => sum + (d.payment_received === false ? 0 : (parseFloat(d.amount) || 0)), 0);
+      const pending = donations.reduce((sum, d) => sum + (d.payment_received === false ? (parseFloat(d.amount) || 0) : 0), 0);
+      const pendingText = pending > 0 ? ` <span style="font-size:10px; color:var(--amber); font-weight:700;">(+${formatINR(pending)} to collect)</span>` : '';
       document.getElementById("don-count").textContent = `${filtered.length} donor${filtered.length !== 1 ? "s" : ""}`;
-      document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
+      document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>${pendingText}`;
 
       if (!tblBody) return;
       tblBody.innerHTML = "";
@@ -938,6 +939,7 @@
       if (!hideDonColBy) {
         hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>Collected By</div>`;
       }
+      hdrHTML += `<div class="th" style="width:80px;">Received</div>`;
       
       hdr.innerHTML = hdrHTML;
 
@@ -990,7 +992,8 @@
         if (!hideDonColBy) {
           rowHTML += `<div class="sc" style="width:${getColWidth('don_colby', 130)}px;font-size:11px;" title="${escHtml(d.collected_by_name || "—")}">${escHtml(d.collected_by_name || "—")}</div>`;
         }
-        
+        const rcvd = d.payment_received !== false;
+        rowHTML += `<div class="sc" style="width:80px;"><span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; background:${rcvd ? 'rgba(72,187,120,0.15)' : 'rgba(245,158,11,0.15)'}; color:${rcvd ? 'var(--green)' : 'var(--amber)'}; border:1px solid ${rcvd ? 'rgba(72,187,120,0.3)' : 'rgba(245,158,11,0.3)'}; white-space:nowrap;">${rcvd ? '✓ Yes' : '⏳ No'}</span></div>`;
         rowHTML += `${customCells}`;
         row.innerHTML = rowHTML;
           row.addEventListener("contextmenu", e => { e.preventDefault(); openCtx(e, "don", d); });
@@ -1238,7 +1241,8 @@
       const fDon = filterByDate(donations, sumDateFilter);
       const fExp = filterByDate(expenses, sumDateFilter);
 
-      const totalDonations = fDon.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
+      const totalDonations = fDon.reduce((sum, d) => sum + (d.payment_received === false ? 0 : (parseFloat(d.amount) || 0)), 0);
+      const totalToCollect = fDon.reduce((sum, d) => sum + (d.payment_received === false ? (parseFloat(d.amount) || 0) : 0), 0);
       const totalExpenses = fExp.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
       
       const recent = [...fDon.map(d => ({ ...d, type: 'donation', title: d.donor_name })), ...fExp.map(e => ({ ...e, type: 'expense', title: e.description }))]
@@ -1246,6 +1250,7 @@
 
       const dynamicSummary = {
         total_donations: totalDonations,
+        total_to_collect: totalToCollect,
         total_expenses: totalExpenses,
         balance: totalDonations - totalExpenses,
         donations_count: fDon.length,
@@ -1265,9 +1270,9 @@
       const fDon = s.fDon || donations;
       const fExp = s.fExp || expenses;
 
-      // Top Donors (Ranked)
+      // Top Donors (Ranked) — only count payment_received entries
       const donorTotals = {};
-      fDon.forEach(d => {
+      fDon.filter(d => d.payment_received !== false).forEach(d => {
         const name = d.donor_name;
         if (!donorTotals[name]) donorTotals[name] = 0;
         donorTotals[name] += (d.amount || 0);
@@ -1283,9 +1288,9 @@
 
       const spendRatio = s.total_donations > 0 ? (s.total_expenses / s.total_donations) * 100 : 0;
 
-      // Top Collectors (Ranked)
+      // Top Collectors (Ranked) — only count payment_received entries
       const collectorTotals = {};
-      fDon.forEach(d => {
+      fDon.filter(d => d.payment_received !== false).forEach(d => {
         const name = d.collected_by_name || 'System';
         if (!collectorTotals[name]) collectorTotals[name] = 0;
         collectorTotals[name] += (d.amount || 0);
@@ -1358,6 +1363,7 @@
           ${showDon ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center; position:relative; padding-bottom:18px;">
             <div style="font-size:11px; font-weight:800; color:var(--text3);">COLLECTED</div>
             <div style="font-size:16px; font-weight:900; color:var(--green);">${formatINR(s.total_donations)}</div>
+            ${s.total_to_collect > 0 ? `<div style="font-size:10px; font-weight:700; color:var(--amber); margin-top:2px;">+${formatINR(s.total_to_collect)} to collect</div>` : ''}
             <div style="position:absolute; bottom:6px; left:12px; font-size:9px; font-weight:800; color:var(--text3); opacity:0.6;">${s.donations_count} donors</div>
           </div>` : ''}
           ${showExp ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center; position:relative; padding-bottom:18px;">
@@ -1574,6 +1580,12 @@
           <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px; display:${hideColBy ? 'none !important' : 'flex'}; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">You</span>
           </div>
+          ${isDon ? `<div class="sc" style="width:80px; align-items:center; display:flex;">
+            <select class="inl-payment-received" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 4px; font-size:12px; font-weight:700; background:var(--input-bg); color:var(--text);">
+              <option value="true" selected>✓ Yes</option>
+              <option value="false">⏳ No</option>
+            </select>
+          </div>` : ''}
       `;
 
       customCols.forEach(col => {
@@ -1714,13 +1726,17 @@
       try {
         let newEntry;
         if (isDon) {
-          newEntry = await addDonation(eventId, name, amt ? parseFloat(amt) : null, customFields);
+          const prSel = row.querySelector('.inl-payment-received');
+          const paymentReceived = prSel ? prSel.value !== 'false' : true;
+          newEntry = await addDonation(eventId, name, amt ? parseFloat(amt) : null, customFields, paymentReceived);
           donations.push(newEntry);
 
           // Silent Update Totals & Counts
-          const total = donations.reduce((s, d) => s + (d.amount || 0), 0);
+          const total = donations.reduce((sum, d) => sum + (d.payment_received === false ? 0 : (parseFloat(d.amount) || 0)), 0);
+          const pending = donations.reduce((sum, d) => sum + (d.payment_received === false ? (parseFloat(d.amount) || 0) : 0), 0);
+          const pendingText = pending > 0 ? ` <span style="font-size:10px; color:var(--amber); font-weight:700;">(+${formatINR(pending)} to collect)</span>` : '';
           document.getElementById("don-count").textContent = `${donations.length} donor${donations.length !== 1 ? "s" : ""}`;
-          document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
+          document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>${pendingText}`;
         } else {
           newEntry = await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
           expenses.push(newEntry);
@@ -1768,6 +1784,10 @@
           if (!hideColBy) {
             innerHTML += `\n              <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px;font-size:11px;" title="${escHtml(newEntry.collected_by_name || "—")}">${escHtml(newEntry.collected_by_name || "—")}</div>`;
           }
+          if (isDon) {
+            const rcvd = newEntry.payment_received !== false;
+            innerHTML += `\n              <div class="sc" style="width:80px;"><span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; background:${rcvd ? 'rgba(72,187,120,0.15)' : 'rgba(245,158,11,0.15)'}; color:${rcvd ? 'var(--green)' : 'var(--amber)'}; border:1px solid ${rcvd ? 'rgba(72,187,120,0.3)' : 'rgba(245,158,11,0.3)'}; white-space:nowrap;">${rcvd ? '✓ Yes' : '⏳ No'}</span></div>`;
+          }
           
           innerHTML += `\n              ${customCells}\n            `;
           newRowDom.innerHTML = innerHTML;
@@ -1792,6 +1812,8 @@
         nameInput.value = "";
         amtInput.value = "";
         customInputs.forEach(inp => inp.value = "");
+        const prSel = row.querySelector('.inl-payment-received');
+        if (prSel) prSel.value = "true";
 
         // 3. Re-enable Save button
         btn.disabled = false;
@@ -1861,6 +1883,12 @@
           <div class="sc" style="width:${getColWidth(isDon ? 'don_colby' : 'exp_colby', 130)}px; display:${hideColBy ? 'none !important' : 'flex'}; align-items:center;">
             <span style="font-size:11px; opacity:0.5;">${escHtml(d.collected_by_name || '—')}</span>
           </div>
+          ${isDon ? `<div class="sc" style="width:80px; align-items:center; display:flex;">
+            <select class="inl-payment-received" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 4px; font-size:12px; font-weight:700; background:var(--input-bg); color:var(--text);">
+              <option value="true" ${d.payment_received !== false ? 'selected' : ''}>✓ Yes</option>
+              <option value="false" ${d.payment_received === false ? 'selected' : ''}>⏳ No</option>
+            </select>
+          </div>` : ''}
       `;
 
       customCols.forEach(col => {
@@ -2084,7 +2112,9 @@
       try {
         let updatedEntry = null;
         if (isDon) {
-          updatedEntry = await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields });
+          const prSel = row.querySelector('.inl-payment-received');
+          const paymentReceived = prSel ? prSel.value !== 'false' : true;
+          updatedEntry = await updateDonation(eventId, id, { donor_name: name, amount: amt ? parseFloat(amt) : null, custom_fields: customFields, payment_received: paymentReceived });
           const idx = donations.findIndex(d => String(d.id || d._id) === id);
           if (idx !== -1) donations[idx] = updatedEntry;
         } else {
@@ -3501,7 +3531,10 @@
         if (!hideColBy) {
           rowHTML += `<div class="sc" style="width:${getColWidth(type === "don" ? 'don_colby' : 'exp_colby', 130)}px;">${escHtml(entry.collected_by_name || "-")}</div>`;
         }
-        
+        if (type === "don") {
+          const rcvd = entry.payment_received !== false;
+          rowHTML += `<div class="sc" style="width:80px;"><span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; background:${rcvd ? 'rgba(72,187,120,0.15)' : 'rgba(245,158,11,0.15)'}; color:${rcvd ? 'var(--green)' : 'var(--amber)'}; border:1px solid ${rcvd ? 'rgba(72,187,120,0.3)' : 'rgba(245,158,11,0.3)'}; white-space:nowrap;">${rcvd ? '✓ Yes' : '⏳ No'}</span></div>`;
+        }
         rowHTML += `${customCells}`;
         tr.innerHTML = rowHTML;
         container.appendChild(tr);
@@ -3548,6 +3581,7 @@
                      <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'don_amt')\"" : ''}>AMOUNT</div>`;
         if (!hideDate) hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_date', 100)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Date', 'don_date')\"" : ''}>DATE</div>`;
         if (!hideColBy) hdrHTML += `<div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('don_colby', 130)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Collected By', 'don_colby')\"" : ''}>COLLECTED BY</div>`;
+        hdrHTML += `<div class="th" style="width:80px;">RECEIVED</div>`;
       } else {
         hdrHTML = `<div class="th sticky-col" style="display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth('exp_desc', 140)}px;"><div style="width:14px; margin-right:4px; flex-shrink:0;"></div><div class="${isOrganizer ? 'sth-custom' : ''}" style="flex:1; text-align:left;" ${isOrganizer ? "onclick=\"openDefaultColW('Description', 'exp_desc')\"" : ''}>DESCRIPTION</div></div>
                      <div class="th ${isOrganizer ? 'sth-custom' : ''}" style="width:${getColWidth('exp_amt', 90)}px;" ${isOrganizer ? "onclick=\"openDefaultColW('Amount', 'exp_amt')\"" : ''}>AMOUNT</div>`;
@@ -3595,15 +3629,26 @@
       const tab = activeTheaterTab;
       const list = tab === "don" ? donations : expenses;
       const count = list.length;
-      const total = list.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+      let total = 0;
+      let infoHtml = "";
       const colorClass = tab === "don" ? "sum-g" : (tab === "exp" ? "sum-r" : "");
       const unit = tab === "don" ? "names" : (tab === "exp" ? "expenses" : "overview");
+
+      if (tab === "don") {
+        total = list.reduce((sum, item) => sum + (item.payment_received === false ? 0 : (parseFloat(item.amount) || 0)), 0);
+        const pending = list.reduce((sum, item) => sum + (item.payment_received === false ? (parseFloat(item.amount) || 0) : 0), 0);
+        const pendingText = pending > 0 ? ` (+₹${pending.toLocaleString()})` : '';
+        infoHtml = `<b>${count}</b> ${unit} | Total: <b class="${colorClass}">₹${total.toLocaleString()}</b>${pendingText}`;
+      } else {
+        total = list.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        infoHtml = `<b>${count}</b> ${unit} | Total: <b class="${colorClass}">₹${total.toLocaleString()}</b>`;
+      }
 
       document.getElementById("rot-stat-name").textContent = eventData ? eventData.name : "Notepay";
       if (tab === "sum") {
         document.getElementById("rot-stat-info").innerHTML = `<b>Financial Dashboard</b>`;
       } else {
-        document.getElementById("rot-stat-info").innerHTML = `<b>${count}</b> ${unit} | Total: <b class="${colorClass}">₹${total.toLocaleString()}</b>`;
+        document.getElementById("rot-stat-info").innerHTML = infoHtml;
       }
 
       const roleEl = document.getElementById("rot-stat-role");
@@ -3942,7 +3987,8 @@
       doc.text(`REPORT ISSUED: ${new Date().toLocaleString().toUpperCase()}`, pageWidth - 15, 51, { align: "right" });
 
       // --- FINANCIAL SUMMARY BOX ---
-      const totalDon = donations.reduce((s, d) => s + (d.amount || 0), 0);
+      const totalDon = donations.reduce((s, d) => s + (d.payment_received === false ? 0 : (d.amount || 0)), 0);
+      const totalToCollect = donations.reduce((s, d) => s + (d.payment_received === false ? (d.amount || 0) : 0), 0);
       const totalExp = expenses.reduce((s, e) => s + (e.amount || 0), 0);
       const balance = totalDon - totalExp;
 
@@ -3960,6 +4006,13 @@
       doc.setFontSize(14);
       doc.setTextColor(GREEN[0], GREEN[1], GREEN[2]);
       doc.text(formatPDF_Amt(totalDon), 25, 85);
+      if (totalToCollect > 0) {
+        doc.setFontSize(8);
+        doc.setTextColor(217, 119, 6);
+        doc.text(`+${formatPDF_Amt(totalToCollect)} TO COLLECT`, 25, 90);
+      }
+
+      doc.setFontSize(14);
       doc.setTextColor(RED[0], RED[1], RED[2]);
       doc.text(formatPDF_Amt(totalExp), pageWidth / 2, 85, { align: "center" });
 
@@ -3981,12 +4034,14 @@
       const donHead = ['NAME', 'AMOUNT (RS.)'];
       if (!hideDonDate) donHead.push('DATE');
       if (!hideDonColBy) donHead.push('COLLECTED BY');
+      donHead.push('RECEIVED');
       visibleDonCols.forEach(c => donHead.push((typeof c === 'string' ? c : c.n).toUpperCase()));
       
       const donBody = donations.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at)).map(d => {
         const row = [d.donor_name.toUpperCase(), formatPDF_Amt(d.amount)];
         if (!hideDonDate) row.push(formatDate(d.collected_at).toUpperCase());
         if (!hideDonColBy) row.push((d.collected_by_name || '-').toUpperCase());
+        row.push(d.payment_received === false ? 'NO' : 'YES');
         const cf = getCustomFieldsObj(d);
         visibleDonCols.forEach(c => row.push((cf[typeof c === 'string' ? c : c.n] || '-').toUpperCase()));
         return row;

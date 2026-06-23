@@ -393,8 +393,8 @@ async function getDonations(eventId) {
 }
 
 /** Add a new donation row */
-async function addDonation(eventId, donorName, amount = null, customFields = null) {
-  const body = { donor_name: donorName };
+async function addDonation(eventId, donorName, amount = null, customFields = null, paymentReceived = true) {
+  const body = { donor_name: donorName, payment_received: paymentReceived };
   if (amount !== null && amount !== "") body.amount = parseFloat(amount);
   if (customFields) body.custom_fields = customFields;
   return apiFetch("POST", `/events/${eventId}/donations`, body);
