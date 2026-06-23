@@ -911,10 +911,8 @@
       const sorted = [...pinned.map(p => p.item), ...unpinned];
       const filtered = q2 ? sorted.filter(d => searchMatch(d, q2)) : sorted;
       const total = donations.reduce((sum, d) => sum + (d.payment_received === false ? 0 : (parseFloat(d.amount) || 0)), 0);
-      const pending = donations.reduce((sum, d) => sum + (d.payment_received === false ? (parseFloat(d.amount) || 0) : 0), 0);
-      const pendingText = pending > 0 ? ` <span style="font-size:10px; color:var(--amber); font-weight:700;">(+${formatINR(pending)} to collect)</span>` : '';
       document.getElementById("don-count").textContent = `${filtered.length} donor${filtered.length !== 1 ? "s" : ""}`;
-      document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>${pendingText}`;
+      document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
 
       if (!tblBody) return;
       tblBody.innerHTML = "";
@@ -1733,10 +1731,8 @@
 
           // Silent Update Totals & Counts
           const total = donations.reduce((sum, d) => sum + (d.payment_received === false ? 0 : (parseFloat(d.amount) || 0)), 0);
-          const pending = donations.reduce((sum, d) => sum + (d.payment_received === false ? (parseFloat(d.amount) || 0) : 0), 0);
-          const pendingText = pending > 0 ? ` <span style="font-size:10px; color:var(--amber); font-weight:700;">(+${formatINR(pending)} to collect)</span>` : '';
           document.getElementById("don-count").textContent = `${donations.length} donor${donations.length !== 1 ? "s" : ""}`;
-          document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>${pendingText}`;
+          document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
         } else {
           newEntry = await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
           expenses.push(newEntry);
@@ -3636,9 +3632,7 @@
 
       if (tab === "don") {
         total = list.reduce((sum, item) => sum + (item.payment_received === false ? 0 : (parseFloat(item.amount) || 0)), 0);
-        const pending = list.reduce((sum, item) => sum + (item.payment_received === false ? (parseFloat(item.amount) || 0) : 0), 0);
-        const pendingText = pending > 0 ? ` (+₹${pending.toLocaleString()})` : '';
-        infoHtml = `<b>${count}</b> ${unit} | Total: <b class="${colorClass}">₹${total.toLocaleString()}</b>${pendingText}`;
+        infoHtml = `<b>${count}</b> ${unit} | Total: <b class="${colorClass}">₹${total.toLocaleString()}</b>`;
       } else {
         total = list.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
         infoHtml = `<b>${count}</b> ${unit} | Total: <b class="${colorClass}">₹${total.toLocaleString()}</b>`;

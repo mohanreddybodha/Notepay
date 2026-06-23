@@ -444,16 +444,15 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
     // Financial badges
     const balance = (e.total_collections || 0) - (e.total_expenses || 0);
-    const pendingHtml = e.total_to_collect > 0
-      ? ` <span style="font-size:9.5px; font-weight:800; color:var(--amber); margin-left:4px; white-space:nowrap;">(+₹${e.total_to_collect.toLocaleString()} pending)</span>`
-      : "";
+    const pendingHtml = `<div style="font-size:9.5px; font-weight:700; color:var(--amber); margin-top:2px; white-space:nowrap;">+₹${(e.total_to_collect || 0).toLocaleString()} pending</div>`;
     const finBadgeHtml = `
       <div class="ec-financials" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px; border-top:1.5px solid var(--border2); padding-top:10px;">
         <div style="display:flex; flex-direction:column; align-items:flex-start; text-align:left; min-width:0; grid-column:span 1;">
           <span style="font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Collections</span>
-          <div style="font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:900; color:var(--green); display:flex; align-items:baseline; flex-wrap:wrap;">
-            ₹${(e.total_collections || 0).toLocaleString()}${pendingHtml}
+          <div style="font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:900; color:var(--green);">
+            ₹${(e.total_collections || 0).toLocaleString()}
           </div>
+          ${pendingHtml}
         </div>
         <div style="display:flex; flex-direction:column; align-items:center; text-align:center; min-width:0;">
           <span style="font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Expenses</span>
