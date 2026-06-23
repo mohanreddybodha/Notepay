@@ -198,7 +198,9 @@ jobs:
             --delete \
             --cache-control "no-cache, no-store, must-revalidate" \
             --exclude "*" \
-            --include "admin.html"
+            --include "admin.html" \
+            --include "favicon.svg" \
+            --include "favicon.png"
 
           aws s3 sync frontend/ s3://$ADMIN_BUCKET/ \
             --delete \
@@ -217,7 +219,7 @@ jobs:
           echo "Creating CloudFront invalidation for admin site..."
           ADMIN_INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id $ADMIN_CF_ID \
-            --paths "/admin.html" \
+            --paths "/admin.html" "/favicon.svg" "/favicon.png" \
             --query "Invalidation.Id" --output text)
 
           echo "Waiting for main invalidation $INVALIDATION_ID to complete..."
