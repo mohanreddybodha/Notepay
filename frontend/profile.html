@@ -20,11 +20,75 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <link rel="stylesheet" href="css/global.css?v=25"/>
   <link rel="stylesheet" href="css/icons.css?v=25" />
   <script>
-    if (localStorage.getItem("np_dark")) {
+    if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
       document.documentElement.classList.add("dark-mode");
       window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
     }
   </script>
+  <style>
+    #app-splash {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100dvh;
+      background: #FFFFFF;
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.15s;
+    }
+    .dark-mode #app-splash {
+      background: #0A0A0A;
+    }
+    .splash-logo-box {
+      width: 54px;
+      height: 54px;
+      background: #FFFFFF;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      box-shadow: 0 0 0 4px rgba(26, 78, 140, 0.4), 0 0 0 8px rgba(26, 78, 140, 0.2), 0 0 0 12px rgba(26, 78, 140, 0.1);
+      animation: splash-pulse 1.8s infinite alternate ease-in-out;
+      margin-bottom: 24px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .dark-mode .splash-logo-box {
+      background: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 0 8px rgba(255, 255, 255, 0.15), 0 0 0 12px rgba(255, 255, 255, 0.05);
+      animation: splash-pulse-dark 1.8s infinite alternate ease-in-out;
+    }
+    .splash-logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .loader {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-top-color: #1A4E8C;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .dark-mode .loader {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #60A5FA;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes splash-pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(26, 78, 140, 0.4), 0 0 0 4px rgba(26, 78, 140, 0.25), 0 0 0 8px rgba(26, 78, 140, 0.1); }
+      100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(26, 78, 140, 0), 0 0 0 16px rgba(26, 78, 140, 0), 0 0 0 24px rgba(26, 78, 140, 0); }
+    }
+    @keyframes splash-pulse-dark {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.2), 0 0 0 8px rgba(255, 255, 255, 0.1); }
+      100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0), 0 0 0 16px rgba(255, 255, 255, 0), 0 0 0 24px rgba(255, 255, 255, 0); }
+    }
+  </style>
   <style>
     html,body{height:100%;overflow:hidden;margin:0;padding:0;}
     .page{height:100dvh;height:100svh;overflow:hidden;display:flex;flex-direction:column;background:var(--surface);width:100%;max-width:480px;margin:0 auto;box-shadow:0 0 0 1px var(--border);transition: background 0.3s, color 0.3s;}
@@ -95,6 +159,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     <div class="splash-logo-box">
       <img src="favicon.svg" alt="Notepay Logo" />
     </div>
+    <div class="loader"></div>
   </div>
     <div id="content" style="display:none;">
       <div class="prof-hdr">
