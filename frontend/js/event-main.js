@@ -26,6 +26,7 @@
     // Sort & Filter state
     let currentSort = 'time_asc'; // 'time_asc', 'time_desc', 'amt_desc', 'amt_asc', 'name_asc'
     let myEntriesOnly = false;
+    let yetToBeCollected = false;
 
     function applySortAndFilter(list, type) {
       let res = [...list];
@@ -33,6 +34,9 @@
         const targetUserId = Number(myUserId);
         if (type === 'don') res = res.filter(d => Number(d.collected_by) === targetUserId);
         else res = res.filter(e => Number(e.collected_by) === targetUserId);
+      }
+      if (type === 'don' && yetToBeCollected) {
+        res = res.filter(d => d.payment_received === false);
       }
       res.sort((a, b) => {
         if (currentSort === 'time_asc') return new Date(a.collected_at) - new Date(b.collected_at);
@@ -2323,7 +2327,7 @@
           ${!isAcceptedPublic ? `
           <div class="ctx-item" onclick="closeCtx();openEditForm()">
             <span data-np-icon="edit" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
-            Modify
+            Edit
           </div>
           <div class="ctx-item dng" onclick="closeCtx();openDelPop()">
             <span data-np-icon="trash" data-np-size="16" data-np-tone="red" style="vertical-align:text-bottom;margin-right:8px;"></span>
@@ -2625,6 +2629,7 @@
     function applyFilterSort() {
       currentSort = document.querySelector('input[name="fs_sort"]:checked').value;
       myEntriesOnly = document.getElementById("fs_my_entries").checked;
+      yetToBeCollected = document.getElementById("fs_yet_to_be_collected").checked;
       
       updateFilterIconStyles();
       
@@ -2639,7 +2644,7 @@
 
     function updateFilterIconStyles() {
       const icons = document.querySelectorAll('.filter-icon-btn');
-      const isActive = currentSort !== 'time_asc' || myEntriesOnly;
+      const isActive = currentSort !== 'time_asc' || myEntriesOnly || yetToBeCollected;
       icons.forEach(btn => {
         if (isActive) {
           btn.style.color = "var(--primary)";

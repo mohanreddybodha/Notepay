@@ -13,8 +13,12 @@
     // Hide splash screen if present, once auth state is verified
     const splash = document.getElementById("app-splash");
     if (splash) {
-      splash.classList.add("hidden");
-      setTimeout(() => splash.style.display = "none", 400);
+      const path = window.location.pathname;
+      const isSelfLoaded = /(dashboard|event|profile|edit-profile)(\.html)?$/.test(path.split('?')[0]) && !/create-event|join-event/.test(path);
+      if (!isSelfLoaded) {
+        splash.classList.add("hidden");
+        setTimeout(() => splash.style.display = "none", 400);
+      }
     }
   }
 })();
