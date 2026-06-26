@@ -5553,7 +5553,7 @@ async function openReceiptModal(donationIdStr, event, type = 'don') {
   if (canModify) {
     if (editBtn) editBtn.style.display = d.is_public_entry ? 'none' : 'flex';
     if (actionDiv) actionDiv.style.display = 'flex';
-    const isUnverified = type === 'don' ? /^\((M|AI|AI-P)\)\s/.test(d.donor_name) : false;
+    const isUnverified = type === 'don' ? d.payment_received === false : false;
     
     if (isUnverified && isOrganizer) {
       if (verifyBtn) verifyBtn.style.display = 'flex';
@@ -5710,7 +5710,8 @@ async function verifyReceiptDonation() {
       try {
         const res = await apiFetch('PUT', '/events/' + eventId + '/donations/' + (d.id || d._id), {
           donor_name: newName,
-          receipt_key: prevReceiptKey
+          receipt_key: prevReceiptKey,
+          payment_received: true
         });
         if (res) {
           showToast('Payment proof accepted!');
