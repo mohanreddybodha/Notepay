@@ -962,6 +962,7 @@ def process_ai_chat(event_id: str, question: str, loop: asyncio.AbstractEventLoo
         
         event_name = event.name
         event_desc = event.description
+        goal_amount = event.goal_amount or 0
         num_donors = len(donations)
         num_expenses = len(expenses)
     except Exception as e:
@@ -994,9 +995,12 @@ If the user asks ANY unrelated question (like coding, history) OR asks how to us
 To reject a question, you must output EXACTLY the following sentence and absolutely nothing else (no greetings, no explanations):
 "I'm your friendly Notepay assistant for the {event_name} event! I can help you with your event's finances, members, and give you general advice for organizing your event."
 
+DO NOT output the above sentence if the user's question is relevant. If the question is relevant, just answer it directly without any introductory greeting.
+
 ═══ EVENT FINANCIAL DATA ═══
 Event: {event_name}
 Description: {event_desc}
+Goal/Target: ₹{goal_amount}
 
 MEMBERS LIST:
 {member_lines}
