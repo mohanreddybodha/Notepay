@@ -1719,14 +1719,14 @@ Return ONLY valid JSON:
             }
 
         # Full Success - Create Donation Automatically
-        donor_name_with_prefix = f"(AI) {donor_name}"
         
         new_donation = schemas.DonationCreate(
-            donor_name=donor_name_with_prefix,
+            donor_name=donor_name,
             amount=amount,
             entry_source="ai",
             transaction_date=transaction_date,
             collector_name=event.upi_owner_name,
+            payment_received=False,
             custom_fields={
                 "method": f"UPI Auto-Receipt ({extraction_api.upper()})",
                 "status": "ai_verified",
@@ -1810,8 +1810,6 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
                     cache.delete(f"receipt:{data.receipt_session_id}")
             except Exception as e:
                 print(f"Error reading cache for partial ai: {e}")
-
-        donor_name_with_prefix = f"(M) {donor_name}" if entry_source == "manual" else f"(AI) {donor_name}"
         
         custom_fields = {
             "method": method,
@@ -1829,11 +1827,12 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
             custom_fields.update(data.custom_fields)
 
         new_donation = schemas.DonationCreate(
-            donor_name=donor_name_with_prefix,
+            donor_name=donor_name,
             amount=amount,
             entry_source=entry_source,
             transaction_date=transaction_date,
             collector_name=event.upi_owner_name,
+            payment_received=False,
             custom_fields=custom_fields,
             receipt_key=receipt_key
         )
