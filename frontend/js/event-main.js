@@ -985,7 +985,10 @@
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(d.donor_name)}${donVersionHtml}</div>
         </div>
         `;
-        let receiptHtml = d.receipt_key ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${d.id || d._id}', event)"></span>` : '';
+        let receiptHtml = d.receipt_key 
+            ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${d.id || d._id}', event)"></span>` 
+            : (isOrganizer || String(d.collected_by) === String(myUserId) ? `<span data-np-icon="upload" data-np-size="14" style="margin-left:auto; color:var(--text3); cursor:pointer;" onclick="triggerManualReceiptUpload('${d.id || d._id}', 'don'); event.stopPropagation();" title="Upload Receipt"></span>` : '');
+            
         rowHTML += `<div class="sc" style="width:${getColWidth('don_amt', 90)}px; display:flex; align-items:center;"><span class="cg">${d.amount ? formatINR(d.amount) : '₹0'}</span>${receiptHtml}</div>`;
         
         if (!hideDonDate) {
@@ -1139,7 +1142,10 @@
           <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-align:left;">${formatPrefixes(e.description)}${expVersionHtml}</div>
         </div>
         `;
-        let receiptHtmlExp = e.receipt_key ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${e.id || e._id}', event, 'exp')"></span>` : '';
+        let receiptHtmlExp = e.receipt_key 
+            ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${e.id || e._id}', event, 'exp')"></span>` 
+            : (isOrganizer || String(e.collected_by) === String(myUserId) ? `<span data-np-icon="upload" data-np-size="14" style="margin-left:auto; color:var(--text3); cursor:pointer;" onclick="triggerManualReceiptUpload('${e.id || e._id}', 'exp'); event.stopPropagation();" title="Upload Receipt"></span>` : '');
+            
         rowHTML += `<div class="sc" style="width:${getColWidth('exp_amt', 90)}px; display:flex; align-items:center;"><span class="cr">${e.amount ? formatINR(e.amount) : '₹0'}</span>${receiptHtmlExp}</div>`;
         
         if (!hideExpDate) {
@@ -3088,9 +3094,16 @@
     function formatPrefixes(s) {
       if (!s) return "";
       let html = escHtml(s);
-      html = html.replace(/^\(M\)\s*/i, '<span style="color:#ef4444;font-weight:800;font-size:11px;margin-right:4px;">(M)</span>');
-      html = html.replace(/^\(AI\)\s*/i, '<span style="color:#3b82f6;font-weight:800;font-size:11px;margin-right:4px;">(AI)</span>');
-      html = html.replace(/^\(AI-P\)\s*/i, '<span style="color:#f97316;font-weight:800;font-size:11px;margin-right:4px;">(AI-P)</span>');
+      
+      // Keep old patterns just in case, but replace them with clean badges
+      html = html.replace(/^\((M|AI|AI-P)\)\s*/i, '');
+      
+      // If it starts with AI (with or without parens)
+      if (s.startsWith('AI ') || s.startsWith('(AI) ')) {
+         html = html.replace(/^(AI\s*|\(AI\)\s*)/i, '<span style="background:var(--blue);color:white;padding:2px 4px;border-radius:4px;font-weight:700;font-size:10px;margin-right:6px;">AI</span>');
+      } else if (s.startsWith('Manual ') || s.startsWith('(M) ')) {
+         html = html.replace(/^(Manual\s*|\(M\)\s*)/i, '<span style="background:var(--red);color:white;padding:2px 4px;border-radius:4px;font-weight:700;font-size:10px;margin-right:6px;">MANUAL</span>');
+      }
       return html;
     }
     function stripPrefixes(s) {
