@@ -2308,8 +2308,7 @@
       const name = type === "don" ? entry.donor_name : entry.description;
       const pinned = isPinned(type, entry.id || entry._id);
       const canModify = isOrganizer || String(entry.collected_by) === String(myUserId);
-      const isUnverified = type === 'don' ? /^\((M|AI|AI-P)\)\s/.test(entry.donor_name) : false;
-      const isAcceptedPublic = type === 'don' && entry.is_public_entry && !isUnverified;
+      const isUnverified = type === 'don' ? entry.payment_received === false : false;
 
       ctx.innerHTML = `
         <div class="ctx-lbl">${escHtml(name)}</div>
@@ -2324,13 +2323,12 @@
             Share Receipt
           </div>
           ` : ''}
-          ${(!entry.receipt_key && !isAcceptedPublic) ? `
+          ${(!entry.receipt_key) ? `
           <div class="ctx-item" onclick="closeCtx();triggerManualReceiptUpload('${entry.id || entry._id}', '${type}')">
             <span data-np-icon="camera" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Upload Proof
           </div>
           ` : ''}
-          ${!isAcceptedPublic ? `
           <div class="ctx-item" onclick="closeCtx();openEditForm()">
             <span data-np-icon="edit" data-np-size="16" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Edit
@@ -2339,14 +2337,6 @@
             <span data-np-icon="trash" data-np-size="16" data-np-tone="red" style="vertical-align:text-bottom;margin-right:8px;"></span>
             Delete
           </div>
-          ` : `
-            ${isOrganizer ? `
-            <div class="ctx-item dng" onclick="closeCtx();openDelPop()">
-              <span data-np-icon="trash" data-np-size="16" data-np-tone="red" style="vertical-align:text-bottom;margin-right:8px;"></span>
-              Delete
-            </div>
-            ` : ''}
-          `}
         ` : ''}
       `;
       document.body.appendChild(ov);
@@ -5551,7 +5541,7 @@ async function openReceiptModal(donationIdStr, event, type = 'don') {
   const removeBtn = document.getElementById('btn-receipt-remove');
   
   if (canModify) {
-    if (editBtn) editBtn.style.display = d.is_public_entry ? 'none' : 'flex';
+    if (editBtn) editBtn.style.display = 'flex';
     if (actionDiv) actionDiv.style.display = 'flex';
     const isUnverified = type === 'don' ? d.payment_received === false : false;
     
