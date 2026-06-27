@@ -140,8 +140,13 @@ async function apiFetch(method, path, body = null) {
   if (!res.ok && res.status !== 304) {
     const msg = data?.detail || `HTTP ${res.status}`;
     if (res.status === 404 && (msg.includes("User not registered") || msg.includes("User not found"))) {
-      window.location.replace("profile-setup.html");
-      throw new Error("Redirecting to profile setup...");
+      if (window.location.pathname.includes("login.html")) {
+        return { status: res.status, data };
+      }
+      try { if (typeof auth !== "undefined") auth.signOut(); } catch (e) {}
+      localStorage.clear();
+      window.location.replace("login.html");
+      throw new Error("Account deleted. Please log in again.");
     }
     if (res.status === 403 && msg.toLowerCase().includes("banned")) {
       document.body.innerHTML = `

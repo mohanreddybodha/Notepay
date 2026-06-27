@@ -856,9 +856,10 @@ async function verifyOTP() {
     if (status === 200) {
       window.location.replace(getCleanUrl("dashboard.html"));
     } else if (status === 404) {
-      localStorage.setItem("np_new_user", "1");
+      localStorage.setItem("np_new_user", "true");
       localStorage.setItem("np_phone", "+91 " + phoneInput.value.trim());
       localStorage.setItem("np_token_tmp", token);
+      localStorage.setItem("np_setup_expiry", Date.now() + 10 * 60 * 1000); // 10 minutes limit
       let nextUrl = "profile-setup.html";
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get("return");
