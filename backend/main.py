@@ -316,16 +316,10 @@ def health_check():
     """Simple health check for deployment pipelines."""
     return {"status": "ok"}
 
-async def register_rate_limit(request: Request):
-    client_ip = request.client.host if request.client else "unknown"
-    verify_rate_limit(f"ip:{client_ip}:register", limit=5, window=3600)
-
-#  USER / PROFILE 
 @app.post("/users", response_model=schemas.UserResponse, tags=["Profile"])
 async def create_user(
     user_data: schemas.UserRegisterInput,
     db: Session = Depends(get_db),
-    _rl = Depends(register_rate_limit),
     credentials: HTTPAuthorizationCredentials = Depends(_bearer)
 ):
     """
@@ -341,6 +335,8 @@ async def create_user(
 
     # Phone number from Firebase token is the authoritative source
     phone_from_token = decoded.get("phone_number") or user_data.phone_number
+    
+    verify_rate_limit(f"phone:{phone_from_token}:register", limit=5, window=3600)
 
     existing = crud.get_user_by_firebase_uid(db, firebase_uid=firebase_uid)
     if existing:
