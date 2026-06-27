@@ -14,8 +14,8 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content"/>
   
-  <title>Notepay — Event Donation & Expense Tracker</title>
-  <meta name="description" content="Track donations and expenses for Ganesh festival, weddings, pujas and community events. Real-time collection tracking for organizers and collectors. Free to use.">
+  <title>Notepay — Event Contribution & Expense Tracker</title>
+  <meta name="description" content="Track contributions and expenses for Ganesh festival, weddings, pujas and community events. Real-time collection tracking for organizers and collectors. Free to use.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -129,6 +129,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       line-height: 1.1;
       margin-bottom: 20px;
       background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+      background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -242,15 +243,17 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
     .auth-header h2 {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 28px;
+      font-size: clamp(20px, 6vw, 28px);
       font-weight: 800;
       margin-bottom: 8px;
       color: var(--text);
+      white-space: nowrap;
     }
     .auth-header p {
       color: var(--text-muted);
-      font-size: 15px;
+      font-size: clamp(12px, 3.8vw, 15px);
       margin-bottom: 32px;
+      white-space: nowrap;
     }
 
     /* Form Fields */
@@ -477,13 +480,13 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       text-decoration: underline;
     }
 
-    /* Footer */
     .auth-footer {
       margin-top: 40px;
       text-align: center;
-      font-size: 13px;
+      font-size: clamp(10px, 3.3vw, 13px);
       color: var(--text-muted);
       line-height: 1.6;
+      white-space: nowrap;
     }
     .auth-footer a {
       color: var(--text);
@@ -566,7 +569,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
           <img src="favicon.svg" alt="Notepay"/> <span class="brand-logo-text">Notepay</span>
         </div>
         <h1 class="brand-title">Manage your event finances with clarity.</h1>
-        <p class="brand-subtitle">Real-time donation and expense tracking designed for modern organizers.</p>
+        <p class="brand-subtitle">Real-time contribution and expense tracking designed for modern organizers.</p>
       </div>
     </div>
 
@@ -686,9 +689,7 @@ let recaptchaVerifier  = null;
 (async () => {
   const user = await waitForAuthReady();
   if (user) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const returnUrl = urlParams.get('return') || 'dashboard.html';
-    window.location.replace(getCleanUrl(returnUrl));
+    window.location.replace(getCleanUrl('dashboard.html'));
     return;
   }
   const splash = document.getElementById('app-splash');
@@ -698,13 +699,8 @@ let recaptchaVerifier  = null;
   }
 })();
 
-auth.onAuthStateChanged(user => {
-  if (user) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const returnUrl = urlParams.get('return') || 'dashboard.html';
-    window.location.replace(getCleanUrl(returnUrl));
-  }
-});
+// Removed onAuthStateChanged to prevent premature redirection.
+// waitForAuthReady handles initial load, and verifyOTP handles login.
 
 // ─────────────────────────────────────────────
 //  Init invisible reCAPTCHA
@@ -858,13 +854,7 @@ async function verifyOTP() {
     const { status, data } = await apiFetchWithToken("GET", "/users/me", token);
 
     if (status === 200) {
-      const params = new URLSearchParams(window.location.search);
-      const returnUrl = params.get("return");
-      if (returnUrl) {
-        window.location.replace(getCleanUrl(decodeURIComponent(returnUrl)));
-      } else {
-        window.location.replace(getCleanUrl("dashboard.html"));
-      }
+      window.location.replace(getCleanUrl("dashboard.html"));
     } else if (status === 404) {
       localStorage.setItem("np_new_user", "1");
       localStorage.setItem("np_phone", "+91 " + phoneInput.value.trim());

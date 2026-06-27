@@ -10,6 +10,11 @@
     const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.replace(`login.html?return=${returnUrl}`);
   } else {
+    // Check if new user and not already on profile-setup.html
+    if (localStorage.getItem("np_new_user") === "true" && !window.location.pathname.includes("profile-setup.html")) {
+        window.location.replace("profile-setup.html");
+        return;
+    }
     // Hide splash screen if present, once auth state is verified
     const splash = document.getElementById("app-splash");
     if (splash) {

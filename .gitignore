@@ -31,3 +31,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Agent Customizations
+AGENTS.md
