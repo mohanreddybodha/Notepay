@@ -211,7 +211,7 @@ async def get_current_user_id(
         if phone:
             user = crud.get_user_by_phone(db, phone)
             if user:
-                user = crud.update_user_firebase_uid(db, user, uid)
+                user = crud.update_user_firebase_uid(db, user.id, uid)
             else:
                 raise HTTPException(status_code=404, detail="User not registered")
         else:

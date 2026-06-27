@@ -942,6 +942,11 @@ function getFriendlyError(err) {
   if (code.includes("invalid-phone-number"))      return "Invalid phone number format.";
   if (code.includes("missing-phone-number"))      return "Please enter a phone number.";
   if (code.includes("quota-exceeded"))            return "SMS quota exceeded. Try again later.";
+  
+  if (err.message === "Failed to fetch" || err.message === "NetworkError when attempting to fetch resource.") {
+    return "Cannot connect to the server. Please ensure the backend is running.";
+  }
+
   return err.message || "Something went wrong. Please try again.";
 }
 </script>
