@@ -94,6 +94,7 @@ def get_my_events(db: Session, user_id: int):
         e_dict["total_to_collect"] = total_to_col
         e_dict["total_expenses"] = total_exp
         e_dict["balance"] = total_col - total_exp
+        e_dict["member_count"] = len(e.members) if hasattr(e, 'members') else 0
         resp.append(e_dict)
     return resp
 
@@ -116,6 +117,7 @@ def get_shared_events(db: Session, user_id: int):
         e_dict["total_to_collect"] = total_to_col
         e_dict["total_expenses"] = total_exp
         e_dict["balance"] = total_col - total_exp
+        e_dict["member_count"] = len(e.members) if hasattr(e, 'members') else 0
         resp.append(e_dict)
     return resp
 
@@ -654,6 +656,8 @@ def members_to_public_response(members) -> list:
     out = []
     for m in members:
         u = m.user
+        if not u or m.user_id is None:
+            continue
         out.append(schemas.EventMemberPublicResponse(
             id=m.id,
             user_id=m.user_id,
@@ -804,6 +808,7 @@ def fix_event_json(e):
         e_dict["total_to_collect"] = total_to_col
         e_dict["total_expenses"] = total_exp
         e_dict["balance"] = total_col - total_exp
+        e_dict["member_count"] = len(e.members) if hasattr(e, 'members') else 0
     else:
         e_dict = e
         

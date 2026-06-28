@@ -439,6 +439,7 @@ async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), us
         raise HTTPException(status_code=403, detail="This event is currently deactivated. Contact your organizer.")
     # Broadcast so organizer sees new member in real-time
     await manager.broadcast_change(event.id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
     return {"message": "Joined event successfully", "event_id": event.id, "event_name": event.name}
 
 @app.put("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])

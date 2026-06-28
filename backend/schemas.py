@@ -57,6 +57,7 @@ class EventResponse(EventCreate):
     created_at: datetime
     my_role: Optional[str] = None
     is_restricted: bool = False
+    member_count: Optional[int] = 0
     show_donations: bool = True
     show_expenses: bool = True
     donation_custom_columns: Any = []

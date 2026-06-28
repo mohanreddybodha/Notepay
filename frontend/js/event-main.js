@@ -4,6 +4,14 @@
     }
     // ── State ──
     const params = new URLSearchParams(location.search);
+    
+    // Robust Dashboard Tab State Extraction (handles both dbtab and legacy cached tab params)
+    let fallbackDashTab = params.get('dbtab');
+    if (!fallbackDashTab) {
+      const t = params.get('tab');
+      if (['0', '1', '2', '3'].includes(t)) fallbackDashTab = t;
+      else fallbackDashTab = '0';
+    }
 
     const eventId = params.get("id") || params.get("eventId");
     let eventData = null;
@@ -75,7 +83,7 @@
             <div style="font-size:48px; margin-bottom:20px;">❌</div>
             <div style="font-weight:900; font-size:22px; margin-bottom:10px;">Invalid event link</div>
             <div style="color:var(--text3); line-height:1.6; margin-bottom:20px;">This event could not be opened because the page URL is missing a valid event ID.</div>
-            <button class="btn" onclick="window.location.href=getCleanUrl('dashboard.html')" style="padding:12px 28px; border-radius:14px;">Back to Dashboard</button>
+            <button class="btn" onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + fallbackDashTab)" style="padding:12px 28px; border-radius:14px; margin-top: 10px;">Back to Dashboard</button>
           </div>
         `;
       }
@@ -258,37 +266,37 @@
         applyData(res, preventRender);
       } catch (e) {
         console.error("LoadAll failed", e);
-        const msg = (e.message || "").toLowerCase();
-        if (msg.includes("not a member") || msg.includes("403") || msg.includes("forbidden")) {
-          const loader = document.getElementById("loading-pane");
-          if (loader) loader.style.display = "none";
-          const mainPage = document.getElementById("main-page");
-          if (mainPage) mainPage.style.display = "flex";
-          const lp = document.getElementById("pane-locked");
-          if (lp) {
-            lp.style.display = "flex";
-            lp.style.position = "fixed";
-            lp.style.inset = "0";
-            lp.style.zIndex = "9999";
-            lp.style.background = "var(--surface)";
-            lp.style.flexDirection = "column";
-            lp.style.justifyContent = "center";
-            lp.style.alignItems = "center";
+        
+        // Always show locked pane for any load error (403, 404, network error)
+        // to prevent getting stuck on a blank/loading screen
+        const loader = document.getElementById("loading-pane");
+        if (loader) loader.style.display = "none";
+        
+        const mainPage = document.getElementById("main-page");
+        if (mainPage) mainPage.style.display = "flex";
+        
+        const lp = document.getElementById("pane-locked");
+        if (lp) {
+          lp.style.display = "flex";
+          lp.style.position = "fixed";
+          lp.style.inset = "0";
+          lp.style.zIndex = "9999";
+          lp.style.background = "var(--surface)";
+          lp.style.flexDirection = "column";
+          lp.style.justifyContent = "center";
+          lp.style.alignItems = "center";
 
-            lp.innerHTML = `
-              <div style="text-align:center; padding:20px;">
-                <div style="font-size:72px; margin-bottom:20px;">🔒</div>
-                <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Event is Private</div>
-                <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">The organizer has turned off public access.</div>
-                <button onclick="window.location.href=getCleanUrl('dashboard.html')" class="btn" 
-                  style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
-                  ← Back to Dashboard
-                </button>
-              </div>
-            `;
-          }
-        } else {
-          renderPage();
+          lp.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+              <div style="font-size:72px; margin-bottom:20px;">🔒</div>
+              <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Access Denied</div>
+              <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">This event is private or you do not have permission to view it.</div>
+              <button onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + fallbackDashTab)" class="btn" 
+                style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+                ← Back to Dashboard
+              </button>
+            </div>
+          `;
         }
       } finally {
         const splash = document.getElementById('app-splash');
@@ -483,7 +491,7 @@
                 <div style="margin-bottom:20px;">${icon}</div>
                 <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">${msg}</div>
                 <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">${sub}</div>
-                <button onclick="window.location.href=getCleanUrl('dashboard.html')" class="btn" 
+                <button onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + fallbackDashTab)" class="btn" 
                   style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                   ← Back to Dashboard
                 </button>
@@ -2758,11 +2766,18 @@
       }
     }
     function sharePublicLink() {
-      const url = window.location.href;
+      const cleanPath = typeof getCleanUrl === 'function' ? getCleanUrl('join-event.html') : 'join-event.html';
+      const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+      const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+      const code = eventData.invite_code || '';
+      const joinUrl = code ? `${origin}${path}?code=${code}` : window.location.href;
+      const inviteMsg = code
+        ? `✨ You have been invited to collaborate on the event "${eventData.name}" via Notepay!\n\n🚀 Join Instantly:\n${joinUrl}\n\n🔑 Or use Invite Code: ${code}\n\nTrack contributions and expenses transparently in real time.`
+        : `✨ Check out the event ledger "${eventData.name}" on Notepay:\n${window.location.href}`;
       if (navigator.share) {
-        navigator.share({ title: `Notepay — ${eventData.name}`, url: url }).catch(() => { });
+        navigator.share({ title: `Notepay Invite — ${eventData.name}`, text: inviteMsg }).catch(() => { });
       } else {
-        copyToClipboard(url, "Link copied to clipboard!");
+        copyToClipboard(inviteMsg, "Invite message copied to clipboard!");
       }
     }
 
@@ -4161,13 +4176,7 @@
     }
 
     function goBackToDashboard() {
-      let tabIdx = 1; // Default to Collector (Shared Events)
-      if (typeof isVisitor !== 'undefined' && isVisitor) {
-        tabIdx = 2; // Discover
-      } else if (typeof isOrganizer !== 'undefined' && isOrganizer) {
-        tabIdx = 0; // My Events
-      }
-      window.location.href = `dashboard.html?tab=${tabIdx}`;
+      window.location.href = getCleanUrl(`dashboard.html?tab=${fallbackDashTab}`);
     }
     // ── CHAT MODULE ──
     let chatMessages = [];

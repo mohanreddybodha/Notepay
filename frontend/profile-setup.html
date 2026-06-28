@@ -521,7 +521,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       if (status === 200 || status === 201) {
         localStorage.removeItem("np_new_user");
         localStorage.removeItem("np_token_tmp");
-        window.location.replace(getCleanUrl("dashboard.html"));
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get("return");
+        window.location.replace(getCleanUrl(returnUrl || "dashboard.html"));
       } else {
         if (data?.detail && Array.isArray(data.detail)) {
           throw new Error(data.detail[0].msg);

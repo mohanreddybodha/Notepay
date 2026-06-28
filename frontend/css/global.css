@@ -114,8 +114,8 @@ body.dark-mode {
     color: #ef4444;
 }
 
-body { -webkit-tap-highlight-color: transparent;
-}
+* { -webkit-tap-highlight-color: transparent !important; }
+body { -webkit-tap-highlight-color: transparent; }
 
 /* ── BASE ── */
 html {
@@ -198,8 +198,8 @@ a {
   bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--primary-dk);
-  color: white;
+  background: #0FA3A3;
+  color: #FFFFFF;
   padding: 10px 20px;
   border-radius: 20px;
   font-family: 'Nunito', sans-serif;
@@ -207,7 +207,7 @@ a {
   font-weight: 800;
   white-space: nowrap;
   z-index: 200000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 20px rgba(15, 163, 163, 0.35);
   animation: toast-in 0.28s ease, toast-out 0.28s ease 1.8s forwards;
   pointer-events: none;
 }
@@ -220,7 +220,12 @@ a {
   to   { opacity: 0; }
 }
 .toast.toast-error {
-  background: var(--red);
+  background: #C0392B;
+  box-shadow: 0 4px 20px rgba(192, 57, 43, 0.35);
+}
+.toast.toast-warning {
+  background: #C4860A;
+  box-shadow: 0 4px 20px rgba(196, 134, 10, 0.35);
 }
 
 /* ── APP BAR ── */

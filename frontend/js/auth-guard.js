@@ -17,7 +17,8 @@
       if (!setupExpiry || Date.now() > parseInt(setupExpiry, 10)) {
         try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
         localStorage.clear();
-        window.location.replace("login.html");
+        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.replace(`login.html?return=${returnUrl}`);
         return;
       }
       if (!window.location.pathname.includes("profile-setup.html")) {
@@ -30,7 +31,8 @@
     if (splash) {
       const path = window.location.pathname;
       const isSelfLoaded = /(dashboard|event|profile|edit-profile)(\.html)?$/.test(path.split('?')[0]) && !/create-event|join-event/.test(path);
-      if (!isSelfLoaded) {
+      const isAutoJoin = path.includes("join-event") && window.location.search.includes("code=");
+      if (!isSelfLoaded && !isAutoJoin) {
         splash.classList.add("hidden");
         setTimeout(() => splash.style.display = "none", 400);
       }

@@ -76,7 +76,11 @@ async function apiFetch(method, path, body = null) {
 
   const token = await getIdToken();
   if (!token) {
-    window.location.href = getCleanUrl("login.html");
+    try { if (typeof auth !== "undefined") auth.signOut(); } catch (e) {}
+    if (typeof resetAuthCache === "function") resetAuthCache();
+    localStorage.removeItem("np_token_tmp");
+    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = getCleanUrl(`login.html?return=${returnUrl}`);
     throw new Error("Not authenticated");
   }
   
@@ -130,7 +134,11 @@ async function apiFetch(method, path, body = null) {
   }
 
   if (res.status === 401) {
-    window.location.href = getCleanUrl("login.html");
+    try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
+    if (typeof resetAuthCache === "function") resetAuthCache();
+    localStorage.removeItem("np_token_tmp");
+    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = getCleanUrl(`login.html?return=${returnUrl}`);
     throw new Error("Session expired");
   }
 
@@ -143,9 +151,10 @@ async function apiFetch(method, path, body = null) {
       if (window.location.pathname.includes("login.html")) {
         return { status: res.status, data };
       }
-      try { if (typeof auth !== "undefined") auth.signOut(); } catch (e) {}
+      try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
       localStorage.clear();
-      window.location.replace("login.html");
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.replace(`login.html?return=${returnUrl}`);
       throw new Error("Account deleted. Please log in again.");
     }
     if (res.status === 403 && msg.toLowerCase().includes("banned")) {
@@ -249,8 +258,10 @@ async function apiFetchWithToken(method, path, token, body = null) {
     const res = await fetch(`${API_BASE}${path}`, opts);
     clearTimeout(timeoutId);
     if (res.status === 401) {
+      try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
       localStorage.removeItem("np_token_tmp");
-      window.location.href = getCleanUrl("login.html");
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.replace(getCleanUrl(`login.html?return=${returnUrl}`));
       throw new Error("Session expired");
     }
 
@@ -482,7 +493,10 @@ function showToast(msg, type = "default") {
   const old = document.querySelector(".toast");
   if (old) old.remove();
   const t = document.createElement("div");
-  t.className = "toast" + (type === "error" ? " toast-error" : "");
+  t.className = "toast";
+  if (type === "error") t.classList.add("toast-error");
+  else if (type === "warning") t.classList.add("toast-warning");
+  else if (type === "success") t.classList.add("toast-success");
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2300);

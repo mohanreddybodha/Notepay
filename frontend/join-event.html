@@ -41,52 +41,38 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       background: #0A0A0A;
     }
     .splash-logo-box {
-      width: 54px;
-      height: 54px;
-      background: #FFFFFF;
-      border-radius: 14px;
+      width: 56px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0;
-      box-shadow: 0 0 0 4px rgba(26, 78, 140, 0.4), 0 0 0 8px rgba(26, 78, 140, 0.2), 0 0 0 12px rgba(26, 78, 140, 0.1);
-      animation: splash-pulse 1.8s infinite alternate ease-in-out;
-      margin-bottom: 36px;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-    }
-    .dark-mode .splash-logo-box {
-      background: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 0 8px rgba(255, 255, 255, 0.15), 0 0 0 12px rgba(255, 255, 255, 0.05);
-      animation: splash-pulse-dark 1.8s infinite alternate ease-in-out;
+      animation: pulse-glow 2.5s infinite alternate ease-in-out;
+      margin-bottom: 24px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
     }
     .splash-logo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+      width: 105%;
+      height: 105%;
+      object-fit: cover;
     }
     .progress-bar {
-      width: 78px;
-      height: 4px;
-      background: rgba(0, 0, 0, 0.08);
-      border-radius: 2px;
+      width: 120px;
+      height: 3px;
+      background: var(--input-bg);
+      border-radius: 4px;
       overflow: hidden;
       position: relative;
-      margin-top: 4px;
-    }
-    .dark-mode .progress-bar {
-      background: rgba(255, 255, 255, 0.12);
     }
     .progress-line {
       width: 40%;
       height: 100%;
-      background: #1A4E8C;
-      border-radius: 2px;
+      background: var(--primary);
+      border-radius: 4px;
       position: absolute;
       animation: progress-sweep 1.2s infinite ease-in-out;
-    }
-    .dark-mode .progress-line {
-      background: #60A5FA;
     }
     @keyframes progress-sweep {
       0% { left: -40%; }
@@ -96,13 +82,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    @keyframes splash-pulse {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(26, 78, 140, 0.4), 0 0 0 4px rgba(26, 78, 140, 0.25), 0 0 0 8px rgba(26, 78, 140, 0.1); }
-      100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(26, 78, 140, 0), 0 0 0 16px rgba(26, 78, 140, 0), 0 0 0 24px rgba(26, 78, 140, 0); }
-    }
-    @keyframes splash-pulse-dark {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.2), 0 0 0 8px rgba(255, 255, 255, 0.1); }
-      100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0), 0 0 0 16px rgba(255, 255, 255, 0), 0 0 0 24px rgba(255, 255, 255, 0); }
+    @keyframes pulse-glow {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.05); }
     }
   </style>
   <style>
@@ -203,9 +185,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     err.classList.remove("visible");
 
     try {
-      await joinEvent(code);
+      const res = await joinEvent(code);
       showToast("Joined event!");
-      window.location.replace(getCleanUrl("dashboard.html") + "?tab=1");
+      window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
     } catch(e) {
       const msg = e.message || "";
       if (msg.toLowerCase().includes("deactivated")) {
@@ -217,15 +199,31 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         err.classList.add("visible");
       }
       btn.classList.remove("loading"); btn.disabled = false;
+      
+      const splash = document.getElementById("app-splash");
+      if (splash) {
+        splash.classList.add("hidden");
+        setTimeout(() => splash.style.display = "none", 400);
+      }
     }
   });
 </script>
   <script>
-    window.addEventListener("load", () => {
+    window.addEventListener("load", async () => {
         const splash = document.getElementById("app-splash");
-        if (splash) {
-            splash.classList.add("hidden");
-            setTimeout(() => splash.style.display = "none", 400);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeParam = urlParams.get('code');
+        if (codeParam) {
+            document.getElementById('code-input').value = codeParam.trim().toUpperCase();
+            await waitForAuthReady(); // Ensure auth is loaded before auto-joining
+            const btn = document.getElementById('join-btn');
+            if (btn) btn.click();
+        } else {
+            if (splash) {
+                splash.classList.add("hidden");
+                setTimeout(() => splash.style.display = "none", 400);
+            }
         }
     });
   </script>

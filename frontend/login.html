@@ -653,7 +653,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
               <span id="otp-err-text">Invalid OTP. Please try again.</span>
             </div>
 
-            <button class="btn-primary" id="verify-btn" type="button" disabled>
+            <button class="btn-primary" id="verify-btn" type="button" style="display: none;" disabled>
               <span class="btn-text">Verify &amp; Continue</span>
               <span class="spinner"></span>
             </button>
@@ -691,7 +691,9 @@ let recaptchaVerifier  = null;
 (async () => {
   const user = await waitForAuthReady();
   if (user) {
-    window.location.replace(getCleanUrl('dashboard.html'));
+    const params = new URLSearchParams(window.location.search);
+    const returnUrl = params.get("return");
+    window.location.replace(getCleanUrl(returnUrl || 'dashboard.html'));
     return;
   }
   const splash = document.getElementById('app-splash');
@@ -856,7 +858,9 @@ async function verifyOTP() {
     const { status, data } = await apiFetchWithToken("GET", "/users/me", token);
 
     if (status === 200) {
-      window.location.replace(getCleanUrl("dashboard.html"));
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("return");
+      window.location.replace(getCleanUrl(returnUrl || "dashboard.html"));
     } else if (status === 404) {
       localStorage.setItem("np_new_user", "true");
       localStorage.setItem("np_phone", "+91 " + phoneInput.value.trim());

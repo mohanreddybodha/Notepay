@@ -184,22 +184,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div id="ev-goal-error" style="color:var(--red); font-size:12px; margin-top:6px; font-weight:700; display:none;"></div>
     </div>
 
-    <div class="toggle-section">
-      <div class="field-label-out">TABLES TO SHOW</div>
-      <div class="toggle-chips">
-        <div class="tgl-chip active" id="tgl-don" onclick="toggleChip('don')">
-          <span class="tgl-check"><span data-np-icon="badge-check" data-np-size="12"></span></span>
-          <span class="tgl-icon"><span data-np-icon="download" data-np-size="18"></span></span>
-          <span>Collections</span>
-        </div>
-        <div class="tgl-chip active" id="tgl-exp" onclick="toggleChip('exp')">
-          <span class="tgl-check"><span data-np-icon="badge-check" data-np-size="12"></span></span>
-          <span class="tgl-icon"><span data-np-icon="wallet" data-np-size="18"></span></span>
-          <span>Expenses</span>
-        </div>
-      </div>
-      <div class="toggle-hint">You can change this later from event settings</div>
-    </div>
+
 
     <div class="organizer-note">You will be the Organizer of this event</div>
 
@@ -225,20 +210,6 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
   let showDon = true, showExp = true;
 
-  function toggleChip(type) {
-    const other = type === 'don' ? showExp : showDon;
-    const current = type === 'don' ? showDon : showExp;
-    // At least one must remain enabled
-    if (current && !other) {
-      showToast('At least one table must be enabled', 'error');
-      return;
-    }
-    if (type === 'don') showDon = !showDon;
-    else showExp = !showExp;
-    document.getElementById('tgl-don').classList.toggle('active', showDon);
-    document.getElementById('tgl-exp').classList.toggle('active', showExp);
-  }
-
   if (editId) {
     document.querySelector(".ab-ttl").textContent = "Edit Event";
     document.querySelector(".btn-text").textContent = "Save Changes";
@@ -255,11 +226,6 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
           document.getElementById("ev-desc").value = ev.description;
           document.getElementById("ev-date").value = ev.event_date.split("T")[0];
           document.getElementById("ev-goal").value = ev.goal_amount || "";
-          // Restore table visibility toggles
-          showDon = ev.show_donations !== false;
-          showExp = ev.show_expenses !== false;
-          document.getElementById('tgl-don').classList.toggle('active', showDon);
-          document.getElementById('tgl-exp').classList.toggle('active', showExp);
         }
       } catch(e) {
         console.error("Failed to load event details", e);
@@ -310,13 +276,13 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       if (editId) {
         await updateEvent(editId, {
           name, description: desc, event_date: new Date(date).toISOString(),
-          show_donations: showDon, show_expenses: showExp,
+          show_donations: true, show_expenses: true,
           goal_amount: goalAmount
         });
         showToast("Event updated!");
         window.history.back();
       } else {
-        await createEvent(name, desc, date, showDon, showExp, goalAmount);
+        await createEvent(name, desc, date, true, true, goalAmount);
         showToast("Event created!");
         window.location.replace(getCleanUrl("dashboard.html"));
       }
