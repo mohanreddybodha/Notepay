@@ -379,6 +379,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     }
     .btn-primary.loading .btn-text { display: none; }
     .btn-primary.loading .spinner { display: block; }
+    .btn-primary.loading .loading-text { display: flex !important; align-items: center; justify-content: center; gap: 8px; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -614,7 +615,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
             <button class="btn-primary" id="send-btn" type="button">
               <span class="btn-text">Continue</span>
-              <span class="spinner"></span>
+              <span class="loading-text" style="display: none;"><span class="spinner"></span> Sending OTP...</span>
             </button>
 
             <div class="auth-footer">
@@ -655,8 +656,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
             <button class="btn-primary" id="verify-btn" type="button" style="display: none;" disabled>
               <span class="btn-text">Verify &amp; Continue</span>
-              <span class="spinner"></span>
             </button>
+
+            <div id="otp-verifying-status" style="display: none; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; margin-bottom: 4px; color: var(--primary); font-weight: 600; font-size: 15px; letter-spacing: -0.2px;">
+              <span class="spinner" style="display: block; width: 18px; height: 18px; border-width: 2.5px; border-color: rgba(128,128,128,0.2); border-top-color: var(--primary);"></span>
+              <span>Verifying secure code...</span>
+            </div>
 
             <div class="resend-row">
               <div class="resend-timer">Resend in <strong id="countdown">60</strong>s</div>
@@ -792,6 +797,7 @@ function showOTPSection(num) {
   otpHidden.value = "";
   updateBoxes("");
   otpError.classList.remove("visible");
+  document.getElementById("otp-verifying-status").style.display = "none";
   verifyBtn.disabled = true;
   startCountdown();
   // Wait for the slide transition to finish before focusing
@@ -801,6 +807,7 @@ function showOTPSection(num) {
 function goBackToPhone() {
   document.getElementById("section-otp").classList.remove("active");
   document.getElementById("section-phone").classList.add("active");
+  document.getElementById("otp-verifying-status").style.display = "none";
   if (countdownTimer) clearInterval(countdownTimer);
   confirmationResult = null;
 }
@@ -849,6 +856,7 @@ async function verifyOTP() {
 
   verifyBtn.classList.add("loading"); verifyBtn.disabled = true;
   otpError.classList.remove("visible");
+  document.getElementById("otp-verifying-status").style.display = "flex";
 
   try {
     const result = await confirmationResult.confirm(code);
@@ -879,6 +887,7 @@ async function verifyOTP() {
     console.error("verifyOTP error:", err);
     try { await auth.signOut(); resetAuthCache(); } catch (e) { }
     
+    document.getElementById("otp-verifying-status").style.display = "none";
     let errorMsg = getFriendlyError(err);
     if (err && err.code === 'auth/invalid-verification-code') {
         if (!checkLocalRateLimit("otp_fail_attempts", 5, 3600000)) {
@@ -919,17 +928,27 @@ function startCountdown() {
 async function resendOTP() {
   const num = phoneInput.value.trim();
   if (!num) { goBackToPhone(); return; }
-  document.getElementById("resend-link").classList.remove("active");
+  const rl = document.getElementById("resend-link");
+  if (!rl.classList.contains("active")) return;
+  
+  rl.classList.remove("active");
+  startCountdown(); // Immediately reset timer to 60s right on OTP page!
+  if(typeof showToast === 'function') {
+    showToast("Requesting new OTP...");
+  }
+  
   try {
     if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
       grecaptcha.reset(window.recaptchaWidgetId);
     }
     confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
-    startCountdown();
     if(typeof showToast === 'function') {
-      showToast("OTP resent!");
+      showToast("New OTP sent via SMS!");
     }
   } catch(err) {
+    if (countdownTimer) clearInterval(countdownTimer);
+    document.getElementById("countdown").textContent = "0";
+    rl.classList.add("active");
     showOTPError(getFriendlyError(err));
   }
 }
