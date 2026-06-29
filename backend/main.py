@@ -452,8 +452,10 @@ async def update_event(event_id: str, data: schemas.EventUpdate, db: Session = D
     
     # Explicitly map and parse JSON for SQLite compatibility
     event_dict = {c.name: getattr(event, c.name) for c in event.__table__.columns}
-    # Broadcast layout/column changes to all clients
+    # Broadcast to all clients in this event channel (collectors see live changes)
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    # Broadcast to all dashboard connections (event name/details update in dashboard)
+    await manager.broadcast_dashboard_update()
     return fix_event_json(event_dict)
 
 @app.delete("/events/{event_id}", tags=["Events"])

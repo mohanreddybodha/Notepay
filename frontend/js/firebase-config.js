@@ -45,6 +45,10 @@ async function getIdToken() {
   // Return cached token if still valid (50 min window; tokens expire at 60 min)
   if (_cachedToken && Date.now() < _tokenExpiry) return _cachedToken;
 
+  if (typeof _authHasSettled !== 'undefined' && !_authHasSettled && typeof waitForAuthReady === 'function') {
+    await waitForAuthReady();
+  }
+
   const user = auth.currentUser;
   if (!user) return null;
   try {

@@ -566,7 +566,7 @@
 
     @media (min-width: 900px) {
       .page-hdr {
-        display: flex;
+        display: none !important;
       }
     }
 
@@ -604,7 +604,10 @@
 
     @media (min-width: 900px) {
       .tab-bar {
-        display: none;
+        display: none !important;
+      }
+      .btn-cancel {
+        display: none !important;
       }
     }
 
@@ -1698,7 +1701,7 @@
 
       <nav class="sb-nav">
         <div class="sb-section">Events</div>
-        <div class="sb-item active" id="sb-tab-0" onclick="switchTab(0)">
+        <div class="sb-item active" id="sb-tab-0" onclick="switchSPAView('overview'); switchTab(0)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
@@ -1706,7 +1709,7 @@
           </svg>
           All Events <span class="sb-count" id="sb-count-0">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-1" onclick="switchTab(1)">
+        <div class="sb-item" id="sb-tab-1" onclick="switchSPAView('overview'); switchTab(1)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
@@ -1715,7 +1718,7 @@
           </svg>
           My Events <span class="sb-count" id="sb-count-1">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-2" onclick="switchTab(2)">
+        <div class="sb-item" id="sb-tab-2" onclick="switchSPAView('overview'); switchTab(2)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -1724,7 +1727,7 @@
           </svg>
           Shared Events <span class="sb-count" id="sb-count-2">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-3" onclick="switchTab(3)">
+        <div class="sb-item" id="sb-tab-3" onclick="switchSPAView('overview'); switchTab(3)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
             <circle cx="12" cy="12" r="3" />
@@ -1734,14 +1737,14 @@
 
         <div class="sb-divider"></div>
         <div class="sb-section" style="margin-top:0;">Add</div>
-        <div class="sb-item" onclick="openSheet()">
+        <a href="create-event.html" class="sb-item">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="16" />
             <line x1="8" y1="12" x2="16" y2="12" />
           </svg>
-          New Event
-        </div>
+          Create Event
+        </a>
         <a href="join-event.html" class="sb-item">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -1778,7 +1781,7 @@
           <img src="favicon.svg" alt="Notepay Logo" class="brand-logo-img">
           <span class="mob-name">Notepay</span>
         </div>
-        <div class="tb-title">Events Overview</div>
+        <div class="tb-title"></div>
         <div class="tb-sp"></div>
         <div class="live-badge" id="live-badge">
           <div class="live-dot"></div>Live
@@ -1795,13 +1798,13 @@
 
       <!-- Mobile Tabs -->
       <div class="tab-bar">
-        <div class="tab active" id="mob-tab-0" onclick="switchTab(0)">All <span class="tab-chip"
+        <div class="tab active" id="mob-tab-0" onclick="switchSPAView('overview'); switchTab(0)">All <span class="tab-chip"
             id="mob-count-0">0</span></div>
-        <div class="tab" id="mob-tab-1" onclick="switchTab(1)">My Events <span class="tab-chip"
+        <div class="tab" id="mob-tab-1" onclick="switchSPAView('overview'); switchTab(1)">My Events <span class="tab-chip"
             id="mob-count-1">0</span></div>
-        <div class="tab" id="mob-tab-2" onclick="switchTab(2)">Shared <span class="tab-chip" id="mob-count-2">0</span>
+        <div class="tab" id="mob-tab-2" onclick="switchSPAView('overview'); switchTab(2)">Shared <span class="tab-chip" id="mob-count-2">0</span>
         </div>
-        <div class="tab" id="mob-tab-3" onclick="switchTab(3)">Visited <span class="tab-chip" id="mob-count-3">0</span>
+        <div class="tab" id="mob-tab-3" onclick="switchSPAView('overview'); switchTab(3)">Visited <span class="tab-chip" id="mob-count-3">0</span>
         </div>
       </div>
 
@@ -1908,6 +1911,142 @@
         <!-- ── VISITED ── -->
         <div class="ev-grid hidden" id="p3"></div>
       </div><!-- /scroll -->
+
+      <!-- SPA VIEW: CREATE EVENT -->
+      <div id="spa-view-create" class="page-view-container" style="display:none; flex:1; overflow-y:auto; padding: 28px 20px;">
+        <div class="form-container" style="width: 100%; max-width: 520px; margin: 0 auto 32px;">
+          <div class="form-header" style="margin-bottom: 24px;">
+            <h1 style="font-family: var(--font-brand); font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 6px;">Create New Event</h1>
+            <p style="font-size: 14px; color: var(--text-mut); line-height: 1.45;">Create a new event and invite collectors to start contributing.</p>
+          </div>
+
+          <div class="main-error" id="spa-main-error" style="display: none; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 12px; background: var(--np-red-lt); color: var(--np-red); font-size: 13.5px; font-weight: 600; margin-bottom: 20px; border: 1px solid rgba(192, 57, 43, .2);">
+            <span id="spa-main-err-txt"></span>
+          </div>
+
+          <!-- Event Name -->
+          <div class="field-group" style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-mut);">Event Name <span style="color:var(--np-red);">*</span></span>
+              <span style="font-size: 11.5px; font-weight: 600; color: var(--text-mut);" id="spa-ev-name-cnt">0/50</span>
+            </div>
+            <div class="field" id="spa-name-field" style="width: 100%; background: var(--surface); border: 1.5px solid var(--border-str); border-radius: 12px; padding: 0 16px; height: 46px; display: flex; align-items: center; gap: 12px;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <input type="text" id="spa-ev-name" placeholder="Enter event name" maxlength="50" autocomplete="off" style="flex: 1; border: none; outline: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--text); width: 100%;" />
+            </div>
+            <div class="error-msg" id="spa-ev-name-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Event name is required.</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="field-group" style="margin-bottom: 14px;">
+            <div style="margin-bottom: 6px;"><span style="font-size: 12px; font-weight: 700; color: var(--text-mut);">Description <span style="color:var(--np-red);">*</span></span></div>
+            <div class="field" id="spa-desc-field" style="width: 100%; background: var(--surface); border: 1.5px solid var(--border-str); border-radius: 12px; padding: 0 16px; height: 46px; display: flex; align-items: center; gap: 12px;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <input type="text" id="spa-ev-desc" placeholder="Add a short description" style="flex: 1; border: none; outline: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--text); width: 100%;" />
+            </div>
+            <div class="error-msg" id="spa-ev-desc-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Description is required.</span>
+            </div>
+          </div>
+
+          <!-- Event Date -->
+          <div class="field-group" style="margin-bottom: 14px;">
+            <div style="margin-bottom: 6px;"><span style="font-size: 12px; font-weight: 700; color: var(--text-mut);">Event Date <span style="color:var(--np-red);">*</span></span></div>
+            <div class="field" id="spa-date-field" style="width: 100%; background: var(--surface); border: 1.5px solid var(--border-str); border-radius: 12px; padding: 0 16px; height: 46px; display: flex; align-items: center; gap: 12px;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <input type="date" id="spa-ev-date" style="flex: 1; border: none; outline: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--text); width: 100%; text-transform:none;" />
+            </div>
+            <div class="error-msg" id="spa-ev-date-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Event date is required.</span>
+            </div>
+          </div>
+
+          <!-- Goal Amount -->
+          <div class="field-group" style="margin-bottom: 14px;">
+            <div style="margin-bottom: 6px;"><span style="font-size: 12px; font-weight: 700; color: var(--text-mut);">Goal Collection (Optional)</span></div>
+            <div class="field" id="spa-goal-field" style="width: 100%; background: var(--surface); border: 1.5px solid var(--border-str); border-radius: 12px; padding: 0 16px; height: 46px; display: flex; align-items: center; gap: 12px;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              <input type="number" id="spa-ev-goal" placeholder="Enter expected amount" min="0" step="1" style="flex: 1; border: none; outline: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--text); width: 100%; text-transform:none;" />
+              <span style="font-weight:700; color:var(--text-mut); font-size:16px;">₹</span>
+            </div>
+            <div class="error-msg" id="spa-ev-goal-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Goal amount is invalid.</span>
+            </div>
+          </div>
+
+          <!-- Highlight Box -->
+          <div style="display: flex; align-items: flex-start; gap: 12px; background: var(--np-amber-lt); border: 1px solid rgba(196, 134, 10, 0.22); padding: 12px 14px; border-radius: 12px; margin: 16px 0;">
+            <div style="font-size: 18px; line-height: 1; flex-shrink: 0; margin-top: 2px;">👑</div>
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: #925800; margin-bottom: 2px;">You will be the Creator &amp; Organizer</div>
+              <div style="font-size: 12px; color: var(--text-mut); line-height: 1.4;">You can add collectors, manage roles, customize columns and edit everything later.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+            <button type="button" onclick="document.getElementById('tips-modal') ? document.getElementById('tips-modal').classList.add('open') : null" style="background: none; border: none; color: var(--np-navy); font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0;">Need help creating?</button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn btn-primary" id="spa-create-btn" type="button" style="width: 100%; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>Create Event</span>
+            </button>
+            <button type="button" class="btn-cancel" onclick="switchSPAView('overview')" style="width: 100%; height: 40px; background: none; border: none; color: var(--text-mut); font-size: 14px; font-weight: 600; cursor: pointer;">← Back to Dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPA VIEW: JOIN EVENT -->
+      <div id="spa-view-join" class="page-view-container" style="display:none; flex:1; overflow-y:auto; padding: 28px 20px;">
+        <div class="form-container" style="width: 100%; max-width: 480px; margin: 16px auto 32px;">
+          <div class="form-header" style="margin-bottom: 20px;">
+            <h1 style="font-family: var(--font-brand); font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 6px;">Join an Event</h1>
+            <p style="font-size: 14px; color: var(--text-mut); line-height: 1.45;">Enter the event code shared by your organizer to join and start contributing.</p>
+          </div>
+
+          <div class="field-group" style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 12px; font-weight: 700; color: var(--text-mut); margin: 0;">Event Code</label>
+              <button type="button" onclick="document.getElementById('help-modal') ? document.getElementById('help-modal').classList.add('open') : null" style="background: none; border: none; color: var(--np-navy); font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0;">Need help joining?</button>
+            </div>
+            <div class="field" id="spa-code-field" style="width: 100%; background: var(--surface); border: 1.5px solid var(--border-str); border-radius: 12px; padding: 0 16px; height: 48px; display: flex; align-items: center; gap: 12px;">
+              <span style="font-weight:700; color:var(--text-mut); font-size:16px;">#</span>
+              <input type="text" id="spa-code-input" placeholder="e.g. A1B2C-3D4E-5F6G7" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false" style="flex: 1; border: none; outline: none; background: transparent; font-size: 16px; font-weight: 600; color: var(--text); width: 100%; text-transform: uppercase;" />
+            </div>
+            <div id="spa-warn-note" style="display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-top: 10px; background: var(--np-amber-lt); color: var(--np-amber); border: 1px solid rgba(196, 134, 10, .2);">
+              <span>This event is currently deactivated. Contact your organizer.</span>
+            </div>
+            <div class="error-msg" id="spa-err-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span id="spa-err-txt">Invalid event code. Please check and try again.</span>
+            </div>
+          </div>
+
+          <!-- Security Message -->
+          <div style="display: flex; align-items: center; gap: 12px; background: var(--np-green-lt); border: 1px solid rgba(26, 122, 94, 0.18); padding: 12px 14px; border-radius: 12px; margin: 16px 0 24px;">
+            <svg width="20" height="20" fill="none" stroke="var(--np-green)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--np-green);">Secure &amp; Private</div>
+              <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">Only authorized collectors can join using a valid event code.</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn btn-primary" id="spa-join-btn" type="button" style="width: 100%; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>Join Event</span>
+            </button>
+            <button type="button" class="btn-cancel" onclick="switchSPAView('overview')" style="width: 100%; height: 40px; background: none; border: none; color: var(--text-mut); font-size: 14px; font-weight: 600; cursor: pointer;">← Back to Dashboard</button>
+          </div>
+        </div>
+      </div>
     </div><!-- /main -->
   </div><!-- /app -->
 
@@ -1984,6 +2123,12 @@
 
     // Set tab immediately on load to prevent visual flashing
     switchTab(currentTab, true);
+    const viewParam = urlParams.get('view');
+    if (viewParam === 'create') {
+      switchSPAView('create');
+    } else if (viewParam === 'join') {
+      switchSPAView('join');
+    }
 
     const msgParam = urlParams.get('msg');
     if (msgParam) {
@@ -2128,9 +2273,11 @@
       } catch (err) {
         console.error("Dashboard refresh failed:", err);
       } finally {
-        const splash = document.getElementById('app-splash');
-        if (splash) splash.style.opacity = '0';
-        setTimeout(() => { if (splash) splash.style.display = 'none'; }, 200);
+        if (!window._isAutoJoiningEvent) {
+          const splash = document.getElementById('app-splash');
+          if (splash) splash.style.opacity = '0';
+          setTimeout(() => { if (splash) splash.style.display = 'none'; }, 200);
+        }
       }
     }
 
@@ -2597,6 +2744,9 @@
 
     // ── Tabs Logic ──
     function switchTab(idx, noRender = false) {
+      if (typeof switchSPAView === 'function' && !noRender && (document.getElementById('spa-view-create')?.style.display !== 'none' || document.getElementById('spa-view-join')?.style.display !== 'none')) {
+        switchSPAView('overview');
+      }
       currentTab = idx;
 
       // URL state
@@ -2611,6 +2761,14 @@
         else if (idx === 1) descEl.textContent = "Showing events you have organized";
         else if (idx === 2) descEl.textContent = "Showing events you have joined as a collector";
         else if (idx === 3) descEl.textContent = "Showing public events you have viewed as a visitor";
+      }
+      const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
+      const crView = document.getElementById('spa-view-create');
+      const jnView = document.getElementById('spa-view-join');
+      if (crView && jnView && crView.style.display === 'none' && jnView.style.display === 'none') {
+        if (document.querySelector('.tb-title')) {
+          document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? tabNames[idx] : '';
+        }
       }
 
       // Update CSS classes
@@ -2716,6 +2874,256 @@
     function getInitials(name) { return name ? name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "??"; }
     function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "—"; }
     function escHtml(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+    // ── Instant SPA Navigation Controller ──
+    function switchSPAView(viewName) {
+      const cr = document.getElementById('spa-view-create');
+      const jn = document.getElementById('spa-view-join');
+      const overviewEls = document.querySelectorAll('.page-hdr, .tab-bar, .search-row, #tab-desc, .scroll-area, .fab');
+      if (!cr || !jn) return;
+
+      closeSheet();
+
+      document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+
+      if (viewName === 'create') {
+        overviewEls.forEach(el => el.style.display = 'none');
+        jn.style.display = 'none';
+        cr.style.display = 'flex';
+        if (document.querySelector('.tb-title')) document.querySelector('.tb-title').textContent = 'Create Event';
+        document.querySelector('a[href="create-event.html"]')?.classList.add('active');
+        if (window.location.pathname.indexOf('create-event') === -1) {
+          if (window.location.search.includes('view=create')) {
+            history.replaceState({spa: 'create'}, '', 'create-event.html');
+          } else {
+            history.pushState({spa: 'create'}, '', 'create-event.html');
+          }
+        }
+        const dateInput = document.getElementById("spa-ev-date");
+        if (dateInput && !dateInput.value) dateInput.valueAsDate = new Date();
+      } else if (viewName === 'join') {
+        overviewEls.forEach(el => el.style.display = 'none');
+        cr.style.display = 'none';
+        jn.style.display = 'flex';
+        if (document.querySelector('.tb-title')) document.querySelector('.tb-title').textContent = 'Join Event';
+        document.querySelector('a[href="join-event.html"]')?.classList.add('active');
+        const urlParamsJoin = new URLSearchParams(window.location.search);
+        const codeParamJoin = urlParamsJoin.get('code');
+        if (codeParamJoin && document.getElementById('spa-code-input')) {
+          window._isAutoJoiningEvent = true;
+          jn.style.display = 'none'; // Hide join form during seamless auto-join
+          const splash = document.getElementById('app-splash');
+          if (splash) {
+            splash.style.display = 'flex';
+            splash.style.opacity = '1';
+            let msgEl = document.getElementById('splash-msg');
+            if (!msgEl) {
+              msgEl = document.createElement('div');
+              msgEl.id = 'splash-msg';
+              msgEl.style.cssText = 'margin-top: 18px; font-family: var(--font-brand); font-size: 15px; font-weight: 700; color: var(--np-navy); letter-spacing: 0.3px;';
+              splash.appendChild(msgEl);
+            }
+            msgEl.textContent = 'Joining Event...';
+          }
+          document.getElementById('spa-code-input').value = codeParamJoin.trim().toUpperCase();
+          // Auto-submit when code is provided via direct invite link after auth settles
+          if (typeof waitForAuthReady === 'function') {
+            waitForAuthReady().then(user => {
+              if (user) setTimeout(() => document.getElementById('spa-join-btn')?.click(), 100);
+            });
+          } else {
+            setTimeout(() => document.getElementById('spa-join-btn')?.click(), 500);
+          }
+        }
+        const qs = codeParamJoin ? '?code=' + encodeURIComponent(codeParamJoin) : '';
+        if (window.location.pathname.indexOf('join-event') === -1) {
+          if (window.location.search.includes('view=join')) {
+            history.replaceState({spa: 'join'}, '', 'join-event.html' + qs);
+          } else {
+            history.pushState({spa: 'join'}, '', 'join-event.html' + qs);
+          }
+        }
+      } else {
+        cr.style.display = 'none';
+        jn.style.display = 'none';
+        if (document.querySelector('.page-hdr')) document.querySelector('.page-hdr').style.display = '';
+        if (document.querySelector('.tab-bar')) document.querySelector('.tab-bar').style.display = '';
+        if (document.querySelector('.search-row')) document.querySelector('.search-row').style.display = 'flex';
+        if (document.getElementById('tab-desc')) document.getElementById('tab-desc').style.display = 'block';
+        if (document.querySelector('.scroll-area')) document.querySelector('.scroll-area').style.display = 'block';
+        if (document.querySelector('.fab')) document.querySelector('.fab').style.display = 'flex';
+        const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
+        if (document.querySelector('.tb-title')) document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
+        document.getElementById('sb-tab-' + (typeof currentTab !== 'undefined' ? currentTab : 0))?.classList.add('active');
+        if (window.location.pathname.indexOf('dashboard') === -1 && window.location.pathname !== '/' && !window.location.pathname.endsWith('/')) {
+          history.pushState({spa: 'overview'}, '', 'dashboard.html');
+        }
+      }
+      window.scrollTo(0, 0);
+    }
+
+    window.addEventListener('resize', () => {
+      const crView = document.getElementById('spa-view-create');
+      const jnView = document.getElementById('spa-view-join');
+      if (crView && jnView && crView.style.display === 'none' && jnView.style.display === 'none') {
+        const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
+        if (document.querySelector('.tb-title')) {
+          document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
+        }
+      }
+    });
+
+    window.addEventListener('popstate', () => {
+      const path = window.location.pathname;
+      if (path.includes('create-event')) switchSPAView('create');
+      else if (path.includes('join-event')) switchSPAView('join');
+      else switchSPAView('overview');
+    });
+
+    // Intercept SPA links across dashboard
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (href === 'create-event.html') {
+        e.preventDefault();
+        switchSPAView('create');
+      } else if (href === 'join-event.html') {
+        e.preventDefault();
+        switchSPAView('join');
+      } else if (href === 'dashboard.html') {
+        e.preventDefault();
+        switchSPAView('overview');
+      }
+    });
+
+    // SPA Form Handlers
+    document.getElementById("spa-ev-name")?.addEventListener("input", function() {
+      document.getElementById("spa-ev-name-cnt").textContent = this.value.length + "/50";
+      document.getElementById("spa-ev-name-error").classList.remove("visible");
+      document.getElementById("spa-name-field").style.borderColor = "var(--border-str)";
+    });
+    document.getElementById("spa-ev-desc")?.addEventListener("input", () => {
+      document.getElementById("spa-ev-desc-error").classList.remove("visible");
+      document.getElementById("spa-desc-field").style.borderColor = "var(--border-str)";
+    });
+    document.getElementById("spa-ev-date")?.addEventListener("change", () => {
+      document.getElementById("spa-ev-date-error").classList.remove("visible");
+      document.getElementById("spa-date-field").style.borderColor = "var(--border-str)";
+    });
+    document.getElementById("spa-ev-goal")?.addEventListener("input", () => {
+      document.getElementById("spa-ev-goal-error").classList.remove("visible");
+      document.getElementById("spa-goal-field").style.borderColor = "var(--border-str)";
+    });
+
+    document.getElementById("spa-create-btn")?.addEventListener("click", async () => {
+      const name  = document.getElementById("spa-ev-name").value.trim();
+      const desc  = document.getElementById("spa-ev-desc").value.trim();
+      const date  = document.getElementById("spa-ev-date").value;
+      const goal  = document.getElementById("spa-ev-goal").value.trim();
+      const btn   = document.getElementById("spa-create-btn");
+      const mainErr = document.getElementById("spa-main-error");
+      const mainErrTxt = document.getElementById("spa-main-err-txt");
+
+      mainErr.style.display = "none";
+
+      if (!name) {
+        const err = document.getElementById("spa-ev-name-error");
+        err.querySelector("span").textContent = "Event name is required.";
+        err.classList.add("visible");
+        document.getElementById("spa-name-field").style.borderColor = "var(--np-red)";
+        document.getElementById("spa-ev-name").focus();
+        return;
+      }
+      if (!desc) {
+        const err = document.getElementById("spa-ev-desc-error");
+        err.querySelector("span").textContent = "Description is required.";
+        err.classList.add("visible");
+        document.getElementById("spa-desc-field").style.borderColor = "var(--np-red)";
+        document.getElementById("spa-ev-desc").focus();
+        return;
+      }
+      if (!date) {
+        const err = document.getElementById("spa-ev-date-error");
+        err.querySelector("span").textContent = "Event date is required.";
+        err.classList.add("visible");
+        document.getElementById("spa-date-field").style.borderColor = "var(--np-red)";
+        document.getElementById("spa-ev-date").focus();
+        return;
+      }
+
+      btn.disabled = true; btn.style.opacity = "0.7";
+      try {
+        const goalAmount = goal ? parseInt(goal, 10) : 0;
+        await createEvent(name, desc, date, true, true, goalAmount);
+        showToast("Event created successfully!");
+        document.getElementById("spa-ev-name").value = "";
+        document.getElementById("spa-ev-desc").value = "";
+        document.getElementById("spa-ev-goal").value = "";
+        switchSPAView('overview');
+        refreshDashboard();
+      } catch(err) {
+        mainErrTxt.textContent = err.message || "Failed to create event.";
+        mainErr.style.display = "flex";
+      } finally {
+        btn.disabled = false; btn.style.opacity = "1";
+      }
+    });
+
+    document.getElementById("spa-code-input")?.addEventListener("input", function() {
+      let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      let formatted = "";
+      if (val.length > 0) formatted += val.substring(0, 5);
+      if (val.length > 5) formatted += "-" + val.substring(5, 9);
+      if (val.length > 9) formatted += "-" + val.substring(9, 14);
+      this.value = formatted;
+      document.getElementById("spa-code-field").style.borderColor = "var(--border-str)";
+      document.getElementById("spa-err-note").classList.remove("visible");
+      document.getElementById("spa-warn-note").style.display = "none";
+    });
+
+    document.getElementById("spa-join-btn")?.addEventListener("click", async () => {
+      const codeInput = document.getElementById("spa-code-input");
+      const code = codeInput.value.trim();
+      const btn = document.getElementById("spa-join-btn");
+      const errNote = document.getElementById("spa-err-note");
+      const errTxt = document.getElementById("spa-err-txt");
+      const warnNote = document.getElementById("spa-warn-note");
+
+      errNote.classList.remove("visible"); warnNote.style.display = "none";
+      if (!code || code.length < 5) {
+        document.getElementById("spa-code-field").style.borderColor = "var(--np-red)";
+        errTxt.textContent = "Please enter a valid event invite code.";
+        errNote.classList.add("visible");
+        codeInput.focus();
+        return;
+      }
+
+      btn.disabled = true; btn.style.opacity = "0.7";
+      try {
+        const ev = await joinEvent(code);
+        showToast("Successfully joined! Opening event...");
+        codeInput.value = "";
+        // Navigate directly to the event page; dbtab=2 ensures Back → Shared Events tab
+        window.location.href = getCleanUrl(`event.html?id=${ev.event_id}&dbtab=2`);
+      } catch (err) {
+        if (window._isAutoJoiningEvent) {
+          window._isAutoJoiningEvent = false;
+          const splash = document.getElementById('app-splash');
+          if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.style.display = 'none', 200); }
+          document.getElementById('spa-view-join').style.display = 'flex';
+        }
+        document.getElementById("spa-code-field").style.borderColor = "var(--np-red)";
+        if (err.message && err.message.toLowerCase().includes("deactivated")) {
+          warnNote.style.display = "flex";
+        } else {
+          errTxt.textContent = err.message || "Invalid invite code.";
+          errNote.classList.add("visible");
+        }
+      } finally {
+        btn.disabled = false; btn.style.opacity = "1";
+      }
+    });
   </script>
 
   <!-- Blocked Modal -->
@@ -2747,6 +3155,87 @@
       </div>
     </div>
   </div>
+
+  <!-- NEED HELP JOINING MODAL -->
+  <div class="popup-modal" id="help-modal" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100000; align-items: center; justify-content: center; display: none;">
+    <div class="popup-content" style="max-width: 440px; text-align: left; padding: 24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+        <div style="font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--text);">How to join an event?</div>
+        <button onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');" style="background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-weight:700; cursor:pointer; color:var(--text-mut);">×</button>
+      </div>
+      <div style="font-size: 13.5px; color: var(--text-mut); line-height: 1.5; margin-bottom: 16px;">
+        Every event created on Notepay gets a unique 16-character invite code (e.g. <strong style="color:var(--text);">A1B2C-3D4E-5F6G7</strong>).
+      </div>
+      <div style="background: var(--surface-2); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Steps to follow:</div>
+        <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.5;">
+        1. Ask the Event Organizer to share their invite link or code.<br>
+          2. Paste the exact code into the box below.<br>
+          3. Click <strong>Join Event</strong> to instantly access the ledger.
+        </div>
+      </div>
+      <button onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');" class="btn btn-primary" style="width:100%; height:44px; border-radius:10px; font-weight:700;">Got it</button>
+    </div>
+  </div>
+
+  <!-- CREATE EVENT TIPS MODAL -->
+  <div class="popup-modal" id="tips-modal" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100000; align-items: center; justify-content: center; display: none;">
+    <div class="popup-content" style="max-width: 460px; text-align: left; padding: 24px; max-height: 85vh; overflow-y: auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <div style="font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--text);">Need help creating?</div>
+        <button onclick="document.getElementById('tips-modal').style.display='none'; document.getElementById('tips-modal').classList.remove('open');" style="background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-weight:700; cursor:pointer; color:var(--text-mut);">×</button>
+      </div>
+      <div style="font-size: 13.5px; color: var(--text-mut); margin-bottom: 20px;">A few tips to help you get started.</div>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">Use a clear event name</div>
+            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">Example: Annual Tech Conference 2026, Charity Gala &amp; Fundraiser, Alumni Meetup</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">Keep the description short</div>
+            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">Add a brief description about the event (optional).</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">Goal amount is optional</div>
+            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">Set a goal to track fundraising progress visually.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">You'll be able to</div>
+            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">• Add collectors • Create custom columns • Change settings • Manage members and more later.</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="document.getElementById('tips-modal').style.display='none'; document.getElementById('tips-modal').classList.remove('open');" class="btn btn-primary" style="width:100%; height:44px; border-radius:10px; font-weight:700;">Got it</button>
+    </div>
+  </div>
+
+  <style>
+    #help-modal.open, #tips-modal.open { display: flex !important; }
+    .error-msg { display: none; color: var(--np-red); font-size: 12.5px; font-weight: 600; margin-top: 6px; align-items: center; gap: 6px; }
+    .error-msg.visible { display: flex; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+  </style>
 
 </body>
 
