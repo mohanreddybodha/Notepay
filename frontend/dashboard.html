@@ -850,6 +850,31 @@
       border-color: var(--np-teal);
     }
 
+    .flt-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .flt-pill {
+      padding: 5px 11px;
+      border-radius: 16px;
+      border: 1px solid var(--border-str);
+      background: var(--bg);
+      color: var(--t2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .flt-pill.active {
+      background: var(--np-teal);
+      color: white;
+      border-color: var(--np-teal);
+    }
+
     .custom-date-row {
       display: flex;
       flex-direction: column;
@@ -1814,43 +1839,48 @@
           <div class="flt-menu" id="flt-menu">
             <div class="flt-sec">
               <div class="flt-label">Sort By</div>
-              <select class="flt-sel" id="flt-sort">
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-              </select>
+              <input type="hidden" id="flt-sort" value="newest">
+              <div class="flt-pills" data-target="flt-sort">
+                <button type="button" class="flt-pill active" data-val="newest" onclick="setFilterPill('flt-sort', 'newest', this)">Newest First</button>
+                <button type="button" class="flt-pill" data-val="oldest" onclick="setFilterPill('flt-sort', 'oldest', this)">Oldest First</button>
+              </div>
             </div>
             <div class="flt-sec">
               <div class="flt-label">Status</div>
-              <select class="flt-sel" id="flt-status">
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="deactivated">Deactivated</option>
-              </select>
+              <input type="hidden" id="flt-status" value="all">
+              <div class="flt-pills" data-target="flt-status">
+                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-status', 'all', this)">All</button>
+                <button type="button" class="flt-pill" data-val="active" onclick="setFilterPill('flt-status', 'active', this)">Active</button>
+                <button type="button" class="flt-pill" data-val="deactivated" onclick="setFilterPill('flt-status', 'deactivated', this)">Deactivated</button>
+              </div>
             </div>
             <div class="flt-sec">
               <div class="flt-label">Privacy</div>
-              <select class="flt-sel" id="flt-privacy">
-                <option value="all">All</option>
-                <option value="public">Public</option>
-                <option value="private">Private</option>
-              </select>
+              <input type="hidden" id="flt-privacy" value="all">
+              <div class="flt-pills" data-target="flt-privacy">
+                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-privacy', 'all', this)">All</button>
+                <button type="button" class="flt-pill" data-val="public" onclick="setFilterPill('flt-privacy', 'public', this)">Public</button>
+                <button type="button" class="flt-pill" data-val="private" onclick="setFilterPill('flt-privacy', 'private', this)">Private</button>
+              </div>
             </div>
             <div class="flt-sec">
               <div class="flt-label">Pin Status</div>
-              <select class="flt-sel" id="flt-pin">
-                <option value="all">All</option>
-                <option value="pinned">Pinned</option>
-                <option value="unpinned">Unpinned</option>
-              </select>
+              <input type="hidden" id="flt-pin" value="all">
+              <div class="flt-pills" data-target="flt-pin">
+                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-pin', 'all', this)">All</button>
+                <button type="button" class="flt-pill" data-val="pinned" onclick="setFilterPill('flt-pin', 'pinned', this)">Pinned</button>
+                <button type="button" class="flt-pill" data-val="unpinned" onclick="setFilterPill('flt-pin', 'unpinned', this)">Unpinned</button>
+              </div>
             </div>
             <div class="flt-sec">
               <div class="flt-label">Date Range</div>
-              <select class="flt-sel" id="flt-date" onchange="toggleCustomDate()">
-                <option value="all">All Time</option>
-                <option value="30days">Last 30 Days</option>
-                <option value="custom">Custom Range</option>
-              </select>
-              <div class="custom-date-row hidden" id="custom-date-row">
+              <input type="hidden" id="flt-date" value="all">
+              <div class="flt-pills" data-target="flt-date">
+                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-date', 'all', this)">All Time</button>
+                <button type="button" class="flt-pill" data-val="30days" onclick="setFilterPill('flt-date', '30days', this)">Last 30 Days</button>
+                <button type="button" class="flt-pill" data-val="custom" onclick="setFilterPill('flt-date', 'custom', this)">Custom Range</button>
+              </div>
+              <div class="custom-date-row hidden" id="custom-date-row" style="margin-top: 8px;">
                 <input type="date" id="flt-date-start" class="flt-date-inp">
                 <input type="date" id="flt-date-end" class="flt-date-inp">
               </div>
@@ -1986,7 +2016,7 @@
         if (span.textContent.includes('•')) {
           span.textContent = code;
         } else {
-          span.textContent = '••••••••••••••••';
+          span.textContent = '••••••••';
         }
       }
     }
@@ -2005,21 +2035,22 @@
       }
     }
 
+    async function shareMessageWithLogo({ title, text, url }) {
+      if (navigator.share) {
+        navigator.share({ title, text, url }).catch(() => {});
+      } else {
+        copyText(`${text}\n${url}`);
+        showToast("Professional invite message copied to clipboard");
+      }
+    }
+
     function shareCode(code, eventName) {
       const cleanPath = getCleanUrl('join-event.html');
       const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
       const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
       const joinUrl = origin + path + '?code=' + code;
-      const inviteMsg = `✨ You have been invited to collaborate on the event "${eventName}" via Notepay!\n\n🚀 Join Instantly:\n${joinUrl}\n\n🔑 Or use Invite Code: ${code}\n\nTrack contributions and expenses transparently in real time.`;
-      if (navigator.share) {
-        navigator.share({
-          title: `Notepay Invite — ${eventName}`,
-          text: inviteMsg
-        }).catch(console.error);
-      } else {
-        copyText(inviteMsg);
-        showToast("Invite message copied to clipboard");
-      }
+      const inviteMsg = `🤝 Invitation to Collaborate\n\nYou have been invited as a Collector for "${eventName}" on Notepay (Event Contributions & Expenses Tracker).\n\nManage contributions, log expenses, and maintain the event ledger in real time.\n\n🔑 Invite Code: ${code}\n\n👉 Click below to join as a Collector:`;
+      shareMessageWithLogo({ title: `Notepay Invite — ${eventName}`, text: inviteMsg, url: joinUrl });
     }
 
     // ── Auth & WS ──
@@ -2107,6 +2138,30 @@
     // ── Filter & Search Logic ──
     let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: 'all', date: 'all', dStart: '', dEnd: '' };
 
+    function setFilterPill(targetId, val, btnEl) {
+      document.getElementById(targetId).value = val;
+      const container = btnEl.closest('.flt-pills');
+      if (container) {
+        container.querySelectorAll('.flt-pill').forEach(b => b.classList.remove('active'));
+      }
+      btnEl.classList.add('active');
+      if (targetId === 'flt-date') toggleCustomDate();
+    }
+
+    function syncFilterPills() {
+      ['flt-sort', 'flt-status', 'flt-privacy', 'flt-pin', 'flt-date'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const val = el.value;
+        const pills = document.querySelector(`.flt-pills[data-target="${id}"]`);
+        if (pills) {
+          pills.querySelectorAll('.flt-pill').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-val') === val);
+          });
+        }
+      });
+    }
+
     function toggleFilterMenu() {
       const menu = document.getElementById('flt-menu');
       const isOpening = !menu.classList.contains('open');
@@ -2121,11 +2176,16 @@
         document.getElementById('flt-date-start').value = filterState.dStart || '';
         document.getElementById('flt-date-end').value = filterState.dEnd || '';
         toggleCustomDate();
+        syncFilterPills();
       }
     }
     function toggleCustomDate() {
       const v = document.getElementById('flt-date').value;
-      document.getElementById('custom-date-row').classList.toggle('hidden', v !== 'custom');
+      const row = document.getElementById('custom-date-row');
+      if (row) {
+        row.classList.toggle('hidden', v !== 'custom');
+        row.style.display = (v === 'custom') ? 'flex' : 'none';
+      }
     }
 
     function applyFilterMenu() {
@@ -2159,7 +2219,12 @@
       document.getElementById('flt-date').value = 'all';
       document.getElementById('flt-date-start').value = '';
       document.getElementById('flt-date-end').value = '';
-      document.getElementById('custom-date-row').style.display = 'none';
+      const row = document.getElementById('custom-date-row');
+      if (row) {
+        row.style.display = 'none';
+        row.classList.add('hidden');
+      }
+      syncFilterPills();
       applyFilterMenu();
     }
 
@@ -2439,21 +2504,21 @@
         actRow = `<div class="card-acts" onclick="event.stopPropagation()">`;
         const pinned = isEventPinned(e.id);
         if (pinned) {
-          actRow += `<button class="ca-btn act-pin" style="color: var(--amber); font-weight: 800; border-radius: 4px; margin: 0 4px;" onclick="togglePinEvent('${e.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg> Unpin</button>`;
+          actRow += `<button class="ca-btn act-pin" style="color: var(--amber); font-weight: 800; border-radius: 4px; margin: 0 4px;" onclick="event.stopPropagation();togglePinEvent('${e.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg> Unpin</button>`;
         } else {
-          actRow += `<button class="ca-btn act-pin" onclick="togglePinEvent('${e.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg> Pin</button>`;
+          actRow += `<button class="ca-btn act-pin" onclick="event.stopPropagation();togglePinEvent('${e.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg> Pin</button>`;
         }
 
         if (role === 'organizer') {
-          actRow += `<button class="ca-btn act-share" onclick="shareCode('${code}', '${escHtml(e.name).replace(/'/g, "\\'")}')"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Share Code</button>`;
-          actRow += `<button class="ca-btn act-summary" onclick="window.location.href='${eventUrl}&tab=sum'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;
+          actRow += `<button class="ca-btn act-edit" onclick="event.stopPropagation();window.location.href='create-event.html?edit=${e.id}'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Manage Event</button>`;
+          actRow += `<button class="ca-btn act-summary" onclick="event.stopPropagation();window.location.href='${eventUrl}&tab=sum'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;
         } else if (role === 'collector') {
-          actRow += `<button class="ca-btn act-summary" onclick="window.location.href='${eventUrl}&tab=sum'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;
-          actRow += `<button class="ca-btn" style="color:var(--np-red); font-weight:700;" onclick="confirmExitEvent('${e.id}', false)"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Exit Event</button>`;
+          actRow += `<button class="ca-btn act-summary" onclick="event.stopPropagation();window.location.href='${eventUrl}&tab=sum'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;
+          actRow += `<button class="ca-btn" style="color:var(--np-red); font-weight:700;" onclick="event.stopPropagation();confirmExitEvent('${e.id}', false)"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Exit Event</button>`;
         } else {
           // visitor
-          actRow += `<button class="ca-btn act-summary" onclick="window.location.href='${eventUrl}&tab=sum'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;
-          actRow += `<button class="ca-btn" style="color:var(--np-red); font-weight:700;" onclick="confirmExitEvent('${e.id}', true)"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Remove Event</button>`;
+          actRow += `<button class="ca-btn act-summary" onclick="event.stopPropagation();window.location.href='${eventUrl}&tab=sum'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;
+          actRow += `<button class="ca-btn" style="color:var(--np-red); font-weight:700;" onclick="event.stopPropagation();confirmExitEvent('${e.id}', true)"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Remove Event</button>`;
         }
 
         actRow += `</div>`;
@@ -2462,38 +2527,67 @@
           actRow = `<div class="card-acts" onclick="event.stopPropagation()">`;
           const isVis = (role === 'visitor');
           const btnTxt = isVis ? 'Remove Event' : 'Exit Event';
-          actRow += `<button class="ca-btn" style="color:var(--np-red); font-weight:700;" onclick="confirmExitEvent('${e.id}', ${isVis})"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> ${btnTxt}</button>`;
+          actRow += `<button class="ca-btn" style="color:var(--np-red); font-weight:700;" onclick="event.stopPropagation();confirmExitEvent('${e.id}', ${isVis})"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> ${btnTxt}</button>`;
           actRow += `</div>`;
         }
       }
 
       const mcount = e.member_count || 0;
+      const pinnedIcon = isEventPinned(e.id) ? `<span style="color:var(--amber); margin-left:6px; display:inline-flex; align-items:center;" title="Pinned to top"><svg width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg></span>` : '';
 
-      return `
-      <div class="${cardClass}" ${clickAction}>
-        <div class="ev-strip ${stripClass}"></div>
-        <div class="card-body">
+      const metaItemsHtml = `
+        <div class="meta-item"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${formatDate(e.event_date)}</div>
+        ${role !== 'visitor' ? `<div class="meta-item"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${mcount} Member${mcount !== 1 ? 's' : ''}</div>` : ''}
+        ${code ? `
+        <div class="code-chip" onclick="event.stopPropagation();toggleCodeVis(this, '${code}')">
+          <span>••••••••</span>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <div style="padding: 2px; cursor: pointer; display: flex; align-items: center;" onclick="event.stopPropagation();copyCodeToast('${code}', this)" title="Copy Code">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </div>
+            <div style="padding: 2px; cursor: pointer; display: flex; align-items: center; color: var(--np-teal);" onclick="event.stopPropagation();shareCode('${code}', '${escHtml(e.name).replace(/'/g, "\\'")}')" title="Share Code">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </div>
+          </div>
+        </div>` : ''}`;
+
+      let cardTopHtml = "";
+      if (goal > 0) {
+        cardTopHtml = `
           <div class="card-top">
             <div class="card-info">
-              <div class="card-name" style="display:flex; align-items:center;">${escHtml(e.name)}${isEventPinned(e.id) ? `<span style="color:var(--amber); margin-left:6px; display:inline-flex; align-items:center;" title="Pinned to top"><svg width="14" height="14" fill="currentColor" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg></span>` : ''}</div>
+              <div class="card-name" style="display:flex; align-items:center;">${escHtml(e.name)}${pinnedIcon}</div>
               ${e.description ? `<div class="card-desc">${escHtml(e.description)}</div>` : ''}
               <div class="card-meta">
-                <div class="meta-item"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${formatDate(e.event_date)}</div>
-                ${e.role !== 'visitor' ? `<div class="meta-item"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${mcount} Member${mcount !== 1 ? 's' : ''}</div>` : ''}
-                ${code ? `
-                <div class="code-chip" onclick="event.stopPropagation();toggleCodeVis(this, '${code}')">
-                  <span>••••••••••••••••</span>
-                  <div style="padding: 2px; cursor: pointer; display: flex; align-items: center;" onclick="event.stopPropagation();copyCodeToast('${code}', this)" title="Copy Code">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  </div>
-                </div>` : ''}
+                ${metaItemsHtml}
               </div>
             </div>
             <div class="card-right">
               ${rbMap[role]}
               ${goalRingHtml}
             </div>
+          </div>`;
+      } else {
+        cardTopHtml = `
+          <div class="card-top" style="align-items: flex-start; margin-bottom: 4px;">
+            <div class="card-info">
+              <div class="card-name" style="display:flex; align-items:center;">${escHtml(e.name)}${pinnedIcon}</div>
+              ${e.description ? `<div class="card-desc">${escHtml(e.description)}</div>` : ''}
+            </div>
+            <div class="card-right" style="min-width: auto;">
+              ${rbMap[role]}
+            </div>
           </div>
+          <div class="card-meta" style="margin-top: 0; width: 100%;">
+            ${metaItemsHtml}
+          </div>`;
+      }
+
+      return `
+      <div class="${cardClass}" ${clickAction}>
+        <div class="ev-strip ${stripClass}"></div>
+        <div class="card-body">
+          ${cardTopHtml}
           ${finHtml}
         </div>
         ${statusBanner ? statusBanner : '<div class="card-banner hidden"></div>'}

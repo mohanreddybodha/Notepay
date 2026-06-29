@@ -5,12 +5,18 @@
     // ── State ──
     const params = new URLSearchParams(location.search);
     
-    // Robust Dashboard Tab State Extraction (handles both dbtab and legacy cached tab params)
     let fallbackDashTab = params.get('dbtab');
     if (!fallbackDashTab) {
-      const t = params.get('tab');
-      if (['0', '1', '2', '3'].includes(t)) fallbackDashTab = t;
-      else fallbackDashTab = '0';
+      const t = params.get('tab') || params.get('from_tab');
+      if (['1', '2', '3'].includes(t)) fallbackDashTab = t;
+      else fallbackDashTab = null;
+    }
+
+    function getSmartDashTab() {
+      if (typeof isVisitor !== 'undefined' && isVisitor) return '3';
+      if (typeof isOrganizer !== 'undefined' && isOrganizer) return '1';
+      if (fallbackDashTab !== null && fallbackDashTab !== undefined) return fallbackDashTab;
+      return '2';
     }
 
     const eventId = params.get("id") || params.get("eventId");
@@ -83,7 +89,7 @@
             <div style="font-size:48px; margin-bottom:20px;">❌</div>
             <div style="font-weight:900; font-size:22px; margin-bottom:10px;">Invalid event link</div>
             <div style="color:var(--text3); line-height:1.6; margin-bottom:20px;">This event could not be opened because the page URL is missing a valid event ID.</div>
-            <button class="btn" onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + fallbackDashTab)" style="padding:12px 28px; border-radius:14px; margin-top: 10px;">Back to Dashboard</button>
+            <button class="btn" onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + getSmartDashTab())" style="padding:12px 28px; border-radius:14px; margin-top: 10px;">Back to Dashboard</button>
           </div>
         `;
       }
@@ -291,7 +297,7 @@
               <div style="font-size:72px; margin-bottom:20px;">🔒</div>
               <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Access Denied</div>
               <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">This event is private or you do not have permission to view it.</div>
-              <button onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + fallbackDashTab)" class="btn" 
+              <button onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + getSmartDashTab())" class="btn" 
                 style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                 ← Back to Dashboard
               </button>
@@ -491,7 +497,7 @@
                 <div style="margin-bottom:20px;">${icon}</div>
                 <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">${msg}</div>
                 <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">${sub}</div>
-                <button onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + fallbackDashTab)" class="btn" 
+                <button onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + getSmartDashTab())" class="btn" 
                   style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                   ← Back to Dashboard
                 </button>
@@ -2723,7 +2729,8 @@
         const res = await apiFetch("POST", `/events/${eventId}/generate_code`);
         // Proactively update local state for instant sheet refresh
         if (res && res.invite_code) eventData.invite_code = res.invite_code;
-        await loadAll();
+        clearEventCache();
+        await loadAll(false, true);
         openCodeSheet(); // Re-open the sheet so user can copy the new code
         showToast("Invite code regenerated!", "success");
       } catch (e) {
@@ -2765,20 +2772,32 @@
         showToast("Failed to update privacy settings", "error");
       }
     }
+    async function shareMessageWithLogo({ title, text, url }) {
+      if (navigator.share) {
+        navigator.share({ title, text, url }).catch(() => {});
+      } else {
+        copyToClipboard(`${text}\n${url}`, "Share message copied to clipboard!");
+      }
+    }
+
     function sharePublicLink() {
+      const cleanPath = typeof getCleanUrl === 'function' ? getCleanUrl(`event.html?id=${eventId}`) : `event.html?id=${eventId}`;
+      const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+      const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+      const publicUrl = `${origin}${path}`;
+      const publicMsg = `📊 Notepay — Event Contributions & Expenses Tracker\n\nYou are invited to view the real-time financial ledger for "${eventData.name}".\n\nTrack collections, manage contributions, and monitor expenses with complete transparency.\n\n👉 Click below to view live data:`;
+      shareMessageWithLogo({ title: `Notepay Public Ledger — ${eventData.name}`, text: publicMsg, url: publicUrl });
+    }
+
+    function shareEventJoinCode() {
+      const code = eventData.invite_code;
+      if (!code) return;
       const cleanPath = typeof getCleanUrl === 'function' ? getCleanUrl('join-event.html') : 'join-event.html';
       const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
       const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-      const code = eventData.invite_code || '';
-      const joinUrl = code ? `${origin}${path}?code=${code}` : window.location.href;
-      const inviteMsg = code
-        ? `✨ You have been invited to collaborate on the event "${eventData.name}" via Notepay!\n\n🚀 Join Instantly:\n${joinUrl}\n\n🔑 Or use Invite Code: ${code}\n\nTrack contributions and expenses transparently in real time.`
-        : `✨ Check out the event ledger "${eventData.name}" on Notepay:\n${window.location.href}`;
-      if (navigator.share) {
-        navigator.share({ title: `Notepay Invite — ${eventData.name}`, text: inviteMsg }).catch(() => { });
-      } else {
-        copyToClipboard(inviteMsg, "Invite message copied to clipboard!");
-      }
+      const joinUrl = origin + path + '?code=' + code;
+      const inviteMsg = `🤝 Invitation to Collaborate\n\nYou have been invited as a Collector for "${eventData.name}" on Notepay (Event Contributions & Expenses Tracker).\n\nManage contributions, log expenses, and maintain the event ledger in real time.\n\n🔑 Invite Code: ${code}\n\n👉 Click below to join as a Collector:`;
+      shareMessageWithLogo({ title: `Notepay Invite — ${eventData.name}`, text: inviteMsg, url: joinUrl });
     }
 
     async function toggleTableVisibility(type) {
@@ -4176,7 +4195,7 @@
     }
 
     function goBackToDashboard() {
-      window.location.href = getCleanUrl(`dashboard.html?tab=${fallbackDashTab}`);
+      window.location.href = getCleanUrl(`dashboard.html?tab=${getSmartDashTab()}`);
     }
     // ── CHAT MODULE ──
     let chatMessages = [];

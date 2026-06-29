@@ -734,9 +734,13 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         <div class="sbox-footer">
           <div style="display:flex;gap:8px;margin-top:12px;">
             <button
-              style="flex:1;background:none;border:1.5px solid var(--red);border-radius:30px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;"
+              style="flex:1;background:none;border:1.5px solid var(--red);border-radius:30px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;"
               onclick="revokeCode()"><span data-np-icon="refresh" data-np-size="16"
-                style="vertical-align:middle;margin-right:6px;"></span> Regenerate Code</button>
+                style="vertical-align:middle;margin-right:6px;"></span> Regenerate</button>
+            <button
+              style="flex:1;background:var(--primary);border:none;border-radius:30px;padding:11px;text-align:center;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(15,163,163,0.25);"
+              onclick="shareEventJoinCode()"><span data-np-icon="share" data-np-size="16"
+                style="vertical-align:middle;margin-right:6px;"></span> Share Invite</button>
           </div>
           <button
             style="width:100%;text-align:center;color:var(--text3);font-size:14px;font-weight:700;cursor:pointer;padding:10px 0;background:none;border:none;margin-top:6px;"

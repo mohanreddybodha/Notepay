@@ -493,7 +493,10 @@ async def regenerate_invite_code(event_id: str, db: Session = Depends(get_db), u
     """Generate a brand new invite code. Old code becomes permanently invalid."""
     verify_membership(db, event_id, user_id, require_organizer=True)
     verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=3600)
-    return crud.regenerate_invite_code(db, event_id)
+    event = crud.regenerate_invite_code(db, event_id)
+    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
+    await manager.broadcast_dashboard_update()
+    return event
 @app.get("/events/watched", tags=["Events"])
 def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard  Discover tab: public events recently viewed. Optimized with bulk membership check."""

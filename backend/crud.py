@@ -237,6 +237,7 @@ def regenerate_invite_code(db: Session, event_id: str):
         db.commit()
         db.refresh(event)
         cache.cache.invalidate_event(event_id)
+        cache.cache.bump_global_version()
     return event
 
 
