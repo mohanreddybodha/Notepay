@@ -911,28 +911,48 @@ body.dark-mode .btn-solid-primary { box-shadow: 0 4px 12px rgba(96, 165, 250, 0.
   visibility: hidden;
   pointer-events: none;
 }
-.splash-logo-box, body.dark-mode .splash-logo-box, html.dark .splash-logo-box {
-  width: 54px;
-  height: 54px;
+.splash-logo-box, body.dark-mode .splash-logo-box, html.dark .splash-logo-box, .dark-mode .splash-logo-box, #app-splash .splash-logo-box, #loading-pane .splash-logo-box, div.splash-logo-box[style] {
+  width: 56px !important;
+  height: 56px !important;
   background: #FFFFFF !important;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
   box-shadow: 0 0 0 4px rgba(26, 78, 140, 0.4), 0 0 0 8px rgba(26, 78, 140, 0.2), 0 0 0 12px rgba(26, 78, 140, 0.1) !important;
   animation: splash-pulse 1.8s infinite alternate ease-in-out !important;
-  margin-bottom: 36px;
-  border: 1px solid var(--border);
+  margin-bottom: 24px !important;
+  border: 1px solid var(--border) !important;
 }
 
-.progress-line, body.dark-mode .progress-line, html.dark .progress-line, .dark-mode .progress-line {
+.progress-bar, body.dark-mode .progress-bar, html.dark .progress-bar, .dark-mode .progress-bar, #app-splash .progress-bar, #loading-pane .progress-bar {
+  width: 120px !important;
+  height: 3px !important;
+  background: var(--input-bg, #E5E7EB) !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  position: relative !important;
+  margin: 0 auto !important;
+}
+
+.progress-line, body.dark-mode .progress-line, html.dark .progress-line, .dark-mode .progress-line, #app-splash .progress-line, #loading-pane .progress-line {
+  width: 40% !important;
+  height: 100% !important;
   background: #1A4E8C !important;
+  border-radius: 4px !important;
+  position: absolute !important;
+  animation: progress-sweep 1.2s infinite ease-in-out !important;
 }
 
 @keyframes splash-pulse {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(26, 78, 140, 0.4), 0 0 0 4px rgba(26, 78, 140, 0.25), 0 0 0 8px rgba(26, 78, 140, 0.1); }
   100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(26, 78, 140, 0), 0 0 0 16px rgba(26, 78, 140, 0), 0 0 0 24px rgba(26, 78, 140, 0); }
+}
+@keyframes progress-sweep {
+  0% { left: -40%; }
+  50% { left: 60%; }
+  100% { left: 100%; }
 }
 .splash-logo-box img,
 .splash-logo-box svg {
