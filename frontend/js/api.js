@@ -84,7 +84,7 @@ async function apiFetch(method, path, body = null) {
     throw new Error("Not authenticated");
   }
 
-  const shouldShowSpinner = !path.includes("/chat") && !path.includes("/ai") && !path.includes("/preview-code");
+  const shouldShowSpinner = !silent && !path.includes("/chat") && !path.includes("/ai") && !path.includes("/preview-code");
   if (shouldShowSpinner && typeof showCircleLoading === "function") showCircleLoading();
 
   try {

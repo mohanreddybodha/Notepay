@@ -36,6 +36,7 @@
         splash.classList.add("hidden");
         setTimeout(() => splash.style.display = "none", 400);
       }
+      if (typeof hideCircleLoading === 'function') hideCircleLoading(true);
     }
   }
 })();

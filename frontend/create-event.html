@@ -657,16 +657,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     const from = urlParams.get("from");
     const editId = urlParams.get("edit");
     
-    if (from === "dashboard") {
+    if (window.history.length > 1 && document.referrer) {
+      history.back();
+    } else if (from === "dashboard") {
       window.location.href = getCleanUrl("dashboard.html");
-      return;
     } else if (from === "event" && editId) {
       window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
-      return;
-    }
-
-    if (document.referrer && (document.referrer.includes("profile") || document.referrer.includes("dashboard") || document.referrer.includes("event"))) {
-      history.back();
     } else {
       if (editId) {
         window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
