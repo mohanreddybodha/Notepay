@@ -731,11 +731,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       const href = link.getAttribute('href');
       if (href === 'dashboard.html') {
         e.preventDefault();
-        if (document.referrer && (document.referrer.includes('dashboard') || document.referrer.includes('event'))) {
+        const dbtab = new URLSearchParams(window.location.search).get('dbtab');
+        const qs = dbtab !== null ? `?tab=${dbtab}` : '';
+        if (window.history.length > 1 && document.referrer) {
           history.back();
         } else {
-          const dbtab = new URLSearchParams(window.location.search).get('dbtab');
-          window.location.href = getCleanUrl(`dashboard.html${dbtab ? '?tab=' + dbtab : ''}`);
+          window.location.href = getCleanUrl(`dashboard.html${qs}`);
         }
       }
     });

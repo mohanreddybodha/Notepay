@@ -657,17 +657,20 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     const from = urlParams.get("from");
     const editId = urlParams.get("edit");
     
+    const tabParam = urlParams.get("tab") || urlParams.get("dbtab");
+    const qs = tabParam !== null ? "?tab=" + tabParam : "";
+
     if (window.history.length > 1 && document.referrer) {
       history.back();
     } else if (from === "dashboard") {
-      window.location.href = getCleanUrl("dashboard.html");
+      window.location.href = getCleanUrl("dashboard.html") + qs;
     } else if (from === "event" && editId) {
       window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
     } else {
       if (editId) {
         window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
       } else {
-        window.location.href = getCleanUrl("dashboard.html");
+        window.location.href = getCleanUrl("dashboard.html") + qs;
       }
     }
   }

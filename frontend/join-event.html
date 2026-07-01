@@ -412,10 +412,14 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 <script src="js/auth-guard.js?v=31"></script>
 <script>
   function goBack() {
-    if (document.referrer && (document.referrer.includes("profile.html") || document.referrer.includes("dashboard.html") || document.referrer.includes("event.html"))) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get("tab") || urlParams.get("dbtab");
+    const qs = tabParam !== null ? "?tab=" + tabParam : "";
+
+    if (window.history.length > 1 && document.referrer) {
       history.back();
     } else {
-      window.location.href = getCleanUrl("dashboard.html");
+      window.location.href = getCleanUrl("dashboard.html") + qs;
     }
   }
 
