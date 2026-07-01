@@ -730,10 +730,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       if (!link) return;
       const href = link.getAttribute('href');
       if (href === 'dashboard.html') {
-        const dbtab = new URLSearchParams(window.location.search).get('dbtab');
-        if (dbtab) {
-          e.preventDefault();
-          window.location.href = `dashboard.html?tab=${dbtab}`;
+        e.preventDefault();
+        if (document.referrer && (document.referrer.includes('dashboard') || document.referrer.includes('event'))) {
+          history.back();
+        } else {
+          const dbtab = new URLSearchParams(window.location.search).get('dbtab');
+          window.location.href = getCleanUrl(`dashboard.html${dbtab ? '?tab=' + dbtab : ''}`);
         }
       }
     });
