@@ -741,22 +741,22 @@
     }
     
     @media (max-width: 900px) {
-      .search-row {
-        position: relative;
-        z-index: 5;
-        transition: margin-top 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+      /* The clip container: sits right below tab-bar, clips anything that slides up */
+      .search-clip {
+        overflow: hidden;
+        flex-shrink: 0;
       }
-      .search-row.hide-search {
-        margin-top: -85px; /* search row + tab desc height */
-        pointer-events: none;
+      /* The inner sliding panel: contains search-row + tab-desc together */
+      .search-slide {
+        transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1);
+        will-change: transform;
       }
-      .tab-desc {
-        position: relative;
-        z-index: 5;
-        transition: opacity 0.3s ease;
+      .search-slide.hide-search {
+        transform: translateY(-100%);
       }
-      .tab-desc.hide-search {
-        opacity: 0;
+      /* Keep pointer events off when hidden */
+      .search-slide.hide-search .search-row,
+      .search-slide.hide-search .tab-desc {
         pointer-events: none;
       }
     }
@@ -1906,8 +1906,10 @@
       </div>
 
 
-      <!-- Search & Filter -->
-      <div class="search-row">
+      <!-- Search & Filter (wrapped in clip container so it slides under tab-bar) -->
+      <div class="search-clip">
+        <div class="search-slide" id="search-slide">
+          <div class="search-row">
         <div class="srch-wrap">
           <div class="srch-ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
               viewBox="0 0 24 24">
@@ -1993,6 +1995,8 @@
         </div>
       </div>
       <div id="tab-desc" class="tab-desc"></div>
+        </div><!-- /search-slide -->
+      </div><!-- /search-clip -->
 
       <!-- Scroll -->
       <div class="scroll-area">
@@ -2885,9 +2889,8 @@
 
     // ── Tabs Logic ──
     function switchTab(idx, noRender = false) {
-      if (typeof switchSPAView === 'function' && !noRender && (document.getElementById('spa-view-create')?.style.display !== 'none' || document.getElementById('spa-view-join')?.style.display !== 'none')) {
-        switchSPAView('overview');
-      }
+      // Do NOT auto-close SPA views here — that causes the tab flash before navigating.
+      // SPA views are closed by user explicitly clicking back or a tab.
       currentTab = idx;
 
       // URL state
@@ -3033,7 +3036,7 @@
     function switchSPAView(viewName) {
       const cr = document.getElementById('spa-view-create');
       const jn = document.getElementById('spa-view-join');
-      const overviewEls = document.querySelectorAll('.page-hdr, .tab-bar, .search-row, #tab-desc, .scroll-area, .fab');
+      const overviewEls = document.querySelectorAll('.page-hdr, .tab-bar, .search-clip, .scroll-area, .fab');
       const mainTopbar = document.querySelector('.topbar');
       const spaHeader = document.getElementById('spa-pg-header');
       const spaTitle = document.getElementById('spa-pg-title');
@@ -3118,8 +3121,10 @@
         if (spaHeader) spaHeader.style.display = 'none';
         if (document.querySelector('.page-hdr')) document.querySelector('.page-hdr').style.display = '';
         if (document.querySelector('.tab-bar')) document.querySelector('.tab-bar').style.display = '';
-        if (document.querySelector('.search-row')) document.querySelector('.search-row').style.display = 'flex';
-        if (document.getElementById('tab-desc')) document.getElementById('tab-desc').style.display = 'block';
+        if (document.querySelector('.search-clip')) document.querySelector('.search-clip').style.display = '';
+        // Always reset search bar to visible when returning to overview
+        const slideEl = document.getElementById('search-slide');
+        if (slideEl) slideEl.classList.remove('hide-search');
         if (document.querySelector('.scroll-area')) document.querySelector('.scroll-area').style.display = 'block';
         if (document.querySelector('.fab')) document.querySelector('.fab').style.display = 'flex';
         const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
@@ -3132,22 +3137,22 @@
       window.scrollTo(0, 0);
     }
     
-    // Mobile search bar hide on scroll down, show on scroll up
+    // Mobile search bar — slides under tab-bar on scroll down, back up on scroll up
     let lastScrollAreaY = 0;
     const scrollAreaEl = document.querySelector('.scroll-area');
     if (scrollAreaEl) {
       scrollAreaEl.addEventListener('scroll', () => {
         if (window.innerWidth >= 900) return;
         const currentY = scrollAreaEl.scrollTop;
-        const searchRow = document.querySelector('.search-row');
-        const tabDesc = document.getElementById('tab-desc');
-        
+        const slide = document.getElementById('search-slide');
+        if (!slide) { lastScrollAreaY = currentY; return; }
+
         if (currentY > 60 && currentY > lastScrollAreaY) {
-          if (searchRow && !searchRow.classList.contains('hide-search')) searchRow.classList.add('hide-search');
-          if (tabDesc && !tabDesc.classList.contains('hide-search')) tabDesc.classList.add('hide-search');
-        } else if (currentY < lastScrollAreaY - 10 || currentY <= 60) {
-          if (searchRow && searchRow.classList.contains('hide-search')) searchRow.classList.remove('hide-search');
-          if (tabDesc && tabDesc.classList.contains('hide-search')) tabDesc.classList.remove('hide-search');
+          // Scrolling DOWN past 60px — hide search bar
+          slide.classList.add('hide-search');
+        } else if (currentY < lastScrollAreaY - 5 || currentY <= 60) {
+          // Scrolling UP by any amount, or back near top — reveal immediately
+          slide.classList.remove('hide-search');
         }
         lastScrollAreaY = currentY;
       }, { passive: true });
