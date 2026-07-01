@@ -639,7 +639,7 @@ function hideCircleLoading(force = false) {
     const spinner = document.getElementById("np-circle-spinner");
     if (spinner) {
       spinner.style.opacity = "0";
-      setTimeout(() => { if (spinner.style.opacity === "0") spinner.style.display = "none"; }, 150);
+      spinner.style.display = "none"; // Hide instantly
     }
   }
 }
