@@ -157,7 +157,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
     /* Scrollable Form Content */
     .scroll-area { flex: 1; overflow: hidden !important; padding: 28px 20px; display: flex; align-items: flex-start; justify-content: center; }
-    .form-container { width: 100%; max-width: 480px; margin: 16px auto 32px; background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+    .form-container { width: 100%; max-width: 480px; margin: 16px auto 32px; background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); flex-shrink: 0; }
     @media (max-width: 900px) { .scroll-area { padding: 16px 12px; } .form-container { margin-top: 4px; padding: 24px; margin-bottom: 24px; } }
 
     .form-header { margin-bottom: 20px; text-align: center; }

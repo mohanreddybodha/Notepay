@@ -737,6 +737,27 @@
         padding: 0 30px 16px;
       }
     }
+    
+    @media (max-width: 900px) {
+      .search-row {
+        transition: margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .search-row.hide-search {
+        margin-top: -56px;
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+      }
+      .tab-desc {
+        transition: margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .tab-desc.hide-search {
+        margin-top: -28px;
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+      }
+    }
 
     .srch-wrap {
       flex: 1;
@@ -3031,11 +3052,12 @@
           if (spaTitle) spaTitle.textContent = 'Create Event';
         }
         document.querySelector('a[href="create-event.html"]')?.classList.add('active');
+        const qsTab = '?tab=' + (typeof currentTab !== 'undefined' ? currentTab : 0);
         if (window.location.pathname.indexOf('create-event') === -1) {
           if (window.location.search.includes('view=create')) {
-            history.replaceState({spa: 'create'}, '', 'create-event.html');
+            history.replaceState({spa: 'create'}, '', 'create-event.html' + qsTab);
           } else {
-            history.pushState({spa: 'create'}, '', 'create-event.html');
+            history.pushState({spa: 'create'}, '', 'create-event.html' + qsTab);
           }
         }
         const dateInput = document.getElementById("spa-ev-date");
@@ -3078,7 +3100,8 @@
             setTimeout(() => document.getElementById('spa-join-btn')?.click(), 500);
           }
         }
-        const qs = codeParamJoin ? '?code=' + encodeURIComponent(codeParamJoin) : '';
+        const qsTabJoin = typeof currentTab !== 'undefined' ? currentTab : 0;
+        const qs = '?tab=' + qsTabJoin + (codeParamJoin ? '&code=' + encodeURIComponent(codeParamJoin) : '');
         if (window.location.pathname.indexOf('join-event') === -1) {
           if (window.location.search.includes('view=join')) {
             history.replaceState({spa: 'join'}, '', 'join-event.html' + qs);
@@ -3101,10 +3124,31 @@
         if (document.querySelector('.tb-title')) document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
         document.getElementById('sb-tab-' + (typeof currentTab !== 'undefined' ? currentTab : 0))?.classList.add('active');
         if (window.location.pathname.indexOf('dashboard') === -1 && window.location.pathname !== '/' && !window.location.pathname.endsWith('/')) {
-          history.pushState({spa: 'overview'}, '', 'dashboard.html');
+          history.pushState({spa: 'overview'}, '', 'dashboard.html?tab=' + (typeof currentTab !== 'undefined' ? currentTab : 0));
         }
       }
       window.scrollTo(0, 0);
+    }
+    
+    // Mobile search bar hide on scroll down, show on scroll up
+    let lastScrollAreaY = 0;
+    const scrollAreaEl = document.querySelector('.scroll-area');
+    if (scrollAreaEl) {
+      scrollAreaEl.addEventListener('scroll', () => {
+        if (window.innerWidth >= 900) return;
+        const currentY = scrollAreaEl.scrollTop;
+        const searchRow = document.querySelector('.search-row');
+        const tabDesc = document.getElementById('tab-desc');
+        
+        if (currentY > 60 && currentY > lastScrollAreaY) {
+          if (searchRow && !searchRow.classList.contains('hide-search')) searchRow.classList.add('hide-search');
+          if (tabDesc && !tabDesc.classList.contains('hide-search')) tabDesc.classList.add('hide-search');
+        } else if (currentY < lastScrollAreaY - 10 || currentY <= 60) {
+          if (searchRow && searchRow.classList.contains('hide-search')) searchRow.classList.remove('hide-search');
+          if (tabDesc && tabDesc.classList.contains('hide-search')) tabDesc.classList.remove('hide-search');
+        }
+        lastScrollAreaY = currentY;
+      }, { passive: true });
     }
 
     window.addEventListener('resize', () => {
