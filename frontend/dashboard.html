@@ -456,14 +456,6 @@
       min-width: 0;
     }
 
-    function spaGoBack() {
-      if (window.history.length > 1) {
-        history.back();
-      } else {
-        switchSPAView('overview');
-      }
-    }
-
     /* ── Page header ── */
     .pg-header { height:auto; min-height:60px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; padding:10px 16px 10px 12px; flex-shrink:0; }
     @media (min-width: 900px) {
@@ -3002,6 +2994,14 @@
         document.getElementById('tips-modal')?.classList.add('open');
       } else if (document.getElementById('spa-view-join')?.style.display === 'flex') {
         document.getElementById('help-modal')?.classList.add('open');
+      }
+    }
+
+    function spaGoBack() {
+      if (window.history.length > 1) {
+        history.back();
+      } else {
+        switchSPAView('overview');
       }
     }
 
