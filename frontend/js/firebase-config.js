@@ -95,14 +95,14 @@ function waitForAuthReady() {
         resolve(user);
       } else {
         // Firebase occasionally fires null briefly before loading IndexedDB session.
-        // Wait 1.5s to see if a valid user object arrives before resolving null.
+        // Wait 3.5s to see if a valid user object arrives before resolving null.
         if (!nullWaitTimer) {
           nullWaitTimer = setTimeout(() => {
             clearTimeout(timer);
             unsub();
             _authHasSettled = true;
             resolve(null);
-          }, 1500);
+          }, 3500);
         }
       }
     }, err => {

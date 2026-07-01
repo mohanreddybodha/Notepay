@@ -686,6 +686,8 @@ let recaptchaVerifier  = null;
 (async () => {
   const user = await waitForAuthReady();
   if (user) {
+    localStorage.removeItem("np_new_user");
+    localStorage.removeItem("np_setup_expiry");
     const params = new URLSearchParams(window.location.search);
     const returnUrl = params.get("return");
     window.location.replace(getCleanUrl(returnUrl || 'dashboard.html'));
@@ -856,6 +858,8 @@ async function verifyOTP() {
     const { status, data } = await apiFetchWithToken("GET", "/users/me", token);
 
     if (status === 200) {
+      localStorage.removeItem("np_new_user");
+      localStorage.removeItem("np_setup_expiry");
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get("return");
       window.location.replace(getCleanUrl(returnUrl || "dashboard.html"));

@@ -2640,7 +2640,7 @@
       const isPublic = e.is_public;
       const isRestricted = e.is_restricted;
       const isActive = e.is_active;
-      const eventUrl = getCleanUrl(`event.html?id=${e.id}`);
+      const eventUrl = getCleanUrl(`event.html?id=${e.id}&dbtab=${currentTab}`);
       const code = (role === 'organizer') ? (e.invite_code || "") : "";
 
       let canClick = role === "organizer" || (role === "visitor" && isPublic !== false) || role === "collector";
