@@ -27,7 +27,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Notepay — Dashboard</title>
 
   <link
@@ -264,9 +264,18 @@
     /* ═══════════════════════════════════════════════
        APP SHELL
     ═══════════════════════════════════════════════ */
+    html, body {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+    body {
+      height: 100vh; /* Lock height to physical screen, ignore keyboard */
+    }
     .app {
       display: flex;
-      height: 100dvh;
+      height: 100%;
       overflow: hidden;
     }
 
@@ -741,22 +750,21 @@
     }
     
     @media (max-width: 900px) {
-      /* The clip container: sits right below tab-bar, clips anything that slides up */
+      /* Use Grid 0fr transition to collapse the layout space smoothly */
       .search-clip {
-        overflow: hidden;
-        flex-shrink: 0;
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.35s cubic-bezier(0.33, 1, 0.68, 1);
       }
-      /* The inner sliding panel: contains search-row + tab-desc together */
+      .search-clip.hide-search {
+        grid-template-rows: 0fr;
+      }
       .search-slide {
-        transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1);
-        will-change: transform;
-      }
-      .search-slide.hide-search {
-        transform: translateY(-100%);
+        min-height: 0;
+        overflow: hidden;
       }
       /* Keep pointer events off when hidden */
-      .search-slide.hide-search .search-row,
-      .search-slide.hide-search .tab-desc {
+      .search-clip.hide-search .search-slide {
         pointer-events: none;
       }
     }
@@ -1779,7 +1787,7 @@
 </head>
 
 <body>
-  <style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:transparent;opacity:1;pointer-events:none;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
+  <style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:var(--surface);opacity:1;pointer-events:all;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}#np-circle-spinner.hidden{opacity:0;pointer-events:none;}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
 
   
 
@@ -1906,95 +1914,79 @@
       </div>
 
 
-      <!-- Search & Filter (wrapped in clip container so it slides under tab-bar) -->
+      <!-- Search & Filter (search-clip clips the slide, tab-bar sits above with z-index:10) -->
       <div class="search-clip">
         <div class="search-slide" id="search-slide">
+
           <div class="search-row">
-        <div class="srch-wrap">
-          <div class="srch-ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
-              viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg></div>
-          <input type="search" class="srch-inp" id="search-input" placeholder="Search events…"
-            oninput="handleSearchFilter()">
-          <div class="srch-clear" id="clear-btn" onclick="clearSearch()"><svg width="15" height="15" fill="none"
-              stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg></div>
-        </div>
-        <div class="filter-wrap">
-          <button class="flt-btn" id="flt-toggle" onclick="toggleFilterMenu()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <line x1="4" y1="21" x2="4" y2="14" />
-              <line x1="4" y1="10" x2="4" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12" y2="3" />
-              <line x1="20" y1="21" x2="20" y2="16" />
-              <line x1="20" y1="12" x2="20" y2="3" />
-              <line x1="1" y1="14" x2="7" y2="14" />
-              <line x1="9" y1="8" x2="15" y2="8" />
-              <line x1="17" y1="16" x2="23" y2="16" />
-            </svg>
-          </button>
-          <div class="flt-menu" id="flt-menu">
-            <div class="flt-sec">
-              <div class="flt-label">Sort By</div>
-              <input type="hidden" id="flt-sort" value="newest">
-              <div class="flt-pills" data-target="flt-sort">
-                <button type="button" class="flt-pill active" data-val="newest" onclick="setFilterPill('flt-sort', 'newest', this)">Newest First</button>
-                <button type="button" class="flt-pill" data-val="oldest" onclick="setFilterPill('flt-sort', 'oldest', this)">Oldest First</button>
+            <div class="srch-wrap">
+              <div class="srch-ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></div>
+              <input type="search" class="srch-inp" id="search-input" placeholder="Search events…" oninput="handleSearchFilter()">
+              <div class="srch-clear" id="clear-btn" onclick="clearSearch()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></div>
+            </div>
+            <div class="filter-wrap">
+              <button class="flt-btn" id="flt-toggle" onclick="toggleFilterMenu()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
+              </button>
+              <div class="flt-menu" id="flt-menu">
+                <div class="flt-sec">
+                  <div class="flt-label">Sort By</div>
+                  <input type="hidden" id="flt-sort" value="newest">
+                  <div class="flt-pills" data-target="flt-sort">
+                    <button type="button" class="flt-pill active" data-val="newest" onclick="setFilterPill('flt-sort', 'newest', this)">Newest First</button>
+                    <button type="button" class="flt-pill" data-val="oldest" onclick="setFilterPill('flt-sort', 'oldest', this)">Oldest First</button>
+                  </div>
+                </div>
+                <div class="flt-sec">
+                  <div class="flt-label">Status</div>
+                  <input type="hidden" id="flt-status" value="all">
+                  <div class="flt-pills" data-target="flt-status">
+                    <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-status', 'all', this)">All</button>
+                    <button type="button" class="flt-pill" data-val="active" onclick="setFilterPill('flt-status', 'active', this)">Active</button>
+                    <button type="button" class="flt-pill" data-val="deactivated" onclick="setFilterPill('flt-status', 'deactivated', this)">Deactivated</button>
+                  </div>
+                </div>
+                <div class="flt-sec">
+                  <div class="flt-label">Privacy</div>
+                  <input type="hidden" id="flt-privacy" value="all">
+                  <div class="flt-pills" data-target="flt-privacy">
+                    <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-privacy', 'all', this)">All</button>
+                    <button type="button" class="flt-pill" data-val="public" onclick="setFilterPill('flt-privacy', 'public', this)">Public</button>
+                    <button type="button" class="flt-pill" data-val="private" onclick="setFilterPill('flt-privacy', 'private', this)">Private</button>
+                  </div>
+                </div>
+                <div class="flt-sec">
+                  <div class="flt-label">Pin Status</div>
+                  <input type="hidden" id="flt-pin" value="all">
+                  <div class="flt-pills" data-target="flt-pin">
+                    <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-pin', 'all', this)">All</button>
+                    <button type="button" class="flt-pill" data-val="pinned" onclick="setFilterPill('flt-pin', 'pinned', this)">Pinned</button>
+                    <button type="button" class="flt-pill" data-val="unpinned" onclick="setFilterPill('flt-pin', 'unpinned', this)">Unpinned</button>
+                  </div>
+                </div>
+                <div class="flt-sec">
+                  <div class="flt-label">Date Range</div>
+                  <input type="hidden" id="flt-date" value="all">
+                  <div class="flt-pills" data-target="flt-date">
+                    <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-date', 'all', this)">All Time</button>
+                    <button type="button" class="flt-pill" data-val="30days" onclick="setFilterPill('flt-date', '30days', this)">Last 30 Days</button>
+                    <button type="button" class="flt-pill" data-val="custom" onclick="setFilterPill('flt-date', 'custom', this)">Custom Range</button>
+                  </div>
+                  <div class="custom-date-row hidden" id="custom-date-row" style="margin-top: 8px;">
+                    <input type="date" id="flt-date-start" class="flt-date-inp">
+                    <input type="date" id="flt-date-end" class="flt-date-inp">
+                  </div>
+                </div>
+                <div class="flt-acts" style="display: flex; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);">
+                  <button class="btn" style="flex:1; text-align:center; font-size:13.5px; font-weight:700; color:var(--text); padding:9px 0; background:none; border:1px solid var(--border-str); border-radius:8px;" onclick="clearFilterMenu()">Clear</button>
+                  <button class="btn" style="flex:1; border-radius:8px; background:var(--np-teal); color:#fff; box-shadow:0 4px 12px rgba(15,163,163,0.2); border:none; font-size:13.5px;" onclick="applyFilterMenu()">Apply</button>
+                </div>
               </div>
             </div>
-            <div class="flt-sec">
-              <div class="flt-label">Status</div>
-              <input type="hidden" id="flt-status" value="all">
-              <div class="flt-pills" data-target="flt-status">
-                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-status', 'all', this)">All</button>
-                <button type="button" class="flt-pill" data-val="active" onclick="setFilterPill('flt-status', 'active', this)">Active</button>
-                <button type="button" class="flt-pill" data-val="deactivated" onclick="setFilterPill('flt-status', 'deactivated', this)">Deactivated</button>
-              </div>
-            </div>
-            <div class="flt-sec">
-              <div class="flt-label">Privacy</div>
-              <input type="hidden" id="flt-privacy" value="all">
-              <div class="flt-pills" data-target="flt-privacy">
-                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-privacy', 'all', this)">All</button>
-                <button type="button" class="flt-pill" data-val="public" onclick="setFilterPill('flt-privacy', 'public', this)">Public</button>
-                <button type="button" class="flt-pill" data-val="private" onclick="setFilterPill('flt-privacy', 'private', this)">Private</button>
-              </div>
-            </div>
-            <div class="flt-sec">
-              <div class="flt-label">Pin Status</div>
-              <input type="hidden" id="flt-pin" value="all">
-              <div class="flt-pills" data-target="flt-pin">
-                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-pin', 'all', this)">All</button>
-                <button type="button" class="flt-pill" data-val="pinned" onclick="setFilterPill('flt-pin', 'pinned', this)">Pinned</button>
-                <button type="button" class="flt-pill" data-val="unpinned" onclick="setFilterPill('flt-pin', 'unpinned', this)">Unpinned</button>
-              </div>
-            </div>
-            <div class="flt-sec">
-              <div class="flt-label">Date Range</div>
-              <input type="hidden" id="flt-date" value="all">
-              <div class="flt-pills" data-target="flt-date">
-                <button type="button" class="flt-pill active" data-val="all" onclick="setFilterPill('flt-date', 'all', this)">All Time</button>
-                <button type="button" class="flt-pill" data-val="30days" onclick="setFilterPill('flt-date', '30days', this)">Last 30 Days</button>
-                <button type="button" class="flt-pill" data-val="custom" onclick="setFilterPill('flt-date', 'custom', this)">Custom Range</button>
-              </div>
-              <div class="custom-date-row hidden" id="custom-date-row" style="margin-top: 8px;">
-                <input type="date" id="flt-date-start" class="flt-date-inp">
-                <input type="date" id="flt-date-end" class="flt-date-inp">
-              </div>
-            </div>
-            <div class="flt-acts" style="display: flex; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);">
-              <button class="btn" style="flex:1; text-align: center; font-size: 13.5px; font-weight: 700; color: var(--text); padding: 9px 0; background: none; border: 1px solid var(--border-str); border-radius: 8px;" onclick="clearFilterMenu()">Clear</button>
-              <button class="btn" style="flex:1; border-radius: 8px; background: var(--np-teal); color: #fff; box-shadow: 0 4px 12px rgba(15, 163, 163, 0.2); border: none; font-size: 13.5px;" onclick="applyFilterMenu()">Apply</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="tab-desc" class="tab-desc"></div>
+          </div><!-- /search-row -->
+
+          <div id="tab-desc" class="tab-desc"></div>
+
         </div><!-- /search-slide -->
       </div><!-- /search-clip -->
 
@@ -2235,7 +2227,7 @@
 
     // Read URL tab parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
+    const tabParam = urlParams.get('tab') || urlParams.get('dbtab') || urlParams.get('from_tab');
     if (tabParam !== null) {
       currentTab = parseInt(tabParam) || 0;
     }
@@ -3123,8 +3115,8 @@
         if (document.querySelector('.tab-bar')) document.querySelector('.tab-bar').style.display = '';
         if (document.querySelector('.search-clip')) document.querySelector('.search-clip').style.display = '';
         // Always reset search bar to visible when returning to overview
-        const slideEl = document.getElementById('search-slide');
-        if (slideEl) slideEl.classList.remove('hide-search');
+        const clipEl = document.querySelector('.search-clip');
+        if (clipEl) clipEl.classList.remove('hide-search');
         if (document.querySelector('.scroll-area')) document.querySelector('.scroll-area').style.display = 'block';
         if (document.querySelector('.fab')) document.querySelector('.fab').style.display = 'flex';
         const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
@@ -3144,15 +3136,15 @@
       scrollAreaEl.addEventListener('scroll', () => {
         if (window.innerWidth >= 900) return;
         const currentY = scrollAreaEl.scrollTop;
-        const slide = document.getElementById('search-slide');
-        if (!slide) { lastScrollAreaY = currentY; return; }
+        const clip = document.querySelector('.search-clip');
+        if (!clip) { lastScrollAreaY = currentY; return; }
 
         if (currentY > 60 && currentY > lastScrollAreaY) {
           // Scrolling DOWN past 60px — hide search bar
-          slide.classList.add('hide-search');
+          clip.classList.add('hide-search');
         } else if (currentY < lastScrollAreaY - 5 || currentY <= 60) {
           // Scrolling UP by any amount, or back near top — reveal immediately
-          slide.classList.remove('hide-search');
+          clip.classList.remove('hide-search');
         }
         lastScrollAreaY = currentY;
       }, { passive: true });

@@ -309,6 +309,8 @@
       } finally {
         const splash = document.getElementById('app-splash');
         if (splash) splash.classList.add('hidden');
+        const orbitSpin = document.getElementById('np-circle-spinner');
+        if (orbitSpin) orbitSpin.classList.add('hidden');
         
         _isFetchingLoadAll = false;
         if (_queueNextLoadAll) {
