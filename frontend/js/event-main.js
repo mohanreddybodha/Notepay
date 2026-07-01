@@ -5,18 +5,19 @@
     // ── State ──
     const params = new URLSearchParams(location.search);
     
-    let fallbackDashTab = params.get('dbtab');
-    if (!fallbackDashTab) {
-      const t = params.get('tab') || params.get('from_tab');
-      if (['1', '2', '3'].includes(t)) fallbackDashTab = t;
+    let fallbackDashTab = null;
+    {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get('tab') || params.get('from_tab') || params.get('dbtab');
+      if (['0', '1', '2', '3'].includes(t)) fallbackDashTab = t;
       else fallbackDashTab = null;
     }
 
     function getSmartDashTab() {
+      if (fallbackDashTab !== null && fallbackDashTab !== undefined) return fallbackDashTab;
       if (typeof isVisitor !== 'undefined' && isVisitor) return '3';
       if (typeof isOrganizer !== 'undefined' && isOrganizer) return '1';
-      if (fallbackDashTab !== null && fallbackDashTab !== undefined) return fallbackDashTab;
-      return '2';
+      return '0';
     }
 
     const eventId = params.get("id") || params.get("eventId");

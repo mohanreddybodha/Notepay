@@ -625,6 +625,8 @@
        MOBILE TABS
     ═══════════════════════════════════════════════ */
     .tab-bar {
+      position: relative;
+      z-index: 10;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -740,21 +742,21 @@
     
     @media (max-width: 900px) {
       .search-row {
-        transition: margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 5;
+        transition: margin-top 0.4s cubic-bezier(0.33, 1, 0.68, 1);
       }
       .search-row.hide-search {
-        margin-top: -56px;
-        opacity: 0;
-        transform: translateY(-10px);
+        margin-top: -85px; /* search row + tab desc height */
         pointer-events: none;
       }
       .tab-desc {
-        transition: margin-top 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 5;
+        transition: opacity 0.3s ease;
       }
       .tab-desc.hide-search {
-        margin-top: -28px;
         opacity: 0;
-        transform: translateY(-10px);
         pointer-events: none;
       }
     }
@@ -3183,6 +3185,10 @@
       } else if (href === 'dashboard.html') {
         e.preventDefault();
         switchSPAView('overview');
+      } else if (href && (href.startsWith('profile.html') || href.startsWith('edit-profile.html') || href.startsWith('admin.html'))) {
+        e.preventDefault();
+        const qs = href.includes('?') ? '&' : '?';
+        window.location.href = href + qs + 'dbtab=' + (typeof currentTab !== 'undefined' ? currentTab : 0);
       }
     });
 

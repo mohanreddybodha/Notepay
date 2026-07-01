@@ -724,5 +724,19 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     } catch(e) {}
   }
 </script>
+<script>
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (href === 'dashboard.html') {
+        const dbtab = new URLSearchParams(window.location.search).get('dbtab');
+        if (dbtab) {
+          e.preventDefault();
+          window.location.href = `dashboard.html?tab=${dbtab}`;
+        }
+      }
+    });
+  </script>
 </body>
 </html>
