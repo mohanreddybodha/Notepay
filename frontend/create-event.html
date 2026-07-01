@@ -4,7 +4,8 @@
 <script>
 const _params = new URLSearchParams(window.location.search);
 if (!_params.get('edit')) {
-  window.location.replace('dashboard.html?view=create');
+  _params.set('view', 'create');
+  window.location.replace('dashboard.html?' + _params.toString());
 } else {
   document.documentElement.classList.add('is-editing');
   document.write('<style id="sync-edit-loader">.scroll-area { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.25s ease !important; }</style>');
@@ -664,7 +665,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       return;
     }
 
-    if (document.referrer && (document.referrer.includes("profile.html") || document.referrer.includes("dashboard.html") || document.referrer.includes("event.html"))) {
+    if (document.referrer && (document.referrer.includes("profile") || document.referrer.includes("dashboard") || document.referrer.includes("event"))) {
       history.back();
     } else {
       if (editId) {

@@ -31,9 +31,11 @@ const auth = firebase.auth();
 
 // ── Clean URL routing helper (localhost compatibility) ──
 function getCleanUrl(url) {
-  // We no longer strip .html during JS navigation.
-  // This ensures navigation works on all environments (S3 direct, local networks).
-  // The .html is still hidden from the address bar by the replaceState script in each page's <head>.
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:') {
+    const u = new URL(url, window.location.href);
+    u.pathname = u.pathname.replace(/\.html$/, '');
+    return u.pathname + u.search + u.hash;
+  }
   return url;
 }
 

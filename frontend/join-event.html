@@ -4,7 +4,8 @@
 <script>
 const _params = new URLSearchParams(window.location.search);
 const _code = _params.get('code');
-window.location.replace('dashboard.html?view=join' + (_code ? '&code=' + encodeURIComponent(_code) : ''));
+_params.set('view', 'join');
+window.location.replace('dashboard.html?' + _params.toString());
 // SPA URL normalization
 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
   let cleanPath = window.location.pathname.replace(/\.html$/, '');

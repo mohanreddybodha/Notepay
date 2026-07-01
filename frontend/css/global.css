@@ -1083,23 +1083,9 @@ body.dark-mode #upi-donor-req-cols-list {
   border-radius: 50%;
   animation: npSpinFast 0.65s linear infinite;
 }
-.np-arc-2 {
-  position: absolute;
-  width: 65%;
-  height: 65%;
-  border: 2px solid transparent;
-  border-bottom-color: #14b8a6;
-  border-left-color: #ffffff;
-  border-radius: 50%;
-  animation: npSpinRev 0.85s linear infinite;
-}
 @keyframes npSpinFast {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-@keyframes npSpinRev {
-  0% { transform: rotate(360deg); }
-  100% { transform: rotate(0deg); }
 }
 
 
