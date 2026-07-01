@@ -33,7 +33,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=4">
+  <link rel="stylesheet" href="css/global.css?v=31">
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -749,25 +749,7 @@
       }
     }
     
-    @media (max-width: 900px) {
-      /* Use Grid 0fr transition to collapse the layout space smoothly */
-      .search-clip {
-        display: grid;
-        grid-template-rows: 1fr;
-        transition: grid-template-rows 0.35s cubic-bezier(0.33, 1, 0.68, 1);
-      }
-      .search-clip.hide-search {
-        grid-template-rows: 0fr;
-      }
-      .search-slide {
-        min-height: 0;
-        overflow: hidden;
-      }
-      /* Keep pointer events off when hidden */
-      .search-clip.hide-search .search-slide {
-        pointer-events: none;
-      }
-    }
+
 
     .srch-wrap {
       flex: 1;
@@ -1913,24 +1895,20 @@
         </div>
       </div>
 
-
-      <!-- Search & Filter (search-clip clips the slide, tab-bar sits above with z-index:10) -->
-      <div class="search-clip">
-        <div class="search-slide" id="search-slide">
-
-          <div class="search-row">
-            <div class="srch-wrap">
-              <div class="srch-ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></div>
-              <input type="search" class="srch-inp" id="search-input" placeholder="Search events…" oninput="handleSearchFilter()">
-              <div class="srch-clear" id="clear-btn" onclick="clearSearch()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></div>
-            </div>
-            <div class="filter-wrap">
-              <button class="flt-btn" id="flt-toggle" onclick="toggleFilterMenu()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
-              </button>
-              <div class="flt-menu" id="flt-menu">
-                <div class="flt-sec">
-                  <div class="flt-label">Sort By</div>
+      <!-- Search & Filter -->
+      <div class="search-row">
+        <div class="srch-wrap">
+          <div class="srch-ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></div>
+          <input type="search" class="srch-inp" id="search-input" placeholder="Search events…" oninput="handleSearchFilter()">
+          <div class="srch-clear" id="clear-btn" onclick="clearSearch()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></div>
+        </div>
+        <div class="filter-wrap">
+          <button class="flt-btn" id="flt-toggle" onclick="toggleFilterMenu()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
+          </button>
+          <div class="flt-menu" id="flt-menu">
+            <div class="flt-sec">
+              <div class="flt-label">Sort By</div>
                   <input type="hidden" id="flt-sort" value="newest">
                   <div class="flt-pills" data-target="flt-sort">
                     <button type="button" class="flt-pill active" data-val="newest" onclick="setFilterPill('flt-sort', 'newest', this)">Newest First</button>
@@ -1987,8 +1965,6 @@
 
           <div id="tab-desc" class="tab-desc"></div>
 
-        </div><!-- /search-slide -->
-      </div><!-- /search-clip -->
 
       <!-- Scroll -->
       <div class="scroll-area">
@@ -2215,10 +2191,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/firebase-config.js?v=29"></script>
-  <script src="js/icons.js?v=29"></script>
-  <script src="js/api.js?v=30"></script>
-  <script src="js/auth-guard.js?v=29"></script>
+  <script src="js/firebase-config.js?v=31"></script>
+  <script src="js/icons.js?v=31"></script>
+  <script src="js/api.js?v=31"></script>
+  <script src="js/auth-guard.js?v=31"></script>
 
   <script>
     let myEvents = [], sharedEvents = [], watchedEvents = [];
@@ -3113,10 +3089,6 @@
         if (spaHeader) spaHeader.style.display = 'none';
         if (document.querySelector('.page-hdr')) document.querySelector('.page-hdr').style.display = '';
         if (document.querySelector('.tab-bar')) document.querySelector('.tab-bar').style.display = '';
-        if (document.querySelector('.search-clip')) document.querySelector('.search-clip').style.display = '';
-        // Always reset search bar to visible when returning to overview
-        const clipEl = document.querySelector('.search-clip');
-        if (clipEl) clipEl.classList.remove('hide-search');
         if (document.querySelector('.scroll-area')) document.querySelector('.scroll-area').style.display = 'block';
         if (document.querySelector('.fab')) document.querySelector('.fab').style.display = 'flex';
         const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
@@ -3129,26 +3101,7 @@
       window.scrollTo(0, 0);
     }
     
-    // Mobile search bar — slides under tab-bar on scroll down, back up on scroll up
-    let lastScrollAreaY = 0;
-    const scrollAreaEl = document.querySelector('.scroll-area');
-    if (scrollAreaEl) {
-      scrollAreaEl.addEventListener('scroll', () => {
-        if (window.innerWidth >= 900) return;
-        const currentY = scrollAreaEl.scrollTop;
-        const clip = document.querySelector('.search-clip');
-        if (!clip) { lastScrollAreaY = currentY; return; }
 
-        if (currentY > 60 && currentY > lastScrollAreaY) {
-          // Scrolling DOWN past 60px — hide search bar
-          clip.classList.add('hide-search');
-        } else if (currentY < lastScrollAreaY - 5 || currentY <= 60) {
-          // Scrolling UP by any amount, or back near top — reveal immediately
-          clip.classList.remove('hide-search');
-        }
-        lastScrollAreaY = currentY;
-      }, { passive: true });
-    }
 
     window.addEventListener('resize', () => {
       const crView = document.getElementById('spa-view-create');
