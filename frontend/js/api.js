@@ -645,12 +645,15 @@ function hideCircleLoading(force = false) {
 }
 
 if (typeof window !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
+    if (_spinnerActiveCount <= 0) {
+      hideCircleLoading(true);
+    }
+  });
   window.addEventListener("load", () => {
-    setTimeout(() => {
-      if (_spinnerActiveCount <= 0) {
-        hideCircleLoading(true);
-      }
-    }, 150);
+    if (_spinnerActiveCount <= 0) {
+      hideCircleLoading(true);
+    }
   });
 }
 
