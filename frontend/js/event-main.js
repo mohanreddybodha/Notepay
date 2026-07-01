@@ -260,6 +260,7 @@
       }
 
       console.log(isBackground ? "🔄 Background Refreshing..." : "🚀 Fetching Fresh Data");
+      if (!isBackground && typeof showCircleLoading === "function") showCircleLoading();
       try {
         const res = await apiFetch("GET", `/events/${eventId}/full-details`);
         if (!res) {
@@ -274,6 +275,7 @@
         applyData(res, preventRender);
       } catch (e) {
         console.error("LoadAll failed", e);
+        if (typeof hideCircleLoading === "function") hideCircleLoading(true);
         
         // Always show locked pane for any load error (403, 404, network error)
         // to prevent getting stuck on a blank/loading screen

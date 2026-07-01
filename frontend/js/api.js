@@ -29,7 +29,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
 // ── Core fetch wrapper — attaches Bearer token automatically ──
 // ── Core fetch wrapper — attaches Bearer token automatically ──
-async function apiFetch(method, path, body = null, silent = false) {
+async function apiFetch(method, path, body = null, silent = true) {
   const isWrite = method === "POST" || method === "PUT" || method === "DELETE";
 
   // 1. Intercept edits or deletes on temporary offline entries (indicated by a negative ID)
