@@ -100,6 +100,7 @@
     }
 
     async function init() {
+      if (typeof showCircleLoading === "function") showCircleLoading();
       const user = await waitForAuthReady();
       if (!user) return; // auth-guard.js will handle redirect
 
@@ -387,6 +388,7 @@
       // Hide loader IMMEDIATELY to prevent stuck UI
       const loader = document.getElementById("loading-pane");
       if (loader) loader.style.display = "none";
+      if (typeof hideCircleLoading === "function") hideCircleLoading(true);
 
       try {
         if (!eventData) {

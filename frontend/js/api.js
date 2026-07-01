@@ -83,103 +83,106 @@ async function apiFetch(method, path, body = null) {
     window.location.href = getCleanUrl(`login.html?return=${returnUrl}`);
     throw new Error("Not authenticated");
   }
-  
-  const opts = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    }
-  };
-  if (method === "GET") {
-    opts.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
-    opts.headers["Pragma"] = "no-cache";
-    opts.headers["Expires"] = "0";
-  }
-  if (body) opts.body = JSON.stringify(body);
 
-  let res;
-  let isNetworkError = false;
+  const shouldShowSpinner = !path.includes("/chat") && !path.includes("/ai");
+  if (shouldShowSpinner && typeof showCircleLoading === "function") showCircleLoading();
+
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
-    opts.signal = controller.signal;
-    
-    let url = `${API_BASE}${path}`;
+    const opts = {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    };
     if (method === "GET") {
-      const separator = url.includes("?") ? "&" : "?";
-      url += `${separator}_=${Date.now()}`;
+      opts.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+      opts.headers["Pragma"] = "no-cache";
+      opts.headers["Expires"] = "0";
     }
-    res = await fetch(url, opts);
-    clearTimeout(timeoutId);
-  } catch (e) {
-    if (isWrite) {
-      isNetworkError = true;
-    } else if (method === "GET") {
-      // Offline cached GET fallback
-      const cached = localStorage.getItem("cache:" + path);
-      if (cached) {
-        showToast("Displaying offline cached data", "warning");
-        return JSON.parse(cached);
-      }
-    }
-    if (!isNetworkError) throw e;
-  }
+    if (body) opts.body = JSON.stringify(body);
 
-  // 3. Fallback optimistically if request failed due to a network connection error
-  if (isWrite && isNetworkError) {
-    if (isAIChat) throw new Error("Timeout waiting for AI. Your request is likely still processing!");
-    if (isChat) throw new Error("NP_OFFLINE");
-    return handleOfflineWrite(method, path, body);
-  }
-
-  if (res.status === 401) {
-    try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
-    if (typeof resetAuthCache === "function") resetAuthCache();
-    localStorage.removeItem("np_token_tmp");
-    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.href = getCleanUrl(`login.html?return=${returnUrl}`);
-    throw new Error("Session expired");
-  }
-
-  const isJson = res.headers.get("content-type")?.includes("application/json");
-  const data = isJson ? await res.json() : null;
-
-  if (!res.ok && res.status !== 304) {
-    const msg = data?.detail || `HTTP ${res.status}`;
-    if (res.status === 404 && (msg.includes("User not registered") || msg.includes("User not found"))) {
-      if (window.location.pathname.includes("login.html")) {
-        return { status: res.status, data };
-      }
-      try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
-      localStorage.clear();
-      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.replace(`login.html?return=${returnUrl}`);
-      throw new Error("Account deleted. Please log in again.");
-    }
-    if (res.status === 403 && msg.toLowerCase().includes("banned")) {
-      document.body.innerHTML = `
-        <div style="height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--surface); padding:24px; text-align:center;">
-          <div style="font-size:64px; margin-bottom:16px;">🚨</div>
-          <h1 style="font-family:'Nunito', sans-serif; font-size:24px; font-weight:900; color:var(--text); margin-bottom:12px;">Account Suspended</h1>
-          <p style="font-size:15px; color:var(--text3); line-height:1.6; max-width:320px;">${msg}</p>
-        </div>
-      `;
-      throw new Error("Account Banned");
-    }
-    throw new Error(msg);
-  }
-
-  // Cache successful GET data for offline retrieval
-  if (method === "GET" && data) {
+    let res;
+    let isNetworkError = false;
     try {
-      localStorage.setItem("cache:" + path, JSON.stringify(data));
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
+      opts.signal = controller.signal;
+      
+      let url = `${API_BASE}${path}`;
+      if (method === "GET") {
+        const separator = url.includes("?") ? "&" : "?";
+        url += `${separator}_=${Date.now()}`;
+      }
+      res = await fetch(url, opts);
+      clearTimeout(timeoutId);
     } catch (e) {
-      console.warn("Storage quota exceeded, unable to cache GET request");
+      if (isWrite) {
+        isNetworkError = true;
+      } else if (method === "GET") {
+        // Offline cached GET fallback
+        const cached = localStorage.getItem("cache:" + path);
+        if (cached) {
+          showToast("Displaying offline cached data", "warning");
+          return JSON.parse(cached);
+        }
+      }
+      if (!isNetworkError) throw e;
     }
-  }
 
-  return data;
+    // 3. Fallback optimistically if request failed due to a network connection error
+    if (isWrite && isNetworkError) {
+      if (isAIChat) throw new Error("Timeout waiting for AI. Your request is likely still processing!");
+      if (isChat) throw new Error("NP_OFFLINE");
+      return handleOfflineWrite(method, path, body);
+    }
+
+    if (res.status === 401) {
+      try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
+      if (typeof resetAuthCache === "function") resetAuthCache();
+      localStorage.removeItem("np_token_tmp");
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = getCleanUrl(`login.html?return=${returnUrl}`);
+      throw new Error("Session expired");
+    }
+
+    const isJson = res.headers.get("content-type")?.includes("application/json");
+    const data = isJson ? await res.json() : null;
+
+    if (!res.ok && res.status !== 304) {
+      const msg = data?.detail || `HTTP ${res.status}`;
+      if (res.status === 404 && (msg.includes("User not registered") || msg.includes("User not found"))) {
+        if (window.location.pathname.includes("login.html")) {
+          return { status: res.status, data };
+        }
+        try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
+        localStorage.clear();
+        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.replace(`login.html?return=${returnUrl}`);
+        throw new Error("Account deleted. Please log in again.");
+      }
+      if (res.status === 403 && msg.toLowerCase().includes("banned")) {
+        try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
+        localStorage.clear();
+        window.location.replace("login.html?banned=1");
+        throw new Error("ACCOUNT_BANNED");
+      }
+      throw new Error(msg);
+    }
+
+    // Cache successful GET data for offline retrieval
+    if (method === "GET" && data) {
+      try {
+        localStorage.setItem("cache:" + path, JSON.stringify(data));
+      } catch (e) {
+        console.warn("Storage quota exceeded, unable to cache GET request");
+      }
+    }
+
+    return data;
+  } finally {
+    if (shouldShowSpinner && typeof hideCircleLoading === "function") hideCircleLoading();
+  }
 }
 
 // ── Helper to queue writes and return optimistic results ──
@@ -323,6 +326,11 @@ async function createEvent(name, description, eventDate, showDonations = true, s
     show_expenses: showExpenses,
     goal_amount: goalAmount
   });
+}
+
+/** Preview event details by code */
+async function previewEventCode(code) {
+  return apiFetch("GET", `/events/preview-code?invite_code=${encodeURIComponent(code)}`);
 }
 
 /** Join event by invite code */
@@ -506,6 +514,148 @@ function showToast(msg, type = "default") {
 function getInitials(name = "") {
   return name.trim().split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
 }
+
+/** Get deterministic vibrant avatar theme color based on user name */
+function getAvatarColor(name = "") {
+  const colors = ["#A855F7", "#3b82f6", "#14b8a6", "#f59e0b", "#10b981", "#ec4899", "#6366f1", "#8b5cf6"];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
+/** Helper to apply both initials and consistent theme background color to avatar element */
+function applyAvatar(el, name = "") {
+  if (!el) return;
+  el.textContent = getInitials(name);
+  el.style.background = getAvatarColor(name);
+}
+
+let _spinnerActiveCount = 0;
+function injectSpinnerCSS() {
+  if (typeof document === "undefined" || !document.head) return;
+  let st = document.getElementById("np-spinner-css");
+  if (!st) {
+    st = document.createElement("style");
+    st.id = "np-spinner-css";
+    st.textContent = `
+      #np-circle-spinner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        opacity: 1;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+      }
+      @media (min-width: 900px) {
+        #np-circle-spinner {
+          left: 236px;
+          width: calc(100vw - 236px);
+        }
+      }
+      .np-designed-spinner {
+        width: 28px;
+        height: 28px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: drop-shadow(0 2px 6px rgba(20, 184, 166, 0.3));
+      }
+      .np-arc-1 {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 2.5px solid transparent;
+        border-top-color: #14b8a6;
+        border-right-color: #ffffff;
+        border-radius: 50%;
+        animation: npSpinFast 0.65s linear infinite;
+      }
+      .np-arc-2 {
+        position: absolute;
+        width: 65%;
+        height: 65%;
+        border: 2px solid transparent;
+        border-bottom-color: #14b8a6;
+        border-left-color: #ffffff;
+        border-radius: 50%;
+        animation: npSpinRev 0.85s linear infinite;
+      }
+      @keyframes npSpinFast {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes npSpinRev {
+        0% { transform: rotate(360deg); }
+        100% { transform: rotate(0deg); }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+}
+if (typeof document !== "undefined") injectSpinnerCSS();
+
+/** Compact Designed Orbital Loading Spinner (Teal & White) */
+function showCircleLoading() {
+  _spinnerActiveCount++;
+  const oldBar = document.getElementById("np-top-progress");
+  if (oldBar) oldBar.remove();
+
+  injectSpinnerCSS();
+
+  let spinner = document.getElementById("np-circle-spinner");
+  if (!spinner) {
+    spinner = document.createElement("div");
+    spinner.id = "np-circle-spinner";
+    spinner.innerHTML = `
+      <div class="np-designed-spinner">
+        <div class="np-arc-1"></div>
+        <div class="np-arc-2"></div>
+      </div>
+    `;
+    if (document.body) document.body.appendChild(spinner);
+  }
+  if (spinner) {
+    spinner.style.display = "flex";
+    spinner.style.opacity = "1";
+  }
+}
+
+function hideCircleLoading(force = false) {
+  if (force) _spinnerActiveCount = 0;
+  else _spinnerActiveCount = Math.max(0, _spinnerActiveCount - 1);
+
+  if (_spinnerActiveCount <= 0) {
+    _spinnerActiveCount = 0;
+    const spinner = document.getElementById("np-circle-spinner");
+    if (spinner) {
+      spinner.style.opacity = "0";
+      setTimeout(() => { if (spinner.style.opacity === "0") spinner.style.display = "none"; }, 150);
+    }
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      if (_spinnerActiveCount <= 0) {
+        hideCircleLoading(true);
+      }
+    }, 150);
+  });
+}
+
+function showTopLoadingBar() { showCircleLoading(); }
+function hideTopLoadingBar() { hideCircleLoading(); }
 
 // ══════════════════════════════════════════════
 //  THEME INITIALIZATION

@@ -42,7 +42,7 @@ class MemberContactResponse(BaseModel):
 
 class EventCreate(BaseModel):
     name: str
-    description: str
+    description: Optional[str] = ""
     event_date: datetime
     is_public: bool = False
     show_donations: bool = True

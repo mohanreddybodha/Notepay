@@ -8,150 +8,316 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
 }
 </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover" />
-  <title>Notepay - Privacy Policy</title>
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- Global CSS -->
-  <link rel="stylesheet" href="css/global.css?v=25">
-  <link rel="stylesheet" href="css/icons.css?v=25">
-  
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover"/>
+  <title>Notepay — Privacy Policy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css?v=26"/>
+  <link rel="stylesheet" href="css/icons.css?v=25"/>
+  <script>
+    if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
+      document.documentElement.classList.add("dark-mode");
+      document.documentElement.classList.add("dark");
+      window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
+    }
+  </script>
   <style>
-    /* Header */
-    .ab { background: var(--primary-dk); display: flex; align-items: center; padding: 10px 16px 14px; gap: 8px; z-index: 100; flex-shrink: 0; }
-    .back { color: rgba(255,255,255,.85); font-size: 22px; cursor: pointer; padding: 3px 7px; border-radius: 8px; line-height: 1; }
-    .ab-ttl { flex: 1; color: white; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; }
+    :root {
+      --np-navy:#1A4E8C; --np-navy-dk:#113663; --np-navy-lt:#E8F0F8; --np-navy-md:#D1E1F0;
+      --np-teal:#14B8A6; --np-teal-dk:#0F766E; --np-teal-lt:#E6F7F5;
+      --np-green:#1A7A5E; --np-green-lt:#EAF7F3;
+      --np-red:#C0392B; --np-red-lt:#FDECEA;
+      --np-amber:#C4860A; --np-amber-lt:#FEF6E6;
+      --bg:#EAF0F6; --surface:#FFFFFF; --surface-2:#F2F7FB;
+      --border:#D6E4F0; --border-str:#B8CDE0; --divider:#E8F0F8;
+      --t1:#0D1B2A; --t2:#3D5A7A; --t3:#6B8AA8;
+      --shadow-sm:0 1px 3px rgba(13,43,85,.1), 0 1px 2px rgba(13,43,85,.06);
+      --shadow-modal:0 20px 60px rgba(13,43,85,.25), 0 4px 16px rgba(13,43,85,.12);
+      --r-sm:10px; --r-md:14px;
+      --font-ui:'Inter',-apple-system,sans-serif;
+      --font-brand:'Plus Jakarta Sans','Inter',sans-serif;
+    }
+    html.dark, html.dark-mode {
+      --bg:#09090b; --surface:#18181b; --surface-2:#27272a;
+      --border:#3f3f46; --border-str:#52525b; --divider:#27272a;
+      --t1:#f4f4f5; --t2:#a1a1aa; --t3:#71717a;
+      --np-navy:#60a5fa; --np-navy-dk:#3b82f6;
+      --np-navy-lt:rgba(96,165,250,0.15); --np-navy-md:rgba(96,165,250,0.25);
+      --np-teal:#2dd4bf; --np-teal-dk:#14b8a6; --np-teal-lt:rgba(45,212,191,0.15);
+      --np-green:#34d399; --np-green-lt:rgba(52,211,153,0.15);
+      --np-red:#f87171; --np-red-lt:rgba(248,113,113,0.15);
+      --np-amber:#fbbf24; --np-amber-lt:rgba(251,191,36,0.15);
+      --shadow-sm:0 1px 3px rgba(0,0,0,.5);
+      --shadow-modal:0 20px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.05);
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; overflow:hidden; font-family:var(--font-ui); background:var(--bg); color:var(--t1); -webkit-font-smoothing:antialiased; }
+    a { text-decoration:none; color:inherit; }
+    svg { display:block; flex-shrink:0; }
+
+    .app { display:flex; height:100dvh; overflow:hidden; }
+
+    /* Sidebar — exact profile.html */
+    .sidebar { display:none; width:236px; min-width:236px; background:var(--surface); border-right:1px solid var(--border); flex-direction:column; flex-shrink:0; }
+    @media (min-width:900px) { .sidebar { display:flex; } }
+    .sb-brand { height:58px; padding:0 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .brand-logo-img { width:30px; height:30px; border-radius:6px; }
+    .sb-brand-name { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--np-navy); }
+    .sb-nav { flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; scrollbar-width:none; }
+    .sb-nav::-webkit-scrollbar { display:none; }
+    .sb-section { font-size:10px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:1px; padding:10px 8px 4px; margin-top:6px; }
+    .sb-section:first-child { margin-top:0; }
+    .sb-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--r-sm); font-size:13.5px; font-weight:500; color:var(--t2); cursor:pointer; transition:all .13s; user-select:none; text-decoration:none; }
+    @media (hover:hover) { .sb-item:hover { background:var(--surface-2); color:var(--t1); } }
+    .sb-item.active { background:var(--np-navy-lt); color:var(--np-navy); font-weight:600; }
+    .sb-count { margin-left:auto; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:20px; background:var(--border); color:var(--t3); min-width:22px; text-align:center; }
+    .sb-item.active .sb-count { background:var(--np-navy-md); color:var(--np-navy); }
+    .sb-divider { height:1px; background:var(--border); margin:6px 10px; }
+    .sb-footer { padding:10px; border-top:1px solid var(--border); }
+    .sb-user { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--r-sm); cursor:pointer; transition:background .13s; text-decoration:none; }
+    @media (hover:hover) { .sb-user:hover { background:var(--surface-2); } }
+    .sb-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; background:var(--np-navy); color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+    .sb-uname { font-size:13px; font-weight:600; color:var(--np-navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px; }
+    .sb-uphon { font-size:11px; color:var(--t3); }
+
+    /* Main area */
+    .main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; background:var(--bg); position:relative; }
+
+    /* ── Page header ── */
+    .pg-header { height:auto; min-height:60px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; padding:10px 16px 10px 12px; flex-shrink:0; }
+    .pg-back { width:34px; height:34px; border-radius:50%; background:transparent; border:none; color:var(--t2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .13s, color .13s; flex-shrink:0; }
+    @media (hover:hover) { .pg-back:hover { background:var(--surface-2); color:var(--t1); } }
+    .pg-back:active { background:var(--border); }
+    .pg-title-wrap { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .pg-title { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+    .pg-sub { font-size:11.5px; font-weight:500; color:var(--t3); line-height:1.3; }
     
-    /* Scrollable Content */
-    .scr { flex: 1; overflow-y: auto; padding: 24px; background: var(--surface); color: var(--text); -webkit-overflow-scrolling: touch; }
-    
-    /* Typography & Layout */
-    .last-updated { font-size: 12px; color: var(--text3); font-weight: 600; margin-bottom: 24px; }
-    
-    .section-title { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; color: var(--text); margin: 28px 0 12px; }
-    .section-title:first-of-type { margin-top: 0; }
-    
-    .para { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
-    
-    .bullet-list { margin: 0 0 16px; padding-left: 20px; }
-    .bullet-list li { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 8px; }
-    .highlight { font-weight: 800; color: var(--primary); }
-    
-    .important-box { background: var(--input-bg); border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 4px 8px 8px 4px; margin-bottom: 24px; }
-    .important-box .para { margin-bottom: 0; font-weight: 600; color: var(--text); }
+    /* Scroll area */
+    .scroll-area { flex:1; overflow-y:auto; padding:24px 16px 32px; display:flex; align-items:flex-start; justify-content:center; }
+    @media (max-width:899px) { .scroll-area { padding:14px 12px 24px; } }
+
+    .content-wrap { width:100%; max-width:680px; animation:appear .2s ease; }
+    @keyframes appear { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Hero */
+    .hero { background:transparent; border-bottom:1px solid var(--divider); padding:10px 10px 24px; margin-bottom:12px; }
+    .hero-ttl { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--t1); margin-bottom:4px; }
+    .hero-sub { font-size:13.5px; color:var(--t2); line-height:1.5; margin-bottom:14px; }
+
+    /* Trust callout — the "we don't" box */
+    .trust-box { display:flex; flex-direction:column; gap:7px; margin-top:2px; }
+    .trust-row { display:flex; align-items:center; gap:9px; font-size:13px; font-weight:700; color:var(--t1); }
+    .trust-row .t-no { width:20px; height:20px; border-radius:50%; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; font-weight:900; }
+    html.dark .trust-row .t-no, html.dark-mode .trust-row .t-no { background:rgba(220,38,38,.18); color:#f87171; }
+    .trust-row .t-yes { width:20px; height:20px; border-radius:50%; background:#dcfce7; color:#16a34a; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; font-weight:900; }
+    html.dark .trust-row .t-yes, html.dark-mode .trust-row .t-yes { background:rgba(22,163,74,.18); color:#4ade80; }
+
+    /* Section cards */
+    .sec-card { background:var(--surface); border-radius:20px; border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:18px; }
+    html.dark .sec-card, html.dark-mode .sec-card { background:#262626; border:none; box-shadow:none; }
+    .sec-hdr { display:flex; align-items:center; gap:12px; padding:15px 20px; border-bottom:1px solid var(--divider); background:var(--surface-2); }
+    html.dark .sec-hdr, html.dark-mode .sec-hdr { background:#2a2a2a; border-bottom-color:var(--divider); }
+    .sec-ic { width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--t1); }
+    .sec-hdr-ttl { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--np-navy); }
+    .sec-body { padding:20px; }
+
+    /* Bullet items — teal dot */
+    .b-item { position:relative; padding-left:20px; margin-bottom:14px; font-size:13.5px; color:var(--t2); line-height:1.6; }
+    .b-item:last-child { margin-bottom:0; }
+    .b-item strong { color:var(--t1); font-weight:700; }
+    .b-item::before { content:""; position:absolute; left:4px; top:8px; width:6px; height:6px; border-radius:50%; background:var(--np-teal); }
+
+    .g-para { font-size:13.5px; color:var(--t2); line-height:1.6; margin-bottom:12px; }
+    .g-para strong { color:var(--t1); font-weight:700; }
+    .hl { color:var(--np-teal); font-weight:700; }
+
+    /* Icon box colors — exact match of profile.html .c-* classes */
+    .sec-ic { width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--t1); }
+    .c-navy, .c-teal, .c-green, .c-amber, .c-red { background:transparent; color:var(--t1); border:none; }
+    html.dark .c-navy, html.dark-mode .c-navy,
+    html.dark .c-teal, html.dark-mode .c-teal,
+    html.dark .c-green, html.dark-mode .c-green,
+    html.dark .c-amber, html.dark-mode .c-amber,
+    html.dark .c-red, html.dark-mode .c-red { background:transparent; color:var(--t1); border:none; }
+
+    .footer-text { text-align:center; font-size:12px; color:var(--t3); font-weight:600; padding:8px 0 16px; }
   </style>
-<link rel="icon" type="image/png" href="favicon.png" />
-<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 </head>
-<body style="margin:0; padding:0; overflow:hidden;">
-  
+<body>
+<style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:transparent;opacity:1;pointer-events:none;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
 
-<div class="page">
-  <!-- Top App Bar -->
-  <div class="ab">
-    <div class="back" onclick="goBack()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
-    <div class="ab-ttl">Privacy Policy</div>
-  </div>
-  
-  <!-- Content Area -->
-  <div class="scr">
-    <div class="last-updated">Last Updated: June 2026</div>
-
-    <div class="important-box">
-      <div class="para">At Notepay, we take your privacy seriously. This Privacy Policy explains what information we collect, how we use it, and how we protect it.</div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <img src="favicon.svg" alt="Notepay" class="brand-logo-img">
+      <span class="sb-brand-name">Notepay</span>
     </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Events</div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=0')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        All Events <span class="sb-count" id="sb-count-0">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=1')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        My Events <span class="sb-count" id="sb-count-1">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=2')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Shared Events <span class="sb-count" id="sb-count-2">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=3')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Visited Events <span class="sb-count" id="sb-count-3">-</span>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section" style="margin-top:0;">Add</div>
+      <a href="create-event.html" class="sb-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Create Event
+      </a>
+      <a href="join-event.html" class="sb-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Join by Code
+      </a>
+    </nav>
+    <div class="sb-footer">
+      <a href="profile.html" class="sb-user">
+        <div class="sb-avatar" id="av-btn-side">?</div>
+        <div>
+          <div class="sb-uname" id="user-name-side">My Profile</div>
+          <div class="sb-uphon">Settings &amp; Account</div>
+        </div>
+      </a>
+    </div>
+  </aside>
 
-    <div class="section-title">1. Information We Collect</div>
-    <div class="para">We collect the minimum amount of information necessary to provide you with a secure and functional experience:</div>
-    <ul class="bullet-list">
-      <li><strong>Authentication Data:</strong> Your phone number is used exclusively for OTP login and account verification.</li>
-      <li><strong>Profile Data:</strong> Your name and profile details are used to identify you within the events you join.</li>
-      <li><strong>Event Data:</strong> The financial records, expenses, and donations you log within events are stored securely in our database.</li>
-      <li><strong>UPI Configuration:</strong> Organizers provide their <span class="highlight">UPI ID and UPI Registered Name</span> to enable donor collection links.</li>
-      <li><strong>Receipt Images:</strong> When public donors upload screenshots/proofs of payment via the collection link, we temporarily collect and process the receipt images to verify details and extract transaction records.</li>
-    </ul>
+  <div class="main">
+    <header class="pg-header">
+      <button onclick="goBack()" class="pg-back" title="Back" aria-label="Go back">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="pg-title-wrap">
+        <div class="pg-title">Privacy Policy</div>
+      </div>
+    </header>
 
-    <div class="section-title">2. How We Use Your Information</div>
-    <div class="para">Your data is strictly used to facilitate the core features of the Notepay application:</div>
-    <ul class="bullet-list">
-      <li>To authenticate your identity and secure your account.</li>
-      <li>To display your name and activity to other members of the events you explicitly join.</li>
-      <li>To synchronize your data across your devices in real-time.</li>
-    </ul>
+    <div class="scroll-area">
+      <div class="content-wrap">
 
-    <div class="section-title">3. Data Sharing & Disclosure</div>
-    <div class="para"><strong>We do not sell your personal data to third parties.</strong> Your information is only shared in the following contexts:</div>
-    <ul class="bullet-list">
-      <li><strong>Within Events:</strong> Your profile name and the entries you log are visible to the Organizers and other Members of the specific events you participate in.</li>
-      <li><strong>Legal Requirements:</strong> We may disclose information if required by law or in response to valid requests by public authorities.</li>
-    </ul>
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-ttl">Your phone number logs you in. Your event data stays yours. That's it.</div>
+          <div class="hero-sub">We only collect what's necessary to make Notepay work. Nothing is sold, shared, or monetized.</div>
+          <div class="trust-box">
+            <div class="trust-row"><span class="t-no">✕</span> We don't sell your data to anyone</div>
+            <div class="trust-row"><span class="t-no">✕</span> We don't run ads or track you for marketing</div>
+            <div class="trust-row"><span class="t-no">✕</span> We don't share your info with third parties</div>
+            <div class="trust-row"><span class="t-yes">✓</span> Your data is stored in encrypted cloud databases</div>
+          </div>
+        </div>
 
-    <div class="section-title">4. Artificial Intelligence & Data Processing</div>
-    <div class="para">To provide features like our intelligent `@ai` chat assistant and automated receipt verification, Notepay uses secure third-party AI models (e.g., Google Gemini). By using these features, you agree to the following:</div>
-    <ul class="bullet-list">
-      <li><strong>Receipt Extraction:</strong> Uploaded payment receipt screenshots are processed by AI models to identify and extract the receiver name, sender name, transaction ID, date, and payment amount. These details are used to verify and log collection entries automatically.</li>
-      <li><strong>Data Minimization:</strong> Only the specific ledger entries, chat inputs, or receipt images necessary to complete the verification or response generation are securely transmitted to the AI processor.</li>
-      <li><strong>No PII Training:</strong> We strictly prohibit our AI providers from using your Personally Identifiable Information (PII), uploaded receipt images, or event records to train their foundational or public models.</li>
-      <li><strong>Usage Choice:</strong> If you do not want receipt images or chats processed by AI, you can opt to log entries manually and avoid using the `@ai` command.</li>
-    </ul>
+        <!-- 1. Information We Collect -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="sec-hdr-ttl">1. Information We Collect</div>
+          </div>
+          <div class="sec-body">
+            <div class="b-item"><strong>Authentication Data:</strong> Your phone number is used exclusively for OTP login and identity verification.</div>
+            <div class="b-item"><strong>Profile Data:</strong> Your full name identifies you clearly within events you create or join.</div>
+            <div class="b-item"><strong>Event &amp; Ledger Data:</strong> Collections, donations, and expenses you log are stored securely in encrypted cloud databases.</div>
+            <div class="b-item"><strong>UPI Configuration:</strong> Organizers provide their <span class="hl">UPI ID and UPI Registered Name</span> to enable automated payment receipt verification.</div>
+            <div class="b-item"><strong>Receipt Images:</strong> When donors upload payment screenshots via public collection links, we temporarily process the images to verify transactions.</div>
+          </div>
+        </div>
 
-    <div class="section-title">5. Data Security</div>
-    <div class="para">We implement robust security measures to protect your personal information from unauthorized access, alteration, or disclosure. However, no internet-based service can guarantee 100% security. You are responsible for keeping your login credentials and device secure.</div>
+        <!-- 2. How We Use It -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-teal"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="sec-hdr-ttl">2. How We Use Your Information</div>
+          </div>
+          <div class="sec-body">
+            <div class="b-item">To authenticate your identity, protect your session, and secure your account.</div>
+            <div class="b-item">To display your name and entries to authorized members of events you explicitly join.</div>
+            <div class="b-item">To synchronize your event ledger data across your active devices in real time.</div>
+          </div>
+        </div>
 
-    <div class="section-title">6. Your Rights</div>
-    <div class="para">You have the right to access, update, or delete your personal information at any time. If you wish to permanently delete your account and all associated data, you can contact our support team or use the account deletion tools provided within the app.</div>
+        <!-- 3. Data Sharing -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-amber"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+            <div class="sec-hdr-ttl">3. Data Sharing &amp; Disclosure</div>
+          </div>
+          <div class="sec-body">
+            <div class="g-para"><strong>We do not sell your personal data to third parties.</strong> Information is shared only as follows:</div>
+            <div class="b-item"><strong>Within Authorized Events:</strong> Your profile name and ledger entries are visible to organizers and fellow members of events you join.</div>
+            <div class="b-item"><strong>Legal Obligations:</strong> We may disclose information if required by law or in response to valid requests by public authorities.</div>
+          </div>
+        </div>
 
-    <div class="section-title">7. Contact Us</div>
-    <div class="para">If you have any questions or concerns about this Privacy Policy, please contact our support team.</div>
+        <!-- 4. AI & Data Processing -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-green"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+            <div class="sec-hdr-ttl">4. Artificial Intelligence &amp; Data Processing</div>
+          </div>
+          <div class="sec-body">
+            <div class="g-para">Notepay uses enterprise AI models (e.g. Google Gemini) to power <span class="hl">@ai</span> chat responses and automated receipt verification. By using these features, you agree:</div>
+            <div class="b-item"><strong>Receipt Verification:</strong> Uploaded payment screenshots are processed to verify sender, receiver name, amount, and transaction date against event configurations.</div>
+            <div class="b-item"><strong>Data Minimization:</strong> Only the relevant ledger context or specific receipt image is securely sent to the AI processor.</div>
+            <div class="b-item"><strong>No Public Model Training:</strong> Our AI partners are strictly forbidden from using your personal data or receipts to train public models.</div>
+          </div>
+        </div>
 
-    <div style="height:40px;"></div>
+        <!-- 5. Security & Rights -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="sec-hdr-ttl">5. Data Security &amp; Your Rights</div>
+          </div>
+          <div class="sec-body">
+            <div class="b-item"><strong>Security:</strong> We employ modern technical safeguards to protect your data against unauthorized access or alteration.</div>
+            <div class="b-item"><strong>Your Rights:</strong> You can request account deletion or data export anytime via the <span class="hl">Help &amp; Support</span> section on your Profile page.</div>
+          </div>
+        </div>
+
+        <div class="footer-text">Last Updated: June 30, 2026 · Notepay Platform</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="js/firebase-config.js?v=25"></script>
-<script src="js/api.js?v=25"></script>
 <script src="js/icons.js?v=25"></script>
+<script src="js/api.js?v=26"></script>
 <script>
-  let currentUser = null;
-
   document.addEventListener("DOMContentLoaded", async () => {
-    if (localStorage.getItem("np_dark") === "1") {
-      document.body.classList.add("dark");
-      document.documentElement.classList.add("dark-mode");
-    }
+    try {
+      const counts = JSON.parse(localStorage.getItem("np_event_counts") || "[]");
+      if (counts.length === 4) for (let i=0;i<4;i++) { const el=document.getElementById(`sb-count-${i}`); if(el) el.textContent=counts[i]; }
+      const p = JSON.parse(localStorage.getItem("np_profile") || "null");
+      if (p && p.full_name) {
+        applyAvatar(document.getElementById("av-btn-side"), p.full_name);
+        const nm = document.getElementById("user-name-side"); if(nm) nm.textContent=p.full_name;
+      }
+    } catch(e) {}
     npIcons.render();
-
-    // Resolve user state asynchronously
-    currentUser = await waitForAuthReady();
-  });
-
-  function goBack() {
-    if (document.referrer && document.referrer.includes("profile")) {
-      history.back();
-    } else if (localStorage.getItem("np_my_id") || currentUser) {
-      window.location.href = getCleanUrl("profile.html");
-    } else {
-      window.location.href = getCleanUrl("index.html");
+    const user = await waitForAuthReady();
+    if (user) {
+      try { const p=await getMyProfile(); applyAvatar(document.getElementById("av-btn-side"),p.full_name); const nm=document.getElementById("user-name-side"); if(nm) nm.textContent=p.full_name; } catch(e) {}
     }
+  });
+  function goBack() {
+    if (document.referrer && (document.referrer.includes("profile")||document.referrer.includes("dashboard"))) history.back();
+    else window.location.href = getCleanUrl("profile.html");
   }
 </script>
-  <script>
-    window.addEventListener("load", () => {
-        const splash = document.getElementById("app-splash");
-        if (splash) {
-            splash.classList.add("hidden");
-            setTimeout(() => splash.style.display = "none", 400);
-        }
-    });
-  </script>
 </body>
 </html>
-
-

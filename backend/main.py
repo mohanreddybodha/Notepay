@@ -336,7 +336,7 @@ async def create_user(
     # Phone number from Firebase token is the authoritative source
     phone_from_token = decoded.get("phone_number") or user_data.phone_number
     
-    verify_rate_limit(f"phone:{phone_from_token}:register", limit=5, window=3600)
+    verify_rate_limit(f"phone:{phone_from_token}:register", limit=5, window=3600, detail="Too many attempts. Try again later.")
 
     existing = crud.get_user_by_firebase_uid(db, firebase_uid=firebase_uid)
     if existing:
@@ -373,6 +373,7 @@ def get_my_profile(db: Session = Depends(get_db), user_id: int = Depends(get_cur
 @app.put("/users/me", response_model=schemas.UserResponse, tags=["Profile"])
 async def update_my_profile(data: schemas.UserUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Edit own profile  Full Name and/or Gender."""
+    verify_rate_limit(f"user:{user_id}:update_profile", limit=5, window=60, detail="Updating too fast. Wait a moment.")
     user = crud.update_user(db, user_id, data)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -385,9 +386,9 @@ async def submit_feedback(data: schemas.FeedbackCreate, db: Session = Depends(ge
     if user_id is None:
         if not data.name or not data.email:
             raise HTTPException(status_code=401, detail="Authentication required or guest details (name/email) must be provided")
-        verify_rate_limit(f"guest:{data.email}:feedback", limit=3, window=3600)
+        verify_rate_limit(f"guest:{data.email}:feedback", limit=3, window=3600, detail="Feedback limit reached. Try later.")
     else:
-        verify_rate_limit(f"user:{user_id}:feedback", limit=3, window=3600)
+        verify_rate_limit(f"user:{user_id}:feedback", limit=3, window=3600, detail="Feedback limit reached. Try later.")
 
     new_feedback = models.Feedback(
         user_id=user_id,
@@ -407,7 +408,7 @@ async def create_event(event: schemas.EventCreate,
                  db: Session = Depends(get_db),
                  user_id: int = Depends(get_current_user_id)):
     """Create a new event. Creator becomes the Organizer."""
-    verify_rate_limit(f"user:{user_id}:create_event", limit=5, window=60)
+    verify_rate_limit(f"user:{user_id}:create_event", limit=5, window=60, detail="Creating events too fast. Wait a minute.")
     return crud.create_event(db=db, event=event, organizer_id=user_id)
 
 @app.get("/events", response_model=List[schemas.EventResponse], tags=["Events"])
@@ -428,10 +429,29 @@ def read_shared_events(db: Session = Depends(get_db), user_id: int = Depends(get
     events = crud.get_shared_events(db, user_id=user_id)
     return [fix_event_json(e) for e in events]
 
+@app.get("/events/preview-code", tags=["Events"])
+def preview_event_by_code(invite_code: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """Retrieve basic event details using an invite code (before joining)."""
+    verify_rate_limit(f"user:{user_id}:preview-code", limit=10, window=60, detail="Previewing codes too fast. Slow down.")
+    event = db.query(models.Event).filter(models.Event.invite_code == invite_code).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Invalid invite code")
+    
+    # Get creator/organizer name
+    creator = db.query(models.User).filter(models.User.id == event.organizer_id).first()
+    organizer_name = creator.full_name if creator else "Unknown"
+    
+    return {
+        "id": event.id,
+        "name": event.name,
+        "organizer_name": organizer_name,
+        "is_active": event.is_active
+    }
+
 @app.post("/events/join", tags=["Events"])
 async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Join an event using an invite code (becomes Collector)."""
-    verify_rate_limit(f"user:{user_id}:join", limit=5, window=60)
+    verify_rate_limit(f"user:{user_id}:join", limit=5, window=60, detail="Joining events too fast. Wait a minute.")
     event = crud.join_event(db, user_id, invite_code)
     if event is None:
         raise HTTPException(status_code=404, detail="Invalid invite code")
@@ -445,6 +465,7 @@ async def join_event_by_code(invite_code: str, db: Session = Depends(get_db), us
 @app.put("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])
 async def update_event(event_id: str, data: schemas.EventUpdate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Rename/edit event details. Organizer only."""
+    verify_rate_limit(f"user:{user_id}:update_event", limit=10, window=60, detail="Updating event too fast. Wait a moment.")
     verify_membership(db, event_id, user_id, require_organizer=True)
     event = crud.update_event(db, event_id, data, user_id=user_id)
     if not event:
@@ -461,6 +482,7 @@ async def update_event(event_id: str, data: schemas.EventUpdate, db: Session = D
 @app.delete("/events/{event_id}", tags=["Events"])
 async def delete_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Permanently delete an event and ALL its data. Organizer only."""
+    verify_rate_limit(f"user:{user_id}:delete_event", limit=5, window=60, detail="Deleting events too fast. Wait a moment.")
     verify_membership(db, event_id, user_id, require_organizer=True)
     success = crud.delete_event(db, event_id)
     if not success:
@@ -475,6 +497,7 @@ async def delete_event(event_id: str, db: Session = Depends(get_db), user_id: in
 @app.put("/events/{event_id}/deactivate", response_model=schemas.EventResponse, tags=["Event Management"])
 async def deactivate_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Lock all collectors out. Organizer retains read-only view."""
+    verify_rate_limit(f"user:{user_id}:deactivate_event", limit=5, window=60, detail="Deactivating events too fast. Wait a moment.")
     verify_membership(db, event_id, user_id, require_organizer=True)
     event = crud.toggle_event_status(db, event_id, is_active=False, user_id=user_id)
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
@@ -494,7 +517,7 @@ async def reactivate_event(event_id: str, db: Session = Depends(get_db), user_id
 async def regenerate_invite_code(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Generate a brand new invite code. Old code becomes permanently invalid."""
     verify_membership(db, event_id, user_id, require_organizer=True)
-    verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=3600)
+    verify_rate_limit(f"user:{user_id}:generate_code", limit=5, window=3600, detail="Code refresh limit reached. Try again in an hour.")
     event = crud.regenerate_invite_code(db, event_id)
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
     await manager.broadcast_dashboard_update()
@@ -686,7 +709,7 @@ def get_event_donations(event_id: str, db: Session = Depends(get_db), user_id: i
 async def add_donation(event_id: str, donation: schemas.DonationCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new donation row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id, for_write=True)
-    verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60)
+    verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60, detail="Adding entries too fast. Slow down.")
     res = crud.create_donation(db, event_id, user_id, donation)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add"})
@@ -806,7 +829,7 @@ def get_event_expenses(event_id: str, db: Session = Depends(get_db), user_id: in
 async def add_expense(event_id: str, expense: schemas.ExpenseCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Add a new expense row. Blocked if restricted or event deactivated."""
     verify_event_active_for_collector(db, event_id, user_id, for_write=True)
-    verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60)
+    verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60, detail="Adding entries too fast. Slow down.")
     res = crud.create_expense(db, event_id, user_id, expense)
     # Broadcast change
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_add"})
@@ -1142,7 +1165,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
                             db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Send a chat message to all members of an event."""
     verify_membership(db, event_id, user_id, require_member=True, require_unrestricted=True)
-    verify_rate_limit(f"user:{user_id}:chat", limit=20, window=60)
+    verify_rate_limit(f"user:{user_id}:chat", limit=20, window=60, detail="Sending messages too fast. Slow down.")
     if not data.message or not data.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
         

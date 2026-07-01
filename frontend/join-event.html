@@ -125,8 +125,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     .sb-section { font-size: 10px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px 4px; margin-top: 6px; }
     .sb-section:first-child { margin-top: 0; }
     .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--r-sm); font-size: 13.5px; font-weight: 500; color: var(--t2); cursor: pointer; transition: all .13s; user-select: none; }
-    @media (hover: hover) { .sb-item:hover { background: var(--surface-2); color: var(--t1); } }
     .sb-item.active { background: var(--np-navy-lt); color: var(--np-navy); font-weight: 600; }
+    .sb-count { margin-left: auto; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: var(--border); color: var(--t3); min-width: 22px; text-align: center; }
+    .sb-item.active .sb-count { background: var(--np-navy-md); color: var(--np-navy); }
     .sb-divider { height: 1px; background: var(--border); margin: 6px 10px; }
     .sb-footer { padding: 10px; border-top: 1px solid var(--border); }
     .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-sm); cursor: pointer; transition: background .13s; }
@@ -136,26 +137,28 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     .sb-uphon { font-size: 11px; color: var(--t3); }
 
     /* Main Area */
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; background: var(--surface); }
-    .topbar { height: 58px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0; }
-    @media (min-width: 900px) { .topbar { padding: 0 28px; } }
-    .mob-brand-wrap { display: flex; align-items: center; gap: 12px; }
-    .mob-brand { display: flex; align-items: center; gap: 8px; }
-    @media (min-width: 900px) { .mob-brand { display: none; } }
-    .mob-name { font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--np-navy); }
-    .tb-title { display: none; font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--t1); }
-    @media (min-width: 900px) { .tb-title { display: block; } }
-    .mob-back-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--t2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
-    @media (hover: hover) { .mob-back-btn:hover { background: var(--border); color: var(--t1); } }
-    @media (min-width: 900px) { .mob-back-btn { display: none; } }
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; background: var(--bg); }
+    /* ── Page header ── */
+    .pg-header { height:auto; min-height:60px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; padding:10px 16px 10px 12px; flex-shrink:0; }
+    @media (min-width: 900px) {
+      .pg-header { padding: 0 28px; height: 58px; min-height: 58px; gap: 10px; }
+      .pg-title { font-size: 18px !important; }
+    }
+    .pg-back { width:34px; height:34px; border-radius:50%; background:transparent; border:none; color:var(--t2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .13s, color .13s; flex-shrink:0; }
+    @media (hover:hover) { .pg-back:hover { background:var(--surface-2); color:var(--t1); } }
+    .pg-back:active { background:var(--border); }
+    @media (min-width: 900px) { .pg-back { display: none; } }
+    .pg-title-wrap { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .pg-title { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+    .pg-sub { font-size:11.5px; font-weight:500; color:var(--t3); line-height:1.3; }
 
     .secure-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--np-teal-dk); background: var(--np-teal-lt); padding: 5px 12px; border-radius: 20px; }
     html.dark .secure-badge { color: var(--np-teal); }
 
     /* Scrollable Form Content */
     .scroll-area { flex: 1; overflow-y: auto; padding: 28px 20px; display: flex; align-items: flex-start; justify-content: center; }
-    .form-container { width: 100%; max-width: 480px; margin: 16px auto 32px; }
-    @media (max-width: 900px) { .scroll-area { padding: 16px 12px; } .form-container { margin-top: 4px; } }
+    .form-container { width: 100%; max-width: 480px; margin: 16px auto 32px; background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+    @media (max-width: 900px) { .scroll-area { padding: 16px 12px; } .form-container { margin-top: 4px; padding: 24px; margin-bottom: 24px; } }
 
     .form-header { margin-bottom: 20px; text-align: center; }
     @media (min-width: 900px) { .form-header { text-align: left; } }
@@ -165,7 +168,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     /* Form Fields */
     .field-group { margin-bottom: 16px; }
     .field-label { font-size: 12px; font-weight: 700; color: var(--t2); margin: 0; }
-    .field { width: 100%; background: var(--surface); border: 1.5px solid var(--border-str); border-radius: 12px; padding: 0 16px; height: 48px; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-xs); }
+    .field { width: 100%; background: var(--bg); border: 1px solid transparent; border-radius: 12px; padding: 0 16px; height: 48px; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; }
     .field:focus-within { border-color: var(--np-navy); box-shadow: 0 0 0 4px var(--np-navy-lt); }
     .field input { flex: 1; border: none; outline: none; background: transparent; font-size: 16px; font-weight: 600; color: var(--t1); width: 100%; text-transform: uppercase; }
     .field input::placeholder { color: var(--t3); font-weight: 500; text-transform: none; }
@@ -205,6 +208,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     @media (min-width: 600px) { .sheet-modal { border-radius: 18px; transform: scale(0.95); } }
     .modal-backdrop.open .sheet-modal { transform: translateY(0); }
     @media (min-width: 600px) { .modal-backdrop.open .sheet-modal { transform: scale(1); } }
+    html.dark .sheet-modal, html.dark-mode .sheet-modal { background: #1c1c22; border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85); }
     
     .sheet-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .sheet-title { font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--t1); }
@@ -224,6 +228,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   </style>
 </head>
 <body>
+<style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:transparent;opacity:1;pointer-events:none;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
 
 <div class="app">
   <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) -->
@@ -237,19 +242,19 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       <div class="sb-section">Events</div>
       <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=0')">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-        All Events
+        All Events <span class="sb-count" id="sb-count-0">-</span>
       </div>
       <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=1')">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        My Events
+        My Events <span class="sb-count" id="sb-count-1">-</span>
       </div>
       <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=2')">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Shared Events
+        Shared Events <span class="sb-count" id="sb-count-2">-</span>
       </div>
       <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=3')">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        Visited Events
+        Visited Events <span class="sb-count" id="sb-count-3">-</span>
       </div>
 
       <div class="sb-divider"></div>
@@ -278,34 +283,22 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 
   <!-- MAIN AREA -->
   <div class="main">
-    <header class="topbar">
-      <div class="mob-brand-wrap">
-        <button class="mob-back-btn" onclick="window.location.href=getCleanUrl('dashboard.html')">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div class="mob-brand">
-          <img src="favicon.svg" alt="Notepay Logo" class="brand-logo-img">
-          <span class="mob-name">Notepay</span>
-        </div>
+    <header class="pg-header">
+      <button onclick="goBack()" class="pg-back" title="Back" aria-label="Go back">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="pg-title-wrap">
+        <div class="pg-title">Join Event</div>
       </div>
-      <div class="tb-title">Join Event</div>
-      <div class="secure-badge">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Secure Join
-      </div>
+      <button type="button" onclick="openHelpModal()" class="pg-help-btn" style="margin-left: auto; background: none; border: none; color: var(--np-navy); font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3.3px; padding: 4px 8px;">Need Help?</button>
     </header>
 
     <div class="scroll-area">
       <div class="form-container page-view-container">
-        <div class="form-header">
-          <h1>Join an Event</h1>
-          <p>Enter the event code shared by your organizer to join and start contributing.</p>
-        </div>
 
         <div class="field-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <label class="field-label">Event Code</label>
-            <button type="button" onclick="openHelpModal()" style="background: none; border: none; color: var(--np-navy); font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0;">Need help joining?</button>
           </div>
           <div class="field" id="code-field">
             <span style="font-weight:700; color:var(--t3); font-size:16px;">#</span>
@@ -319,6 +312,24 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
           </div>
         </div>
 
+        <!-- Reassured Preview Card -->
+        <div id="join-preview-card" style="display:none; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:16px; margin-bottom:20px; box-shadow:0 2px 12px rgba(0,0,0,0.03); animation:smoothAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--np-teal);"></div>
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; border:1px solid var(--border); flex-shrink:0;">
+              <svg width="20" height="20" fill="none" stroke="var(--np-teal)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px; font-weight:700; color:var(--t2); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">You are joining</div>
+              <div style="font-size:16px; font-weight:800; color:var(--t1); margin-bottom:4px; line-height:1.2;" id="preview-event-name">—</div>
+              <div style="display:inline-flex; align-items:center; gap:6px; background:var(--bg); padding:4px 8px; border-radius:6px; border:1px solid var(--border); margin-top:2px;">
+                <div style="width:16px; height:16px; border-radius:50%; background:var(--np-indigo); display:flex; align-items:center; justify-content:center; color:white; font-size:9px; font-weight:bold;" id="preview-org-initial">O</div>
+                <div style="font-size:12px; font-weight:600; color:var(--t2);" id="preview-organizer-name">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Security Message -->
         <div class="security-box">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -329,13 +340,12 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
         </div>
 
         <!-- Action Buttons -->
-        <div class="action-row">
-          <button class="btn-primary" id="join-btn" type="button">
+        <div class="action-row" style="margin-top: 24px;">
+          <button class="btn-primary" id="join-btn" type="button" style="width: 100%;">
             <span class="btn-text">Join Event</span>
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             <span class="spinner"></span>
           </button>
-          <button type="button" class="btn-cancel" onclick="window.location.href=getCleanUrl('dashboard.html')">← Back to Dashboard</button>
         </div>
 
       </div>
@@ -394,29 +404,86 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   </div>
 </div>
 
-<script src="js/firebase-config.js?v=28"></script>
-<script src="js/icons.js?v=28"></script>
-<script src="js/api.js?v=28"></script>
-<script src="js/auth-guard.js?v=28"></script>
+<script src="js/firebase-config.js?v=29"></script>
+<script src="js/icons.js?v=29"></script>
+<script src="js/api.js?v=29"></script>
+<script src="js/auth-guard.js?v=29"></script>
 <script>
+  function goBack() {
+    if (document.referrer && (document.referrer.includes("profile.html") || document.referrer.includes("dashboard.html") || document.referrer.includes("event.html"))) {
+      history.back();
+    } else {
+      window.location.href = getCleanUrl("dashboard.html");
+    }
+  }
+
   function openHelpModal() { document.getElementById("help-modal").classList.add("open"); }
   function closeHelpModal() { document.getElementById("help-modal").classList.remove("open"); }
 
   waitForAuthReady().then(user => {
     if (user) {
+      const fullName = user.displayName || user.email?.split('@')[0] || "Collector";
       const nameEl = document.getElementById("user-name-side");
-      const avEl = document.getElementById("av-btn-side");
-      if (nameEl) nameEl.textContent = user.displayName || user.email?.split('@')[0] || "Collector";
-      if (avEl) avEl.textContent = (user.displayName || "NP").substring(0,2).toUpperCase();
+      if (nameEl) nameEl.textContent = fullName;
+      applyAvatar(document.getElementById("av-btn-side"), fullName);
     }
   }).catch(()=>{});
 
   document.getElementById("code-input").addEventListener("input", function() {
-    this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g,"");
+    let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    let formatted = "";
+    if (val.length > 0) formatted += val.substring(0, 5);
+    if (val.length > 5) formatted += "-" + val.substring(5, 9);
+    if (val.length > 9) formatted += "-" + val.substring(9, 14);
+    this.value = formatted;
+
     document.getElementById("code-field").classList.remove("err","warn");
     document.getElementById("err-note").classList.remove("visible");
     document.getElementById("warn-note").classList.remove("visible");
+    document.getElementById("join-preview-card").style.display = "none";
+    
+    if (formatted.length === 16) {
+      resolvePreview(formatted);
+    }
   });
+
+  async function resolvePreview(code) {
+    const card = document.getElementById("join-preview-card");
+    const nameEl = document.getElementById("preview-event-name");
+    const orgEl = document.getElementById("preview-organizer-name");
+    const field = document.getElementById("code-field");
+    const err = document.getElementById("err-note");
+    const errTxt = document.getElementById("err-txt");
+    const warn = document.getElementById("warn-note");
+
+    nameEl.textContent = "Resolving code...";
+    orgEl.textContent = "Please wait";
+    const initialEl = document.getElementById("preview-org-initial");
+    if (initialEl) initialEl.textContent = "O";
+    card.style.display = "block";
+    field.classList.remove("err", "warn");
+    err.classList.remove("visible");
+    warn.classList.remove("visible");
+
+    try {
+      const res = await previewEventCode(code);
+      if (!res.is_active) {
+        field.classList.add("warn");
+        warn.classList.add("visible");
+        card.style.display = "none";
+      } else {
+        nameEl.textContent = res.name;
+        orgEl.textContent = res.organizer_name;
+        const initial = res.organizer_name ? res.organizer_name.charAt(0).toUpperCase() : "O";
+        if (initialEl) initialEl.textContent = initial;
+      }
+    } catch(e) {
+      card.style.display = "none";
+      field.classList.add("err");
+      errTxt.textContent = e.message || "Invalid event code. Please check and try again.";
+      err.classList.add("visible");
+    }
+  }
 
   document.getElementById("join-btn").addEventListener("click", async () => {
     const code = document.getElementById("code-input").value.trim();
@@ -454,12 +521,27 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     const urlParams = new URLSearchParams(window.location.search);
     const codeParam = urlParams.get('code');
     if (codeParam) {
-      document.getElementById('code-input').value = codeParam.trim().toUpperCase();
+      const code = codeParam.trim().toUpperCase();
+      document.getElementById('code-input').value = code;
+      resolvePreview(code);
       await waitForAuthReady();
       const btn = document.getElementById('join-btn');
       if (btn) btn.click();
     }
   });
+</script>
+<script>
+  // Load sidebar event counts instantly from cache
+  const cachedCounts = localStorage.getItem("np_event_counts");
+  if (cachedCounts) {
+    try {
+      const counts = JSON.parse(cachedCounts);
+      for (let i = 0; i < 4; i++) {
+        const el = document.getElementById(`sb-count-${i}`);
+        if (el) el.textContent = counts[i];
+      }
+    } catch(e) {}
+  }
 </script>
 </body>
 </html>

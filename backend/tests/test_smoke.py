@@ -179,3 +179,54 @@ def test_feedback_auth_submission(auth_client):
     })
     assert res.status_code == 200
     assert res.json() == {"message": "Feedback submitted successfully"}
+
+
+# ══════════════════════════════════════════
+# Preview Tests
+# ══════════════════════════════════════════
+
+def test_preview_code_success(auth_client):
+    import models
+    # Let's seed a mock event and organizer in the test DB session
+    db = TestingSessionLocal()
+    
+    # Create a test organizer user
+    user = models.User(id=2, firebase_uid="uid2", phone_number="0987654321", full_name="Alice Organizer")
+    db.add(user)
+    db.commit()
+
+    # Create event
+    event = models.Event(
+        id="test-event-id-999",
+        name="Birthday Bash",
+        description="Birthday party",
+        event_date=models.datetime.utcnow(),
+        invite_code="ABCDE-FGHI-JKLMN",
+        is_active=True,
+        organizer_id=2
+    )
+    db.add(event)
+    db.commit()
+
+    # Add organizer membership
+    member = models.EventMember(
+        user_id=2,
+        event_id=event.id,
+        role=models.UserRole.organizer
+    )
+    db.add(member)
+    db.commit()
+    db.close()
+
+    # Query the preview endpoint
+    res = auth_client.get("/events/preview-code?invite_code=ABCDE-FGHI-JKLMN")
+    assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
+    data = res.json()
+    assert data["name"] == "Birthday Bash"
+    assert data["organizer_name"] == "Alice Organizer"
+    assert data["is_active"] is True
+
+def test_preview_code_not_found(auth_client):
+    res = auth_client.get("/events/preview-code?invite_code=INVALID-CODE-XYZ")
+    assert res.status_code == 404
+

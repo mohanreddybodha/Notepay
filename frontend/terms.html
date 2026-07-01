@@ -8,148 +8,308 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
 }
 </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover" />
-  <title>Notepay - Terms & Conditions</title>
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- Global CSS -->
-  <link rel="stylesheet" href="css/global.css?v=25">
-  <link rel="stylesheet" href="css/icons.css?v=25">
-  
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover"/>
+  <title>Notepay — Terms of Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css?v=26"/>
+  <link rel="stylesheet" href="css/icons.css?v=25"/>
+  <script>
+    if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
+      document.documentElement.classList.add("dark-mode");
+      document.documentElement.classList.add("dark");
+      window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
+    }
+  </script>
   <style>
-    /* Header */
-    .ab { background: var(--primary-dk); display: flex; align-items: center; padding: 10px 16px 14px; gap: 8px; z-index: 100; flex-shrink: 0; }
-    .back { color: rgba(255,255,255,.85); font-size: 22px; cursor: pointer; padding: 3px 7px; border-radius: 8px; line-height: 1; }
-    .ab-ttl { flex: 1; color: white; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; }
-    
-    /* Scrollable Content */
-    .scr { flex: 1; overflow-y: auto; padding: 24px; background: var(--surface); color: var(--text); -webkit-overflow-scrolling: touch; }
-    
-    /* Typography & Layout */
-    .last-updated { font-size: 12px; color: var(--text3); font-weight: 600; margin-bottom: 24px; }
-    
-    .section-title { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; color: var(--text); margin: 28px 0 12px; }
-    .section-title:first-of-type { margin-top: 0; }
-    
-    .para { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
-    
-    .bullet-list { margin: 0 0 16px; padding-left: 20px; }
-    .bullet-list li { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 8px; }
-    
-    .highlight { font-weight: 800; color: var(--primary); }
-    
-    .important-box { background: var(--input-bg); border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 4px 8px 8px 4px; margin-bottom: 24px; }
-    .important-box .para { margin-bottom: 0; font-weight: 600; color: var(--text); }
+    :root {
+      --np-navy:#1A4E8C; --np-navy-dk:#113663; --np-navy-lt:#E8F0F8; --np-navy-md:#D1E1F0;
+      --np-teal:#14B8A6; --np-teal-dk:#0F766E; --np-teal-lt:#E6F7F5;
+      --np-green:#1A7A5E; --np-green-lt:#EAF7F3;
+      --np-red:#C0392B; --np-red-lt:#FDECEA;
+      --np-amber:#C4860A; --np-amber-lt:#FEF6E6;
+      --bg:#EAF0F6; --surface:#FFFFFF; --surface-2:#F2F7FB;
+      --border:#D6E4F0; --border-str:#B8CDE0; --divider:#E8F0F8;
+      --t1:#0D1B2A; --t2:#3D5A7A; --t3:#6B8AA8;
+      --shadow-sm:0 1px 3px rgba(13,43,85,.1), 0 1px 2px rgba(13,43,85,.06);
+      --shadow-modal:0 20px 60px rgba(13,43,85,.25), 0 4px 16px rgba(13,43,85,.12);
+      --r-sm:10px; --r-md:14px;
+      --font-ui:'Inter',-apple-system,sans-serif;
+      --font-brand:'Plus Jakarta Sans','Inter',sans-serif;
+    }
+    html.dark, html.dark-mode {
+      --bg:#09090b; --surface:#18181b; --surface-2:#27272a;
+      --border:#3f3f46; --border-str:#52525b; --divider:#27272a;
+      --t1:#f4f4f5; --t2:#a1a1aa; --t3:#71717a;
+      --np-navy:#60a5fa; --np-navy-dk:#3b82f6;
+      --np-navy-lt:rgba(96,165,250,0.15); --np-navy-md:rgba(96,165,250,0.25);
+      --np-teal:#2dd4bf; --np-teal-dk:#14b8a6; --np-teal-lt:rgba(45,212,191,0.15);
+      --np-green:#34d399; --np-green-lt:rgba(52,211,153,0.15);
+      --np-red:#f87171; --np-red-lt:rgba(248,113,113,0.15);
+      --np-amber:#fbbf24; --np-amber-lt:rgba(251,191,36,0.15);
+      --shadow-sm:0 1px 3px rgba(0,0,0,.5);
+      --shadow-modal:0 20px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.05);
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; overflow:hidden; font-family:var(--font-ui); background:var(--bg); color:var(--t1); -webkit-font-smoothing:antialiased; }
+    a { text-decoration:none; color:inherit; }
+    svg { display:block; flex-shrink:0; }
+
+    .app { display:flex; height:100dvh; overflow:hidden; }
+
+    /* Sidebar */
+    .sidebar { display:none; width:236px; min-width:236px; background:var(--surface); border-right:1px solid var(--border); flex-direction:column; flex-shrink:0; }
+    @media (min-width:900px) { .sidebar { display:flex; } }
+    .sb-brand { height:58px; padding:0 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .brand-logo-img { width:30px; height:30px; border-radius:6px; }
+    .sb-brand-name { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--np-navy); }
+    .sb-nav { flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; scrollbar-width:none; }
+    .sb-nav::-webkit-scrollbar { display:none; }
+    .sb-section { font-size:10px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:1px; padding:10px 8px 4px; margin-top:6px; }
+    .sb-section:first-child { margin-top:0; }
+    .sb-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--r-sm); font-size:13.5px; font-weight:500; color:var(--t2); cursor:pointer; transition:all .13s; user-select:none; text-decoration:none; }
+    @media (hover:hover) { .sb-item:hover { background:var(--surface-2); color:var(--t1); } }
+    .sb-item.active { background:var(--np-navy-lt); color:var(--np-navy); font-weight:600; }
+    .sb-count { margin-left:auto; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:20px; background:var(--border); color:var(--t3); min-width:22px; text-align:center; }
+    .sb-item.active .sb-count { background:var(--np-navy-md); color:var(--np-navy); }
+    .sb-divider { height:1px; background:var(--border); margin:6px 10px; }
+    .sb-footer { padding:10px; border-top:1px solid var(--border); }
+    .sb-user { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--r-sm); cursor:pointer; transition:background .13s; text-decoration:none; }
+    @media (hover:hover) { .sb-user:hover { background:var(--surface-2); } }
+    .sb-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; background:var(--np-navy); color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+    .sb-uname { font-size:13px; font-weight:600; color:var(--np-navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px; }
+    .sb-uphon { font-size:11px; color:var(--t3); }
+
+    .main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; background:var(--bg); position:relative; }
+
+    /* ── Page header ── */
+    .pg-header { height:auto; min-height:60px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; padding:10px 16px 10px 12px; flex-shrink:0; }
+    .pg-back { width:34px; height:34px; border-radius:50%; background:transparent; border:none; color:var(--t2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .13s, color .13s; flex-shrink:0; }
+    @media (hover:hover) { .pg-back:hover { background:var(--surface-2); color:var(--t1); } }
+    .pg-back:active { background:var(--border); }
+    .pg-title-wrap { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .pg-title { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+    .pg-sub { font-size:11.5px; font-weight:500; color:var(--t3); line-height:1.3; }
+
+    /* Scroll area */
+    .scroll-area { flex:1; overflow-y:auto; padding:24px 16px 32px; display:flex; align-items:flex-start; justify-content:center; }
+    @media (max-width:899px) { .scroll-area { padding:14px 12px 24px; } }
+
+    .content-wrap { width:100%; max-width:680px; animation:appear .2s ease; }
+    @keyframes appear { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Hero */
+    .hero { background:transparent; border-bottom:1px solid var(--divider); padding:10px 10px 24px; display:flex; align-items:center; gap:16px; margin-bottom:12px; }
+    .hero-ttl { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--t1); margin-bottom:4px; }
+    .hero-sub { font-size:13.5px; color:var(--t2); line-height:1.5; }
+
+    /* Section cards */
+    .sec-card { background:var(--surface); border-radius:20px; border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:18px; }
+    html.dark .sec-card, html.dark-mode .sec-card { background:#262626; border:none; box-shadow:none; }
+    .sec-hdr { display:flex; align-items:center; gap:12px; padding:15px 20px; border-bottom:1px solid var(--divider); background:var(--surface-2); }
+    html.dark .sec-hdr, html.dark-mode .sec-hdr { background:#2a2a2a; border-bottom-color:var(--divider); }
+    .sec-ic { width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--t1); }
+    .sec-hdr-ttl { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--np-navy); }
+    .sec-body { padding:20px; }
+
+    /* Bullet items — teal dot */
+    .b-item { position:relative; padding-left:20px; margin-bottom:14px; font-size:13.5px; color:var(--t2); line-height:1.6; }
+    .b-item:last-child { margin-bottom:0; }
+    .b-item strong { color:var(--t1); font-weight:700; }
+    .b-item::before { content:""; position:absolute; left:4px; top:8px; width:6px; height:6px; border-radius:50%; background:var(--np-teal); }
+
+    .g-para { font-size:13.5px; color:var(--t2); line-height:1.6; margin-bottom:12px; }
+    .g-para strong { color:var(--t1); font-weight:700; }
+    .hl { color:var(--np-teal); font-weight:700; }
+
+    /* Icon box colors — exact match of profile.html .c-* classes */
+    .c-navy, .c-teal, .c-green, .c-amber, .c-red { background:transparent; color:var(--t1); border:none; }
+    html.dark .c-navy, html.dark-mode .c-navy,
+    html.dark .c-teal, html.dark-mode .c-teal,
+    html.dark .c-green, html.dark-mode .c-green,
+    html.dark .c-amber, html.dark-mode .c-amber,
+    html.dark .c-red, html.dark-mode .c-red { background:transparent; color:var(--t1); border:none; }
+
+    .footer-text { text-align:center; font-size:12px; color:var(--t3); font-weight:600; padding:8px 0 16px; }
   </style>
-<link rel="icon" type="image/png" href="favicon.png" />
-<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 </head>
-<body style="margin:0; padding:0; overflow:hidden;">
-  
+<body>
+<style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:transparent;opacity:1;pointer-events:none;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
 
-<div class="page">
-  <!-- Top App Bar -->
-  <div class="ab">
-    <div class="back" onclick="goBack()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
-    <div class="ab-ttl">Terms & Conditions</div>
-  </div>
-  
-  <!-- Content Area -->
-  <div class="scr">
-    <div class="last-updated">Last Updated: June 2026</div>
-
-    <div class="important-box">
-      <div class="para">Welcome to Notepay. By using this application, you agree to the following terms and conditions. Please read them carefully.</div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <img src="favicon.svg" alt="Notepay" class="brand-logo-img">
+      <span class="sb-brand-name">Notepay</span>
     </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Events</div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=0')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        All Events <span class="sb-count" id="sb-count-0">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=1')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        My Events <span class="sb-count" id="sb-count-1">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=2')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Shared Events <span class="sb-count" id="sb-count-2">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=3')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Visited Events <span class="sb-count" id="sb-count-3">-</span>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section" style="margin-top:0;">Add</div>
+      <a href="create-event.html" class="sb-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Create Event
+      </a>
+      <a href="join-event.html" class="sb-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Join by Code
+      </a>
+    </nav>
+    <div class="sb-footer">
+      <a href="profile.html" class="sb-user">
+        <div class="sb-avatar" id="av-btn-side">?</div>
+        <div>
+          <div class="sb-uname" id="user-name-side">My Profile</div>
+          <div class="sb-uphon">Settings &amp; Account</div>
+        </div>
+      </a>
+    </div>
+  </aside>
 
-    <div class="section-title">1. Nature of the Service</div>
-    <div class="para">Notepay is strictly a <span class="highlight">record-keeping and tracking tool</span> designed to help communities, groups, and individuals track expenses, collections, and donations.</div>
-    <div class="para">Notepay is <strong>not</strong> a bank, financial institution, payment gateway, or money transmitter. No real monetary transactions are processed, held, or transferred through the Notepay application.</div>
+  <div class="main">
+    <header class="pg-header">
+      <button onclick="goBack()" class="pg-back" title="Back" aria-label="Go back">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="pg-title-wrap">
+        <div class="pg-title">Terms of Service</div>
+      </div>
+    </header>
 
-    <div class="section-title">2. User Responsibilities & Accuracy</div>
-    <ul class="bullet-list">
-      <li>Users and Organizers are solely responsible for the accuracy of any data, numbers, or records entered into the application.</li>
-      <li>Notepay does not verify, audit, or guarantee the authenticity of the financial records maintained by users or event organizers.</li>
-      <li>Any disputes regarding discrepancies in records, missing funds, or offline financial disagreements must be resolved directly between the involved parties.</li>
-    </ul>
+    <div class="scroll-area">
+      <div class="content-wrap">
 
-    <div class="section-title">3. Public Collection Links & Auto-Donations</div>
-    <ul class="bullet-list">
-      <li><strong>External Payments:</strong> Notepay does not process, handle, store, or transmit any real money. All financial transfers are made directly between the donor and the organizer via external UPI applications. Notepay only facilitates generating standard UPI URLs/QR codes and verifying proof-of-payment receipts.</li>
-      <li><strong>UPI Configuration accuracy:</strong> Event Organizers are solely responsible for entering a <span class="highlight">valid and correct UPI ID and UPI Registered Name</span>. Notepay is not responsible for transfer errors, lost funds, or payments sent to incorrect accounts.</li>
-      <li><strong>Automatic Verification & AI Processing:</strong> When a donor uploads a payment receipt, Notepay uses automated processing (including AI models) to verify receipt details against the event's configuration. Organizers retain the ultimate authority to accept, modify, or delete entries from their ledger.</li>
-    </ul>
+        <!-- Hero -->
+      <div class="hero">
+        <div class="hero-ttl">We don't touch your money. We don't sell your data. We just help you track.</div>
+        <div class="hero-sub">Notepay is a record-keeping tool — nothing more. Below are the full terms, written plainly so you actually understand them.</div>
+      </div>
 
-    <div class="section-title">4. Limitation of Liability</div>
-    <div class="para">Under no circumstances shall Notepay, its developers, or affiliates be held liable for any direct, indirect, incidental, or consequential damages resulting from:</div>
-    <ul class="bullet-list">
-      <li>The loss, corruption, or inaccuracy of data within the app due to software errors or user mistakes.</li>
-      <li>Real-world financial losses or disputes arising among users, organizers, or third parties.</li>
-      <li>Service outages, software bugs, or unauthorized access to your account.</li>
-    </ul>
+        <!-- 1. Nature of Service -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
+            <div class="sec-hdr-ttl">1. Nature of the Service</div>
+          </div>
+          <div class="sec-body">
+            <div class="g-para">Notepay is strictly a <span class="hl">record-keeping and tracking tool</span> designed to help communities, organizations, and individuals track expenses, collections, and donations.</div>
+            <div class="g-para">Notepay is <strong>not</strong> a bank, financial institution, payment gateway, or money transmitter. No real monetary transactions are processed, held, or transferred through Notepay servers.</div>
+          </div>
+        </div>
 
-    <div class="section-title">5. AI Assistant Disclaimer</div>
-    <div class="para">Notepay includes an artificial intelligence (`@ai`) assistant designed to help organize and summarize event data. You acknowledge and agree that:</div>
-    <ul class="bullet-list">
-      <li>The AI is <strong>not</strong> a certified accountant, financial advisor, or legal expert. Any advice or suggestions generated by the AI should not be construed as professional financial advice.</li>
-      <li>While the AI strives to provide accurate summaries of your ledger, errors or hallucinations may occasionally occur. You are solely responsible for independently verifying all mathematical totals and financial records.</li>
-      <li>Notepay is not liable for any decisions, actions, or financial disputes resulting from your reliance on the AI assistant's outputs.</li>
-    </ul>
+        <!-- 2. User Responsibilities -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-teal"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="sec-hdr-ttl">2. User Responsibilities &amp; Accuracy</div>
+          </div>
+          <div class="sec-body">
+            <div class="b-item">Users and Organizers are solely responsible for the accuracy of any numbers, data, or records entered into the application.</div>
+            <div class="b-item">Notepay does not verify, audit, or guarantee the authenticity of offline financial records maintained by event organizers.</div>
+            <div class="b-item">Any disputes regarding discrepancies in records must be resolved directly between the involved parties.</div>
+          </div>
+        </div>
 
-    <div class="section-title">6. Account Guidelines & Termination</div>
-    <div class="para">You agree not to use Notepay for fraudulent, illegal, or malicious activities. We reserve the right to suspend or terminate any account or event at our sole discretion if we detect abuse, spam, or a violation of these terms.</div>
+        <!-- 3. Public Collection Links -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-amber"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+            <div class="sec-hdr-ttl">3. Public Collection Links &amp; Auto-Donations</div>
+          </div>
+          <div class="sec-body">
+            <div class="b-item"><strong>External Payments:</strong> All transfers occur directly between the donor and organizer via external UPI apps. Notepay only generates UPI URLs/QR codes and verifies receipt images.</div>
+            <div class="b-item"><strong>UPI Configuration:</strong> Organizers are solely responsible for entering a <span class="hl">valid UPI ID and UPI Registered Name</span>. Notepay is not responsible for transfer errors.</div>
+            <div class="b-item"><strong>AI Verification:</strong> Uploaded screenshots are processed by AI to verify payment details. Organizers retain ultimate authority over all ledger entries.</div>
+          </div>
+        </div>
 
-    <div class="section-title">7. Changes to Terms</div>
-    <div class="para">We reserve the right to update or modify these Terms & Conditions at any time. Continued use of Notepay after any changes indicates your acceptance of the new terms.</div>
+        <!-- 4. Limitation of Liability -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-red"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="sec-hdr-ttl">4. Limitation of Liability</div>
+          </div>
+          <div class="sec-body">
+            <div class="g-para">Under no circumstances shall Notepay or its developers be held liable for damages resulting from:</div>
+            <div class="b-item">Loss, corruption, or inaccuracy of ledger data due to software errors or user mistakes.</div>
+            <div class="b-item">Real-world financial losses or disagreements among organizers, collectors, or donors.</div>
+            <div class="b-item">Temporary service outages or unauthorized access to your account credentials.</div>
+          </div>
+        </div>
 
-    <div style="height:40px;"></div>
+        <!-- 5. AI Disclaimer -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-green"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div class="sec-hdr-ttl">5. AI Assistant Disclaimer</div>
+          </div>
+          <div class="sec-body">
+            <div class="b-item">The <span class="hl">@ai</span> assistant is <strong>not</strong> a certified accountant or financial advisor. Its outputs should not be construed as professional advice.</div>
+            <div class="b-item">While the AI strives for accuracy, errors may occur. You are solely responsible for verifying all mathematical totals.</div>
+          </div>
+        </div>
+
+        <!-- 6. Account Guidelines -->
+        <div class="sec-card">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="sec-hdr-ttl">6. Account Guidelines &amp; Termination</div>
+          </div>
+          <div class="sec-body">
+            <div class="g-para">You agree not to use Notepay for fraudulent, illegal, or malicious activities. We reserve the right to suspend or terminate accounts or events if abuse, spam, or terms violations are detected.</div>
+          </div>
+        </div>
+
+        <div class="footer-text">Last Updated: June 30, 2026 · Notepay Platform</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="js/firebase-config.js?v=25"></script>
-<script src="js/api.js?v=25"></script>
 <script src="js/icons.js?v=25"></script>
+<script src="js/api.js?v=26"></script>
 <script>
-  let currentUser = null;
-
   document.addEventListener("DOMContentLoaded", async () => {
-    if (localStorage.getItem("np_dark") === "1") {
-      document.body.classList.add("dark");
-      document.documentElement.classList.add("dark-mode");
-    }
+    try {
+      const counts = JSON.parse(localStorage.getItem("np_event_counts") || "[]");
+      if (counts.length === 4) for (let i=0;i<4;i++) { const el=document.getElementById(`sb-count-${i}`); if(el) el.textContent=counts[i]; }
+      const p = JSON.parse(localStorage.getItem("np_profile") || "null");
+      if (p && p.full_name) {
+        applyAvatar(document.getElementById("av-btn-side"), p.full_name);
+        const nm = document.getElementById("user-name-side"); if(nm) nm.textContent=p.full_name;
+      }
+    } catch(e) {}
     npIcons.render();
-
-    // Resolve user state asynchronously
-    currentUser = await waitForAuthReady();
-  });
-
-  function goBack() {
-    if (document.referrer && document.referrer.includes("profile")) {
-      history.back();
-    } else if (localStorage.getItem("np_my_id") || currentUser) {
-      window.location.href = getCleanUrl("profile.html");
-    } else {
-      window.location.href = getCleanUrl("index.html");
+    const user = await waitForAuthReady();
+    if (user) {
+      try { const p=await getMyProfile(); applyAvatar(document.getElementById("av-btn-side"),p.full_name); const nm=document.getElementById("user-name-side"); if(nm) nm.textContent=p.full_name; } catch(e) {}
     }
+  });
+  function goBack() {
+    if (document.referrer && (document.referrer.includes("profile")||document.referrer.includes("dashboard"))) history.back();
+    else window.location.href = getCleanUrl("profile.html");
   }
 </script>
-  <script>
-    window.addEventListener("load", () => {
-        const splash = document.getElementById("app-splash");
-        if (splash) {
-            splash.classList.add("hidden");
-            setTimeout(() => splash.style.display = "none", 400);
-        }
-    });
-  </script>
 </body>
 </html>
-
-

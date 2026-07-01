@@ -8,210 +8,511 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
 }
 </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover" />
-  <title>Notepay - User Guide</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="css/global.css?v=25">
-  <link rel="stylesheet" href="css/icons.css?v=25">
-  
-  <style>
-    .ab { background: var(--primary-dk); display: flex; align-items: center; padding: 10px 16px 14px; gap: 8px; z-index: 100; flex-shrink: 0; }
-    .back { color: rgba(255,255,255,.85); font-size: 22px; cursor: pointer; padding: 3px 7px; border-radius: 8px; line-height: 1; }
-    .ab-ttl { flex: 1; color: white; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; }
-    .scr { flex: 1; overflow-y: auto; padding: 24px; background: var(--surface); color: var(--text); -webkit-overflow-scrolling: touch; }
-    .section-title { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; color: var(--text); margin: 32px 0 12px; display: flex; align-items: center; gap: 8px; }
-    .section-title:first-of-type { margin-top: 0; }
-    .section-title span { color: var(--primary); }
-    .para { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; font-weight: 600; }
-    .para strong { color: var(--text); font-weight: 800; }
-    .important-box { background: rgba(33, 150, 243, 0.08); border-left: 4px solid #2196F3; padding: 16px; border-radius: 0 8px 8px 0; margin: 24px 0; }
-    .important-box .para { margin-bottom: 0; color: var(--text); font-size: 14px; }
-    .step-list { margin-bottom: 24px; padding-left: 0; list-style-type: none; counter-reset: my-counter; }
-    .step-list li { position: relative; padding-left: 36px; font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; font-weight: 600; }
-    .step-list li::before { 
-        content: counter(my-counter); counter-increment: my-counter; 
-        position: absolute; left: 0; top: 0; 
-        width: 24px; height: 24px; background: var(--primary-light); color: var(--primary);
-        font-weight: 900; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 12px;
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover"/>
+  <title>Notepay — User Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css?v=26"/>
+  <link rel="stylesheet" href="css/icons.css?v=25"/>
+  <script>
+    /* Sync dark mode BEFORE paint — identical to profile.html */
+    if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
+      document.documentElement.classList.add("dark-mode");
+      document.documentElement.classList.add("dark");
+      window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
     }
-    .bullet-list { padding-left: 20px; margin-bottom: 24px; }
-    .bullet-list li { font-size: 14.5px; color: var(--text2); line-height: 1.6; margin-bottom: 10px; font-weight: 600; }
-    .role-card { background: var(--bg); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.05); }
-    .role-title { font-weight: 900; color: var(--text); font-size: 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-    .role-desc { font-size: 13.5px; color: var(--text2); font-weight: 600; line-height: 1.5; }
-    .footer { text-align: center; padding: 30px 0 10px; font-size: 12px; color: var(--text3); font-weight: 700; }
-    body.dark .role-card { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05); }
-    body.dark .important-box { background: rgba(33, 150, 243, 0.15); }
-    .highlight { font-weight: 800; color: var(--primary); }
+  </script>
+  <style>
+    /* ═══════════════════════════════════════════════
+       DESIGN TOKENS — exact copy from profile.html
+    ═══════════════════════════════════════════════ */
+    :root {
+      --np-navy:#1A4E8C; --np-navy-dk:#113663; --np-navy-lt:#E8F0F8; --np-navy-md:#D1E1F0;
+      --np-teal:#14B8A6; --np-teal-dk:#0F766E; --np-teal-lt:#E6F7F5;
+      --np-green:#1A7A5E; --np-green-lt:#EAF7F3;
+      --np-red:#C0392B;   --np-red-lt:#FDECEA;
+      --np-amber:#C4860A; --np-amber-lt:#FEF6E6;
+      --bg:#EAF0F6; --surface:#FFFFFF; --surface-2:#F2F7FB;
+      --border:#D6E4F0; --border-str:#B8CDE0; --divider:#E8F0F8;
+      --t1:#0D1B2A; --t2:#3D5A7A; --t3:#6B8AA8;
+      --shadow-sm:0 1px 3px rgba(13,43,85,.1),0 1px 2px rgba(13,43,85,.06);
+      --shadow-modal:0 20px 60px rgba(13,43,85,.25),0 4px 16px rgba(13,43,85,.12);
+      --r-sm:10px; --r-md:14px;
+      --font-ui:'Inter',-apple-system,sans-serif;
+      --font-brand:'Plus Jakarta Sans','Inter',sans-serif;
+    }
+    html.dark, html.dark-mode {
+      --bg:#09090b; --surface:#18181b; --surface-2:#27272a;
+      --border:#3f3f46; --border-str:#52525b; --divider:#27272a;
+      --t1:#f4f4f5; --t2:#a1a1aa; --t3:#71717a;
+      --np-navy:#60a5fa; --np-navy-dk:#3b82f6;
+      --np-navy-lt:rgba(96,165,250,0.15); --np-navy-md:rgba(96,165,250,0.25);
+      --np-teal:#2dd4bf; --np-teal-dk:#14b8a6; --np-teal-lt:rgba(45,212,191,0.15);
+      --np-green:#34d399; --np-green-lt:rgba(52,211,153,0.15);
+      --np-red:#f87171;   --np-red-lt:rgba(248,113,113,0.15);
+      --np-amber:#fbbf24; --np-amber-lt:rgba(251,191,36,0.15);
+      --shadow-sm:0 1px 3px rgba(0,0,0,.5);
+      --shadow-modal:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; overflow:hidden; font-family:var(--font-ui); background:var(--bg); color:var(--t1); -webkit-font-smoothing:antialiased; }
+    a { text-decoration:none; color:inherit; }
+    svg { display:block; flex-shrink:0; }
+
+    /* ── App Shell ── */
+    .app { display:flex; height:100dvh; overflow:hidden; }
+
+    /* ── Sidebar — pixel-perfect profile.html match ── */
+    .sidebar { display:none; width:236px; min-width:236px; background:var(--surface); border-right:1px solid var(--border); flex-direction:column; flex-shrink:0; }
+    @media (min-width:900px) { .sidebar { display:flex; } }
+    .sb-brand { height:58px; padding:0 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .brand-logo-img { width:30px; height:30px; border-radius:6px; }
+    .sb-brand-name { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--np-navy); }
+    .sb-nav { flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; scrollbar-width:none; }
+    .sb-nav::-webkit-scrollbar { display:none; }
+    .sb-section { font-size:10px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:1px; padding:10px 8px 4px; margin-top:6px; }
+    .sb-section:first-child { margin-top:0; }
+    .sb-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--r-sm); font-size:13.5px; font-weight:500; color:var(--t2); cursor:pointer; transition:all .13s; user-select:none; text-decoration:none; }
+    @media (hover:hover) { .sb-item:hover { background:var(--surface-2); color:var(--t1); } }
+    .sb-item.active { background:var(--np-navy-lt); color:var(--np-navy); font-weight:600; }
+    .sb-count { margin-left:auto; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:20px; background:var(--border); color:var(--t3); min-width:22px; text-align:center; }
+    .sb-item.active .sb-count { background:var(--np-navy-md); color:var(--np-navy); }
+    .sb-divider { height:1px; background:var(--border); margin:6px 10px; }
+    .sb-footer { padding:10px; border-top:1px solid var(--border); }
+    .sb-user { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--r-sm); cursor:pointer; transition:background .13s; text-decoration:none; }
+    @media (hover:hover) { .sb-user:hover { background:var(--surface-2); } }
+    .sb-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; background:var(--np-navy); color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+    .sb-uname { font-size:13px; font-weight:600; color:var(--np-navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px; }
+    .sb-uphon { font-size:11px; color:var(--t3); }
+
+    /* ── Main ── */
+    .main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; background:var(--bg); position:relative; }
+
+    /* ── Page header ── */
+    .pg-header { height:auto; min-height:60px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; padding:10px 16px 10px 12px; flex-shrink:0; }
+    .pg-back { width:34px; height:34px; border-radius:50%; background:transparent; border:none; color:var(--t2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .13s, color .13s; flex-shrink:0; }
+    @media (hover:hover) { .pg-back:hover { background:var(--surface-2); color:var(--t1); } }
+    .pg-back:active { background:var(--border); }
+    .pg-title-wrap { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .pg-title { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+    .pg-sub { font-size:11.5px; font-weight:500; color:var(--t3); line-height:1.3; }
+
+    /* ── Scroll area ── */
+    .scroll-area { flex:1; overflow-y:auto; padding:22px 16px 40px; display:flex; align-items:flex-start; justify-content:center; }
+    @media (max-width:899px) { .scroll-area { padding:14px 12px 32px; } }
+    .content-wrap { width:100%; max-width:680px; animation:appear .2s ease; }
+    @keyframes appear { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Hero ── */
+    .hero { background:transparent; border-bottom:1px solid var(--divider); padding:10px 10px 24px; margin-bottom:12px; }
+    .hero-ttl { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--t1); margin-bottom:4px; }
+    .hero-sub { font-size:13.5px; color:var(--t2); line-height:1.5; margin-bottom:16px; }
+
+    /* ── Jump nav ── */
+    .jump-nav { display:flex; flex-wrap:wrap; gap:8px; padding-top:4px; }
+    .jump-pill { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; color:var(--np-navy); background:var(--surface-2); border:1px solid var(--border); border-radius:9999px; padding:5px 11px; cursor:pointer; text-decoration:none; transition:background .13s, color .13s; white-space:nowrap; }
+    .jump-pill:hover { background:var(--np-navy); color:#fff; border-color:var(--np-navy); }
+    html.dark .jump-pill, html.dark-mode .jump-pill { color:var(--t1); }
+    html.dark .jump-pill:hover, html.dark-mode .jump-pill:hover { background:var(--np-teal); color:#fff; border-color:var(--np-teal); }
+
+    /* ── Section cards — same rhythm as profile.html ── */
+    .sec-card { background:var(--surface); border-radius:18px; border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:16px; }
+    html.dark .sec-card, html.dark-mode .sec-card { background:#262626; border:none; box-shadow:none; }
+
+    /* Section header row */
+    .sec-hdr { display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--divider); background:var(--surface-2); }
+    html.dark .sec-hdr, html.dark-mode .sec-hdr { background:#2a2a2a; border-bottom-color:var(--divider); }
+
+    /* Icon box — plain styling matching profile.html */
+    .sec-ic { width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--t1); }
+    .c-navy, .c-teal, .c-green, .c-amber, .c-red { background:transparent; color:var(--t1); border:none; }
+    html.dark .c-navy, html.dark-mode .c-navy,
+    html.dark .c-teal, html.dark-mode .c-teal,
+    html.dark .c-green, html.dark-mode .c-green,
+    html.dark .c-amber, html.dark-mode .c-amber,
+    html.dark .c-red, html.dark-mode .c-red { background:transparent; color:var(--t1); border:none; }
+
+    /* Section heading — navy themed */
+    .sec-hdr-ttl { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--np-navy); }
+
+    .sec-body { padding:18px; }
+
+    /* ── Bullet dot items — consistent teal dot for ALL sub-items ── */
+    .bi { position:relative; padding-left:18px; margin-bottom:13px; font-size:13.5px; color:var(--t2); line-height:1.6; }
+    .bi:last-child { margin-bottom:0; }
+    .bi strong { color:var(--t1); font-weight:700; }
+    /* Teal dot bullet */
+    .bi::before { content:""; position:absolute; left:3px; top:8px; width:6px; height:6px; border-radius:50%; background:var(--np-teal); flex-shrink:0; }
+
+    /* Role cards */
+    .role-card { background:var(--surface-2); border-radius:12px; padding:14px 16px; margin-bottom:12px; border:1px solid var(--border); }
+    html.dark .role-card, html.dark-mode .role-card { background:#2a2a2a; border-color:var(--border); }
+    .role-card:last-child { margin-bottom:0; }
+    .role-ttl { font-weight:800; font-size:14px; margin-bottom:5px; display:flex; align-items:center; gap:8px; }
+    .role-desc { font-size:13px; color:var(--t2); line-height:1.5; }
+
+    /* Inline highlight text */
+    .hl { color:var(--np-teal); font-weight:700; }
+    code { background:var(--surface-2); border:1px solid var(--border); padding:1px 6px; border-radius:5px; font-size:12.5px; font-weight:700; color:var(--np-navy); font-family:monospace; }
+    html.dark code, html.dark-mode code { background:#2a2a2a; color:#93c5fd; }
+
+    .footer-text { text-align:center; font-size:12px; color:var(--t3); font-weight:600; padding:8px 0 4px; }
+
+    /* Modals */
+    .modal-backdrop { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.65); backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .modal-backdrop.open { opacity:1; pointer-events:auto; }
+    .sheet-modal { background:var(--surface); width:100%; max-width:400px; border-radius:20px; padding:24px; box-shadow:var(--shadow-modal); border:1px solid var(--border); transform:scale(0.9); opacity:0; transition:transform .2s cubic-bezier(0.16,1,0.3,1),opacity .2s; }
+    .modal-backdrop.open .sheet-modal { transform:scale(1); opacity:1; }
+    html.dark .sheet-modal, html.dark-mode .sheet-modal { background:#1c1c22; border-color:rgba(255,255,255,0.15); }
+    .modal-title { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--t1); margin-bottom:6px; }
+    .modal-desc  { font-size:14px; color:var(--t3); line-height:1.45; margin-bottom:16px; }
+    .modal-btns  { display:flex; gap:12px; margin-top:18px; }
+    .btn-modal   { flex:1; height:44px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; transition:all .15s; font-family:var(--font-ui); }
+    .btn-modal-sec     { background:var(--surface-2); color:var(--t2); }
+    .btn-modal-primary { background:var(--np-navy); color:white; }
+    .input-field { width:100%; padding:11px 13px; border-radius:10px; border:1.5px solid var(--border-str); background:var(--surface); color:var(--t1); font-size:14px; outline:none; transition:border-color .2s; font-family:var(--font-ui); }
+    .input-field:focus { border-color:var(--np-navy); }
   </style>
-<link rel="icon" type="image/png" href="favicon.png" />
-<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 </head>
-<body style="margin:0; padding:0; overflow:hidden;">
-  
+<body>
+<style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:transparent;opacity:1;pointer-events:none;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
 
-<div class="page">
-  <div class="ab">
-    <div class="back" onclick="goBack()"><span data-np-icon="arrow-left" data-np-size="22"></span></div>
-    <div class="ab-ttl">User Guide</div>
-  </div>
-  
-  <div class="scr">
-    
-    <div class="important-box">
-      <div class="para">Welcome to <strong>Notepay!</strong> This guide walks you through every feature of the app with exact steps so you always know where to tap.</div>
+<div class="app">
+
+  <!-- ═══ SIDEBAR — exact profile.html structure ═══ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <img src="favicon.svg" alt="Notepay" class="brand-logo-img">
+      <span class="sb-brand-name">Notepay</span>
     </div>
-
-    <!-- Section 1: Getting Started -->
-    <div class="section-title"><span data-np-icon="flag" data-np-size="22"></span> Getting Started</div>
-    <ul class="step-list">
-      <li><strong>Login:</strong> Enter your 10-digit mobile number on the login screen and tap <strong>Send OTP</strong>. Enter the 6-digit OTP you receive via SMS to verify your identity.</li>
-      <li><strong>Profile Setup:</strong> If you are a first-time user, you will be taken to the Profile Setup screen after OTP verification. Enter your full name, select your gender, and tap <strong>Continue</strong> to complete registration.</li>
-      <li><strong>Dashboard:</strong> After logging in, you land on the Dashboard. It has three swipeable tabs: <strong>My Events</strong> (events you created), <strong>Shared Events</strong> (events you joined via code), and <strong>Visited Events</strong> (public events you have viewed). You can swipe left or right to switch between tabs, or tap the tab names at the top.</li>
-      <li><strong>Search Events:</strong> Use the search bar at the top of the dashboard to quickly find any event by its name or description.</li>
-    </ul>
-
-    <!-- Section 2: Creating & Joining Events -->
-    <div class="section-title"><span data-np-icon="users" data-np-size="22"></span> Creating & Joining Events</div>
-    <ul class="step-list">
-      <li><strong>Create an Event:</strong> On the dashboard, tap the <strong>+ New Event</strong> button at the bottom of the screen. A bottom sheet will slide up with two options. Tap <strong>Create Event</strong>. Fill in the event name, description, and an optional funding goal, then tap <strong>Create</strong>. You will automatically become the Organizer of this event.</li>
-      <li><strong>View the Invite Code:</strong> Open your event. Tap the <strong>three vertical dots (⋮)</strong> in the top-right corner of the app bar. Tap <strong>Code Settings</strong> from the dropdown menu. You will see the 16-character join code and a copy button. Organizers can also tap <strong>Regenerate Code</strong> to create a new code (the old code will stop working).</li>
-      <li><strong>Join an Event:</strong> Tap the <strong>+ New Event</strong> button at the bottom of the dashboard. Tap <strong>Join by Event Code</strong>. Enter the 16-character invite code shared by the organizer. You will instantly join the event as a Collector.</li>
-    </ul>
-
-    <!-- Section 3: Event Page Overview -->
-    <div class="section-title"><span data-np-icon="layout" data-np-size="22"></span> Inside an Event</div>
-    <div class="para">When you open an event, you will see the event name in the app bar, the description and date below it, and a <strong>Members</strong> badge. The page has three tabs at the top:</div>
-    <ul class="bullet-list">
-      <li><strong>Collections:</strong> Track money received (donations). Each row shows the donor name, amount, who collected it, and when.</li>
-      <li><strong>Expenses:</strong> Track money spent. Each row shows the expense description, amount, who added it, and when.</li>
-      <li><strong>Summary:</strong> An interactive overview showing total collected, total spent, remaining balance, top donors, and per-member contribution breakdowns. You can engage with different data visualizations to get insights into event finances.</li>
-    </ul>
-
-    <!-- Section 4: Collection Links & Public Donations -->
-    <div class="section-title"><span data-np-icon="link" data-np-size="22"></span> Collection Links & Public Donations</div>
-    <ul class="step-list">
-      <li><strong>Auto-Donation Setup:</strong> If you are the Organizer, tap the <strong>three vertical dots (⋮)</strong> in the top-right corner of the event, and select <strong>Receive Donations (QR)</strong> to set up your <span class="highlight">UPI ID</span> and <span class="highlight">UPI Registered Name</span>. You can also customize which fields (like Phone, Address, etc.) the donors must fill in. The generated donation link will remain functional even if the event is kept private.</li>
-      <li><strong>Public Donation Link:</strong> Copy the generated public link and share it with your donors. When they open it, they will see a secure payment page with the event name, organizer, and a dynamically generated UPI QR code.</li>
-      <li><strong>Automatic Flow of Collection Entries:</strong> Donors can scan the QR code or click the copy icon beside the UPI ID to instantly copy it and pay using any UPI app. After paying, they must upload a screenshot/receipt of their payment. Notepay's AI assistant immediately verifies the screenshot (checking if the receiver's name matches your UPI Registered Name and validating the transaction). If verified, the entry is automatically logged directly into your event's Collections sheet.</li>
-      <li><strong>Manual Entry Fallback:</strong> If the AI verification fails or cannot extract the receipt details automatically, the donor will be shown a manual form to fill out their name, amount, and <span class="highlight">required custom fields</span>, submitting it safely for organizer review.</li>
-    </ul>
-
-    <!-- Section 5: Adding Entries -->
-    <div class="section-title"><span data-np-icon="rupee" data-np-size="22"></span> Adding & Managing Entries</div>
-    <ul class="step-list">
-      <li><strong>Add a New Entry:</strong> At the bottom of the Collections or Expenses table, tap the green <strong>+ New entry</strong> row. A form will appear inline where you can type the name and amount. Tap <strong>Save</strong> to add the entry.</li>
-      <li><strong>Edit an Entry:</strong> Tap on any row in the table to select it. An edit form will appear where you can change the name, amount, and any custom fields. Tap <strong>Save</strong> to update. Note: Collectors can only edit their own entries. Organizers can edit any entry.</li>
-      <li><strong>Delete an Entry:</strong> While editing an entry, tap the delete option. A confirmation popup will appear asking you to confirm. Note: Collectors can only delete their own entries. Organizers can delete any entry.</li>
-      <li><strong>Duplicate Warning:</strong> If you try to add an entry with the same name and amount as an existing one, Notepay will show a warning popup asking if you want to add it anyway.</li>
-    </ul>
-
-    <!-- Section 6: Custom Columns -->
-    <div class="section-title"><span data-np-icon="settings" data-np-size="22"></span> Custom Columns</div>
-    <ul class="step-list">
-      <li><strong>Add a Custom Column:</strong> In the Collections or Expenses tab, look just below the search bar to find the donor/expense count. Tap the <strong>+ Column</strong> button next to it. Enter a column name (e.g., "House No."), select your desired Column Width (Narrow, Medium, or Wide), and tap <strong>Save</strong>. The new column will instantly appear at the end of the table.</li>
-      <li><strong>Edit or Hide a Column:</strong> Tap on the name of any custom column header directly in the table. You can rename it, adjust its width, or tap <strong>Hide</strong> to completely hide it from view without deleting the data.</li>
-      <li><strong>Restore or Delete Hidden Columns:</strong> Tap the <strong>+ Column</strong> button, then tap the <strong>Hidden Cols</strong> button. You will see a list of all columns you have hidden. Tap <strong>Restore</strong> to bring them back, or tap the red <strong>Delete</strong> button next to it to permanently remove the column and purge all its data from the database.</li>
-    </ul>
-
-    <!-- Section 7: Search, Sort & Filter -->
-    <div class="section-title"><span data-np-icon="search" data-np-size="22"></span> Search, Sort & Filter</div>
-    <ul class="step-list">
-      <li><strong>Search:</strong> At the very top of the Collections or Expenses tab, use the <strong>Search donors…</strong> or <strong>Search expenses…</strong> input box to find specific entries instantly as you type.</li>
-      <li><strong>Sort & Filter:</strong> Tap the <strong>filter icon</strong> (the icon with slider lines) located inside the search bar, directly to the right of the search text. A menu will open with Sorting Options: <em>Time Newest First, Time Oldest First, Amount High to Low, Amount Low to High,</em> and <em>Name A to Z</em>. You can also tap the <strong>My Entries Only</strong> checkbox to filter out everything except the entries you personally collected.</li>
-    </ul>
-
-    <!-- Section 8: Theater Mode -->
-    <div class="section-title"><span data-np-icon="maximize" data-np-size="22"></span> Theater Mode</div>
-    <ul class="step-list">
-      <li><strong>Enter Theater Mode:</strong> Tap the circular <strong>rotate icon</strong> next to the "Total" amount on any table. The screen will rotate to a wide, landscape-style spreadsheet view. You can also enter Theater Mode by rotating your phone horizontally.</li>
-      <li><strong>Navigate in Theater Mode:</strong> At the top, you can switch between <strong>Collections</strong>, <strong>Expenses</strong>, and <strong>Summary</strong> tabs. A search bar and filter icon are available at the top. Tap <strong>Close</strong> in the top-right to exit.</li>
-    </ul>
-
-    <!-- Section 9: Chat & AI -->
-    <div class="section-title"><span data-np-icon="message-square" data-np-size="22"></span> Chat & AI Assistant</div>
-    <ul class="step-list">
-      <li><strong>Open Chat:</strong> Inside any event, tap the <strong>chat bubble icon</strong> floating at the bottom-right corner of the screen. A chat drawer will slide open from the right.</li>
-      <li><strong>Send Messages:</strong> Type your message in the text field at the bottom of the chat drawer and tap send. You can reply to specific messages and react with emojis by long-pressing on a message.</li>
-      <li><strong>Use the AI Assistant:</strong> Type <code>@ai</code> followed by your question and send it. For example: <em>"@ai who donated the most?"</em> or <em>"@ai what is the remaining balance?"</em>. The AI reads the event's financial data and replies directly in the chat.</li>
-    </ul>
-
-    <!-- Section 10: Organizer Menu -->
-    <div class="section-title"><span data-np-icon="star" data-np-size="22"></span> Organizer Menu (⋮)</div>
-    <div class="para">If you are the Organizer, tap the <strong>three vertical dots (⋮)</strong> in the top-right corner of the event page. The dropdown menu includes:</div>
-    <ul class="bullet-list">
-      <li><strong>Rename Event:</strong> Change the event's name and description.</li>
-      <li><strong>Code Settings:</strong> View the invite code, copy it, or regenerate a new one.</li>
-      <li><strong>Members:</strong> See all members with their roles. Tap a member's name to <strong>Restrict</strong> them (blocks all access), <strong>Promote to Organizer</strong>, or <strong>Demote</strong> an existing organizer back to collector.</li>
-      <li><strong>Receive Donations (QR):</strong> Tap to set up your <span class="highlight">UPI ID</span> and <span class="highlight">UPI Registered Name</span>, and choose <span class="highlight">donor-required fields</span>. This option is always visible to the Organizer.</li>
-      <li><strong>Public Access:</strong> Toggle this ON to generate a shareable public link. Anyone with the link can view the event in read-only mode. Toggle it OFF to make the event private again.</li>
-      <li><strong>Share View Link:</strong> Appears only when Public Access is ON. Copies the public link so you can share it.</li>
-      <li><strong>Download PDF Report:</strong> Generates a professional PDF with all collections, expenses, and summary data for the event.</li>
-      <li><strong>Hide Collections Table / Hide Expenses Table:</strong> Temporarily hides a table from the event view. Tap again to show it.</li>
-      <li><strong>Deactivate Event:</strong> Locks the event. All collectors are immediately blocked. The join code will change when reactivated.</li>
-      <li><strong>Delete Event:</strong> Permanently deletes the event and all its data. This cannot be undone.</li>
-    </ul>
-
-    <!-- Section 11: Collector Menu -->
-    <div class="section-title"><span data-np-icon="user" data-np-size="22"></span> Collector Menu</div>
-    <div class="para">If you are a Collector, the three vertical dots (⋮) menu shows:</div>
-    <ul class="bullet-list">
-      <li><strong>Exit Event:</strong> Leave the event. You will need a new invite code to rejoin. Your previous entries will not be deleted.</li>
-    </ul>
-
-    <!-- Section 12: Member Roles -->
-    <div class="section-title"><span data-np-icon="shield" data-np-size="22"></span> Member Roles</div>
-    <div class="role-card">
-      <div class="role-title" style="color: #4CAF50;"><span data-np-icon="star" data-np-size="18"></span> Organizer</div>
-      <div class="role-desc">The creator or promoted member. Full control: rename, delete, deactivate, download PDF, manage members, toggle public access, edit/delete any entry, and regenerate invite codes.</div>
+    <nav class="sb-nav">
+      <div class="sb-section">Events</div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=0')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        All Events <span class="sb-count" id="sb-count-0">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=1')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        My Events <span class="sb-count" id="sb-count-1">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=2')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Shared Events <span class="sb-count" id="sb-count-2">-</span>
+      </div>
+      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=3')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Visited Events <span class="sb-count" id="sb-count-3">-</span>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section" style="margin-top:0;">Add</div>
+      <a href="create-event.html" class="sb-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Create Event
+      </a>
+      <a href="join-event.html" class="sb-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Join by Code
+      </a>
+    </nav>
+    <div class="sb-footer">
+      <a href="profile.html" class="sb-user">
+        <div class="sb-avatar" id="av-btn-side">?</div>
+        <div>
+          <div class="sb-uname" id="user-name-side">My Profile</div>
+          <div class="sb-uphon">Settings &amp; Account</div>
+        </div>
+      </a>
     </div>
-    <div class="role-card">
-      <div class="role-title" style="color: #2196F3;"><span data-np-icon="user" data-np-size="18"></span> Collector</div>
-      <div class="role-desc">A member who joined via invite code. Can view all data, add new entries, edit/delete only their own entries, send chat messages, and use the AI assistant.</div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <header class="pg-header">
+      <button onclick="goBack()" class="pg-back" title="Back" aria-label="Go back">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="pg-title-wrap">
+        <div class="pg-title">User Guide</div>
+      </div>
+    </header>
+
+    <div class="scroll-area">
+      <div class="content-wrap">
+
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-ttl">Need help? Everything is here.</div>
+          <div class="hero-sub">Jump to any topic below, or scroll through the full guide in order. Sections follow your real journey inside the app.</div>
+          <nav class="jump-nav" aria-label="Jump to section">
+            <a class="jump-pill" href="#sec-start">Getting Started</a>
+            <a class="jump-pill" href="#sec-events">Events</a>
+            <a class="jump-pill" href="#sec-tabs">Event Tabs</a>
+            <a class="jump-pill" href="#sec-entries">Adding Entries</a>
+            <a class="jump-pill" href="#sec-upi">UPI &amp; Donations</a>
+            <a class="jump-pill" href="#sec-columns">Custom Columns</a>
+            <a class="jump-pill" href="#sec-search">Search &amp; Filter</a>
+            <a class="jump-pill" href="#sec-theater">Theater Mode</a>
+            <a class="jump-pill" href="#sec-chat">Chat &amp; AI</a>
+            <a class="jump-pill" href="#sec-orgmenu">Organizer Menu</a>
+            <a class="jump-pill" href="#sec-colmenu">Collector Menu</a>
+            <a class="jump-pill" href="#sec-roles">Roles</a>
+            <a class="jump-pill" href="#sec-profile">Profile &amp; Help</a>
+          </nav>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             SECTION ORDER follows actual user journey:
+             Login → Dashboard → Events → Data Entry →
+             Donations → Customisation → Power Features
+        ═══════════════════════════════════════════════ -->
+
+        <!-- 1. Getting Started -->
+        <div class="sec-card" id="sec-start">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Getting Started</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Login with OTP:</strong> Enter your 10-digit mobile number on the login screen and tap <strong>Send OTP</strong>. Enter the 6-digit OTP received via SMS to verify your identity and sign in.</div>
+            <div class="bi"><strong>Profile Setup (first time):</strong> New users are automatically taken to the Profile Setup screen after OTP verification. Enter your full name, select your gender, then tap <strong>Continue</strong> to complete registration.</div>
+            <div class="bi"><strong>Dashboard:</strong> After login you land on the Dashboard, which shows three swipeable tabs — <strong>My Events</strong> (events you created), <strong>Shared Events</strong> (events you joined via code), and <strong>Visited Events</strong> (public events you have viewed). Swipe left or right to switch, or tap the tab names.</div>
+            <div class="bi"><strong>Search events:</strong> Use the search bar at the top of the dashboard to instantly find any event by name or description.</div>
+          </div>
+        </div>
+
+        <!-- 2. Creating & Joining Events -->
+        <div class="sec-card" id="sec-events">
+          <div class="sec-hdr">
+            <div class="sec-ic c-teal">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Creating &amp; Joining Events</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Create an event:</strong> Tap the <strong>New Event</strong> button at the bottom of the Dashboard (or <strong>Create Event</strong> in the sidebar). Fill in the event name, an optional description, an optional funding goal, and optional date, then tap <strong>Create</strong>. You automatically become the Organizer.</div>
+            <div class="bi"><strong>Get the invite code:</strong> Open your event → tap the <strong>three dots (⋮)</strong> in the top-right corner → tap <strong>Event Joining Code</strong>. You will see the 16-character join code and a copy button. You can also tap <strong>Regenerate</strong> to create a new one (the old code stops working immediately).</div>
+            <div class="bi"><strong>Join an event:</strong> Tap the <strong>New Event</strong> button → tap <strong>Join by Event Code</strong> (or <strong>Join by Code</strong> in the sidebar). Enter the 16-character invite code shared by the organizer. You instantly join as a Collector.</div>
+            <div class="bi"><strong>Edit an event:</strong> From the Dashboard, tap the <strong>edit icon</strong> on any event card you own to update the event name, description, goal amount, or date.</div>
+          </div>
+        </div>
+
+        <!-- 3. Inside an Event — the three tabs -->
+        <div class="sec-card" id="sec-tabs">
+          <div class="sec-hdr">
+            <div class="sec-ic c-green">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Inside an Event — Three Tabs</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Collections tab:</strong> Tracks every donation or payment received. Each row shows the donor's name, amount (₹), who collected it, and the timestamp. This is the core income ledger of your event.</div>
+            <div class="bi"><strong>Expenses tab:</strong> Tracks every cost or expenditure. Each row shows a description, the amount spent, who added it, and the timestamp. This is the spending ledger.</div>
+            <div class="bi"><strong>Summary tab:</strong> A live financial snapshot — total collected, total spent, remaining balance, top donors, and a per-member contribution breakdown. It updates automatically as entries are added.</div>
+            <div class="bi"><strong>Event info bar:</strong> Below the app bar, you will see the event description, date, and a <strong>Members</strong> badge. Tap <strong>Members</strong> to view all current members and their roles.</div>
+          </div>
+        </div>
+
+        <!-- 4. Adding & Managing Entries -->
+        <div class="sec-card" id="sec-entries">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Adding &amp; Managing Entries</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Add a new entry:</strong> At the bottom of the Collections or Expenses table, tap the green <strong>+ New entry</strong> row. A form slides up where you type the donor name and optional amount. Tap <strong>Save</strong> or <strong>Save &amp; Next</strong> to add and immediately open a blank form for the next entry.</div>
+            <div class="bi"><strong>Edit an entry:</strong> Tap any existing row in the table to open its edit form. Update the name, amount, or any custom fields, then tap <strong>Save</strong>. Note: Collectors can only edit their own entries. Organizers can edit any entry.</div>
+            <div class="bi"><strong>Delete an entry:</strong> While editing, tap the <strong>Delete</strong> option and confirm in the popup. Collectors can only delete their own entries. Organizers can delete any entry.</div>
+            <div class="bi"><strong>Duplicate warning:</strong> If you add an entry with the same name and amount as an existing one, Notepay shows a warning popup. Tap <strong>Add Anyway</strong> to proceed or <strong>Cancel</strong> to discard.</div>
+          </div>
+        </div>
+
+        <!-- 5. Receive Donations — UPI QR & AI Verification -->
+        <div class="sec-card" id="sec-upi">
+          <div class="sec-hdr">
+            <div class="sec-ic c-teal">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Receive Donations (UPI QR &amp; AI)</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Set up your UPI details:</strong> As an Organizer, tap <strong>⋮ → Receive Donations (QR)</strong>. Enter your <span class="hl">UPI ID</span> and <span class="hl">UPI Registered Name</span> exactly as they appear in your bank app. Choose which donor fields are required (e.g. phone, address, custom fields).</div>
+            <div class="bi"><strong>Share the collection link:</strong> Copy the generated public donation link and share it with donors via WhatsApp, SMS, or any channel. Donors who open the link see your event name, organizer name, and a dynamically generated UPI QR code — no app installation required.</div>
+            <div class="bi"><strong>Donor pays and uploads proof:</strong> After paying via any UPI app, the donor uploads a screenshot of their payment receipt on the same page.</div>
+            <div class="bi"><strong>AI auto-verification:</strong> Notepay's AI immediately reads the uploaded screenshot — it checks that the receiver name matches your UPI Registered Name and extracts the amount and date. If the receipt is valid, the entry is automatically created in your event's Collections tab.</div>
+            <div class="bi"><strong>Manual fallback:</strong> If AI verification fails or cannot extract details (e.g. blurry screenshot), the donor is shown a manual form to type their name, amount, and required fields. All entries remain under your full Organizer control.</div>
+          </div>
+        </div>
+
+        <!-- 6. Custom Columns -->
+        <div class="sec-card" id="sec-columns">
+          <div class="sec-hdr">
+            <div class="sec-ic c-amber">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Custom Columns</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Add a column:</strong> In the Collections or Expenses tab, look just below the search bar and find the donor or expense count. Tap the <strong>+ Column</strong> button next to it. Enter a column name (e.g. "House No.", "Ward No."), choose a display width — Narrow, Medium, or Wide — then tap <strong>Add Column</strong>. The column appears instantly in the table.</div>
+            <div class="bi"><strong>Edit or hide a column:</strong> Tap the name of any custom column header directly in the table. A settings sheet slides up. You can rename it, change its width, or tap <strong>Hide</strong> to remove it from view without losing any data.</div>
+            <div class="bi"><strong>Restore or delete hidden columns:</strong> Tap the <strong>+ Column</strong> button → tap the <strong>Hidden Cols</strong> button. All previously hidden columns are listed. Tap <strong>Restore</strong> to bring one back, or tap the red <strong>Delete</strong> button to permanently remove the column and all its data.</div>
+          </div>
+        </div>
+
+        <!-- 7. Search, Sort & Filter -->
+        <div class="sec-card" id="sec-search">
+          <div class="sec-hdr">
+            <div class="sec-ic c-green">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Search, Sort &amp; Filter</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Search:</strong> At the top of the Collections or Expenses tab, use the <strong>Search donors…</strong> or <strong>Search expenses…</strong> input to find entries as you type. Results filter instantly.</div>
+            <div class="bi"><strong>Sort &amp; filter:</strong> Tap the <strong>filter icon</strong> (three horizontal sliders) inside the search bar. A modal opens with sorting options: <em>Time Newest First, Time Oldest First, Amount High to Low, Amount Low to High,</em> and <em>Name A to Z</em>.</div>
+            <div class="bi"><strong>My Entries Only:</strong> In the same filter modal, toggle <strong>My Entries Only</strong> to show only the entries that you personally added, hiding all other collectors' data from view.</div>
+          </div>
+        </div>
+
+        <!-- 8. Theater Mode -->
+        <div class="sec-card" id="sec-theater">
+          <div class="sec-hdr">
+            <div class="sec-ic c-amber">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Theater Mode (Wide View)</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Enter Theater Mode:</strong> Tap the <strong>Maximize</strong> button next to the "Total" amount on any table, or simply rotate your phone to landscape orientation. The screen expands to a wide spreadsheet view that shows all columns at once.</div>
+            <div class="bi"><strong>Navigate in Theater Mode:</strong> Use the tabs at the top to switch between Collections, Expenses, and Summary. The search bar and filter icon remain available. Tap <strong>Close</strong> in the top corner to return to the normal view.</div>
+          </div>
+        </div>
+
+        <!-- 9. Chat & AI Assistant -->
+        <div class="sec-card" id="sec-chat">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Chat &amp; AI Assistant</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Open Chat:</strong> Inside any event, tap the <strong>chat bubble icon</strong> floating at the bottom-right of the screen. A chat drawer slides open from the right side.</div>
+            <div class="bi"><strong>Send messages:</strong> Type in the text field at the bottom and tap send. Long-press any message to reply directly to it or to react with an emoji.</div>
+            <div class="bi"><strong>Use the AI Assistant:</strong> Type <code>@ai</code> followed by your question and send it — for example, <em>"@ai who donated the most?"</em> or <em>"@ai what is the remaining balance?"</em>. The AI reads the event's live financial data and replies directly in the chat thread.</div>
+          </div>
+        </div>
+
+        <!-- 10. Organizer Menu -->
+        <div class="sec-card" id="sec-orgmenu">
+          <div class="sec-hdr">
+            <div class="sec-ic c-teal">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Organizer Menu (⋮)</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Rename Event:</strong> Change the event name and description at any time.</div>
+            <div class="bi"><strong>Event Joining Code:</strong> View the invite code, copy it to clipboard, or regenerate a new code. The old code instantly stops working when regenerated.</div>
+            <div class="bi"><strong>Members:</strong> See all event members with their roles. Tap any member's name to <strong>Restrict</strong> them (blocks all access), <strong>Promote to Organizer</strong>, or <strong>Demote</strong> an existing organizer back to Collector.</div>
+            <div class="bi"><strong>Receive Donations (QR):</strong> Configure your <span class="hl">UPI ID</span>, <span class="hl">UPI Registered Name</span>, and which donor fields are required for the public donation link.</div>
+            <div class="bi"><strong>Public Access:</strong> Toggle ON to generate a read-only shareable link. Anyone with the link can view event data without joining. Toggle OFF to make the event private.</div>
+            <div class="bi"><strong>Share View Link:</strong> Appears only when Public Access is ON. Copies the public read-only link to your clipboard.</div>
+            <div class="bi"><strong>Download PDF Report:</strong> Generates a professionally formatted PDF containing all collections, expenses, and a financial summary for the event.</div>
+            <div class="bi"><strong>Hide / Show tables:</strong> Temporarily hide the Collections or Expenses table from the event view. Tap again to restore visibility.</div>
+            <div class="bi"><strong>Deactivate Event:</strong> Locks the event. All Collectors are immediately blocked. The invite code changes when the event is reactivated.</div>
+            <div class="bi"><strong>Delete Event:</strong> Permanently deletes the event and all its data. This action cannot be undone.</div>
+          </div>
+        </div>
+
+        <!-- 11. Collector Menu -->
+        <div class="sec-card" id="sec-colmenu">
+          <div class="sec-hdr">
+            <div class="sec-ic c-green">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Collector Menu</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Exit Event:</strong> If you are a Collector, the three dots (⋮) menu shows a single option — Exit Event. This removes you from the event. Your previous entries will remain in the ledger. You will need a new invite code to rejoin.</div>
+          </div>
+        </div>
+
+        <!-- 12. Member Roles -->
+        <div class="sec-card" id="sec-roles">
+          <div class="sec-hdr">
+            <div class="sec-ic c-navy">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Member Roles</div>
+          </div>
+          <div class="sec-body">
+            <div class="role-card">
+              <div class="role-ttl" style="color:var(--np-green);">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Organizer
+              </div>
+              <div class="role-desc">The creator or a promoted member. Has full control — can rename, delete, deactivate, download PDF, manage members, toggle public access, edit or delete any entry, and regenerate invite codes.</div>
+            </div>
+            <div class="role-card">
+              <div class="role-ttl" style="color:var(--np-navy);">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Collector
+              </div>
+              <div class="role-desc">A member who joined via invite code. Can view all data, add new entries, edit or delete their own entries, send chat messages, and use the AI assistant.</div>
+            </div>
+            <div class="role-card">
+              <div class="role-ttl" style="color:var(--np-red);">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Restricted
+              </div>
+              <div class="role-desc">A Collector who has been blocked by the Organizer. They cannot view event data, add entries, or use the chat. Only the Organizer can restore their access.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 13. Profile & Settings -->
+        <div class="sec-card" id="sec-profile">
+          <div class="sec-hdr">
+            <div class="sec-ic c-amber">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="sec-hdr-ttl">Profile &amp; Help</div>
+          </div>
+          <div class="sec-body">
+            <div class="bi"><strong>Open Profile:</strong> On the dashboard, tap your <strong>circular avatar</strong> in the top-right corner to open the Profile page.</div>
+            <div class="bi"><strong>Edit Name:</strong> On the Profile page, tap your name or the edit badge on your avatar to update your display name. Your new name appears across all events immediately.</div>
+            <div class="bi"><strong>Dark Mode:</strong> Under the <strong>Preferences</strong> section on the Profile page, toggle Dark Mode on or off. Your preference is saved automatically and applied across all pages.</div>
+            <div class="bi"><strong>Submit Feedback:</strong> Under <strong>Help &amp; Support</strong>, tap <strong style="color:var(--np-teal); cursor:pointer;" onclick="openFeedbackPopup()">Submit Feedback</strong> to report bugs, request features, or share your thoughts with the team.</div>
+          </div>
+        </div>
+
+        <div class="footer-text">Thank you for using Notepay!</div>
+      </div>
     </div>
-    <div class="role-card">
-      <div class="role-title" style="color: #F44336;"><span data-np-icon="lock" data-np-size="18"></span> Restricted</div>
-      <div class="role-desc">A member restricted by the Organizer. They cannot view the event data, add entries, or use the chat. Only the Organizer can restore their access.</div>
-    </div>
-
-    <!-- Section 13: Profile & Settings -->
-    <div class="section-title"><span data-np-icon="user" data-np-size="22"></span> Profile & Settings</div>
-    <ul class="step-list">
-      <li><strong>Open Profile:</strong> On the dashboard, tap the <strong>circular avatar</strong> (your initials) in the top-right corner of the app bar. This opens the Profile page.</li>
-      <li><strong>Edit Profile:</strong> On the Profile page, tap the <strong>Edit Profile</strong> button below your name. You can change your Full Name and Gender.</li>
-      <li><strong>Dark Mode:</strong> On the Profile page, under the <strong>Preferences</strong> section, toggle the <strong>Dark Mode</strong> switch on or off. Your preference is saved automatically.</li>
-      <li><strong>Logout:</strong> On the Profile page, scroll to the <strong>Session</strong> section and tap <strong>Logout</strong>. A confirmation popup will appear before signing you out.</li>
-    </ul>
-
-    <div class="important-box" style="border-left-color: var(--primary);">
-      <div class="para"><strong>Need Help?</strong> If you encounter any issues, contact the app administrator or revisit this guide anytime from your Profile page under <span class="highlight" style="cursor: pointer; text-decoration: underline;" onclick="openFeedbackPopup(event)">Help & Support</span>.</div>
-    </div>
-
-    <div class="footer">Thank you for using Notepay!</div>
-
   </div>
 </div>
 
 <!-- Feedback Popup -->
-<div class="pop-ov" id="feedback-pop" style="display:none; justify-content:center; align-items:center; z-index:10000; position:fixed;">
-  <div class="pop-box" style="max-width:340px; width: 90%;">
-    <div class="pop-t" style="text-align:left; margin-bottom:15px; font-family:'Nunito',sans-serif; font-size:18px; font-weight:800;">Submit Feedback</div>
-    <select id="fb-type" style="width:100%; padding:12px 35px 12px 12px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:12px; background:var(--surface) url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e&quot;) no-repeat right 12px center; background-size:16px; color:var(--text); font-family:inherit; outline:none; -webkit-appearance:none; appearance:none; font-weight:600; font-size:14px;">
-      <option value="Feature Request">Feature Request</option>
-      <option value="Bug Report">Bug Report</option>
-      <option value="Security Issue">Security Issue</option>
-      <option value="General Feedback">General Feedback</option>
+<div class="modal-backdrop" id="feedback-pop">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-title">Submit Feedback</div>
+    <div class="modal-desc">Tell us what you think or report an issue.</div>
+    <select id="fb-type" class="input-field" style="margin-bottom:12px;">
+      <option>Feature Request</option><option>Bug Report</option>
+      <option>Security Issue</option><option>General Feedback</option>
     </select>
-    <textarea id="fb-msg" placeholder="Tell us what you think or report an issue..." rows="4" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid var(--border2); margin-bottom:15px; background:var(--surface); color:var(--text); font-family:inherit; outline:none; resize:none; box-sizing:border-box;"></textarea>
-    <div class="pop-btns" style="display:flex; justify-content:flex-end; gap:8px;">
-      <div class="btn btn-text-secondary" style="cursor:pointer;" onclick="document.getElementById('feedback-pop').style.display='none'">Cancel</div>
-      <div class="btn btn-solid-primary" style="cursor:pointer;" id="fb-submit" onclick="submitFeedback()">Submit</div>
+    <textarea id="fb-msg" class="input-field" placeholder="Describe your issue or idea..." rows="4" style="resize:none; margin-bottom:8px;"></textarea>
+    <div class="modal-btns">
+      <button class="btn-modal btn-modal-sec" onclick="closeFeedback()">Cancel</button>
+      <button class="btn-modal btn-modal-primary" id="fb-submit" onclick="submitFeedback()">Submit</button>
     </div>
   </div>
 </div>
@@ -219,82 +520,67 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="js/firebase-config.js?v=25"></script>
-<script src="js/api.js?v=25"></script>
 <script src="js/icons.js?v=25"></script>
+<script src="js/api.js?v=26"></script>
 <script>
-  let currentUser = null;
-
   document.addEventListener("DOMContentLoaded", async () => {
-    if (localStorage.getItem("np_dark") === "1") {
-      document.body.classList.add("dark");
-      document.documentElement.classList.add("dark-mode");
-    }
+    // Populate sidebar from cache immediately (0ms)
+    try {
+      const counts = JSON.parse(localStorage.getItem("np_event_counts") || "[]");
+      if (counts.length === 4) for (let i = 0; i < 4; i++) {
+        const el = document.getElementById(`sb-count-${i}`); if (el) el.textContent = counts[i];
+      }
+      const p = JSON.parse(localStorage.getItem("np_profile") || "null");
+      if (p && p.full_name) {
+        applyAvatar(document.getElementById("av-btn-side"), p.full_name);
+        const nm = document.getElementById("user-name-side"); if (nm) nm.textContent = p.full_name;
+      }
+    } catch(e) {}
+
     npIcons.render();
 
-    // Resolve user state asynchronously without blocking page rendering
-    currentUser = await waitForAuthReady();
+    const user = await waitForAuthReady();
+    if (user) {
+      try {
+        const p = await getMyProfile();
+        applyAvatar(document.getElementById("av-btn-side"), p.full_name);
+        const nm = document.getElementById("user-name-side"); if (nm) nm.textContent = p.full_name;
+      } catch(e) {}
+    }
   });
 
   function goBack() {
-    if (document.referrer && document.referrer.includes("profile")) {
+    if (document.referrer && (document.referrer.includes("profile") || document.referrer.includes("dashboard"))) {
       history.back();
-    } else if (localStorage.getItem("np_my_id") || currentUser) {
-      window.location.href = getCleanUrl("profile.html");
     } else {
-      window.location.href = getCleanUrl("index.html");
+      window.location.href = getCleanUrl("profile.html");
     }
   }
 
-  function openFeedbackPopup(e) {
-    if (e) e.preventDefault();
-    if (!currentUser) {
-      showToast("Please login to submit feedback.", "error");
-      setTimeout(() => {
-        window.location.href = getCleanUrl(`login.html?return=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-      }, 1500);
-      return;
-    }
-    document.getElementById('feedback-pop').style.display = 'flex';
+  function openFeedbackPopup() {
+    document.getElementById("feedback-pop").classList.add("open");
   }
+  function closeFeedback() {
+    document.getElementById("feedback-pop").classList.remove("open");
+  }
+  document.getElementById("feedback-pop").addEventListener("click", function(e) {
+    if (e.target === this) closeFeedback();
+  });
 
   async function submitFeedback() {
-    const type = document.getElementById('fb-type').value;
-    const msg = document.getElementById('fb-msg').value.trim();
-    if(!msg) return showToast("Message cannot be empty", "error");
-    
-    if (!currentUser) {
-      showToast("Please login to submit feedback.", "error");
-      return;
-    }
-
-    const btn = document.getElementById('fb-submit');
-    const oldTxt = btn.innerText;
-    btn.innerText = "Sending...";
-    btn.style.pointerEvents = 'none';
-    
+    const type = document.getElementById("fb-type").value;
+    const msg  = document.getElementById("fb-msg").value.trim();
+    if (!msg) { showToast("Please enter a message.", "error"); return; }
+    const btn = document.getElementById("fb-submit");
+    btn.textContent = "Sending…"; btn.disabled = true;
     try {
       await apiFetch("POST", "/feedback", { type: type, message: msg });
-      showToast("Feedback submitted successfully!", "success");
-      document.getElementById('feedback-pop').style.display = 'none';
-      document.getElementById('fb-msg').value = '';
-    } catch(e) {
-      showToast(e.message || "Failed to submit feedback", "error");
-    } finally {
-      btn.innerText = oldTxt;
-      btn.style.pointerEvents = 'auto';
-    }
+      showToast("Feedback sent!", "success");
+      closeFeedback();
+      document.getElementById("fb-msg").value = "";
+    } catch(e) { showToast("Failed to submit.", "error"); }
+    finally { btn.textContent = "Submit"; btn.disabled = false; }
   }
 </script>
-  <script>
-    window.addEventListener("load", () => {
-        const splash = document.getElementById("app-splash");
-        if (splash) {
-            splash.classList.add("hidden");
-            setTimeout(() => splash.style.display = "none", 400);
-        }
-    });
-  </script>
 </body>
 </html>
-
-
