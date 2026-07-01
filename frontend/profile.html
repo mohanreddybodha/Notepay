@@ -302,7 +302,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   </aside>
 
   <!-- Fixed mobile back button — outside .main so position:fixed works correctly -->
-  <a href="dashboard.html" class="chatgpt-back-btn" title="Back">
+  <a href="javascript:void(0)" onclick="goBackOrDashboard()" class="chatgpt-back-btn" title="Back">
     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
   </a>
 
@@ -311,7 +311,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     <header class="topbar">
       <div style="display:flex; align-items:center; gap:10px;">
         <!-- Mobile back button -->
-        <a href="dashboard.html" class="mob-back-btn" style="align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; color:var(--t2); text-decoration:none;">
+        <a href="javascript:void(0)" onclick="goBackOrDashboard()" class="mob-back-btn" style="align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; color:var(--t2); text-decoration:none;">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </a>
         <!-- Page title aligned to left end on desktop -->
@@ -725,21 +725,17 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   }
 </script>
 <script>
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a');
-      if (!link) return;
-      const href = link.getAttribute('href');
-      if (href === 'dashboard.html') {
-        e.preventDefault();
-        const dbtab = new URLSearchParams(window.location.search).get('dbtab');
-        const qs = dbtab !== null ? `?tab=${dbtab}` : '';
-        if (window.history.length > 1 && document.referrer) {
-          history.back();
-        } else {
-          window.location.href = getCleanUrl(`dashboard.html${qs}`);
-        }
+    function goBackOrDashboard() {
+      const dbtab = new URLSearchParams(window.location.search).get('dbtab');
+      const qs = dbtab !== null ? `?tab=${dbtab}` : '';
+      if (window.history.length > 1 && document.referrer.includes('dashboard')) {
+        history.back();
+      } else if (window.history.length > 1 && document.referrer.includes('event')) {
+        history.back();
+      } else {
+        window.location.href = getCleanUrl(`dashboard.html${qs}`);
       }
-    });
+    }
   </script>
 </body>
 </html>

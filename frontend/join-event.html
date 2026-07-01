@@ -508,7 +508,17 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     try {
       const res = await joinEvent(code);
       showToast("Joined event!");
-      window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
+      const splash = document.getElementById("app-splash");
+      if (splash) {
+        splash.style.display = "flex";
+        splash.style.opacity = "1";
+        splash.classList.remove("hidden");
+      } else {
+        if (typeof showCircleLoading === 'function') showCircleLoading();
+      }
+      setTimeout(() => {
+        window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
+      }, 50);
     } catch(e) {
       const msg = e.message || "";
       if (msg.toLowerCase().includes("deactivated")) {
