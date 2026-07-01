@@ -3116,7 +3116,7 @@
       } catch (e) { showToast(e.message || "Failed.", "error"); }
     }
 
-    function openRenameSheet() { window.location.href = getCleanUrl('create-event.html') + `?edit=${eventId}`; }
+    function openRenameSheet() { window.location.href = getCleanUrl('create-event.html') + `?edit=${eventId}&from=event`; }
 
     // ── Helpers ──
     function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }

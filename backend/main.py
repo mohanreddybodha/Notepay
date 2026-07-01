@@ -432,7 +432,7 @@ def read_shared_events(db: Session = Depends(get_db), user_id: int = Depends(get
 @app.get("/events/preview-code", tags=["Events"])
 def preview_event_by_code(invite_code: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Retrieve basic event details using an invite code (before joining)."""
-    verify_rate_limit(f"user:{user_id}:preview-code", limit=10, window=60, detail="Previewing codes too fast. Slow down.")
+    verify_rate_limit(f"user:{user_id}:preview-code", limit=100, window=60, detail="Previewing codes too fast. Slow down.")
     event = db.query(models.Event).filter(models.Event.invite_code == invite_code).first()
     if not event:
         raise HTTPException(status_code=404, detail="Invalid invite code")

@@ -728,24 +728,24 @@
     .search-row {
       display: flex;
       gap: 8px;
-      padding: 12px 16px 2px;
+      padding: 6px 16px 2px;
       flex-shrink: 0;
     }
     
     .tab-desc {
       font-size: 12px;
       color: var(--text3);
-      padding: 0 18px 12px;
+      padding: 0 16px 6px;
       line-height: 1.4;
       font-weight: 600;
     }
 
     @media (min-width: 900px) {
       .search-row {
-        padding: 16px 28px 4px;
+        padding: 10px 28px 4px;
       }
       .tab-desc {
-        padding: 0 30px 16px;
+        padding: 0 28px 10px;
       }
     }
     
@@ -1982,8 +1982,8 @@
       </div><!-- /scroll -->
 
       <!-- SPA VIEW: CREATE EVENT -->
-      <div id="spa-view-create" class="page-view-container" style="display:none; flex:1; overflow-y:auto; padding: 28px 20px;">
-        <div class="form-container" style="width: 100%; max-width: 520px; margin: 0 auto 32px; background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+      <div id="spa-view-create" class="page-view-container" style="display:none; flex:1; overflow-y:auto; padding: 6px 16px 16px;">
+        <div class="form-container" style="width: 100%; max-width: 520px; margin: 6px auto 20px; background: var(--surface); padding: 20px 16px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
 
           <div class="main-error" id="spa-main-error" style="display: none; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 12px; background: var(--np-red-lt); color: var(--np-red); font-size: 13.5px; font-weight: 600; margin-bottom: 20px; border: 1px solid rgba(192, 57, 43, .2);">
             <span id="spa-main-err-txt"></span>
@@ -2090,8 +2090,8 @@
       </div>
 
       <!-- SPA VIEW: JOIN EVENT -->
-      <div id="spa-view-join" class="page-view-container" style="display:none; flex:1; overflow-y:auto; padding: 28px 20px;">
-        <div class="form-container" style="width: 100%; max-width: 480px; margin: 16px auto 32px; background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+      <div id="spa-view-join" class="page-view-container" style="display:none; flex:1; overflow-y:auto; padding: 6px 16px 16px;">
+        <div class="form-container" style="width: 100%; max-width: 480px; margin: 6px auto 20px; background: var(--surface); padding: 20px 16px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
 
           <div class="field-group" style="margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -2302,8 +2302,6 @@
         if (c.my_events) myEvents = c.my_events;
         if (c.shared_events) sharedEvents = c.shared_events;
         handleSearchFilter();
-        const splash = document.getElementById('app-splash');
-        if (splash) { splash.style.opacity = '0'; splash.style.display = 'none'; }
       }
     } catch(e) {}
 
@@ -2313,8 +2311,6 @@
       if (user) {
         refreshDashboard();
         setupDashboardWS().catch(() => { });
-      } else {
-        hideCircleLoading(true);
       }
     });
 
@@ -3004,7 +3000,7 @@
     function switchSPAView(viewName) {
       const cr = document.getElementById('spa-view-create');
       const jn = document.getElementById('spa-view-join');
-      const overviewEls = document.querySelectorAll('.page-hdr, .tab-bar, .search-clip, .scroll-area, .fab');
+      const overviewEls = document.querySelectorAll('.page-hdr, .tab-bar, .search-row, .tab-desc, .scroll-area, .fab');
       const mainTopbar = document.querySelector('.topbar');
       const spaHeader = document.getElementById('spa-pg-header');
       const spaTitle = document.getElementById('spa-pg-title');
@@ -3088,6 +3084,7 @@
         if (mainTopbar) mainTopbar.style.display = 'flex';
         if (spaHeader) spaHeader.style.display = 'none';
         if (document.querySelector('.page-hdr')) document.querySelector('.page-hdr').style.display = '';
+        if (document.querySelector('.search-row')) document.querySelector('.search-row').style.display = '';
         if (document.querySelector('.tab-bar')) document.querySelector('.tab-bar').style.display = '';
         if (document.querySelector('.scroll-area')) document.querySelector('.scroll-area').style.display = 'block';
         if (document.querySelector('.fab')) document.querySelector('.fab').style.display = 'flex';

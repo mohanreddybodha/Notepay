@@ -652,11 +652,21 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
 <script>
   let currentCollections = 0;
   function goBack() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get("from");
+    const editId = urlParams.get("edit");
+    
+    if (from === "dashboard") {
+      window.location.href = getCleanUrl("dashboard.html");
+      return;
+    } else if (from === "event" && editId) {
+      window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
+      return;
+    }
+
     if (document.referrer && (document.referrer.includes("profile.html") || document.referrer.includes("dashboard.html") || document.referrer.includes("event.html"))) {
       history.back();
     } else {
-      const urlParams = new URLSearchParams(window.location.search);
-      const editId = urlParams.get("edit");
       if (editId) {
         window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
       } else {

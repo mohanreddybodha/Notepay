@@ -641,20 +641,19 @@ function hideCircleLoading(force = false) {
       spinner.style.opacity = "0";
       spinner.style.display = "none"; // Hide instantly
     }
+    const splash = document.getElementById("app-splash");
+    if (splash) {
+      splash.style.opacity = "0";
+      splash.style.display = "none";
+    }
   }
 }
 
 if (typeof window !== "undefined") {
-  document.addEventListener("DOMContentLoaded", () => {
-    if (_spinnerActiveCount <= 0) {
-      hideCircleLoading(true);
-    }
-  });
-  window.addEventListener("load", () => {
-    if (_spinnerActiveCount <= 0) {
-      hideCircleLoading(true);
-    }
-  });
+  // We no longer hide the spinner automatically on DOMContentLoaded or load.
+  // The individual pages (dashboard.html, event-main.js, etc.) are responsible
+  // for explicitly calling hideCircleLoading() once they finish fetching their initial data.
+  // This prevents the spinner from disappearing while auth-guard.js is redirecting.
 }
 
 function showTopLoadingBar() { showCircleLoading(); }
