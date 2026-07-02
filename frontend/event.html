@@ -19,6 +19,9 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap"
     rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+    rel="stylesheet" />
   <!-- FullCalendar -->
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
   <!-- Emoji picker (mobile-friendly web component) -->
@@ -101,12 +104,19 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       100% { transform: scale(1.05); }
     }
   </style>
+  <link rel="stylesheet" href="css/components.css?v=33">
+  <link rel="stylesheet" href="css/forms.css?v=32"/>
+  <script src="js/components.js?v=33"></script>
 </head>
 <body style="margin:0; padding:0; overflow:hidden;">
   <style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:transparent;opacity:1;pointer-events:none;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
   
 
-  <div class="page" id="main-page" style="overflow:hidden;">
+  
+  <div class="app">
+    <np-sidebar active-link="event"></np-sidebar>
+    <div class="main">
+      <div class="page" id="main-page" style="overflow:hidden;">
     <div class="app-bar">
       <div class="back" onclick="goBackToDashboard()"><span data-np-icon="arrow-left"
           data-np-size="22"></span></div>
@@ -885,6 +895,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   </div><!-- End main-page -->
 
   <script src="js/firebase-config.js?v=31"></script>
+  <script src="js/shared-utils.js?v=31"></script>
   <script src="js/api.js?v=31"></script>
   <script src="js/auth-guard.js?v=31"></script>
 
@@ -1089,10 +1100,15 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     
     <input type="file" id="manual-receipt-upload" style="display:none;" accept="image/*" onchange="handleManualReceiptUpload(event)">
 
+  
+    </div> <!-- /main -->
+  </div> <!-- /app -->
+
   <!-- Pull to Refresh Logic -->
   <script src="js/auth-guard.js?v=31"></script>
 
   <script src="js/event-main.js?v=31"></script>
+  
 </body>
 </html>
 

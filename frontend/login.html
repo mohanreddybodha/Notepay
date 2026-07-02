@@ -547,6 +547,8 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
       100% { left: 100%; }
     }
   </style>
+  <link rel="stylesheet" href="css/components.css?v=32"/>
+  <link rel="stylesheet" href="css/forms.css?v=32"/>
 </head>
 <body>
   
@@ -670,6 +672,7 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
   </div>
 
 <script src="js/firebase-config.js?v=31"></script>
+<script src="js/shared-utils.js?v=31"></script>
 <script src="js/icons.js?v=31"></script>
 <script src="js/api.js?v=31"></script>
 <script>
@@ -764,7 +767,41 @@ async function sendOTP() {
   phoneError.classList.remove("visible");
 
   try {
-    confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
+    // Ensure reCAPTCHA verifier is ready and reset any stale widget
+    try {
+      if (typeof recaptchaVerifier === 'undefined' || !recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size: "invisible", callback: () => {} });
+      }
+      if (typeof recaptchaVerifier.render === 'function' && (window.recaptchaWidgetId === undefined || window.recaptchaWidgetId === null)) {
+        window.recaptchaWidgetId = await recaptchaVerifier.render();
+      }
+      if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+        try { grecaptcha.reset(window.recaptchaWidgetId); } catch(e) { /* ignore */ }
+      }
+    } catch (reErr) {
+      console.warn('recaptcha init/reset failed', reErr);
+    }
+
+    try {
+      confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
+    } catch (firstErr) {
+      // If the app credential was invalid/expired, try resetting the verifier once and retry
+      if (firstErr && firstErr.code === 'auth/invalid-app-credential') {
+        try {
+          if (typeof recaptchaVerifier.clear === 'function') recaptchaVerifier.clear();
+        } catch(e) {}
+        try {
+          recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", { size: "invisible", callback: () => {} });
+          window.recaptchaWidgetId = await recaptchaVerifier.render();
+          if (window.grecaptcha && window.recaptchaWidgetId !== undefined) try { grecaptcha.reset(window.recaptchaWidgetId); } catch(e) {}
+          confirmationResult = await auth.signInWithPhoneNumber("+91" + num, recaptchaVerifier);
+        } catch (retryErr) {
+          throw retryErr;
+        }
+      } else {
+        throw firstErr;
+      }
+    }
     showOTPSection(num);
   } catch(err) {
     console.error("sendOTP error:", err);
@@ -854,6 +891,25 @@ async function verifyOTP() {
     const result = await confirmationResult.confirm(code);
     const user   = result.user;
     const token  = await user.getIdToken();
+
+    // Preflight backend health check to give a clear message if backend is unreachable
+    try {
+      if (typeof API_BASE !== 'undefined') {
+        const hres = await fetch(`${API_BASE}/health`, { method: 'GET' });
+        if (!hres.ok) {
+          throw new Error('Backend health check failed');
+        }
+      }
+    } catch (healthErr) {
+      console.error('Backend health check failed:', healthErr);
+      try { await auth.signOut(); resetAuthCache(); } catch (e) {}
+      document.getElementById("otp-verifying-status").style.display = "none";
+      showOTPError("Cannot connect to backend. Please start the server on port 8000 and try again.");
+      verifyBtn.classList.remove("loading"); verifyBtn.disabled = false;
+      otpHidden.value = "";
+      updateBoxes("");
+      return;
+    }
 
     const { status, data } = await apiFetchWithToken("GET", "/users/me", token);
 

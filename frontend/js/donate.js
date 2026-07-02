@@ -510,10 +510,14 @@ window.addEventListener('scroll', () => {
       brand.style.borderBottom = '1px solid transparent';
     }
   }
-});
+}, { passive: true });
 
 // Toast notification helper
 function showToast(msg) {
+  if (typeof window.NPUtils?.showToast === 'function') {
+    window.NPUtils.showToast(msg, 'success');
+    return;
+  }
   let toast = document.getElementById('toast-notification');
   if (!toast) {
     toast = document.createElement('div');
@@ -549,7 +553,7 @@ function showToast(msg) {
   requestAnimationFrame(() => {
     toast.style.transform = 'translateX(-50%) translateY(0)';
     toast.style.opacity = '1';
-  });
+  }, { passive: true });
   
   // Hide after 2 seconds
   setTimeout(() => {

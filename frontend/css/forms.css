@@ -1,0 +1,21 @@
+/* forms.css — compatibility shim
+   Many pages referenced this file historically. Most form styles
+   have been consolidated into global.css and components.css.
+   This file prevents 404s and provides small, safe defaults. */
+
+:root {}
+
+/* Basic form element defaults */
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+.input-group, .form-container, .form-header { box-sizing: border-box; }
+
+/* Ensure required look for buttons used across pages */
+.btn-primary { cursor: pointer; }
+
+/* Toast fallback (if not provided by JS) */
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #0FA3A3; color: #fff; padding: 10px 20px; border-radius: 20px; z-index: 200000; }

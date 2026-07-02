@@ -31,6 +31,9 @@ const auth = firebase.auth();
 
 // ── Clean URL routing helper (localhost compatibility) ──
 function getCleanUrl(url) {
+  if (typeof window.NPUtils?.getCleanUrl === 'function') {
+    return window.NPUtils.getCleanUrl(url);
+  }
   if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:') {
     const u = new URL(url, window.location.href);
     u.pathname = u.pathname.replace(/\.html$/, '');

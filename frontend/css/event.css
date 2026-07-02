@@ -151,44 +151,13 @@
     }
 
     /* Tabs */
-    .tab-heading {
-      position: relative;
-      display: flex;
-      border-bottom: 2px solid var(--border2);
-      flex-shrink: 0;
-      background: var(--surface);
-    }
+    
 
-    .tab-indicator {
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      height: 2.5px;
-      background: var(--teal);
-      border-radius: 2px;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 2;
-    }
+    
 
-    .tab-h {
-      flex: 1;
-      text-align: center;
-      padding: 4px 4px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 12.5px;
-      font-weight: 900;
-      color: var(--text3);
-      cursor: pointer;
-      border-bottom: 2.5px solid transparent;
-      margin-bottom: -2px;
-      transition: color .15s, border-color .15s;
-      user-select: none;
-    }
+    
 
-    .tab-h.active {
-      color: var(--primary);
-      border-bottom-color: var(--teal);
-    }
+    
 
     /* Table */
     .tbl-section {
@@ -3605,4 +3574,32 @@ body.dark-mode #upi-donor-req-cols-list {
 }
 .dark-mode #upi-donor-req-cols-list {
   border: 2px solid var(--primary) !important;
+}
+
+
+/* Basic Desktop SPA override for Event Page */
+@media (min-width: 900px) {
+  .page {
+    position: relative !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: var(--surface) !important;
+  }
+}
+
+.app {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
 }

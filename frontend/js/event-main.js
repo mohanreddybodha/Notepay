@@ -173,6 +173,19 @@
       isVisitor = (rawRole === "visitor") && !isOrganizer;
       isRestricted = res.is_restricted || false;
 
+      // Ensure the left sidebar reflects the current context (match Dashboard look)
+      try {
+        const npSide = document.querySelector('np-sidebar');
+        if (npSide) {
+          // Clear any existing active markers
+          npSide.querySelectorAll('.sb-item.active').forEach(el => el.classList.remove('active'));
+          // If organizer, highlight "My Events" (tab 1), otherwise default to "All Events" (tab 0)
+          const tabToActivate = isOrganizer ? '1' : '0';
+          const el = npSide.querySelector('#sb-tab-' + tabToActivate);
+          if (el) el.classList.add('active');
+        }
+      } catch (err) { /* non-fatal */ }
+
       // Gate access for Theater Mode: If restricted, deactivated, or private visitor, exit theater mode immediately to show lock screen
       if (activeTheaterTab) {
         const isEventActive = eventData.is_active;
@@ -3141,7 +3154,6 @@
       if (!s) return "";
       return String(s).replace(/^\((M|AI|AI-P)\)\s*/i, '').trim().toLowerCase();
     }
-    function getInitials(n) { return n.split(" ").map(x => x[0]).join("").toUpperCase().slice(0, 2); }
 
     // ── Custom Column Management ──
     let activeColType = "don";
@@ -4297,7 +4309,7 @@
       if (!window.visualViewport || chatVvBound) return;
       chatVvBound = true;
       window.visualViewport.addEventListener('resize', applyChatVisualViewport);
-      window.visualViewport.addEventListener('scroll', applyChatVisualViewport);
+      window.visualViewport.addEventListener('scroll', applyChatVisualViewport, { passive: true });
     }
 
     window.addEventListener("popstate", (e) => {

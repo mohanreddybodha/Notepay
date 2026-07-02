@@ -8,182 +8,83 @@ let API_BASE = "";
 let WS_BASE = "";
 let IS_PRODUCTION = false;
 
-const hostname = window.location.hostname;
-// Check if running locally or on a local network IP (e.g., 192.168.x.x)
-if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.match(/^[0-9.]+$/)) {
-  API_BASE = `http://${hostname}:8000`;
-  WS_BASE = `ws://${hostname}:8000`;
+const _hostname = window.location.hostname;
+if (_hostname === 'localhost' || _hostname === '127.0.0.1' || _hostname.match(/^[0-9.]+$/)) {
+  API_BASE = `http://${_hostname}:8000`;
+  WS_BASE = `ws://${_hostname}:8000`;
 } else {
   IS_PRODUCTION = true;
-  // REPLACE THESE with your actual AWS Function URL and API Gateway WebSocket URL after deployment:
   API_BASE = "API_PLACEHOLDER".replace(/\/$/, "");
   WS_BASE = "WSS_PLACEHOLDER".replace(/\/$/, "");
 }
 
-// Hide .html extension from URL bar
-if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
-  let cleanPath = window.location.pathname.replace(/\.html$/, '');
-  if (cleanPath === '/index' || cleanPath === '/login') cleanPath = '/';
-  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
-}
-
-// ── Core fetch wrapper — attaches Bearer token automatically ──
-// ── Core fetch wrapper — attaches Bearer token automatically ──
+// Core fetch wrapper — attaches Bearer token automatically
 async function apiFetch(method, path, body = null, silent = true) {
-  const isWrite = method === "POST" || method === "PUT" || method === "DELETE";
+  const isWrite = method === 'POST' || method === 'PUT' || method === 'DELETE';
 
-  // 1. Intercept edits or deletes on temporary offline entries (indicated by a negative ID)
-  if ((method === "PUT" || method === "DELETE") && path.match(/\/-?\d+$/)) {
-    const tempId = parseInt(path.split("/").pop());
-    if (tempId < 0) {
-      const queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
-      if (method === "PUT") {
-        const idx = queue.findIndex(item => item.id === tempId);
-        if (idx !== -1) {
-          queue[idx].body = { ...queue[idx].body, ...body };
-          localStorage.setItem("np_offline_queue", JSON.stringify(queue));
-          showToast("Offline update queued locally!", "warning");
-          return {
-            id: tempId,
-            event_id: queue[idx].body.event_id || path.split("/")[2],
-            donor_name: queue[idx].body.donor_name || body.donor_name || "",
-            description: queue[idx].body.description || body.description || "",
-            amount: queue[idx].body.amount || body.amount || null,
-            collected_by: parseInt(localStorage.getItem("np_my_id")) || 0,
-            collected_by_name: localStorage.getItem("np_my_name") || "You (Offline)",
-            collected_at: new Date().toISOString(),
-            custom_fields: queue[idx].body.custom_fields || body.custom_fields || null,
-            is_offline: true
-          };
-        }
-      } else if (method === "DELETE") {
-        const filtered = queue.filter(item => item.id !== tempId);
-        localStorage.setItem("np_offline_queue", JSON.stringify(filtered));
-        showToast("Offline entry removed locally!", "warning");
-        return { message: "Deleted offline entry" };
-      }
-    }
-  }
-
-  const isChat = isWrite && path.endsWith("/chat");
-  const isAIChat = isChat && body?.message?.toLowerCase().startsWith("@ai ");
-
-  // 2. Intercept write mutations optimistically if navigator is explicitly offline or we are currently syncing
-  if (isWrite && (!navigator.onLine || (typeof isSyncing !== 'undefined' && isSyncing))) {
-    if (isChat) throw new Error("NP_OFFLINE");
+  // If offline and writing, queue the action
+  if (isWrite && !navigator.onLine) {
     return handleOfflineWrite(method, path, body);
   }
 
-  const token = await getIdToken();
+  const token = (typeof getIdToken === 'function') ? await getIdToken() : null;
   if (!token) {
-    try { if (typeof auth !== "undefined") auth.signOut(); } catch (e) {}
-    if (typeof resetAuthCache === "function") resetAuthCache();
-    localStorage.removeItem("np_token_tmp");
+    try { if (typeof auth !== 'undefined') auth.signOut(); } catch (e) {}
+    localStorage.removeItem('np_token_tmp');
     const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.href = getCleanUrl(`login.html?return=${returnUrl}`);
-    throw new Error("Not authenticated");
+    window.location.href = (typeof getCleanUrl === 'function') ? getCleanUrl(`login.html?return=${returnUrl}`) : `login.html?return=${returnUrl}`;
+    throw new Error('Not authenticated');
   }
 
-  const shouldShowSpinner = !silent && !path.includes("/chat") && !path.includes("/ai") && !path.includes("/preview-code");
-  if (shouldShowSpinner && typeof showCircleLoading === "function") showCircleLoading();
+  const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+  if (method === 'GET') {
+    opts.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    opts.headers['Pragma'] = 'no-cache';
+    opts.headers['Expires'] = '0';
+  }
+  if (body) opts.body = JSON.stringify(body);
 
   try {
-    const opts = {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
-    };
-    if (method === "GET") {
-      opts.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
-      opts.headers["Pragma"] = "no-cache";
-      opts.headers["Expires"] = "0";
+    const controller = new AbortController();
+    opts.signal = controller.signal;
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+    let url = `${API_BASE}${path}`;
+    if (method === 'GET') {
+      const sep = url.includes('?') ? '&' : '?';
+      url += `${sep}_=${Date.now()}`;
     }
-    if (body) opts.body = JSON.stringify(body);
-
-    let res;
-    let isNetworkError = false;
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 45000);
-      opts.signal = controller.signal;
-      
-      let url = `${API_BASE}${path}`;
-      if (method === "GET") {
-        const separator = url.includes("?") ? "&" : "?";
-        url += `${separator}_=${Date.now()}`;
-      }
-      res = await fetch(url, opts);
-      clearTimeout(timeoutId);
-    } catch (e) {
-      if (isWrite) {
-        isNetworkError = true;
-      } else if (method === "GET") {
-        // Offline cached GET fallback
-        const cached = localStorage.getItem("cache:" + path);
-        if (cached) {
-          showToast("Displaying offline cached data", "warning");
-          return JSON.parse(cached);
-        }
-      }
-      if (!isNetworkError) throw e;
-    }
-
-    // 3. Fallback optimistically if request failed due to a network connection error
-    if (isWrite && isNetworkError) {
-      if (isAIChat) throw new Error("Timeout waiting for AI. Your request is likely still processing!");
-      if (isChat) throw new Error("NP_OFFLINE");
-      return handleOfflineWrite(method, path, body);
-    }
+    const res = await fetch(url, opts);
+    clearTimeout(timeoutId);
 
     if (res.status === 401) {
-      try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
-      if (typeof resetAuthCache === "function") resetAuthCache();
-      localStorage.removeItem("np_token_tmp");
+      try { if (typeof auth !== 'undefined') await auth.signOut(); } catch (e) {}
+      localStorage.removeItem('np_token_tmp');
       const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = getCleanUrl(`login.html?return=${returnUrl}`);
-      throw new Error("Session expired");
+      window.location.href = (typeof getCleanUrl === 'function') ? getCleanUrl(`login.html?return=${returnUrl}`) : `login.html?return=${returnUrl}`;
+      throw new Error('Session expired');
     }
 
-    const isJson = res.headers.get("content-type")?.includes("application/json");
+    const isJson = res.headers.get('content-type')?.includes('application/json');
     const data = isJson ? await res.json() : null;
 
     if (!res.ok && res.status !== 304) {
       const msg = data?.detail || `HTTP ${res.status}`;
-      if (res.status === 404 && (msg.includes("User not registered") || msg.includes("User not found"))) {
-        if (window.location.pathname.includes("login.html")) {
-          return { status: res.status, data };
-        }
-        try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
-        localStorage.clear();
-        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.replace(`login.html?return=${returnUrl}`);
-        throw new Error("Account deleted. Please log in again.");
-      }
-      if (res.status === 403 && msg.toLowerCase().includes("banned")) {
-        try { if (typeof auth !== "undefined") await auth.signOut(); } catch (e) {}
-        localStorage.clear();
-        window.location.replace("login.html?banned=1");
-        throw new Error("ACCOUNT_BANNED");
-      }
       throw new Error(msg);
     }
 
-    // Cache successful GET data for offline retrieval
-    if (method === "GET" && data) {
-      try {
-        localStorage.setItem("cache:" + path, JSON.stringify(data));
-      } catch (e) {
-        console.warn("Storage quota exceeded, unable to cache GET request");
-      }
+    if (method === 'GET' && data) {
+      try { localStorage.setItem('cache:' + path, JSON.stringify(data)); } catch (e) {}
     }
 
     return data;
-  } finally {
-    if (shouldShowSpinner && typeof hideCircleLoading === "function") hideCircleLoading();
+  } catch (e) {
+    // If write failed due to network, queue it
+    if (isWrite) return handleOfflineWrite(method, path, body);
+    throw e;
   }
 }
+
+// (Duplicate response-handling removed)
 
 // ── Helper to queue writes and return optimistic results ──
 function handleOfflineWrite(method, path, body) {
@@ -471,68 +372,99 @@ async function getSummary(eventId) {
 }
 
 // ══════════════════════════════════════════════
-//  UTILITIES
-// ══════════════════════════════════════════════
+//  UTILITIES (use shared-utils when available)
+// ═════════════════════════════════════════════=
 
-/** Format Indian currency */
-function formatINR(amount) {
-  if (amount === null || amount === undefined || amount === "") return "—";
-  return "₹ " + Number(amount).toLocaleString("en-IN");
+if (typeof window.formatINR !== 'function') {
+  window.formatINR = function(amount) {
+    if (amount === null || amount === undefined || amount === "") return "—";
+    return "₹ " + Number(amount).toLocaleString("en-IN");
+  };
 }
 
-/** Format date for display */
-function formatDate(isoString) {
-  if (!isoString) return "—";
-  return new Date(isoString).toLocaleDateString("en-IN", {
-    day: "numeric", month: "short", year: "numeric"
-  });
+if (typeof window.formatDate !== 'function') {
+  window.formatDate = function(isoString) {
+    if (!isoString) return "—";
+    return new Date(isoString).toLocaleDateString("en-IN", {
+      day: "numeric", month: "short", year: "numeric"
+    });
+  };
 }
 
-/** Format date-time for display */
-function formatDateTime(isoString) {
-  if (!isoString) return "—";
-  return new Date(isoString).toLocaleString("en-IN", {
-    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-  });
+if (typeof window.formatDateTime !== 'function') {
+  window.formatDateTime = function(isoString) {
+    if (!isoString) return "—";
+    return new Date(isoString).toLocaleString("en-IN", {
+      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+    });
+  };
 }
 
-/** Show a toast notification */
-function showToast(msg, type = "default") {
-  const old = document.querySelector(".toast");
-  if (old) old.remove();
-  const t = document.createElement("div");
-  t.className = "toast";
-  if (type === "error") t.classList.add("toast-error");
-  else if (type === "warning") t.classList.add("toast-warning");
-  else if (type === "success") t.classList.add("toast-success");
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2300);
+if (typeof window.showToast !== 'function') {
+  window.showToast = function(msg, type = "default") {
+    if (typeof window.NPUtils?.showToast === 'function') {
+      return window.NPUtils.showToast(msg, type);
+    }
+    const old = document.querySelector(".toast");
+    if (old) old.remove();
+    const t = document.createElement("div");
+    t.className = "toast";
+    if (type === "error") t.classList.add("toast-error");
+    else if (type === "warning") t.classList.add("toast-warning");
+    else if (type === "success") t.classList.add("toast-success");
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2300);
+  };
 }
 
-/** Get initials from a full name */
-function getInitials(name = "") {
-  return name.trim().split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
+if (typeof window.getInitials !== 'function') {
+  window.getInitials = function(name = "") {
+    if (typeof window.NPUtils?.getInitials === 'function') return window.NPUtils.getInitials(name);
+    return String(name || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() || "")
+      .join("") || "??";
+  };
 }
 
-/** Get deterministic vibrant avatar theme color based on user name */
-function getAvatarColor(name = "") {
-  const colors = ["#A855F7", "#3b82f6", "#14b8a6", "#f59e0b", "#10b981", "#ec4899", "#6366f1", "#8b5cf6"];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
+if (typeof window.getAvatarColor !== 'function') {
+  window.getAvatarColor = function(name = "") {
+    if (typeof window.NPUtils?.getAvatarColor === 'function') return window.NPUtils.getAvatarColor(name);
+    const colors = ["#A855F7", "#3b82f6", "#14b8a6", "#f59e0b", "#10b981", "#ec4899", "#6366f1", "#8b5cf6"];
+    let hash = 0;
+    for (let i = 0; i < String(name || "").length; i++) {
+      hash = String(name || "").charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
 }
 
-/** Helper to apply both initials and consistent theme background color to avatar element */
-function applyAvatar(el, name = "") {
-  if (!el) return;
-  el.textContent = getInitials(name);
-  el.style.background = getAvatarColor(name);
+if (typeof window.applyAvatar !== 'function') {
+  window.applyAvatar = function(el, name = "") {
+    if (!el) return;
+    if (typeof window.NPUtils?.applyAvatar === 'function') {
+      window.NPUtils.applyAvatar(el, name);
+      return;
+    }
+    el.textContent = window.getInitials(name);
+    el.style.background = window.getAvatarColor(name);
+  };
 }
 
 let _spinnerActiveCount = 0;
+// Ensure functions provided by shared-utils are used when available
+if (typeof window.NPUtils === 'object') {
+  try {
+    if (typeof window.NPUtils.showToast === 'function') window.showToast = window.NPUtils.showToast;
+    if (typeof window.NPUtils.getCleanUrl === 'function') window.getCleanUrl = window.NPUtils.getCleanUrl;
+  } catch (e) {
+    // ignore
+  }
+}
 function injectSpinnerCSS() {
   if (typeof document === "undefined" || !document.head) return;
   let st = document.getElementById("np-spinner-css");

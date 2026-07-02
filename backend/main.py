@@ -58,8 +58,10 @@ app = FastAPI(
 
 from fastapi.responses import JSONResponse
 
-#  CORS  named production origins + localhost regex for dev 
-_DEFAULT_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000"
+#  CORS  named production origins + localhost entries for dev
+#  In development we explicitly whitelist common local frontend ports (3000) to avoid intermittent
+#  CORS failures caused by overly strict regex matching in some browsers / setups.
+_DEFAULT_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000,http://localhost:3000,http://127.0.0.1:3000"
 env_origins = os.getenv("ALLOWED_ORIGINS")
 if os.getenv("ENVIRONMENT") == "production":
     _ALLOWED_ORIGINS = [o.strip() for o in env_origins.split(",")] if env_origins else []
@@ -67,20 +69,23 @@ if os.getenv("ENVIRONMENT") == "production":
     if admin_domain:
         _ALLOWED_ORIGINS.append(admin_domain)
     _ALLOWED_ORIGINS.append("https://admin.notepay.in")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 else:
+    # Development: explicitly whitelist common local origins to avoid missing ACAO headers
     _ALLOWED_ORIGINS = [o.strip() for o in (env_origins or _DEFAULT_ORIGINS).split(",") if o.strip()]
-
-# Regex to allow localhost and local network IPs (192.168.*.*, 10.*.*.*) for mobile testing
-_LOCAL_IP_REGEX = r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$"
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=_ALLOWED_ORIGINS if os.getenv("ENVIRONMENT") == "production" else [],
-    allow_origin_regex=None if os.getenv("ENVIRONMENT") == "production" else _LOCAL_IP_REGEX,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 #  WEBSOCKET MANAGER 
