@@ -29,18 +29,7 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 
-// ── Clean URL routing helper (localhost compatibility) ──
-function getCleanUrl(url) {
-  if (typeof window.NPUtils?.getCleanUrl === 'function') {
-    return window.NPUtils.getCleanUrl(url);
-  }
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:') {
-    const u = new URL(url, window.location.href);
-    u.pathname = u.pathname.replace(/\.html$/, '');
-    return u.pathname + u.search + u.hash;
-  }
-  return url;
-}
+
 
 // ── Get a fresh Firebase ID token (cached for 50 min to avoid repeated calls) ──
 let _cachedToken = null;
