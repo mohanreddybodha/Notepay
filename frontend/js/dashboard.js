@@ -1,6 +1,7 @@
 let myEvents = [], sharedEvents = [], watchedEvents = [];
-    let currentTab = 0;
-    let isFirstLoad = true;
+let currentTab = 0;
+let isFirstLoad = true;
+let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: 'all', date: 'all', dStart: '', dEnd: '' };
 
     // Read URL tab parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -192,7 +193,7 @@ let myEvents = [], sharedEvents = [], watchedEvents = [];
 
 
     // ── Filter & Search Logic ──
-    let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: 'all', date: 'all', dStart: '', dEnd: '' };
+    /* filterState declaration moved to top */
 
     function setFilterPill(targetId, val, btnEl) {
       document.getElementById(targetId).value = val;

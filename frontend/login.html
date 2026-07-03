@@ -1,13 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
-  let cleanPath = window.location.pathname.replace(/\.html$/, '');
-  if (cleanPath === '/index') cleanPath = '/';
-  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
-}
-</script>
+<script src="js/page-init.js"></script>
+
   <meta charset="UTF-8"/>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -671,10 +666,10 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     </div>
   </div>
 
-<script src="js/firebase-config.js?v=31"></script>
-<script src="js/shared-utils.js?v=31"></script>
-<script src="js/icons.js?v=31"></script>
-<script src="js/api.js?v=31"></script>
+  <script src="js/firebase-config.js?v=31"></script>
+  <script src="js/shared-utils.js?v=31"></script>
+  <script src="js/api.js?v=31"></script>
+  <script src="js/icons.js?v=31"></script>
 <script>
 // ─────────────────────────────────────────────
 //  State

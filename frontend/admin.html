@@ -1,16 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
-  let cleanPath = window.location.pathname.replace(/\.html$/, '');
-  if (cleanPath === '/index') cleanPath = '/';
-  window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
-}
-if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
-  document.documentElement.classList.add("dark-mode");
-}
-</script>
+<script src="js/page-init.js"></script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Notepay Admin Panel</title>
@@ -334,9 +326,9 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
   </div>
 </div>
 
-<script src="js/icons.js?v=31"></script>
-<script src="js/admin.js?v=31"></script>
-  <script>
+  <script src="js/icons.js?v=31"></script>
+  <script src="js/admin.js?v=31"></script>
+<script>
     window.addEventListener("load", () => {
         const splash = document.getElementById("app-splash");
         if (splash) {
