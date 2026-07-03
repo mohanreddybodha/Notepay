@@ -785,9 +785,6 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       }
     }
 
-    // ── Helpers ──
-    function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "—"; }
-    
     // ── Instant SPA Navigation Controller ──
     function openSPAHelpModal() {
       if (document.getElementById('spa-view-create')?.style.display === 'flex') {
