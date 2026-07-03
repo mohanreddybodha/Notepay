@@ -101,6 +101,10 @@
   global.applyAvatar = applyAvatar;
   global.getCleanUrl = getCleanUrl;
   global.showToast = showToast;
+  // escHtml: short alias used throughout dashboard.js and event-main.js
+  global.escHtml = escapeHtml;
+  // goBack: shared navigation helper (duplicated in 8 locations previously)
+  global.goBack = function () { window.history.back(); };
 })(window);
 
 // Improve responsiveness: default certain high-frequency events to passive

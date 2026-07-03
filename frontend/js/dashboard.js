@@ -787,8 +787,7 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
 
     // ── Helpers ──
     function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "—"; }
-    function escHtml(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
-
+    
     // ── Instant SPA Navigation Controller ──
     function openSPAHelpModal() {
       if (document.getElementById('spa-view-create')?.style.display === 'flex') {

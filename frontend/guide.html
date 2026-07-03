@@ -10,13 +10,13 @@
   <link rel="stylesheet" href="css/global.css?v=31"/>
   <link rel="stylesheet" href="css/icons.css?v=31"/>
   <script>
-    /* Sync dark mode BEFORE paint — identical to profile.html */
+/* Sync dark mode BEFORE paint — identical to profile.html */
     if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
       document.documentElement.classList.add("dark-mode");
       document.documentElement.classList.add("dark");
       window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
     }
-  </script>
+</script>
   <style>
     /* ═══════════════════════════════════════════════
        DESIGN TOKENS — exact copy from profile.html
@@ -520,7 +520,7 @@
   <script src="js/api.js?v=31"></script>
   <script src="js/icons.js?v=31"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
     // Populate sidebar from cache immediately (0ms)
     try {
       const counts = JSON.parse(localStorage.getItem("np_event_counts") || "[]");
@@ -546,10 +546,7 @@
     }
   });
 
-  function goBack() {
-    if (document.referrer && (document.referrer.includes("profile") || document.referrer.includes("dashboard"))) {
-      history.back();
-    } else {
+   else {
       window.location.href = getCleanUrl("profile.html");
     }
   }

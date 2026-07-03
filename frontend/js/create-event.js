@@ -1,15 +1,12 @@
 let currentCollections = 0;
+
   function goBack() {
     const urlParams = new URLSearchParams(window.location.search);
     const from = urlParams.get("from");
     const editId = urlParams.get("edit");
-    
-    const tabParam = urlParams.get("tab") || urlParams.get("dbtab");
-    const qs = tabParam !== null ? "?tab=" + tabParam : "";
-
-    if (window.history.length > 1 && document.referrer) {
-      history.back();
-    } else if (from === "dashboard") {
+    const tab = urlParams.get("from_tab") || "0";
+    const qs = "?tab=" + tab;
+    if (from === "dashboard") {
       window.location.href = getCleanUrl("dashboard.html") + qs;
     } else if (from === "event" && editId) {
       window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);

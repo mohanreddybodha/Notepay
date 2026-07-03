@@ -15,14 +15,14 @@
   <link rel="stylesheet" href="css/global.css?v=31"/>
   <link rel="stylesheet" href="css/icons.css?v=31" />
   <script>
-    if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
+if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
       document.documentElement.classList.add("dark-mode");
       document.documentElement.classList.add("dark");
       window.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add("dark-mode");
       });
     }
-  </script>
+</script>
   <style>
     /* ═══════════════════════════════════════════════
        DESIGN TOKENS (Match Dashboard)
@@ -538,7 +538,7 @@
   <script src="js/icons.js?v=31"></script>
   <script src="js/auth-guard.js?v=31"></script>
 <script>
-  // 0ms Synchronous Render from Local Cache
+// 0ms Synchronous Render from Local Cache
   try {
     const cachedProfile = localStorage.getItem("np_profile");
     if (cachedProfile) renderProfile(JSON.parse(cachedProfile));
@@ -725,7 +725,7 @@
   }
 </script>
 <script>
-  // Load sidebar event counts instantly from cache
+// Load sidebar event counts instantly from cache
   const cachedCounts = localStorage.getItem("np_event_counts");
   if (cachedCounts) {
     try {
@@ -738,7 +738,7 @@
   }
 </script>
 <script>
-    function goBackOrDashboard() {
+function goBackOrDashboard() {
       const dbtab = new URLSearchParams(window.location.search).get('dbtab');
       const qs = dbtab !== null ? `?tab=${dbtab}` : '';
       if (window.history.length > 1 && document.referrer.includes('dashboard')) {
@@ -749,6 +749,6 @@
         window.location.href = getCleanUrl(`dashboard.html${qs}`);
       }
     }
-  </script>
+</script>
 </body>
 </html>

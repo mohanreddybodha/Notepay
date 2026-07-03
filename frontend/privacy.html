@@ -10,12 +10,12 @@
   <link rel="stylesheet" href="css/global.css?v=31"/>
   <link rel="stylesheet" href="css/icons.css?v=31"/>
   <script>
-    if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
+if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
       document.documentElement.classList.add("dark-mode");
       document.documentElement.classList.add("dark");
       window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
     }
-  </script>
+</script>
   <style>
     :root {
       --np-navy:#1A4E8C; --np-navy-dk:#113663; --np-navy-lt:#E8F0F8; --np-navy-md:#D1E1F0;
@@ -295,7 +295,7 @@
   <script src="js/api.js?v=31"></script>
   <script src="js/icons.js?v=31"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
     try {
       const counts = JSON.parse(localStorage.getItem("np_event_counts") || "[]");
       if (counts.length === 4) for (let i=0;i<4;i++) { const el=document.getElementById(`sb-count-${i}`); if(el) el.textContent=counts[i]; }
@@ -311,10 +311,7 @@
       try { const p=await getMyProfile(); applyAvatar(document.getElementById("av-btn-side"),p.full_name); const nm=document.getElementById("user-name-side"); if(nm) nm.textContent=p.full_name; } catch(e) {}
     }
   });
-  function goBack() {
-    if (document.referrer && (document.referrer.includes("profile")||document.referrer.includes("dashboard"))) history.back();
-    else window.location.href = getCleanUrl("profile.html");
-  }
+  
 </script>
 </body>
 </html>
