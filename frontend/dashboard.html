@@ -28,7 +28,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/global.css?v=34">
+  <link rel="stylesheet" href="css/global.css?v=32">
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -39,6 +39,7 @@
   <script>
     if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
       document.documentElement.classList.add("dark");
+      window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
     }
   </script>
 
@@ -93,7 +94,7 @@
       <div class="page-hdr">
         <div>
           <div class="ph-h1">Events Overview</div>
-          <div class="ph-sub">Manage your donations and expense events</div>
+          <div class="ph-sub">Manage your contributions and expense events</div>
         </div>
       </div>
 
@@ -303,51 +304,7 @@
         </div>
       </div>
 
-      <!-- SPA VIEW: JOIN EVENT -->
-      <div id="spa-view-join" class="page-view-container" style="display:none; flex:1; overflow-y:auto; padding: 6px 16px 16px;">
-        <div class="form-container" style="width: 100%; max-width: 480px; margin: 6px auto 20px; background: var(--surface); padding: 20px 16px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-
-          <div class="field-group" style="margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="font-size: 12px; font-weight: 700; color: var(--text-mut); margin: 0;">Event Code</label>
-            </div>
-            <div class="field" id="spa-code-field" style="width: 100%; background: var(--bg); border: 1px solid transparent; border-radius: 12px; padding: 0 16px; height: 48px; display: flex; align-items: center; gap: 12px;">
-              <span style="font-weight:700; color:var(--text-mut); font-size:16px;">#</span>
-              <input type="text" id="spa-code-input" placeholder="e.g. A1B2C-3D4E-5F6G7" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false" style="flex: 1; border: none; outline: none; background: transparent; font-size: 16px; font-weight: 600; color: var(--text); width: 100%; text-transform: uppercase;" />
-            </div>
-            <div id="spa-warn-note" style="display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-top: 10px; background: var(--np-amber-lt); color: var(--np-amber); border: 1px solid rgba(196, 134, 10, .2);">
-              <span>This event is currently deactivated. Contact your organizer.</span>
-            </div>
-            <div class="error-msg" id="spa-err-note">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              <span id="spa-err-txt">Invalid event code. Please check and try again.</span>
-            </div>
-          </div>
-
-          <!-- Security Message -->
-          <div style="display: flex; align-items: center; gap: 12px; background: var(--np-green-lt); border: 1px solid rgba(26, 122, 94, 0.18); padding: 12px 14px; border-radius: 12px; margin: 16px 0 24px;">
-            <svg width="20" height="20" fill="none" stroke="var(--np-green)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <div>
-              <div style="font-size: 13px; font-weight: 700; color: var(--np-green);">Secure &amp; Private</div>
-              <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">Only authorized collectors can join using a valid event code.</div>
-            </div>
-          </div>
-
-          <!-- Reassured Preview Card -->
-          <div id="spa-join-preview-card" style="display:none; background:var(--np-navy-lt); border:1px solid var(--np-navy-md); border-radius:12px; padding:14px; margin-bottom:16px; animation:smoothAppear 0.2s ease forwards;">
-            <div style="font-size:11px; font-weight:700; color:var(--np-navy); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">You are joining:</div>
-            <div style="font-size:16px; font-weight:800; color:var(--t1); margin-bottom:2px;" id="spa-preview-event-name">—</div>
-            <div style="font-size:13px; color:var(--t2);">Organized by <strong id="spa-preview-organizer-name" style="color:var(--t1);">—</strong></div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button class="btn btn-primary" id="spa-join-btn" type="button" style="width: 100%; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-              <span>Join Event</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <!-- SPA VIEW: JOIN EVENT removed to use standalone join-event.html -->
     </div><!-- /main -->
   </div><!-- /app -->
 
@@ -384,7 +341,7 @@
       </svg>
     </a>
 
-    <a href="join-event.html" class="sh-opt opt-join" onclick="event.preventDefault(); switchSPAView('join');">
+    <a href="join-event.html" class="sh-opt opt-join">
       <div class="sh-icon si-teal"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
           viewBox="0 0 24 24">
           <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />

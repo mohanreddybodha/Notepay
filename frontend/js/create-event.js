@@ -1,5 +1,21 @@
 let currentCollections = 0;
 
+  // ── 0ms Instant Synchronous Render from Cache ──
+  try {
+    const cachedDash = localStorage.getItem("np_dash_cache");
+    const cachedProf = localStorage.getItem("np_profile");
+    const profileObj = cachedDash ? JSON.parse(cachedDash).profile : (cachedProf ? JSON.parse(cachedProf) : null);
+    if (profileObj && profileObj.full_name) {
+      if (typeof applyAvatar === "function") {
+        const topBtn = document.getElementById("topbar-av-btn");
+        if (topBtn) applyAvatar(topBtn, profileObj.full_name);
+        const sideBtn = document.getElementById("av-btn-side");
+        if (sideBtn) applyAvatar(sideBtn, profileObj.full_name);
+      }
+      const nameSide = document.getElementById("user-name-side");
+      if (nameSide) nameSide.textContent = profileObj.full_name;
+    }
+  } catch(e) {}
   function goBack() {
     const urlParams = new URLSearchParams(window.location.search);
     const from = urlParams.get("from");
@@ -98,28 +114,16 @@ let currentCollections = 0;
     updateLivePreview();
   });
 
-  waitForAuthReady().then(async user => {
-    if (user) {
-      // Use Notepay profile for correct full_name initials
-      try {
-        const res = await apiFetch("GET", "/users/me/full-dashboard");
-        const profile = res.profile;
-        const fullName = profile?.full_name || user.displayName || user.email?.split('@')[0] || "NP";
-        const nameEl = document.getElementById("user-name-side");
-        if (nameEl) nameEl.textContent = fullName;
-        applyAvatar(document.getElementById("av-btn-side"), fullName);
-        applyAvatar(document.getElementById("topbar-av-btn"), fullName);
-      } catch(e) {
-        // Fallback to Firebase user info
-        const fallbackName = user.displayName || user.email?.split('@')[0] || "NP";
-        applyAvatar(document.getElementById("topbar-av-btn"), fallbackName);
-        applyAvatar(document.getElementById("av-btn-side"), fallbackName);
-      }
-    }
-  }).catch(()=>{});
 
   const urlParams = new URLSearchParams(window.location.search);
   const editId = urlParams.get("edit");
+
+  if (!editId) {
+    waitForAuthReady().finally(() => {
+      if (typeof hideCircleLoading === "function") hideCircleLoading(true);
+    });
+  }
+
 
   if (editId) {
     if (typeof showCircleLoading === "function") showCircleLoading();

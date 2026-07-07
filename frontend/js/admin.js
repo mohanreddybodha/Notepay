@@ -432,18 +432,18 @@ function editEventModal(id, name, upiId) {
         <input type="text" id="edit-event-name" value="${name}" placeholder="Event Name">
       </div>
       <div class="form-group">
-        <label>UPI ID (for public donations) *</label>
+        <label>UPI ID (for public contributions) *</label>
         <input type="text" id="edit-event-upi" value="${upiId}" placeholder="example@upi" style="font-family: monospace;">
         <small style="color: #6b7280; display: block; margin-top: 8px; line-height: 1.5;">
           <strong>Format:</strong> phoneNumber@bank or username@bank<br>
           <strong>Example:</strong> 9876543210@okhdfcbank<br>
-          <strong>Note:</strong> When donors scan the QR code, they will see <strong>YOUR NAME</strong> as the beneficiary (receiver). The QR encodes your UPI, so donors are paying TO YOU.
+          <strong>Note:</strong> When contributors scan the QR code, they will see <strong>YOUR NAME</strong> as the beneficiary (receiver). The QR encodes your UPI, so contributors are paying TO YOU.
         </small>
         <div id="upi-error" style="color: #dc2626; font-size: 12px; margin-top: 8px; display: none;"></div>
       </div>
       <div class="form-group">
         <button type="button" class="btn-outline" onclick="copyShareLink('${id}')">📋 Copy Share Link</button>
-        <small style="color: #6b7280; display: block; margin-top: 5px;">Share with donors: notepay.in/donate.html?event_id=${id}</small>
+        <small style="color: #6b7280; display: block; margin-top: 5px;">Share with contributors: notepay.in/donate.html?event_id=${id}</small>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-outline" onclick="hideModal()">Cancel</button>
@@ -517,7 +517,7 @@ async function handleEditEvent(e, eventId) {
 function copyShareLink(eventId) {
   const link = `${window.location.origin}/donate.html?event_id=${eventId}`;
   navigator.clipboard.writeText(link).then(() => {
-    alert("Donation link copied: " + link);
+    alert("Contribution link copied: " + link);
   }).catch(() => {
     alert("Could not copy. Here's the link: " + link);
   });

@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Generate standard UPI URL
       const safeUpiId = currentUpiId.trim();
       const safeOwnerName = encodeURIComponent(currentUpiOwnerName.trim());
-      const upiUrl = `upi://pay?pa=${safeUpiId}&pn=${safeOwnerName}&cu=INR&tn=Donation`;
+      const upiUrl = `upi://pay?pa=${safeUpiId}&pn=${safeOwnerName}&cu=INR&tn=Contribution`;
 
       // Draw QR Code
       new QRCode(document.getElementById("qr-box"), {
@@ -200,9 +200,10 @@ btnSubmit.addEventListener('click', async () => {
   setBackgroundScroll(true);
   document.getElementById('loader-spinner').style.display = 'block';
   document.getElementById('loader-success').style.display = 'none';
-  document.getElementById('loader-title').innerText = "Verifying Payment...";
+  document.getElementById('loader-title').innerText = "Processing Receipt...";
   document.getElementById('loader-title').style.color = "#1f2937";
-  document.getElementById('loader-desc').innerText = "Please wait while we verify your payment receipt and record your donation.";
+  document.getElementById('loader-desc').innerText = "Please wait while we verify your payment receipt and record your contribution.";
+  document.getElementById('main-card').style.display = 'none';
 
   try {
     const res = await fetch(`${API_BASE}/api/public/event/${eventId}/upload_receipt`, {
@@ -349,7 +350,7 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
   const amountInput = document.getElementById('manual-amount');
   if (isPartial && lockedAmount) {
     if (verifiedMsg) verifiedMsg.style.display = 'flex';
-    if (descMsg) descMsg.innerHTML = "We have successfully verified your payment receipt.<br><br>To complete your donation record, please fill out the remaining details below.";
+    if (descMsg) descMsg.innerHTML = "We have successfully verified your payment receipt.<br><br>To complete your contribution record, please fill out the remaining details below.";
     amountInput.value = lockedAmount;
     amountInput.disabled = true;
     amountInput.style.backgroundColor = '#f3f4f6';
@@ -360,9 +361,9 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
     const noteText = document.getElementById('manual-note-text');
     if (noteText) {
       if (prefilledDonorName) {
-        noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted. Please verify the details, fill out any required custom fields, and submit to complete your donation.`;
+        noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted. Please verify the details, fill out any required custom fields, and submit to complete your contribution.`;
       } else {
-        noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your donation record.`;
+        noteText.innerHTML = `<strong>Receipt Verified</strong><br>Your payment details have been extracted from the receipt. Enter your name and submit to complete your contribution record.`;
       }
     }
     document.getElementById('manual-collector-label').innerText = "UPI Registered Name";
@@ -381,9 +382,9 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
     const noteText = document.getElementById('manual-note-text');
     if (noteText) {
       if (fallbackSessionId) {
-        noteText.innerHTML = `<strong>Note:</strong> We couldn't extract the details automatically. Your screenshot is saved for verification. Your donation will be submitted for organizer review.`;
+        noteText.innerHTML = `<strong>Note:</strong> We couldn't extract the details automatically. Your screenshot is saved for verification. Your contribution will be submitted for organizer review.`;
       } else {
-        noteText.innerHTML = `<strong>Note:</strong> Your donation details will be submitted manually. The verified UPI owner will be shown as <strong>UPI Registered Name</strong>.`;
+        noteText.innerHTML = `<strong>Note:</strong> Your contribution details will be submitted manually. The verified UPI owner will be shown as <strong>UPI Registered Name</strong>.`;
       }
     }
     document.getElementById('manual-collector-label').innerText = "UPI Registered Name";
@@ -446,9 +447,9 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
   setBackgroundScroll(true);
   document.getElementById('loader-spinner').style.display = 'block';
   document.getElementById('loader-success').style.display = 'none';
-  document.getElementById('loader-title').innerText = "Recording Donation...";
+  document.getElementById('loader-title').innerText = "Recording Contribution...";
   document.getElementById('loader-title').style.color = "#1f2937";
-  document.getElementById('loader-desc').innerText = "Please wait while we record your donation.";
+  document.getElementById('loader-desc').innerText = "Please wait while we record your contribution.";
 
   try {
     const res = await fetch(`${API_BASE}/api/public/event/${eventId}/submit_manual_donation`, {
@@ -466,12 +467,12 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
 
     if (!res.ok) {
       const errorData = await res.json();
-      throw new Error(errorData.detail || "Failed to record donation");
+      throw new Error(errorData.detail || "Failed to record contribution");
     }
 
     const data = await res.json();
     
-    console.log("✅ Manual Donation Recorded:", data);
+    console.log("✅ Manual Contribution Recorded:", data);
 
     // Show Final Success UI immediately
     document.getElementById('content').innerHTML = `
@@ -494,7 +495,7 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
   } catch (error) {
     console.error("Manual Entry Error:", error);
     document.getElementById('loader').style.display = 'none';
-    showRejectionPopup(error.message || "Failed to record donation. Please try again.");
+    showRejectionPopup(error.message || "Failed to record contribution. Please try again.");
   }
 });
 

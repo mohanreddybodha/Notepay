@@ -25,7 +25,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <link rel="stylesheet" href="css/global.css?v=31" />
+  <link rel="stylesheet" href="css/global.css?v=32" />
   <link rel="stylesheet" href="css/icons.css?v=31" />
   <script src="js/icons.js?v=31"></script>
 <link rel="stylesheet" href="css/event.css?v=31">
@@ -33,6 +33,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <script>
     if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
+      document.documentElement.classList.add("dark");
       document.documentElement.classList.add("dark-mode");
       window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
     }
@@ -116,36 +117,28 @@
     <np-sidebar active-link="event"></np-sidebar>
     <div class="main">
       <div class="page" id="main-page" style="overflow:hidden;">
-    <div class="app-bar">
-      <div class="back" onclick="goBackToDashboard()"><span data-np-icon="arrow-left"
-          data-np-size="22"></span></div>
-      <div class="ab-ttl" id="ev-title">Loading…</div>
+    <header class="pg-header" id="app-bar">
+      <button class="pg-back" onclick="goBackToDashboard()" title="Back" aria-label="Go back">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      
+      <div class="pg-title-wrap">
+        <div class="pg-title" id="ev-title">Loading…</div>
+        <div class="pg-sub" id="info-bar" style="display:none;">
+          <span id="ev-desc"></span><span id="ev-date"></span>
+        </div>
+      </div>
 
-      <div class="dots-btn" id="dots-btn" onclick="openDD()" style="display:none;">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+      <div class="dots-btn" id="dots-btn" onclick="openDD()" style="display:none;" title="Settings">
+        <span data-np-icon="settings" data-np-size="18"></span>
       </div>
-      <div class="dots-btn" id="dots-btn-col" onclick="openColDD()" style="display:none;">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+      <div class="dots-btn" id="dots-btn-col" onclick="openColDD()" style="display:none;" title="Settings">
+        <span data-np-icon="settings" data-np-size="18"></span>
       </div>
-      <div class="dots-btn" id="dots-btn-vis" onclick="openColDD()" style="display:none;">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+      <div class="dots-btn" id="dots-btn-vis" onclick="openColDD()" style="display:none;" title="Settings">
+        <span data-np-icon="settings" data-np-size="18"></span>
       </div>
-    </div>
-    <div class="info-bar" id="info-bar" style="display:none;">
-      <div>
-        <div class="ib-desc" id="ev-desc">—</div>
-        <div class="ib-date" id="ev-date">—</div>
-      </div>
-      <div id="members-badge" class="badge-members" onclick="openMembersSheet()">
-        <span data-np-icon="user" data-np-size="14" style="margin-right:4px;"></span> Members
-      </div>
-    </div>
+    </header>
     <div class="deact-bar" id="deact-banner"
       style="display:none; justify-content:space-between; padding:8px 16px; background:var(--amber); color:var(--surface);">
       <div style="display:flex; align-items:center; gap:8px;">
@@ -157,9 +150,18 @@
         NOW</button>
     </div>
     <div class="tab-heading" id="tab-bar" style="display:none;">
-      <div class="tab-h active" id="tab-don" onclick="switchTab('don')">Collections</div>
-      <div class="tab-h" id="tab-exp" onclick="switchTab('exp')">Expenses</div>
-      <div class="tab-h" id="tab-sum" onclick="switchTab('sum')">Summary</div>
+      <div class="tab-h active" id="tab-don" onclick="switchTab('don')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Collections
+      </div>
+      <div class="tab-h" id="tab-exp" onclick="switchTab('exp')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Expenses
+      </div>
+      <div class="tab-h" id="tab-sum" onclick="switchTab('sum')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>
+        Summary
+      </div>
       <div class="tab-indicator" id="tab-indicator"></div>
     </div>
     <div id="loading-pane" style="flex:1;display:flex;align-items:center;justify-content:center;"></div>
@@ -167,23 +169,23 @@
 
     <!-- Collections Tab -->
     <div id="pane-don" class="tbl-section" style="display:none;">
-      <div class="tbl-top">
-        <div class="search-bar" id="don-search-bar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-          <input class="search-input" id="don-search" type="text" placeholder="Search donors…"
-            oninput="filterTable('don',this.value)" autocomplete="off" autocorrect="off" autocapitalize="off"
-            spellcheck="false" style="flex:1;" />
-          <button class="filter-icon-btn" onclick="openFilterModal()" style="background:var(--primary); border:none; padding:6px; border-radius:10px; cursor:pointer; color:#fff; display:flex; align-items:center; justify-content:center; transition:all 0.2s; margin-left:4px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"></line><line x1="10" y1="4" x2="3" y2="4"></line><line x1="21" y1="12" x2="12" y2="12"></line><line x1="8" y1="12" x2="3" y2="12"></line><line x1="21" y1="20" x2="16" y2="20"></line><line x1="12" y1="20" x2="3" y2="20"></line><line x1="14" y1="2" x2="14" y2="6"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="16" y1="18" x2="16" y2="22"></line></svg>
+      <div class="search-row">
+        <div class="srch-wrap">
+          <div class="srch-ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></div>
+          <input class="srch-inp" id="don-search" type="search" placeholder="Search contributors…"
+            oninput="filterTable('don',this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <div class="srch-clear" onclick="document.getElementById('don-search').value=''; filterTable('don','');"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></div>
+        </div>
+        <div class="filter-wrap">
+          <button class="flt-btn" onclick="openFilterModal()" title="Filter & Sort">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
           </button>
+          <div id="members-badge" class="flt-btn badge-members" onclick="openMembersSheet()" title="Members"></div>
         </div>
       </div>
       <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
         <div style="display:flex; align-items:center; gap:12px;">
-          <span id="don-count" style="white-space:nowrap; font-weight:900;">0 donors</span>
+          <span id="don-count" style="white-space:nowrap; font-weight:900;">0 contributors</span>
           <button id="don-add-col-btn" class="add-col-btn" onclick="openAddCol('don')">+ Column</button>
         </div>
 
@@ -206,18 +208,18 @@
     </div>
     <!-- Expenses Tab -->
     <div id="pane-exp" class="tbl-section" style="display:none;">
-      <div class="tbl-top">
-        <div class="search-bar" id="exp-search-bar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-          <input class="search-input" id="exp-search" type="text" placeholder="Search expenses…"
-            oninput="filterTable('exp',this.value)" autocomplete="off" autocorrect="off" autocapitalize="off"
-            spellcheck="false" style="flex:1;" />
-          <button class="filter-icon-btn" onclick="openFilterModal()" style="background:var(--primary); border:none; padding:6px; border-radius:10px; cursor:pointer; color:#fff; display:flex; align-items:center; justify-content:center; transition:all 0.2s; margin-left:4px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"></line><line x1="10" y1="4" x2="3" y2="4"></line><line x1="21" y1="12" x2="12" y2="12"></line><line x1="8" y1="12" x2="3" y2="12"></line><line x1="21" y1="20" x2="16" y2="20"></line><line x1="12" y1="20" x2="3" y2="20"></line><line x1="14" y1="2" x2="14" y2="6"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="16" y1="18" x2="16" y2="22"></line></svg>
+      <div class="search-row">
+        <div class="srch-wrap">
+          <div class="srch-ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></div>
+          <input class="srch-inp" id="exp-search" type="search" placeholder="Search expenses…"
+            oninput="filterTable('exp',this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <div class="srch-clear" onclick="document.getElementById('exp-search').value=''; filterTable('exp','');"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></div>
+        </div>
+        <div class="filter-wrap">
+          <button class="flt-btn" onclick="openFilterModal()" title="Filter & Sort">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
           </button>
+          <div class="flt-btn badge-members" onclick="openMembersSheet()" title="Members"></div>
         </div>
       </div>
       <div class="sum-strip" style="display:flex; align-items:center; justify-content:space-between; padding:4px 16px;">
@@ -260,12 +262,12 @@
       <div class="sbox" onclick="event.stopPropagation()">
         <div class="sbox-header">
           <div class="sh-handle"></div>
-          <div class="sh-title" id="ef-title">New Donation</div>
+          <div class="sh-title" id="ef-title">New Contribution</div>
         </div>
         <div class="sbox-body">
           <div style="display:flex;flex-direction:column;gap:4px;" class="ef-fields-container">
             <div class="ef-field">
-              <div class="ef-label" id="ef-name-label">Donor Name <span style="color:var(--red);">*</span></div>
+              <div class="ef-label" id="ef-name-label">Contributor Name <span style="color:var(--red);">*</span></div>
               <input class="ef-input" id="ef-name" type="text" placeholder="Enter name" autocomplete="off"
                 autocorrect="off" autocapitalize="off" spellcheck="false"
                 oninput="document.getElementById('ef-error').style.display='none'" />
@@ -337,7 +339,7 @@
         <div class="sbox-body">
           <div style="display:flex;flex-direction:column;gap:4px;" class="ef-fields-container">
             <div class="ef-field">
-              <div class="ef-label" id="edit-name-label">Donor Name <span style="color:var(--red);">*</span></div>
+              <div class="ef-label" id="edit-name-label">Contributor Name <span style="color:var(--red);">*</span></div>
               <input class="ef-input" id="edit-name" type="text" autocomplete="off" autocorrect="off"
                 autocapitalize="off" spellcheck="false"
                 oninput="document.getElementById('edit-error').style.display='none'" />
@@ -461,7 +463,7 @@
 
         <div class="dd-item" id="upi-setup-btn" onclick="closeDD();openUpiSheet()">
           <div class="dd-ic"><span data-np-icon="smartphone" data-np-size="18"></span></div>
-          <div class="dd-lbl">Receive Donations (QR)</div>
+          <div class="dd-lbl">Receive Contributions (QR)</div>
         </div>
         <div class="dd-item" id="privacy-toggle-btn" onclick="closeDD();handlePrivacyToggleClick()">
           <div class="dd-ic"><span data-np-icon="globe" data-np-size="18"></span></div>
@@ -497,7 +499,7 @@
       <div class="pop-box">
         <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
         <div class="pop-t" style="color:var(--red);">Delete Event?</div>
-        <div class="pop-m" id="del-ev-msg">All donations, expenses and members will be permanently deleted. This cannot
+        <div class="pop-m" id="del-ev-msg">All contributions, expenses and members will be permanently deleted. This cannot
           be undone.</div>
         <div class="pop-line"></div>
         <div class="pop-btns">
@@ -528,7 +530,7 @@
       <div class="pop-box" onclick="event.stopPropagation()">
         <div class="pop-ic"><span data-np-icon="globe" data-np-size="32" data-np-tone="primary"></span></div>
         <div class="pop-t" style="color:#00838F;">Enable Public Access?</div>
-        <div class="pop-m">Anyone with the share link will have <strong>Read-Only</strong> access to view all donation, expense, and
+        <div class="pop-m">Anyone with the share link will have <strong>Read-Only</strong> access to view all contribution, expense, and
           summary details of "<strong id="privacy-event-name">Event</strong>". They will need to log in to NotePay to
           view.</div>
         <div class="pop-line"></div>
@@ -544,7 +546,7 @@
         <div class="sbox" onclick="event.stopPropagation()">
           <div class="sbox-header">
             <div class="sh-handle"></div>
-            <div class="sh-title">Auto-Donation Setup</div>
+            <div class="sh-title">Auto-Contribution Setup</div>
           </div>
         <div class="sbox-body">
           <div class="ef-field">
@@ -556,9 +558,9 @@
             <div class="ef-label">UPI Registered Name <span style="color:var(--red);">*</span></div>
             <input class="ef-input" id="upi-owner-name-input" type="text" placeholder="e.g. John Doe" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             <div id="upi-name-error" style="color:var(--red); font-size:12px; margin-top:4px; display:none;"></div>
-            <p style="font-size:12px; color:var(--text3); margin-top:8px;">This name will be shown to donors.<br><strong style="color:var(--red);">Important:</strong> The receiver name found in donor payment receipts must match this UPI registered name. Receipts with a different receiver name will be rejected.</p>
+            <p style="font-size:12px; color:var(--text3); margin-top:8px;">This name will be shown to contributors.<br><strong style="color:var(--red);">Important:</strong> The receiver name found in contributor payment receipts must match this UPI registered name. Receipts with a different receiver name will be rejected.</p>
             <div id="upi-share-section" style="display:none; margin-top:20px; min-width:0; width:100%; box-sizing:border-box;">
-              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Your Public Donation Link</div>
+              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Your Public Contribution Link</div>
               <div style="display:flex; align-items:center; min-width:0; width:100%; box-sizing:border-box; background:var(--bg); border:2px solid var(--primary); border-radius:8px; padding:10px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);">
                 <div id="upi-link-text" style="flex:1; min-width:0; font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
                 <button onclick="shareDonationLink()" style="background:none; border:none; cursor:pointer; color:var(--primary); padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;" title="Share Link">
@@ -571,11 +573,11 @@
             </div>
 
             <div id="upi-donor-req-cols-container" style="display:none; margin-top:20px;">
-              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Required columns donor need to fill</div>
+              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Required columns contributor need to fill</div>
               <div id="upi-donor-req-cols-list" style="max-height: 150px; overflow-y:auto; border-radius: 8px; padding: 10px; background: var(--bg2); display:flex; flex-direction:column; gap:8px;">
                 <!-- Checkboxes injected via JS -->
               </div>
-              <p style="font-size:11px; color:var(--text3); margin-top:6px;">If no columns are selected, donors will only see the default name and amount fields.</p>
+              <p style="font-size:11px; color:var(--text3); margin-top:6px;">If no columns are selected, contributors will only see the default name and amount fields.</p>
             </div>
           </div>
           
@@ -930,28 +932,40 @@
         </div>
       </div>
       <div class="chat-header">
-        <button class="chat-back-btn" onclick="closeChat()" aria-label="Back to event" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 4px; margin-right: 8px; color: var(--text);">
-          <span data-np-icon="arrow-left" data-np-size="22"></span>
-        </button>
-        <div class="chat-header-title">
-          <span id="chat-header-name">Event Chat</span>
+        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+          <button class="chat-back-btn" onclick="closeChat()" aria-label="Back to event" style="background: var(--surface); border: 1px solid var(--border-str); border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; color: var(--text); flex-shrink: 0; transition: all 0.15s;" onmouseover="this.style.background='var(--surface-2)';" onmouseout="this.style.background='var(--surface)';">
+            <span data-np-icon="arrow-left" data-np-size="18"></span>
+          </button>
+          <div class="chat-header-title" style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="chat-header-name" style="font-size: 15px; font-weight: 900; color: var(--text); letter-spacing: -0.2px;">Event Chat</span>
+              <span style="display: inline-block; width: 8px; height: 8px; background: #10B981; border-radius: 50%; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);" title="Active team workspace"></span>
+            </div>
+            <span style="font-size: 11px; color: var(--text3); font-weight: 600;">Team Collaboration & AI</span>
+          </div>
         </div>
         <div class="chat-header-actions">
           <button type="button" class="chat-group-call-btn" id="chat-group-call-btn" onclick="startGroupCall()"
-            title="Start group call" aria-label="Start group call">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor"
-                d="M17 10.5V7c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h11c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+            title="Start group call" aria-label="Start group call" style="background: var(--surface); border: 1px solid var(--border-str); border-radius: 10px; width: 36px; height: 36px; display: none; align-items: center; justify-content: center; color: var(--np-teal, #0fa3a3); transition: all 0.15s;">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+              <path d="M17 10.5V7c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h11c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
             </svg>
           </button>
         </div>
       </div>
       <div class="chat-messages" id="chat-messages">
         <div class="chat-empty" id="chat-empty">
-          <div class="chat-empty-icon"><span data-np-icon="message-square" data-np-size="44"
-              style="opacity:0.2;"></span></div>
-          <div class="chat-empty-text">No messages yet</div>
-          <div class="chat-empty-sub">Start a conversation with your team</div>
+          <div class="chat-empty-icon" style="background: rgba(15, 163, 163, 0.1); width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; border: 1px solid rgba(15, 163, 163, 0.2);"><span data-np-icon="message-square" data-np-size="28" style="color: var(--np-teal, #0fa3a3); opacity: 1;"></span></div>
+          <div class="chat-empty-text" style="font-size: 15px; font-weight: 900; color: var(--text);">Team Workspace</div>
+          <div class="chat-empty-sub" style="font-size: 12.5px; color: var(--text3); max-width: 230px; text-align: center; line-height: 1.4; margin-top: 2px;">Discuss expenses, share updates, or ask AI assistant.</div>
+          <div style="display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; justify-content: center;">
+            <div onclick="document.getElementById('chat-input').value='@ai summarize event collections'; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" style="background: var(--surface); border: 1px solid var(--border-str); padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='var(--np-teal)';this.style.background='rgba(15,163,163,0.05)';" onmouseout="this.style.borderColor='var(--border-str)';this.style.background='var(--surface)';">
+              <span>✨</span> Ask AI for summary
+            </div>
+            <div onclick="document.getElementById('chat-input').value='@ai check pending contributors'; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" style="background: var(--surface); border: 1px solid var(--border-str); padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='var(--np-teal)';this.style.background='rgba(15,163,163,0.05)';" onmouseout="this.style.borderColor='var(--border-str)';this.style.background='var(--surface)';">
+              <span>💡</span> Check pending
+            </div>
+          </div>
         </div>
       </div>
       <div class="chat-footer-zone">
@@ -964,16 +978,18 @@
         </div>
         <div id="ai-typing-status" style="display:none;"></div>
         <div class="chat-input-bar">
-          <div class="chat-input-wrapper" style="position: relative; display: flex; align-items: center; flex: 1;">
-            <textarea class="chat-input" id="chat-input" rows="1" placeholder="Type a message or @ai" maxlength="500"
+          <div class="chat-input-wrapper">
+            <textarea class="chat-input" id="chat-input" rows="1" placeholder="Type message or @ai to ask assistant…" maxlength="500"
               enterkeyhint="send" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false"
               onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChatMessage();}"
-              oninput="autoResizeChatInput(this); updateSendBtnVisibility();" style="padding-right: 74px; width: 100%;"></textarea>
-            <div id="ai-inline-btn" style="position:absolute; right:6px; background:var(--surf-var); border:1px solid var(--border); border-radius:12px; padding:4px 8px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:800; color:var(--primary); cursor:pointer; z-index:10; bottom: 6px;" onclick="document.getElementById('chat-input').value='@ai '; document.getElementById('chat-input').focus(); updateSendBtnVisibility();">
+              oninput="autoResizeChatInput(this); updateSendBtnVisibility();" style="padding-right: 74px; width: 100%; border: none; background: transparent; outline: none; resize: none; color: var(--text); font-weight: 600;"></textarea>
+            <div id="ai-inline-btn" style="position:absolute; right:6px; background: rgba(15, 163, 163, 0.1); border: 1px solid rgba(15, 163, 163, 0.3); border-radius: 10px; padding: 5px 10px; display:flex; align-items:center; gap:5px; font-size: 11.5px; font-weight: 800; color: var(--np-teal, #0fa3a3); cursor: pointer; z-index: 10; top: 50%; transform: translateY(-50%); bottom: auto; transition: all 0.15s;" onmouseover="this.style.background='rgba(15, 163, 163, 0.18)';" onmouseout="this.style.background='rgba(15, 163, 163, 0.1)';" onclick="document.getElementById('chat-input').value='@ai '; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" title="Ask AI Assistant">
               <span style="font-size:12px;">✨</span> Ask AI
             </div>
           </div>
-          <button type="button" class="chat-send-btn" id="chat-send-btn" aria-label="Send">➤</button>
+          <button type="button" class="chat-send-btn" id="chat-send-btn" aria-label="Send" style="border-radius: 12px; background: var(--np-teal, #0fa3a3); color: white; border: none; align-items: center; justify-content: center; transition: all 0.15s; box-shadow: 0 2px 6px rgba(15, 163, 163, 0.3);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
         </div>
         <div id="emoji-picker-ov" onclick="event.stopPropagation()">
           <emoji-picker id="np-emoji-picker"></emoji-picker>
@@ -1000,72 +1016,84 @@
     </div>
   </div>
 
-  <!-- ═══ ENTRY FORM FIELD HEIGHT ENFORCER (last-in-cascade, always wins) ═══ -->
-
-  <div id="filter-sort-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:10000; align-items:flex-end; justify-content:center; backdrop-filter:blur(3px);" onclick="if(event.target===this) closeFilterModal()">
-    <div style="background:var(--card); width:100%; max-width:500px; max-height:100vh; display:flex; flex-direction:column; border-radius:24px 24px 0 0; padding:20px; animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+  <!-- ═══ Filter & Sort Modal ═══ -->
+  <div id="filter-sort-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:flex-end; justify-content:center;" onclick="if(event.target===this) closeFilterModal()">
+    <div style="background:var(--surface); width:100%; max-width:460px; max-height:90vh; display:flex; flex-direction:column; border-radius:20px 20px 0 0; overflow:hidden; animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 -8px 40px rgba(0,0,0,0.12);">
+      <!-- Drag handle -->
+      <div style="display:flex; justify-content:center; padding:12px 0 4px;">
+        <div style="width:36px; height:4px; background:var(--border2); border-radius:2px;"></div>
+      </div>
       <!-- Header -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-shrink:0;">
-        <h3 style="margin:0; font-size:20px; font-weight:900; color:var(--text);">Sort & Filter</h3>
-        <button onclick="closeFilterModal()" style="background:var(--surface); border:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 20px 12px; flex-shrink:0; border-bottom: 1px solid var(--border2);">
+        <div>
+          <h3 style="margin:0; font-size:17px; font-weight:900; color:var(--text);">Sort &amp; Filter</h3>
+          <span style="font-size:11.5px; font-weight:700; color:var(--text3);">Select options to filter and sort</span>
+        </div>
+        <button onclick="closeFilterModal()" style="background:var(--surf-var); border:none; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
 
       <!-- Scrollable Content -->
-      <div style="flex:1; overflow-y:auto; padding-right:4px;">
-        <div style="margin-bottom:16px;">
-          <h4 style="margin:0 0 8px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Sort By</h4>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
-              <input type="radio" name="fs_sort" value="time_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-              <span style="font-size:15px; font-weight:800; color:var(--text);">Time: Newest First</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
-              <input type="radio" name="fs_sort" value="time_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-              <span style="font-size:15px; font-weight:800; color:var(--text);">Default (Time: Oldest First)</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
-              <input type="radio" name="fs_sort" value="amt_desc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-              <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: High to Low</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
-              <input type="radio" name="fs_sort" value="amt_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-              <span style="font-size:15px; font-weight:800; color:var(--text);">Amount: Low to High</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
-              <input type="radio" name="fs_sort" value="name_asc" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-              <span style="font-size:15px; font-weight:800; color:var(--text);">Name: A to Z</span>
-            </label>
+      <div style="flex:1; overflow-y:auto; padding:16px 20px;">
+        <!-- Hidden inputs to preserve exact business logic / state -->
+        <div style="display:none;">
+          <input type="radio" name="fs_sort" value="time_desc" onchange="applyFilterSort()">
+          <input type="radio" name="fs_sort" value="time_asc" onchange="applyFilterSort()">
+          <input type="radio" name="fs_sort" value="amt_desc" onchange="applyFilterSort()">
+          <input type="radio" name="fs_sort" value="amt_asc" onchange="applyFilterSort()">
+          <input type="radio" name="fs_sort" value="name_asc" onchange="applyFilterSort()">
+          <input type="checkbox" id="fs_my_entries" onchange="applyFilterSort()">
+          <input type="checkbox" id="fs_yet_to_be_collected" onchange="applyFilterSort()">
+        </div>
+
+        <!-- Sort By Section (Dashboard Style) -->
+        <div style="margin-bottom:20px;">
+          <div class="flt-label" style="font-size:11px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Sort By</div>
+          <div class="flt-pills" data-target="fs_sort">
+            <button type="button" class="flt-pill" data-val="time_desc" onclick="setEventSortPill('time_desc', this)">Newest First</button>
+            <button type="button" class="flt-pill" data-val="time_asc" onclick="setEventSortPill('time_asc', this)">Default (Oldest First)</button>
+            <button type="button" class="flt-pill" data-val="amt_desc" onclick="setEventSortPill('amt_desc', this)">Amount: High → Low</button>
+            <button type="button" class="flt-pill" data-val="amt_asc" onclick="setEventSortPill('amt_asc', this)">Amount: Low → High</button>
+            <button type="button" class="flt-pill" data-val="name_asc" onclick="setEventSortPill('name_asc', this)">Name: A → Z</button>
           </div>
         </div>
 
-        <div id="fs-filter-section" style="margin-bottom:16px; display:none;">
-          <h4 style="margin:0 0 8px 0; font-size:13px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;">Filter</h4>
-          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px;">
-            <input type="checkbox" id="fs_my_entries" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-            <div style="flex:1;">
-              <span style="font-size:15px; font-weight:800; color:var(--text); display:block;">My Entries Only</span>
-              <span style="font-size:12px; font-weight:700; color:var(--text3); margin-top:2px; display:block;">Only show entries created by you</span>
-            </div>
-          </label>
-          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; background:var(--row-alt); padding:10px 14px; border-radius:12px; margin-top:8px;">
-            <input type="checkbox" id="fs_yet_to_be_collected" onchange="applyFilterSort()" style="width:18px; height:18px; accent-color:var(--primary);">
-            <div style="flex:1;">
-              <span style="font-size:15px; font-weight:800; color:var(--text); display:block;">Amount Not Received</span>
-              <span style="font-size:12px; font-weight:700; color:var(--text3); margin-top:2px; display:block;">Only show pending entries (Collected: No)</span>
-            </div>
-          </label>
+        <!-- Filter Section (Dashboard Style) -->
+        <div id="fs-filter-section" style="margin-bottom:20px; display:none;">
+          <div style="height:1px; background:var(--border2); margin-bottom:16px;"></div>
+          <div class="flt-label" style="font-size:11px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Filter Options</div>
+          <div class="flt-pills">
+            <button type="button" class="flt-pill" id="pill_my_entries" onclick="toggleEventFilterPill('fs_my_entries', this)">My Entries Only</button>
+            <button type="button" class="flt-pill" id="pill_yet_to_be_collected" onclick="toggleEventFilterPill('fs_yet_to_be_collected', this)">Amount Not Received</button>
+          </div>
         </div>
 
-        <!-- Footer Moved Inside Scrollable Area -->
-        <div style="margin-bottom:4px;">
-          <button onclick="closeFilterModal()" class="btn btn-solid-primary" style="width:100%; height:48px; font-size:16px;">Done</button>
+        <!-- Date Range Section (Dashboard Style) -->
+        <div style="margin-bottom:20px;">
+          <div style="height:1px; background:var(--border2); margin-bottom:16px;"></div>
+          <div class="flt-label" style="font-size:11px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Date Range</div>
+          <input type="hidden" id="fs_date_val" value="all">
+          <div class="flt-pills" data-target="fs_date">
+            <button type="button" class="flt-pill active" data-val="all" onclick="setEventDatePill('all', this)">All Time</button>
+            <button type="button" class="flt-pill" data-val="30days" onclick="setEventDatePill('30days', this)">Last 30 Days</button>
+            <button type="button" class="flt-pill" data-val="custom" onclick="setEventDatePill('custom', this)">Custom Range</button>
+          </div>
+          <div class="custom-date-row hidden" id="ev-custom-date-row" style="margin-top: 8px; display: none; flex-direction: column; gap: 6px;">
+            <input type="date" id="fs_date_start" class="flt-date-inp" style="width: 100%; padding: 6px 8px; border-radius: 4px; background: var(--input-bg); border: 1px solid var(--border2); color: var(--text); font-size: 13px;">
+            <input type="date" id="fs_date_end" class="flt-date-inp" style="width: 100%; padding: 6px 8px; border-radius: 4px; background: var(--input-bg); border: 1px solid var(--border2); color: var(--text); font-size: 13px;">
+          </div>
+        </div>
+
+        <!-- Action Buttons (Dashboard Style) -->
+        <div style="display:flex; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border2);">
+          <button type="button" class="btn" style="flex:1; text-align:center; font-size:14px; font-weight:700; color:var(--text); padding:12px 0; background:none; border:1px solid var(--border2); border-radius:12px; cursor:pointer;" onclick="clearEventFilterMenu()">Clear</button>
+          <button type="button" class="btn" style="flex:1; border-radius:12px; background:var(--primary, #0FA3A3); color:#fff; box-shadow:0 4px 12px rgba(15,163,163,0.25); border:none; font-size:14px; font-weight:800; padding:12px 0; cursor:pointer;" onclick="applyFilterSort(); closeFilterModal();">Apply</button>
         </div>
       </div>
     </div>
   </div>
-  
+
     <div id="receipt-modal" class="member-profile-ov" style="position:fixed; display:none; z-index:100010;" onclick="closeReceiptModal()">
       <div class="pop-box" style="display:flex; flex-direction:column; align-items:center; padding: 24px 20px; max-width: 340px; position:relative;" onclick="event.stopPropagation()">
         

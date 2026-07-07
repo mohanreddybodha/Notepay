@@ -42,6 +42,9 @@
     let currentSort = 'time_asc'; // 'time_asc', 'time_desc', 'amt_desc', 'amt_asc', 'name_asc'
     let myEntriesOnly = false;
     let yetToBeCollected = false;
+    let eventDateFilter = 'all';
+    let eventDateStart = '';
+    let eventDateEnd = '';
 
     function applySortAndFilter(list, type) {
       let res = [...list];
@@ -52,6 +55,30 @@
       }
       if (type === 'don' && yetToBeCollected) {
         res = res.filter(d => d.payment_received === false);
+      }
+      if (eventDateFilter && eventDateFilter !== 'all') {
+        const now = new Date();
+        res = res.filter(item => {
+          if (!item.collected_at) return true;
+          const dt = new Date(item.collected_at);
+          if (eventDateFilter === '30days') {
+            const diff = now - dt;
+            return diff <= 30 * 24 * 60 * 60 * 1000;
+          }
+          if (eventDateFilter === 'custom') {
+            if (eventDateStart) {
+              const startDt = new Date(eventDateStart);
+              startDt.setHours(0, 0, 0, 0);
+              if (dt < startDt) return false;
+            }
+            if (eventDateEnd) {
+              const endDt = new Date(eventDateEnd);
+              endDt.setHours(23, 59, 59, 999);
+              if (dt > endDt) return false;
+            }
+          }
+          return true;
+        });
       }
       res.sort((a, b) => {
         if (currentSort === 'time_asc') return new Date(a.collected_at) - new Date(b.collected_at);
@@ -441,7 +468,7 @@
         const chatTitle = document.getElementById("chat-header-name");
         if (chatTitle) chatTitle.textContent = `${eventData.name} Chat`;
         const desc = document.getElementById("ev-desc");
-        if (desc) desc.textContent = eventData.description;
+        if (desc) desc.textContent = eventData.description || "";
         const date = document.getElementById("ev-date");
         if (date) date.innerHTML = npIcon("calendar", { size: 12, tone: "muted" }) + " " + formatDate(eventData.event_date);
         const ib = document.getElementById("info-bar");
@@ -930,6 +957,8 @@
         const inp = document.getElementById("don-search");
         q = inp ? inp.value : "";
       }
+      const clearBtn = document.querySelector("#pane-don .srch-clear");
+      if (clearBtn) clearBtn.classList.toggle("v", q && String(q).length > 0);
       const q2 = q.trim().toLowerCase();
 
       // Combined Pinned List (Local only)
@@ -949,7 +978,7 @@
       const sorted = [...pinned.map(p => p.item), ...unpinned];
       const filtered = q2 ? sorted.filter(d => searchMatch(d, q2)) : sorted;
       const total = donations.reduce((sum, d) => sum + (d.payment_received === false ? 0 : (parseFloat(d.amount) || 0)), 0);
-      document.getElementById("don-count").textContent = `${filtered.length} donor${filtered.length !== 1 ? "s" : ""}`;
+      document.getElementById("don-count").textContent = `${filtered.length} contributor${filtered.length !== 1 ? "s" : ""}`;
       document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
 
       if (!tblBody) return;
@@ -1055,11 +1084,11 @@
         const emptyMsg = document.getElementById("don-empty-msg");
         emptyMsg.style.display = "block";
         document.getElementById("don-tbl-rot").closest('.scroll-list').classList.add('is-empty');
-        const btnHtml = isOrganizer && !q ? `<button class="btn btn-solid-primary" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('don')">+ Add First Donation</button>` : "";
+        const btnHtml = isOrganizer && !q ? `<button class="btn btn-solid-primary" style="margin-top:12px; width:auto; padding:10px 24px;" onclick="openEntryForm('don')">+ Add First Contribution</button>` : "";
         emptyMsg.innerHTML = `<div class="empty-state" style="padding:40px 24px;">
       <div class="es-icon" style="margin-bottom:8px;">${q ? npIcon("search", { size: 32, tone: "muted" }) : npIcon("file-text", { size: 32, tone: "muted" })}</div>
-      <div class="es-title" style="font-size:15px; font-weight:900;">${q ? 'No results found' : 'No donations yet'}</div>
-      <div class="es-sub" style="font-size:12px; opacity:0.7; max-width:220px; line-height:1.5;">${q ? 'Try a different search term.' : 'Start tracking now — add your first donation!'}</div>
+      <div class="es-title" style="font-size:15px; font-weight:900;">${q ? 'No results found' : 'No contributions yet'}</div>
+      <div class="es-sub" style="font-size:12px; opacity:0.7; max-width:220px; line-height:1.5;">${q ? 'Try a different search term.' : 'Start tracking now — add your first contribution!'}</div>
       ${btnHtml}
     </div>`;
       }
@@ -1088,6 +1117,8 @@
         const inp = document.getElementById("exp-search");
         q = inp ? inp.value : "";
       }
+      const clearBtn = document.querySelector("#pane-exp .srch-clear");
+      if (clearBtn) clearBtn.classList.toggle("v", q && String(q).length > 0);
       const q2 = q.trim().toLowerCase();
 
       const storageKey = `np_pinned_${eventId}_exp`;
@@ -1406,7 +1437,7 @@
             <div style="font-size:11px; font-weight:800; color:var(--text3);">COLLECTED</div>
             <div style="font-size:16px; font-weight:900; color:var(--green);">${formatINR(s.total_donations)}</div>
             ${s.total_to_collect > 0 ? `<div style="font-size:10px; font-weight:700; color:var(--amber); margin-top:2px;">+${formatINR(s.total_to_collect)} to collect</div>` : ''}
-            <div style="position:absolute; bottom:6px; left:12px; font-size:9px; font-weight:800; color:var(--text3); opacity:0.6;">${s.donations_count} donors</div>
+            <div style="position:absolute; bottom:6px; left:12px; font-size:9px; font-weight:800; color:var(--text3); opacity:0.6;">${s.donations_count} contributors</div>
           </div>` : ''}
           ${showExp ? `<div style="flex:1; background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:12px; text-align:center; position:relative; padding-bottom:18px;">
             <div style="font-size:11px; font-weight:800; color:var(--text3);">SPENT</div>
@@ -1453,7 +1484,7 @@
           <!-- Top Donors (only if donations visible) -->
           ${showDon ? `<div style="background:var(--card); border:1.5px solid var(--border2); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Donors</span>
+              <span style="font-size:14px; font-weight:900; color:var(--text);">Top Contributors</span>
               <span>${npIcon("heart", { size: 14 })}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
@@ -1466,7 +1497,7 @@
                   </div>
                   <div style="font-size:14px; font-weight:900; color:var(--green);">${d[1] ? formatINR(d[1]) : '₹0'}</div>
                 </div>
-              `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No donations yet</div>'}
+              `}).join("") : '<div style="text-align:center; padding:10px; color:var(--text3); font-size:12px;">No contributions yet</div>'}
               ${topDonorsAll.length > sumLimits.don ? `<div onclick="sumLimits.don+=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--primary); padding:8px; cursor:pointer;">Show More</div>` : ''}
               ${sumLimits.don > 5 ? `<div onclick="sumLimits.don=5; renderSummary(0, '${containerId}');" style="text-align:center; font-size:11px; font-weight:800; color:var(--text3); padding:8px; cursor:pointer;">Show Less</div>` : ''}
             </div>
@@ -1516,7 +1547,7 @@
                 <div style="font-size:14px; font-weight:900; color:${t.type === 'donation' ? 'var(--green)' : 'var(--red)'};">
                   ${t.type === 'donation' ? '+' : '-'}${t.amount ? formatINR(t.amount) : '₹0'}
                 </div>
-                <div style="font-size:9px; font-weight:800; color:var(--text3);">${t.type.toUpperCase()}</div>
+                <div style="font-size:9px; font-weight:800; color:var(--text3);">${(t.type === 'donation' ? 'contribution' : t.type).toUpperCase()}</div>
               </div>
             </div>
           `).join("")}
@@ -1537,7 +1568,15 @@
     }
 
 
-    function filterTable(type, q) { type === "don" ? renderDonations(q) : renderExpenses(q); }
+    function filterTable(type, q) {
+      const inp = document.getElementById(type === 'don' ? 'don-search' : 'exp-search');
+      const val = q !== undefined && q !== null ? String(q) : (inp ? inp.value : "");
+      const clearBtn = document.querySelector(`#pane-${type} .srch-clear`);
+      if (clearBtn) {
+        clearBtn.classList.toggle("v", val.length > 0);
+      }
+      type === "don" ? renderDonations(q) : renderExpenses(q);
+    }
 
     // ── Entry Form ──
     let entryType = "don";
@@ -1609,7 +1648,7 @@
           <div class="fc sticky-col" style="display:flex !important; align-items:center !important; justify-content:flex-start !important; flex-wrap:nowrap !important; width:${getColWidth(isDon ? 'don_name' : 'exp_desc', 140)}px;">
             <div style="width:14px; margin-right:4px; flex-shrink:0;"></div>
             <div style="position:relative; width:100%; display:flex; align-items:center; height:100%;">
-              <input type="search" name="notepay_entry_val1" class="inline-input inl-str-val" placeholder="${isDon ? 'Donor' : 'Description'}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
+              <input type="search" name="notepay_entry_val1" class="inline-input inl-str-val" placeholder="${isDon ? 'Contributor' : 'Description'}" style="width:100%; height:30px; box-sizing:border-box; border:1px solid var(--border); border-radius:4px; padding:0 22px 0 6px; font-size:13px; background:var(--input-bg); color:var(--text); line-height:30px; margin:0; display:block;" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" inputmode="text" readonly onfocus="this.removeAttribute('readonly');">
               <span style="position:absolute; right:6px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:bold; pointer-events:none;">*</span>
             </div>
           </div>
@@ -1775,7 +1814,7 @@
 
           // Silent Update Totals & Counts
           const total = donations.reduce((sum, d) => sum + (d.payment_received === false ? 0 : (parseFloat(d.amount) || 0)), 0);
-          document.getElementById("don-count").textContent = `${donations.length} donor${donations.length !== 1 ? "s" : ""}`;
+          document.getElementById("don-count").textContent = `${donations.length} contributor${donations.length !== 1 ? "s" : ""}`;
           document.getElementById("don-total").innerHTML = `Total: <span class="sum-g">${formatINR(total)}</span>`;
         } else {
           newEntry = await addExpense(eventId, name, amt ? parseFloat(amt) : null, customFields);
@@ -2236,7 +2275,7 @@
       const btn = keepOpen ? document.getElementById("ef-save-next-btn") : document.getElementById("ef-save-btn");
       if (!name) {
         const err = document.getElementById("ef-error");
-        err.textContent = entryType === "don" ? "Donor name is required." : "Description is required.";
+        err.textContent = entryType === "don" ? "Contributor name is required." : "Description is required.";
         err.style.display = "block";
         document.getElementById("ef-name").focus();
         return;
@@ -2299,7 +2338,7 @@
     function openDupPop(onConfirm, name, amount, type) {
       const msg = document.getElementById("dup-msg");
       const color = type === "don" ? "var(--green)" : "var(--red)";
-      const label = type === "don" ? "donor" : "expense";
+      const label = type === "don" ? "contributor" : "expense";
       const amtStr = `<span style="color:${color};font-weight:900;">₹${(amount || 0).toLocaleString()}</span>`;
 
       msg.innerHTML = `An Entry with the ${label} <strong>${escHtml(name)}</strong> and amount ${amtStr} already exist. Do you want to add it again?`;
@@ -2432,7 +2471,7 @@
       const btn = document.getElementById("edit-save-btn");
       if (!name) {
         const err = document.getElementById("edit-error");
-        err.textContent = editTarget.type === "don" ? "Donor name is required." : "Description is required.";
+        err.textContent = editTarget.type === "don" ? "Contributor name is required." : "Description is required.";
         err.style.display = "block";
         document.getElementById("edit-name").focus();
         return;
@@ -2643,28 +2682,103 @@
 
     function openFilterModal() {
       document.getElementById("filter-sort-overlay").style.display = "flex";
-      document.querySelector(`input[name="fs_sort"][value="${currentSort}"]`).checked = true;
-      document.getElementById("fs_my_entries").checked = myEntriesOnly;
+      const sortRadio = document.querySelector(`input[name="fs_sort"][value="${currentSort}"]`);
+      if (sortRadio) sortRadio.checked = true;
+      if (document.getElementById("fs_my_entries")) document.getElementById("fs_my_entries").checked = myEntriesOnly;
+      if (document.getElementById("fs_yet_to_be_collected")) document.getElementById("fs_yet_to_be_collected").checked = yetToBeCollected;
+      if (document.getElementById("fs_date_val")) document.getElementById("fs_date_val").value = eventDateFilter || 'all';
+      if (document.getElementById("fs_date_start")) document.getElementById("fs_date_start").value = eventDateStart || '';
+      if (document.getElementById("fs_date_end")) document.getElementById("fs_date_end").value = eventDateEnd || '';
       if (!isVisitor) {
         document.getElementById("fs-filter-section").style.display = "block";
       } else {
         document.getElementById("fs-filter-section").style.display = "none";
       }
+      syncEventFilterPills();
     }
     
     function closeFilterModal() {
       document.getElementById("filter-sort-overlay").style.display = "none";
     }
 
+    function syncEventFilterPills() {
+      const sortVal = document.querySelector('input[name="fs_sort"]:checked')?.value || 'time_asc';
+      document.querySelectorAll('.flt-pills[data-target="fs_sort"] .flt-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === sortVal);
+      });
+      const myEntriesBtn = document.getElementById('pill_my_entries');
+      if (myEntriesBtn && document.getElementById('fs_my_entries')) {
+        myEntriesBtn.classList.toggle('active', document.getElementById('fs_my_entries').checked);
+      }
+      const yetBtn = document.getElementById('pill_yet_to_be_collected');
+      if (yetBtn && document.getElementById('fs_yet_to_be_collected')) {
+        yetBtn.classList.toggle('active', document.getElementById('fs_yet_to_be_collected').checked);
+      }
+      const dateVal = document.getElementById('fs_date_val')?.value || 'all';
+      document.querySelectorAll('.flt-pills[data-target="fs_date"] .flt-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === dateVal);
+      });
+      const row = document.getElementById('ev-custom-date-row');
+      if (row) {
+        row.style.display = (dateVal === 'custom') ? 'flex' : 'none';
+      }
+    }
+
+    function setEventSortPill(val, btn) {
+      const radio = document.querySelector(`input[name="fs_sort"][value="${val}"]`);
+      if (radio) {
+        radio.checked = true;
+        document.querySelectorAll('.flt-pills[data-target="fs_sort"] .flt-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+      }
+    }
+
+    function setEventDatePill(val, btn) {
+      const inp = document.getElementById('fs_date_val');
+      if (inp) inp.value = val;
+      document.querySelectorAll('.flt-pills[data-target="fs_date"] .flt-pill').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const row = document.getElementById('ev-custom-date-row');
+      if (row) {
+        row.style.display = (val === 'custom') ? 'flex' : 'none';
+      }
+    }
+
+    function toggleEventFilterPill(inputId, btn) {
+      const chk = document.getElementById(inputId);
+      if (chk) {
+        chk.checked = !chk.checked;
+        if (btn) btn.classList.toggle('active', chk.checked);
+      }
+    }
+
+    function clearEventFilterMenu() {
+      const defaultRadio = document.querySelector('input[name="fs_sort"][value="time_asc"]');
+      if (defaultRadio) defaultRadio.checked = true;
+      if (document.getElementById('fs_my_entries')) document.getElementById('fs_my_entries').checked = false;
+      if (document.getElementById('fs_yet_to_be_collected')) document.getElementById('fs_yet_to_be_collected').checked = false;
+      if (document.getElementById('fs_date_val')) document.getElementById('fs_date_val').value = 'all';
+      if (document.getElementById('fs_date_start')) document.getElementById('fs_date_start').value = '';
+      if (document.getElementById('fs_date_end')) document.getElementById('fs_date_end').value = '';
+      syncEventFilterPills();
+      applyFilterSort();
+      closeFilterModal();
+    }
+
     function applyFilterSort() {
-      currentSort = document.querySelector('input[name="fs_sort"]:checked').value;
-      myEntriesOnly = document.getElementById("fs_my_entries").checked;
-      yetToBeCollected = document.getElementById("fs_yet_to_be_collected").checked;
+      currentSort = document.querySelector('input[name="fs_sort"]:checked')?.value || 'time_asc';
+      myEntriesOnly = document.getElementById("fs_my_entries")?.checked || false;
+      yetToBeCollected = document.getElementById("fs_yet_to_be_collected")?.checked || false;
+      eventDateFilter = document.getElementById("fs_date_val")?.value || 'all';
+      if (eventDateFilter === 'custom') {
+        eventDateStart = document.getElementById("fs_date_start")?.value || '';
+        eventDateEnd = document.getElementById("fs_date_end")?.value || '';
+      }
       
       updateFilterIconStyles();
       
-      const qd = document.getElementById("don-search").value;
-      const qe = document.getElementById("exp-search").value;
+      const qd = document.getElementById("don-search")?.value || "";
+      const qe = document.getElementById("exp-search")?.value || "";
       renderDonations(qd);
       renderExpenses(qe);
       if (activeTheaterTab) {
@@ -2673,15 +2787,18 @@
     }
 
     function updateFilterIconStyles() {
-      const icons = document.querySelectorAll('.filter-icon-btn');
-      const isActive = currentSort !== 'time_asc' || myEntriesOnly || yetToBeCollected;
+      const icons = document.querySelectorAll('.flt-btn, .filter-icon-btn');
+      const isActive = currentSort !== 'time_asc' || myEntriesOnly || yetToBeCollected || (eventDateFilter && eventDateFilter !== 'all');
       icons.forEach(btn => {
+        btn.classList.toggle('applied', isActive);
         if (isActive) {
-          btn.style.color = "var(--primary)";
-          btn.style.background = "var(--primary-lt)";
+          btn.style.color = "";
+          btn.style.background = "";
+          btn.style.borderColor = "";
         } else {
-          btn.style.color = "var(--text2)";
-          btn.style.background = "transparent";
+          btn.style.color = "";
+          btn.style.background = "";
+          btn.style.borderColor = "";
           if(btn.style.padding === "4px") btn.style.background = "var(--surface)"; // theater mode variant
         }
       });

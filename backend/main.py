@@ -18,6 +18,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 import requests
 
 import models, schemas, crud, auth
@@ -419,20 +420,17 @@ async def create_event(event: schemas.EventCreate,
 @app.get("/events", response_model=List[schemas.EventResponse], tags=["Events"])
 def read_all_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """All events this user belongs to (Organizer + Collector). Includes deactivated."""
-    events = crud.get_events_for_user(db, user_id=user_id)
-    return [fix_event_json(e) for e in events]
+    return crud.get_events_for_user(db, user_id=user_id)
 
 @app.get("/events/my", response_model=List[schemas.EventResponse], tags=["Events"])
 def read_my_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard  My Events tab: only events where user is Organizer."""
-    events = crud.get_my_events(db, user_id=user_id)
-    return [fix_event_json(e) for e in events]
+    return crud.get_my_events(db, user_id=user_id)
 
 @app.get("/events/shared", response_model=List[schemas.EventResponse], tags=["Events"])
 def read_shared_events(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """Dashboard  Shared Events tab: events joined via code (Collector). Includes deactivated."""
-    events = crud.get_shared_events(db, user_id=user_id)
-    return [fix_event_json(e) for e in events]
+    return crud.get_shared_events(db, user_id=user_id)
 
 @app.get("/events/preview-code", tags=["Events"])
 def preview_event_by_code(invite_code: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -475,14 +473,11 @@ async def update_event(event_id: str, data: schemas.EventUpdate, db: Session = D
     event = crud.update_event(db, event_id, data, user_id=user_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    
-    # Explicitly map and parse JSON for SQLite compatibility
-    event_dict = {c.name: getattr(event, c.name) for c in event.__table__.columns}
     # Broadcast to all clients in this event channel (collectors see live changes)
     await manager.broadcast_change(event_id, {"type": "DATA_CHANGED"})
     # Broadcast to all dashboard connections (event name/details update in dashboard)
     await manager.broadcast_dashboard_update()
-    return fix_event_json(event_dict)
+    return crud.fix_event_json(event)
 
 @app.delete("/events/{event_id}", tags=["Events"])
 async def delete_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -529,35 +524,24 @@ async def regenerate_invite_code(event_id: str, db: Session = Depends(get_db), u
     return event
 @app.get("/events/watched", tags=["Events"])
 def get_watched_history(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    """Dashboard  Discover tab: public events recently viewed. Optimized with bulk membership check."""
+    """Dashboard  Discover tab: public events recently viewed. crud handles eager loading + membership filter."""
     watched = crud.get_watched_events(db, user_id)
-    if not watched: return []
-    
-    # Pre-fetch all memberships for these events to avoid N+1 queries
-    event_ids = [w.event_id for w in watched if w.event_id]
-    memberships = {}
-    if event_ids:
-        memberships = {m.event_id: m for m in db.query(models.EventMember).filter(
-            models.EventMember.user_id == user_id,
-            models.EventMember.event_id.in_(event_ids)
-        ).all()}
-    
+    if not watched:
+        return []
     resp = []
     for w in watched:
         e = w.event
-        if not e: continue
-        
-        member = memberships.get(e.id)
-        e_dict = {c.name: getattr(e, c.name) for c in e.__table__.columns}
-        e_dict["my_role"] = member.role if member else None
-        e_dict["is_restricted"] = member.is_restricted if member else False
-        
+        if not e:
+            continue
+        e_dict = crud.fix_event_json(e)
+        e_dict["my_role"] = None
+        e_dict["is_restricted"] = False
         resp.append({
             "id": w.id,
             "user_id": w.user_id,
             "event_id": w.event_id,
             "last_viewed_at": w.last_viewed_at,
-            "event": fix_event_json(e_dict)
+            "event": e_dict
         })
     return resp
 
@@ -569,18 +553,10 @@ async def remove_watched_history(event_id: str, db: Session = Depends(get_db), u
         raise HTTPException(status_code=404, detail="Watched event not found")
     return {"message": "Removed from discovery tab"}
 
-def fix_event_json(e_dict):
-    """Robust JSON parsing for SQLite string fields."""
-    for col_name in ["donation_custom_columns", "expense_custom_columns"]:
-        val = e_dict.get(col_name)
-        if isinstance(val, str) and val.strip():
-            try:
-                e_dict[col_name] = json.loads(val)
-            except json.JSONDecodeError:
-                e_dict[col_name] = []
-        elif val is None:
-            e_dict[col_name] = []
-    return e_dict
+# fix_event_json is the authoritative implementation in crud.py
+# This local alias exists only for the one legacy call in read_event below.
+def fix_event_json(e):
+    return crud.fix_event_json(e)
 
 @app.get("/events/{event_id}", response_model=schemas.EventResponse, tags=["Events"])
 def read_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
@@ -973,14 +949,26 @@ def process_ai_chat(event_id: str, question: str, loop: asyncio.AbstractEventLoo
         if not event:
             return
         
-        donations = db.query(models.Donation).filter(models.Donation.event_id == event_id).all()
-        expenses = db.query(models.Expense).filter(models.Expense.event_id == event_id).all()
-        
-        total_collected = sum((d.amount or 0.0) for d in donations)
-        total_spent = sum((e.amount or 0.0) for e in expenses)
+        # Limit to most recent 200 donations and 100 expenses for AI context
+        # Prevents memory exhaustion on large events
+        donations = db.query(models.Donation).filter(
+            models.Donation.event_id == event_id
+        ).order_by(models.Donation.collected_at.desc()).limit(200).all()
+        expenses = db.query(models.Expense).filter(
+            models.Expense.event_id == event_id
+        ).order_by(models.Expense.collected_at.desc()).limit(100).all()
+
+        # SQL aggregations for accurate totals (not limited)
+        total_collected = db.query(func.sum(models.Donation.amount)).filter(
+            models.Donation.event_id == event_id,
+            models.Donation.payment_received != False  # noqa: E712
+        ).scalar() or 0.0
+        total_spent = db.query(func.sum(models.Expense.amount)).filter(
+            models.Expense.event_id == event_id
+        ).scalar() or 0.0
         balance = total_collected - total_spent
-        
-        # Get users for mapping
+
+        # Get users for mapping — single batch query
         members = db.query(models.EventMember).filter(models.EventMember.event_id == event_id).all()
         user_ids = {m.user_id for m in members} | {d.collected_by for d in donations if d.collected_by} | {e.collected_by for e in expenses if e.collected_by}
         users = db.query(models.User).filter(models.User.id.in_(user_ids)).all() if user_ids else []

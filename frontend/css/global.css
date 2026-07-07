@@ -35,6 +35,8 @@
   /* Semantic */
   --green:          #1A7A5E;
   --green2:         #0e5c44;
+  --np-green:       #1A7A5E;
+  --np-green-lt:    #EAF7F3;
   --red:            #C0392B;
   --amber:          #C4860A;
 
@@ -85,6 +87,8 @@ body.dark-mode {
   --text3:        #777777;
   --green:        #22B580;
   --green2:       #19a06e;
+  --np-green:     #34d399;
+  --np-green-lt:  rgba(52, 211, 153, 0.15);
   --red:          #E05252;
   --amber:        #E0A020;
   --input-bg:     #111111;
@@ -156,6 +160,16 @@ input, textarea, [contenteditable] {
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
+}
+
+/* Remove browser default duplicate clear/search buttons */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
 body.dark-mode { background: #0A0A0A; }

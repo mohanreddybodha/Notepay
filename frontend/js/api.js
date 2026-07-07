@@ -69,7 +69,9 @@ async function apiFetch(method, path, body = null, silent = true) {
 
     if (!res.ok && res.status !== 304) {
       const msg = data?.detail || `HTTP ${res.status}`;
-      throw new Error(msg);
+      const err = new Error(msg);
+      err.isHttpError = true;
+      throw err;
     }
 
     if (method === 'GET' && data) {
@@ -78,8 +80,8 @@ async function apiFetch(method, path, body = null, silent = true) {
 
     return data;
   } catch (e) {
-    // If write failed due to network, queue it
-    if (isWrite) return handleOfflineWrite(method, path, body);
+    // If write failed due to network (not a 4xx/5xx HTTP error), queue it
+    if (isWrite && !e.isHttpError) return handleOfflineWrite(method, path, body);
     throw e;
   }
 }

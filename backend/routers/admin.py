@@ -122,9 +122,19 @@ def get_users(page: int = 1, limit: int = 50, search: str = None, db: Session = 
             )
         )
     users = query.order_by(desc(models.User.created_at)).offset((page - 1) * limit).limit(limit).all()
-    
-    for u in users:
-        u.events_count = db.query(models.EventMember).filter(models.EventMember.user_id == u.id).count()
+
+    # Fetch event counts in a single GROUP BY query — eliminates N+1
+    if users:
+        user_ids = [u.id for u in users]
+        counts = db.query(
+            models.EventMember.user_id,
+            func.count(models.EventMember.id).label("cnt")
+        ).filter(
+            models.EventMember.user_id.in_(user_ids)
+        ).group_by(models.EventMember.user_id).all()
+        count_map = {row.user_id: row.cnt for row in counts}
+        for u in users:
+            u.events_count = count_map.get(u.id, 0)
     return users
 
 @router.post("/users/{user_id}/ban")
@@ -154,17 +164,35 @@ def delete_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Dep
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
-        
-    # Delete all events organized by the user completely
-    user_events = db.query(models.Event).filter(models.Event.organizer_id == user_id).all()
-    for ev in user_events:
-        db.query(models.EventMember).filter(models.EventMember.event_id == ev.id).delete()
-        db.query(models.Donation).filter(models.Donation.event_id == ev.id).delete()
-        db.query(models.Expense).filter(models.Expense.event_id == ev.id).delete()
-        db.query(models.WatchedEvent).filter(models.WatchedEvent.event_id == ev.id).delete()
-        db.query(models.ChatMessage).filter(models.ChatMessage.event_id == ev.id).delete()
-        db.delete(ev)
-    
+
+    # Get all event IDs organized by this user in a single query
+    organized_event_ids = [
+        row[0] for row in db.query(models.Event.id).filter(
+            models.Event.organizer_id == user_id
+        ).all()
+    ]
+
+    # Bulk-delete all related records using IN() — no Python loop needed
+    if organized_event_ids:
+        db.query(models.ChatMessage).filter(
+            models.ChatMessage.event_id.in_(organized_event_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.WatchedEvent).filter(
+            models.WatchedEvent.event_id.in_(organized_event_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.Expense).filter(
+            models.Expense.event_id.in_(organized_event_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.Donation).filter(
+            models.Donation.event_id.in_(organized_event_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.EventMember).filter(
+            models.EventMember.event_id.in_(organized_event_ids)
+        ).delete(synchronize_session=False)
+        db.query(models.Event).filter(
+            models.Event.id.in_(organized_event_ids)
+        ).delete(synchronize_session=False)
+
     # Remove their footprints in other events (preserve financial data by setting collected_by to None)
     db.query(models.EventMember).filter(models.EventMember.user_id == user_id).delete()
     db.query(models.Donation).filter(models.Donation.collected_by == user_id).update({"collected_by": None})
@@ -172,11 +200,11 @@ def delete_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Dep
     db.query(models.WatchedEvent).filter(models.WatchedEvent.user_id == user_id).delete()
     db.query(models.ChatMessage).filter(models.ChatMessage.user_id == user_id).delete()
     db.query(models.Feedback).filter(models.Feedback.user_id == user_id).delete()
-    
+
     # Delete the user completely so they can re-register
     db.delete(user)
     db.commit()
-    
+
     log_admin_action(db, current_admin.id, "delete_user", "user", str(user_id), {"reason": req.reason})
     return {"status": "success", "message": "User deleted"}
 

@@ -804,13 +804,12 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
 
     function switchSPAView(viewName) {
       const cr = document.getElementById('spa-view-create');
-      const jn = document.getElementById('spa-view-join');
       const overviewEls = document.querySelectorAll('.page-hdr, .tab-bar, .search-row, .tab-desc, .scroll-area, .fab');
       const mainTopbar = document.querySelector('.topbar');
       const spaHeader = document.getElementById('spa-pg-header');
       const spaTitle = document.getElementById('spa-pg-title');
 
-      if (!cr || !jn) return;
+      if (!cr) return;
 
       closeSheet();
 
@@ -818,7 +817,6 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
 
       if (viewName === 'create') {
         overviewEls.forEach(el => el.style.display = 'none');
-        jn.style.display = 'none';
         cr.style.display = 'flex';
         if (mainTopbar) mainTopbar.style.display = 'none';
         if (spaHeader) {
@@ -837,55 +835,11 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         const dateInput = document.getElementById("spa-ev-date");
         if (dateInput && !dateInput.value) dateInput.valueAsDate = new Date();
       } else if (viewName === 'join') {
-        overviewEls.forEach(el => el.style.display = 'none');
-        cr.style.display = 'none';
-        jn.style.display = 'flex';
-        if (mainTopbar) mainTopbar.style.display = 'none';
-        if (spaHeader) {
-          spaHeader.style.display = 'flex';
-          if (spaTitle) spaTitle.textContent = 'Join Event';
-        }
-        document.querySelector('a[href="join-event.html"]')?.classList.add('active');
-        const urlParamsJoin = new URLSearchParams(window.location.search);
-        const codeParamJoin = urlParamsJoin.get('code');
-        if (codeParamJoin && document.getElementById('spa-code-input')) {
-          window._isAutoJoiningEvent = true;
-          jn.style.display = 'none'; // Hide join form during seamless auto-join
-          const splash = document.getElementById('app-splash');
-          if (splash) {
-            splash.style.display = 'flex';
-            splash.style.opacity = '1';
-            let msgEl = document.getElementById('splash-msg');
-            if (!msgEl) {
-              msgEl = document.createElement('div');
-              msgEl.id = 'splash-msg';
-              msgEl.style.cssText = 'margin-top: 18px; font-family: var(--font-brand); font-size: 15px; font-weight: 700; color: var(--np-navy); letter-spacing: 0.3px;';
-              splash.appendChild(msgEl);
-            }
-            msgEl.textContent = 'Joining Event...';
-          }
-          document.getElementById('spa-code-input').value = codeParamJoin.trim().toUpperCase();
-          // Auto-submit when code is provided via direct invite link after auth settles
-          if (typeof waitForAuthReady === 'function') {
-            waitForAuthReady().then(user => {
-              if (user) setTimeout(() => document.getElementById('spa-join-btn')?.click(), 100);
-            });
-          } else {
-            setTimeout(() => document.getElementById('spa-join-btn')?.click(), 500);
-          }
-        }
-        const qsTabJoin = typeof currentTab !== 'undefined' ? currentTab : 0;
-        const qs = '?tab=' + qsTabJoin + (codeParamJoin ? '&code=' + encodeURIComponent(codeParamJoin) : '');
-        if (window.location.pathname.indexOf('join-event') === -1) {
-          if (window.location.search.includes('view=join')) {
-            history.replaceState({spa: 'join'}, '', getCleanUrl('join-event.html' + qs));
-          } else {
-            history.pushState({spa: 'join'}, '', getCleanUrl('join-event.html' + qs));
-          }
-        }
+        // Removed SPA join view. Navigates to standalone join-event.html
+        window.location.href = getCleanUrl('join-event.html');
+
       } else {
         cr.style.display = 'none';
-        jn.style.display = 'none';
         if (mainTopbar) mainTopbar.style.display = 'flex';
         if (spaHeader) spaHeader.style.display = 'none';
         if (document.querySelector('.page-hdr')) document.querySelector('.page-hdr').style.display = '';
@@ -907,8 +861,7 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
 
     window.addEventListener('resize', () => {
       const crView = document.getElementById('spa-view-create');
-      const jnView = document.getElementById('spa-view-join');
-      if (crView && jnView && crView.style.display === 'none' && jnView.style.display === 'none') {
+      if (crView && crView.style.display === 'none') {
         const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
         if (document.querySelector('.tb-title')) {
           document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
@@ -919,7 +872,6 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
     window.addEventListener('popstate', () => {
       const path = window.location.pathname;
       if (path.includes('create-event')) switchSPAView('create');
-      else if (path.includes('join-event')) switchSPAView('join');
       else switchSPAView('overview');
     });
 
@@ -931,9 +883,6 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       if (href === 'create-event.html') {
         e.preventDefault();
         switchSPAView('create');
-      } else if (href === 'join-event.html') {
-        e.preventDefault();
-        switchSPAView('join');
       } else if (href === 'dashboard.html') {
         e.preventDefault();
         switchSPAView('overview');
@@ -1032,99 +981,6 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       } catch(err) {
         mainErrTxt.textContent = err.message || "Failed to create event.";
         mainErr.style.display = "flex";
-      } finally {
-        btn.disabled = false; btn.style.opacity = "1";
-      }
-    });
-
-    async function resolveSPAPreview(code) {
-      const card = document.getElementById("spa-join-preview-card");
-      const nameEl = document.getElementById("spa-preview-event-name");
-      const orgEl = document.getElementById("spa-preview-organizer-name");
-      const field = document.getElementById("spa-code-field");
-      const err = document.getElementById("spa-err-note");
-      const errTxt = document.getElementById("spa-err-txt");
-      const warn = document.getElementById("spa-warn-note");
-
-      nameEl.textContent = "Resolving code...";
-      orgEl.textContent = "Please wait";
-      card.style.display = "block";
-      if (field) field.style.borderColor = "var(--border-str)";
-      err.classList.remove("visible");
-      warn.style.display = "none";
-
-      try {
-        const res = await previewEventCode(code);
-        if (!res.is_active) {
-          if (field) field.style.borderColor = "var(--np-amber)";
-          warn.style.display = "flex";
-          card.style.display = "none";
-        } else {
-          nameEl.textContent = res.name;
-          orgEl.textContent = res.organizer_name;
-        }
-      } catch(e) {
-        card.style.display = "none";
-        if (field) field.style.borderColor = "var(--np-red)";
-        errTxt.textContent = e.message || "Invalid event code. Please check and try again.";
-        err.classList.add("visible");
-      }
-    }
-
-    document.getElementById("spa-code-input")?.addEventListener("input", function() {
-      let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-      let formatted = "";
-      if (val.length > 0) formatted += val.substring(0, 5);
-      if (val.length > 5) formatted += "-" + val.substring(5, 9);
-      if (val.length > 9) formatted += "-" + val.substring(9, 14);
-      this.value = formatted;
-      document.getElementById("spa-code-field").style.borderColor = "var(--border-str)";
-      document.getElementById("spa-err-note").classList.remove("visible");
-      document.getElementById("spa-warn-note").style.display = "none";
-      document.getElementById("spa-join-preview-card").style.display = "none";
-
-      if (formatted.length === 16) {
-        resolveSPAPreview(formatted);
-      }
-    });
-
-    document.getElementById("spa-join-btn")?.addEventListener("click", async () => {
-      const codeInput = document.getElementById("spa-code-input");
-      const code = codeInput.value.trim();
-      const btn = document.getElementById("spa-join-btn");
-      const errNote = document.getElementById("spa-err-note");
-      const errTxt = document.getElementById("spa-err-txt");
-      const warnNote = document.getElementById("spa-warn-note");
-
-      errNote.classList.remove("visible"); warnNote.style.display = "none";
-      if (!code || code.length < 5) {
-        document.getElementById("spa-code-field").style.borderColor = "var(--np-red)";
-        errTxt.textContent = "Please enter a valid event invite code.";
-        errNote.classList.add("visible");
-        codeInput.focus();
-        return;
-      }
-
-      btn.disabled = true; btn.style.opacity = "0.7";
-      try {
-        const ev = await joinEvent(code);
-        showToast("Successfully joined! Opening event...");
-        codeInput.value = "";
-        // Navigate directly to the event page; dbtab=2 ensures Back → Shared Events tab
-        window.location.href = getCleanUrl(`event.html?id=${ev.event_id}&dbtab=2`);
-      } catch (err) {
-        if (window._isAutoJoiningEvent) {
-          window._isAutoJoiningEvent = false;
-          
-          document.getElementById('spa-view-join').style.display = 'flex';
-        }
-        document.getElementById("spa-code-field").style.borderColor = "var(--np-red)";
-        if (err.message && err.message.toLowerCase().includes("deactivated")) {
-          warnNote.style.display = "flex";
-        } else {
-          errTxt.textContent = err.message || "Invalid invite code.";
-          errNote.classList.add("visible");
-        }
       } finally {
         btn.disabled = false; btn.style.opacity = "1";
       }

@@ -25,7 +25,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="css/global.css?v=31" />
+  <link rel="stylesheet" href="css/global.css?v=32" />
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -36,12 +36,14 @@
   <script>
     if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
       document.documentElement.classList.add("dark");
+      window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
     }
   </script>
 
   <link rel="stylesheet" href="css/create-event.css">
   <link rel="stylesheet" href="css/components.css?v=35" />
   <link rel="stylesheet" href="css/forms.css?v=32" />
+  <script src="js/components.js?v=34"></script>
 </head>
 
 <body>
@@ -129,85 +131,7 @@
   </div>
 
   <div class="app">
-    <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) -->
-    <aside class="sidebar">
-      <div class="sb-brand">
-        <img src="favicon.svg" alt="Notepay Logo" class="brand-logo-img">
-        <span class="sb-brand-name">Notepay</span>
-      </div>
-
-      <nav class="sb-nav">
-        <div class="sb-section">Events</div>
-        <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=0')">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-            <path d="M2 12h20" />
-          </svg>
-          All Events <span class="sb-count" id="sb-count-0">-</span>
-        </div>
-        <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=1')">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          My Events <span class="sb-count" id="sb-count-1">-</span>
-        </div>
-        <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=2')">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          Shared Events <span class="sb-count" id="sb-count-2">-</span>
-        </div>
-        <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=3')">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-          Visited Events <span class="sb-count" id="sb-count-3">-</span>
-        </div>
-
-        <div class="sb-divider"></div>
-        <div class="sb-section" style="margin-top:0;">Add</div>
-        <a href="create-event.html" class="sb-item active">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="16" />
-            <line x1="8" y1="12" x2="16" y2="12" />
-          </svg>
-          Create Event
-        </a>
-        <a href="join-event.html" class="sb-item">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-            <polyline points="10 17 15 12 10 7" />
-            <line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
-          Join by Code
-        </a>
-      </nav>
-
-      <div class="sb-footer">
-        <a href="profile.html" class="sb-user">
-          <div class="sb-avatar" id="av-btn-side">NP</div>
-          <div>
-            <div class="sb-uname" id="user-name-side">Profile</div>
-            <div class="sb-uphon">Settings & Account</div>
-          </div>
-          <svg width="14" height="14" fill="none" stroke="var(--t3)" stroke-width="2" viewBox="0 0 24 24"
-            style="margin-left:auto;">
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="19" cy="12" r="1" />
-            <circle cx="5" cy="12" r="1" />
-          </svg>
-        </a>
-      </div>
-    </aside>
+    <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) -->    <np-sidebar active-link="create"></np-sidebar>
 
     <!-- MAIN AREA -->
     <div class="main">
@@ -222,7 +146,7 @@
             <div class="pg-title">Create Event</div>
           </div>
           <div class="pg-title-edit">
-            <div class="pg-title">Edit Event</div>
+            <div class="pg-title">Manage Event</div>
           </div>
         </div>
         <button type="button" id="header-help-btn" onclick="openTipsModal()" class="pg-help-btn"
@@ -246,8 +170,8 @@
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
-              <div><strong>Editing Event Details:</strong> Changes made here will immediately sync across all active
-                collectors and update the event ledger.</div>
+              <div><strong>Managing Event Details:</strong> Changes made here will immediately sync across all active
+                collectors. Please notify your team if you change custom columns.</div>
             </div>
 
             <div class="main-error" id="main-error">
@@ -459,7 +383,7 @@
             style="display:none; border: 1.5px solid var(--np-red); background: var(--np-red-lt);">
             <div style="font-size:14px; font-weight:800; color:var(--np-red); margin-bottom:4px;">Danger Zone</div>
             <div style="font-size:12px; color:var(--t2); margin-bottom:12px; line-height:1.4;">Destructive actions can
-              affect event data, collectors, and donors permanently.</div>
+              affect event data, collectors, and contributors permanently.</div>
             <div style="display:flex; flex-direction:column; gap:8px;">
               <button type="button" id="deactivate-btn"
                 style="width:100%; height:40px; background:var(--surface); border:1.5px solid var(--np-red); color:var(--np-red); border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer;">Deactivate

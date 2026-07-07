@@ -16,6 +16,9 @@
       document.documentElement.classList.add("dark");
       window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
     }
+    if (localStorage.getItem("np_my_id")) {
+      document.documentElement.classList.add("logged-in");
+    }
 </script>
   <style>
     /* ═══════════════════════════════════════════════
@@ -60,7 +63,8 @@
 
     /* ── Sidebar — pixel-perfect profile.html match ── */
     .sidebar { display:none; width:236px; min-width:236px; background:var(--surface); border-right:1px solid var(--border); flex-direction:column; flex-shrink:0; }
-    @media (min-width:900px) { .sidebar { display:flex; } }
+    html:not(.logged-in) .sidebar { display: none !important; }
+    @media (min-width:900px) { html.logged-in .sidebar { display:flex; } }
     .sb-brand { height:58px; padding:0 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
     .brand-logo-img { width:30px; height:30px; border-radius:6px; }
     .sb-brand-name { font-family:var(--font-brand); font-size:18px; font-weight:800; color:var(--np-navy); }
@@ -179,50 +183,7 @@
 <div class="app">
 
   <!-- ═══ SIDEBAR — exact profile.html structure ═══ -->
-  <aside class="sidebar">
-    <div class="sb-brand">
-      <img src="favicon.svg" alt="Notepay" class="brand-logo-img">
-      <span class="sb-brand-name">Notepay</span>
-    </div>
-    <nav class="sb-nav">
-      <div class="sb-section">Events</div>
-      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=0')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-        All Events <span class="sb-count" id="sb-count-0">-</span>
-      </div>
-      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=1')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        My Events <span class="sb-count" id="sb-count-1">-</span>
-      </div>
-      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=2')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Shared Events <span class="sb-count" id="sb-count-2">-</span>
-      </div>
-      <div class="sb-item" onclick="window.location.href=getCleanUrl('dashboard.html?tab=3')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        Visited Events <span class="sb-count" id="sb-count-3">-</span>
-      </div>
-      <div class="sb-divider"></div>
-      <div class="sb-section" style="margin-top:0;">Add</div>
-      <a href="create-event.html" class="sb-item">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Create Event
-      </a>
-      <a href="join-event.html" class="sb-item">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        Join by Code
-      </a>
-    </nav>
-    <div class="sb-footer">
-      <a href="profile.html" class="sb-user">
-        <div class="sb-avatar" id="av-btn-side">?</div>
-        <div>
-          <div class="sb-uname" id="user-name-side">My Profile</div>
-          <div class="sb-uphon">Settings &amp; Account</div>
-        </div>
-      </a>
-    </div>
-  </aside>
+  <np-sidebar></np-sidebar>
 
   <!-- ═══ MAIN ═══ -->
   <div class="main">
@@ -248,7 +209,7 @@
             <a class="jump-pill" href="#sec-events">Events</a>
             <a class="jump-pill" href="#sec-tabs">Event Tabs</a>
             <a class="jump-pill" href="#sec-entries">Adding Entries</a>
-            <a class="jump-pill" href="#sec-upi">UPI &amp; Donations</a>
+            <a class="jump-pill" href="#sec-upi">UPI &amp; Contributions</a>
             <a class="jump-pill" href="#sec-columns">Custom Columns</a>
             <a class="jump-pill" href="#sec-search">Search &amp; Filter</a>
             <a class="jump-pill" href="#sec-theater">Theater Mode</a>
@@ -263,7 +224,7 @@
         <!-- ═══════════════════════════════════════════════
              SECTION ORDER follows actual user journey:
              Login → Dashboard → Events → Data Entry →
-             Donations → Customisation → Power Features
+             Contributions → Customisation → Power Features
         ═══════════════════════════════════════════════ -->
 
         <!-- 1. Getting Started -->
@@ -307,9 +268,9 @@
             <div class="sec-hdr-ttl">Inside an Event — Three Tabs</div>
           </div>
           <div class="sec-body">
-            <div class="bi"><strong>Collections tab:</strong> Tracks every donation or payment received. Each row shows the donor's name, amount (₹), who collected it, and the timestamp. This is the core income ledger of your event.</div>
+            <div class="bi"><strong>Collections tab:</strong> Tracks every contribution or payment received. Each row shows the contributor's name, amount (₹), who collected it, and the timestamp. This is the core income ledger of your event.</div>
             <div class="bi"><strong>Expenses tab:</strong> Tracks every cost or expenditure. Each row shows a description, the amount spent, who added it, and the timestamp. This is the spending ledger.</div>
-            <div class="bi"><strong>Summary tab:</strong> A live financial snapshot — total collected, total spent, remaining balance, top donors, and a per-member contribution breakdown. It updates automatically as entries are added.</div>
+            <div class="bi"><strong>Summary tab:</strong> A live financial snapshot — total collected, total spent, remaining balance, top contributors, and a per-member contribution breakdown. It updates automatically as entries are added.</div>
             <div class="bi"><strong>Event info bar:</strong> Below the app bar, you will see the event description, date, and a <strong>Members</strong> badge. Tap <strong>Members</strong> to view all current members and their roles.</div>
           </div>
         </div>
@@ -323,7 +284,7 @@
             <div class="sec-hdr-ttl">Adding &amp; Managing Entries</div>
           </div>
           <div class="sec-body">
-            <div class="bi"><strong>Add a new entry:</strong> At the bottom of the Collections or Expenses table, tap the green <strong>+ New entry</strong> row. A form slides up where you type the donor name and optional amount. Tap <strong>Save</strong> or <strong>Save &amp; Next</strong> to add and immediately open a blank form for the next entry.</div>
+            <div class="bi"><strong>Add a new entry:</strong> At the bottom of the Collections or Expenses table, tap the green <strong>+ New entry</strong> row. A form slides up where you type the contributor name and optional amount. Tap <strong>Save</strong> or <strong>Save &amp; Next</strong> to add and immediately open a blank form for the next entry.</div>
             <div class="bi"><strong>Edit an entry:</strong> Tap any existing row in the table to open its edit form. Update the name, amount, or any custom fields, then tap <strong>Save</strong>. Note: Collectors can only edit their own entries. Organizers can edit any entry.</div>
             <div class="bi"><strong>Delete an entry:</strong> While editing, tap the <strong>Delete</strong> option and confirm in the popup. Collectors can only delete their own entries. Organizers can delete any entry.</div>
             <div class="bi"><strong>Duplicate warning:</strong> If you add an entry with the same name and amount as an existing one, Notepay shows a warning popup. Tap <strong>Add Anyway</strong> to proceed or <strong>Cancel</strong> to discard.</div>
@@ -336,14 +297,14 @@
             <div class="sec-ic c-teal">
               <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
             </div>
-            <div class="sec-hdr-ttl">Receive Donations (UPI QR &amp; AI)</div>
+            <div class="sec-hdr-ttl">Receive Contributions (UPI QR &amp; AI)</div>
           </div>
           <div class="sec-body">
-            <div class="bi"><strong>Set up your UPI details:</strong> As an Organizer, tap <strong>⋮ → Receive Donations (QR)</strong>. Enter your <span class="hl">UPI ID</span> and <span class="hl">UPI Registered Name</span> exactly as they appear in your bank app. Choose which donor fields are required (e.g. phone, address, custom fields).</div>
-            <div class="bi"><strong>Share the collection link:</strong> Copy the generated public donation link and share it with donors via WhatsApp, SMS, or any channel. Donors who open the link see your event name, organizer name, and a dynamically generated UPI QR code — no app installation required.</div>
-            <div class="bi"><strong>Donor pays and uploads proof:</strong> After paying via any UPI app, the donor uploads a screenshot of their payment receipt on the same page.</div>
+            <div class="bi"><strong>Set up your UPI details:</strong> As an Organizer, tap <strong>⋮ → Receive Contributions (QR)</strong>. Enter your <span class="hl">UPI ID</span> and <span class="hl">UPI Registered Name</span> exactly as they appear in your bank app. Choose which contributor fields are required (e.g. phone, address, custom fields).</div>
+            <div class="bi"><strong>Share the collection link:</strong> Copy the generated public contribution link and share it with contributors via WhatsApp, SMS, or any channel. Contributors who open the link see your event name, organizer name, and a dynamically generated UPI QR code — no app installation required.</div>
+            <div class="bi"><strong>Contributor pays and uploads proof:</strong> After paying via any UPI app, the contributor uploads a screenshot of their payment receipt on the same page.</div>
             <div class="bi"><strong>AI auto-verification:</strong> Notepay's AI immediately reads the uploaded screenshot — it checks that the receiver name matches your UPI Registered Name and extracts the amount and date. If the receipt is valid, the entry is automatically created in your event's Collections tab.</div>
-            <div class="bi"><strong>Manual fallback:</strong> If AI verification fails or cannot extract details (e.g. blurry screenshot), the donor is shown a manual form to type their name, amount, and required fields. All entries remain under your full Organizer control.</div>
+            <div class="bi"><strong>Manual fallback:</strong> If AI verification fails or cannot extract details (e.g. blurry screenshot), the contributor is shown a manual form to type their name, amount, and required fields. All entries remain under your full Organizer control.</div>
           </div>
         </div>
 
@@ -356,7 +317,7 @@
             <div class="sec-hdr-ttl">Custom Columns</div>
           </div>
           <div class="sec-body">
-            <div class="bi"><strong>Add a column:</strong> In the Collections or Expenses tab, look just below the search bar and find the donor or expense count. Tap the <strong>+ Column</strong> button next to it. Enter a column name (e.g. "House No.", "Ward No."), choose a display width — Narrow, Medium, or Wide — then tap <strong>Add Column</strong>. The column appears instantly in the table.</div>
+            <div class="bi"><strong>Add a column:</strong> In the Collections or Expenses tab, look just below the search bar and find the contributor or expense count. Tap the <strong>+ Column</strong> button next to it. Enter a column name (e.g. "House No.", "Ward No."), choose a display width — Narrow, Medium, or Wide — then tap <strong>Add Column</strong>. The column appears instantly in the table.</div>
             <div class="bi"><strong>Edit or hide a column:</strong> Tap the name of any custom column header directly in the table. A settings sheet slides up. You can rename it, change its width, or tap <strong>Hide</strong> to remove it from view without losing any data.</div>
             <div class="bi"><strong>Restore or delete hidden columns:</strong> Tap the <strong>+ Column</strong> button → tap the <strong>Hidden Cols</strong> button. All previously hidden columns are listed. Tap <strong>Restore</strong> to bring one back, or tap the red <strong>Delete</strong> button to permanently remove the column and all its data.</div>
           </div>
@@ -371,7 +332,7 @@
             <div class="sec-hdr-ttl">Search, Sort &amp; Filter</div>
           </div>
           <div class="sec-body">
-            <div class="bi"><strong>Search:</strong> At the top of the Collections or Expenses tab, use the <strong>Search donors…</strong> or <strong>Search expenses…</strong> input to find entries as you type. Results filter instantly.</div>
+            <div class="bi"><strong>Search:</strong> At the top of the Collections or Expenses tab, use the <strong>Search contributors…</strong> or <strong>Search expenses…</strong> input to find entries as you type. Results filter instantly.</div>
             <div class="bi"><strong>Sort &amp; filter:</strong> Tap the <strong>filter icon</strong> (three horizontal sliders) inside the search bar. A modal opens with sorting options: <em>Time Newest First, Time Oldest First, Amount High to Low, Amount Low to High,</em> and <em>Name A to Z</em>.</div>
             <div class="bi"><strong>My Entries Only:</strong> In the same filter modal, toggle <strong>My Entries Only</strong> to show only the entries that you personally added, hiding all other collectors' data from view.</div>
           </div>
@@ -402,7 +363,7 @@
           <div class="sec-body">
             <div class="bi"><strong>Open Chat:</strong> Inside any event, tap the <strong>chat bubble icon</strong> floating at the bottom-right of the screen. A chat drawer slides open from the right side.</div>
             <div class="bi"><strong>Send messages:</strong> Type in the text field at the bottom and tap send. Long-press any message to reply directly to it or to react with an emoji.</div>
-            <div class="bi"><strong>Use the AI Assistant:</strong> Type <code>@ai</code> followed by your question and send it — for example, <em>"@ai who donated the most?"</em> or <em>"@ai what is the remaining balance?"</em>. The AI reads the event's live financial data and replies directly in the chat thread.</div>
+            <div class="bi"><strong>Use the AI Assistant:</strong> Type <code>@ai</code> followed by your question and send it — for example, <em>"@ai who contributed the most?"</em> or <em>"@ai what is the remaining balance?"</em>. The AI reads the event's live financial data and replies directly in the chat thread.</div>
           </div>
         </div>
 
@@ -418,7 +379,7 @@
             <div class="bi"><strong>Rename Event:</strong> Change the event name and description at any time.</div>
             <div class="bi"><strong>Event Joining Code:</strong> View the invite code, copy it to clipboard, or regenerate a new code. The old code instantly stops working when regenerated.</div>
             <div class="bi"><strong>Members:</strong> See all event members with their roles. Tap any member's name to <strong>Restrict</strong> them (blocks all access), <strong>Promote to Organizer</strong>, or <strong>Demote</strong> an existing organizer back to Collector.</div>
-            <div class="bi"><strong>Receive Donations (QR):</strong> Configure your <span class="hl">UPI ID</span>, <span class="hl">UPI Registered Name</span>, and which donor fields are required for the public donation link.</div>
+            <div class="bi"><strong>Receive Contributions (QR):</strong> Configure your <span class="hl">UPI ID</span>, <span class="hl">UPI Registered Name</span>, and which contributor fields are required for the public contribution link.</div>
             <div class="bi"><strong>Public Access:</strong> Toggle ON to generate a read-only shareable link. Anyone with the link can view event data without joining. Toggle OFF to make the event private.</div>
             <div class="bi"><strong>Share View Link:</strong> Appears only when Public Access is ON. Copies the public read-only link to your clipboard.</div>
             <div class="bi"><strong>Download PDF Report:</strong> Generates a professionally formatted PDF containing all collections, expenses, and a financial summary for the event.</div>
@@ -516,6 +477,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js?v=31"></script>
+  <script src="js/components.js?v=34"></script>
   <script src="js/shared-utils.js?v=31"></script>
   <script src="js/api.js?v=31"></script>
   <script src="js/icons.js?v=31"></script>
@@ -545,11 +507,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       } catch(e) {}
     }
   });
-
-   else {
-      window.location.href = getCleanUrl("profile.html");
-    }
-  }
 
   function openFeedbackPopup() {
     document.getElementById("feedback-pop").classList.add("open");
