@@ -3,11 +3,15 @@ let currentTab = 0;
 let isFirstLoad = true;
 let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: 'all', date: 'all', dStart: '', dEnd: '' };
 
-    // Read URL tab parameter
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab') || urlParams.get('dbtab') || urlParams.get('from_tab');
     if (tabParam !== null) {
       currentTab = parseInt(tabParam) || 0;
+    } else {
+      const savedTab = localStorage.getItem('np_dash_tab');
+      if (savedTab !== null) {
+        currentTab = parseInt(savedTab) || 0;
+      }
     }
 
     // Set tab immediately on load to prevent visual flashing
@@ -659,10 +663,11 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       // SPA views are closed by user explicitly clicking back or a tab.
       currentTab = idx;
 
-      // URL state
+      // URL state and persistence
       const u = new URLSearchParams(window.location.search);
       u.set('tab', idx);
       window.history.replaceState({}, '', getCleanUrl(`${window.location.pathname}?${u}`));
+      localStorage.setItem('np_dash_tab', idx);
 
       // Set tab description
       const descEl = document.getElementById('tab-desc');

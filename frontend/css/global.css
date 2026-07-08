@@ -426,11 +426,11 @@ body.dark-mode * { scrollbar-color: rgba(255, 255, 255, 0.1) transparent; }
 .p-row.clickable { cursor: pointer; transition: background 0.12s; }
 .p-row.clickable:hover { background: var(--surf-var); }
 
-/* ── POPUP OVERLAY ── */
+/* ── POPUP (Shared) ── */
 .pop-ov {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: rgba(13, 27, 42, 0.8);
+  background: rgba(13, 27, 42, .8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -455,15 +455,64 @@ body.dark-mode * { scrollbar-color: rgba(255, 255, 255, 0.1) transparent; }
   from { opacity: 0; transform: scale(0.88); }
   to   { opacity: 1; transform: scale(1); }
 }
+.pop-ic {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+.pop-t {
+  font-family: var(--font-brand);
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 5px;
+}
+.pop-m {
+  font-size: 12.5px;
+  color: var(--text2);
+  text-align: center;
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+.pop-line {
+  height: 1px;
+  background: var(--border2);
+  margin-bottom: 12px;
+}
+.pop-btns {
+  display: flex;
+  gap: 8px;
+}
+.pbc {
+  flex: 1;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 9px 0;
+  background: none;
+  border: 1.5px solid var(--border2);
+  border-radius: 30px;
+  transition: all 0.15s;
+}
+.pbc:hover {
+  background: var(--surf-var2);
+}
 
 /* ── BOTTOM SHEET ── */
 .sheet-ov {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(13, 27, 42, 0.8);
   display: flex;
   align-items: flex-end;
-  z-index: 100;
+  justify-content: center;
+  z-index: 100000;
   animation: pop-fade-in 0.2s ease;
 }
 .sheet-box {
@@ -471,18 +520,92 @@ body.dark-mode * { scrollbar-color: rgba(255, 255, 255, 0.1) transparent; }
   border-radius: 24px 24px 0 0;
   padding: 14px 18px 32px;
   width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
   animation: sheet-up 0.25s cubic-bezier(0.32, 1, 0.4, 1);
+}
+@media (min-width: 768px) {
+  .sheet-ov {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px;
+  }
+  .sheet-box {
+    border-radius: 24px !important;
+    max-width: 460px !important;
+    margin: auto !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
 }
 @keyframes sheet-up {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
 }
 .sheet-handle {
-  width: 44px;
-  height: 5px;
-  background: var(--border);
-  border-radius: 3px;
-  margin: 0 auto 16px;
+  width: 40px;
+  height: 4px;
+  background: var(--border-str);
+  border-radius: 4px;
+  margin: 0 auto 20px;
+}
+.sheet-title {
+  font-family: var(--font-brand);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.sheet-sub {
+  font-size: 13.5px;
+  color: var(--text-mut);
+  margin-bottom: 20px;
+}
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: left;
+}
+@media (hover: hover) {
+  .sheet-item:hover {
+    border-color: var(--np-navy);
+    background: var(--surface);
+  }
+}
+.si-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--np-navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+.si-t {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.si-d {
+  font-size: 12.5px;
+  color: var(--text-mut);
+  line-height: 1.4;
 }
 
 /* ── TABS ── */
@@ -1102,4 +1225,88 @@ body.dark-mode #upi-donor-req-cols-list {
   100% { transform: rotate(360deg); }
 }
 
+/* ── Reusable Popup Modal Styles (Globally Shared) ── */
+.popup-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.popup-modal.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.popup-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 340px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-modal);
+  transform: scale(0.95);
+  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.dark .popup-content, html.dark-mode .popup-content {
+  background: #1c1c22;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+}
+.popup-modal.open .popup-content {
+  transform: scale(1);
+}
+.popup-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.pi-red {
+  background: var(--np-red-lt);
+  color: var(--np-red);
+}
+.pi-amber {
+  background: var(--np-amber-lt);
+  color: var(--np-amber);
+}
+.popup-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--t1);
+  margin-bottom: 8px;
+}
+.popup-desc {
+  font-size: 14px;
+  color: var(--t2);
+  line-height: 1.4;
+  margin-bottom: 24px;
+}
+.popup-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--border-str);
+  color: var(--t1);
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: background .15s;
+}
+@media (hover: hover) {
+  .popup-btn:hover {
+    background: var(--border);
+  }
+}
 

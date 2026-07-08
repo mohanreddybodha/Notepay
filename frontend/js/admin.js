@@ -443,7 +443,6 @@ function editEventModal(id, name, upiId) {
       </div>
       <div class="form-group">
         <button type="button" class="btn-outline" onclick="copyShareLink('${id}')">📋 Copy Share Link</button>
-        <small style="color: #6b7280; display: block; margin-top: 5px;">Share with contributors: notepay.in/donate.html?event_id=${id}</small>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-outline" onclick="hideModal()">Cancel</button>
@@ -515,7 +514,10 @@ async function handleEditEvent(e, eventId) {
 }
 
 function copyShareLink(eventId) {
-  const link = `${window.location.origin}/donate.html?event_id=${eventId}`;
+  const cleanPath = getCleanUrl('donate.html');
+  const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+  const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+  const link = origin + path + '?event_id=' + eventId;
   navigator.clipboard.writeText(link).then(() => {
     alert("Contribution link copied: " + link);
   }).catch(() => {

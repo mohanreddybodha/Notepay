@@ -454,39 +454,18 @@
       <div class="dd-box" onclick="event.stopPropagation()">
         <div class="dd-item" onclick="closeDD();openRenameSheet()">
           <div class="dd-ic"><span data-np-icon="edit" data-np-size="18"></span></div>
-          <div class="dd-lbl">Rename Event</div>
-        </div>
-        <div class="dd-item" onclick="closeDD();openCodeSheet()">
-          <div class="dd-ic"><span data-np-icon="key" data-np-size="18"></span></div>
-          <div class="dd-lbl">Event Joining Code</div>
+          <div class="dd-lbl">Manage Event</div>
         </div>
 
         <div class="dd-item" id="upi-setup-btn" onclick="closeDD();openUpiSheet()">
           <div class="dd-ic"><span data-np-icon="smartphone" data-np-size="18"></span></div>
           <div class="dd-lbl">Receive Contributions (QR)</div>
         </div>
-        <div class="dd-item" id="privacy-toggle-btn" onclick="closeDD();handlePrivacyToggleClick()">
-          <div class="dd-ic"><span data-np-icon="globe" data-np-size="18"></span></div>
-          <div class="dd-lbl" id="privacy-lbl">Public Access: OFF</div>
-        </div>
-        <div class="dd-item" id="share-link-btn" style="display:none;" onclick="sharePublicLink()">
-          <div class="dd-ic"><span data-np-icon="share" data-np-size="18"></span></div>
-          <div class="dd-lbl">Share View Link</div>
-        </div>
         <div class="dd-item" id="pdf-report-btn" style="display:none;" onclick="closeDD();exportPDF()">
           <div class="dd-ic"><span data-np-icon="download" data-np-size="18"></span></div>
           <div class="dd-lbl">Download PDF Report</div>
         </div>
 
-
-        <div class="dd-item" id="deact-btn" onclick="closeDD();toggleDeactivate()">
-          <div class="dd-ic"><span data-np-icon="lock" data-np-size="18"></span></div>
-          <div class="dd-lbl" id="deact-lbl-dd">Deactivate Event</div>
-        </div>
-        <div class="dd-item dng" id="org-delete-event-item" onclick="closeDD();showDelEventPop()">
-          <div class="dd-ic"><span data-np-icon="trash" data-np-size="18"></span></div>
-          <div class="dd-lbl">Delete Event</div>
-        </div>
         <div class="dd-item dng" id="org-exit-event-item" style="display:none;" onclick="closeDD();openExitPop()">
           <div class="dd-ic"><span data-np-icon="log-out" data-np-size="18"></span></div>
           <div class="dd-lbl">Exit Event</div>
@@ -525,21 +504,7 @@
     </div>
 
     <!-- Duplicate Entry Warning Popup -->
-    <!-- Privacy Toggle Popup -->
-    <div id="privacy-pop" class="pop-ov" style="display:none;" onclick="closePrivacyPop()">
-      <div class="pop-box" onclick="event.stopPropagation()">
-        <div class="pop-ic"><span data-np-icon="globe" data-np-size="32" data-np-tone="primary"></span></div>
-        <div class="pop-t" style="color:#00838F;">Enable Public Access?</div>
-        <div class="pop-m">Anyone with the share link will have <strong>Read-Only</strong> access to view all contribution, expense, and
-          summary details of "<strong id="privacy-event-name">Event</strong>". They will need to log in to NotePay to
-          view.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="closePrivacyPop()">Cancel</button>
-          <button class="btn btn-solid-primary" onclick="confirmPrivacyToggle()">Enable</button>
-        </div>
-      </div>
-    </div>
+
 
     <!-- UPI Setup Sheet -->
     <div id="upi-sheet" class="sov" style="display:none;" onclick="closeUpiSheet()">
@@ -881,8 +846,6 @@
       </div>
     </div>
 
-    <!-- Extra CSS for DD and Member Menu -->
-
     <!-- Member Context Menu Overlay -->
     <div id="mctx-ov" style="display:none;position:fixed;inset:0;background:transparent;z-index:25000;"
       onclick="closeMCtx()">
@@ -959,10 +922,10 @@
           <div class="chat-empty-text" style="font-size: 15px; font-weight: 900; color: var(--text);">Team Workspace</div>
           <div class="chat-empty-sub" style="font-size: 12.5px; color: var(--text3); max-width: 230px; text-align: center; line-height: 1.4; margin-top: 2px;">Discuss expenses, share updates, or ask AI assistant.</div>
           <div style="display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; justify-content: center;">
-            <div onclick="document.getElementById('chat-input').value='@ai summarize event collections'; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" style="background: var(--surface); border: 1px solid var(--border-str); padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='var(--np-teal)';this.style.background='rgba(15,163,163,0.05)';" onmouseout="this.style.borderColor='var(--border-str)';this.style.background='var(--surface)';">
+            <div onclick="document.getElementById('chat-input').value='@ai summarize event collections'; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" style="background: var(--surface); border: 1px solid var(--border-str); padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='var(--np-teal)';this.style.background='rgba(15,163,163,0.05)';" onmouseout="this.style.borderColor='var(--border-str)';this.style.background='var(--surface)';" title="Ask AI for summary">
               <span>✨</span> Ask AI for summary
             </div>
-            <div onclick="document.getElementById('chat-input').value='@ai check pending contributors'; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" style="background: var(--surface); border: 1px solid var(--border-str); padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='var(--np-teal)';this.style.background='rgba(15,163,163,0.05)';" onmouseout="this.style.borderColor='var(--border-str)';this.style.background='var(--surface)';">
+            <div onclick="document.getElementById('chat-input').value='@ai check pending contributors'; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" style="background: var(--surface); border: 1px solid var(--border-str); padding: 6px 12px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='var(--np-teal)';this.style.background='rgba(15,163,163,0.05)';" onmouseout="this.style.borderColor='var(--border-str)';this.style.background='var(--surface)';" title="Check pending">
               <span>💡</span> Check pending
             </div>
           </div>
@@ -996,29 +959,14 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> <!-- end chat-ov -->
 
-  <!-- Member profile modal at body level -->
-  <div id="member-profile-modal" class="member-profile-ov" style="display:none;" onclick="closeMemberProfile()">
-    <div class="pop-box member-profile-box" onclick="event.stopPropagation()">
-      <div class="mp-avatar" id="mp-avatar">?</div>
-      <div class="mp-name" id="mp-name">Member</div>
-      <div class="mp-role" id="mp-role">Collector</div>
-      <div class="mp-phone" id="mp-phone"></div>
-      <a id="mp-call-btn" class="mp-call-btn" href="#">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <path fill="currentColor"
-            d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-        </svg>
-        Call
-      </a>
-      <button type="button" class="mp-close-btn" onclick="closeMemberProfile()">Close</button>
-    </div>
-  </div>
+    </div> <!-- /main -->
+  </div> <!-- /app -->
 
   <!-- ═══ Filter & Sort Modal ═══ -->
-  <div id="filter-sort-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:flex-end; justify-content:center;" onclick="if(event.target===this) closeFilterModal()">
-    <div style="background:var(--surface); width:100%; max-width:460px; max-height:90vh; display:flex; flex-direction:column; border-radius:20px 20px 0 0; overflow:hidden; animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 -8px 40px rgba(0,0,0,0.12);">
+  <div id="filter-sort-overlay" class="sov" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100010; align-items:flex-end; justify-content:center;" onclick="if(event.target===this) closeFilterModal()">
+    <div class="sbox" style="background:var(--surface); width:100%; max-width:460px; max-height:90vh; display:flex; flex-direction:column; border-radius:20px 20px 0 0; overflow:hidden; animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 -8px 40px rgba(0,0,0,0.12); margin: 0 auto;">
       <!-- Drag handle -->
       <div style="display:flex; justify-content:center; padding:12px 0 4px;">
         <div style="width:36px; height:4px; background:var(--border2); border-radius:2px;"></div>
@@ -1047,7 +995,7 @@
           <input type="checkbox" id="fs_yet_to_be_collected" onchange="applyFilterSort()">
         </div>
 
-        <!-- Sort By Section (Dashboard Style) -->
+        <!-- Sort By Section -->
         <div style="margin-bottom:20px;">
           <div class="flt-label" style="font-size:11px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Sort By</div>
           <div class="flt-pills" data-target="fs_sort">
@@ -1059,7 +1007,7 @@
           </div>
         </div>
 
-        <!-- Filter Section (Dashboard Style) -->
+        <!-- Filter Section -->
         <div id="fs-filter-section" style="margin-bottom:20px; display:none;">
           <div style="height:1px; background:var(--border2); margin-bottom:16px;"></div>
           <div class="flt-label" style="font-size:11px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Filter Options</div>
@@ -1069,7 +1017,7 @@
           </div>
         </div>
 
-        <!-- Date Range Section (Dashboard Style) -->
+        <!-- Date Range Section -->
         <div style="margin-bottom:20px;">
           <div style="height:1px; background:var(--border2); margin-bottom:16px;"></div>
           <div class="flt-label" style="font-size:11px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Date Range</div>
@@ -1085,7 +1033,7 @@
           </div>
         </div>
 
-        <!-- Action Buttons (Dashboard Style) -->
+        <!-- Action Buttons -->
         <div style="display:flex; gap:12px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border2);">
           <button type="button" class="btn" style="flex:1; text-align:center; font-size:14px; font-weight:700; color:var(--text); padding:12px 0; background:none; border:1px solid var(--border2); border-radius:12px; cursor:pointer;" onclick="clearEventFilterMenu()">Clear</button>
           <button type="button" class="btn" style="flex:1; border-radius:12px; background:var(--primary, #0FA3A3); color:#fff; box-shadow:0 4px 12px rgba(15,163,163,0.25); border:none; font-size:14px; font-weight:800; padding:12px 0; cursor:pointer;" onclick="applyFilterSort(); closeFilterModal();">Apply</button>
@@ -1094,27 +1042,45 @@
     </div>
   </div>
 
-    <div id="receipt-modal" class="member-profile-ov" style="position:fixed; display:none; z-index:100010;" onclick="closeReceiptModal()">
-      <div class="pop-box" style="display:flex; flex-direction:column; align-items:center; padding: 24px 20px; max-width: 340px; position:relative;" onclick="event.stopPropagation()">
+  <!-- Member profile modal at body level -->
+  <div id="member-profile-modal" class="member-profile-ov sov" style="position:fixed; inset:0; display:none; z-index:100010;" onclick="closeMemberProfile()">
+    <div class="pop-box member-profile-box" style="margin: auto;" onclick="event.stopPropagation()">
+      <div class="mp-avatar" id="mp-avatar">?</div>
+      <div class="mp-name" id="mp-name">Member</div>
+      <div class="mp-role" id="mp-role">Collector</div>
+      <div class="mp-phone" id="mp-phone"></div>
+      <a id="mp-call-btn" class="mp-call-btn" href="#">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path fill="currentColor"
+            d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+        </svg>
+        Call
+      </a>
+      <button type="button" class="mp-close-btn" onclick="closeMemberProfile()">Close</button>
+    </div>
+  </div>
+
+  <div id="receipt-modal" class="member-profile-ov sov" style="position:fixed; inset:0; display:none; z-index:100010;" onclick="closeReceiptModal()">
+      <div class="pop-box" style="display:flex; flex-direction:column; align-items:center; padding: 24px 20px; width: 100%; max-width: 380px; margin: auto; position:relative; background: var(--card, var(--surface)); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-modal);" onclick="event.stopPropagation()">
         
         <button id="btn-receipt-close" onclick="closeReceiptModal()" style="position:absolute; top:12px; right:12px; background:var(--surface-hover); color:var(--text); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;"><span data-np-icon="x" data-np-size="18"></span></button>
         
         <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: var(--text);">Payment Proof</h3>
-        <p id="receipt-donor-name" style="margin: -10px 0 16px 0; font-size: 15px; font-weight: 600; color: var(--text-light); text-align: center;"></p>
+        <p id="receipt-donor-name" style="margin: -10px 0 16px 0; font-size: 15px; font-weight: 600; color: var(--text-light, var(--t2)); text-align: center;"></p>
 
-        <div style="width: 100%; background: var(--surface); border-radius: 12px; padding: 8px; display:flex; justify-content:center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); position:relative;">
+        <div style="width: 100%; background: var(--surface-2, var(--surface)); border: 1px solid var(--border2, var(--border)); border-radius: 12px; padding: 8px; display:flex; justify-content:center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.08); position:relative;">
            <button id="btn-receipt-edit" onclick="triggerModalReceiptEdit()" style="position:absolute; top:12px; right:12px; background:var(--surface-hover); color:var(--primary); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:none; align-items:center; justify-content:center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index:10;" title="Replace Image"><span data-np-icon="edit" data-np-size="16"></span></button>
            <img id="receipt-img" src="" onclick="toggleReceiptZoom()" style="max-width:100%; max-height:45vh; border-radius:6px; object-fit:contain; background:var(--bg); cursor:zoom-in;" />
         </div>
         
         <div id="receipt-actions" style="display:none; margin-top:24px; gap:12px; width:100%;">
-          <button id="btn-receipt-verify" onclick="verifyReceiptDonation()" style="flex:1; padding:12px; border-radius:50px; border:none; background:#10b981; color:white; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <button id="btn-receipt-verify" onclick="verifyReceiptDonation()" style="flex:1; padding:12px; border-radius:12px !important; border:none; background:#10b981; color:white; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s;">
             <span data-np-icon="badge-check" data-np-size="18"></span> Accept
           </button>
-          <button id="btn-receipt-reject" onclick="rejectReceiptDonation()" style="flex:1; padding:12px; border-radius:50px; border:none; background:#ef4444; color:white; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <button id="btn-receipt-reject" onclick="rejectReceiptDonation()" style="flex:1; padding:12px; border-radius:12px !important; border:none; background:#ef4444; color:white; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s;">
             <span data-np-icon="trash" data-np-size="18"></span> Reject
           </button>
-          <button id="btn-receipt-remove" onclick="removeReceiptDonation()" style="display:none; flex:1; padding:12px; border-radius:50px; border:none; background:#ef4444; color:white; font-weight:700; cursor:pointer; align-items:center; justify-content:center; gap:6px;">
+          <button id="btn-receipt-remove" onclick="removeReceiptDonation()" style="display:none; flex:1; padding:12px; border-radius:12px !important; border:none; background:#ef4444; color:white; font-weight:700; font-size:14px; cursor:pointer; align-items:center; justify-content:center; gap:6px; transition:all 0.15s;">
             <span data-np-icon="trash" data-np-size="18"></span> Remove
           </button>
         </div>
@@ -1124,17 +1090,10 @@
     
     <input type="file" id="manual-receipt-upload" style="display:none;" accept="image/*" onchange="handleManualReceiptUpload(event)">
 
-  
-    </div> <!-- /main -->
-  </div> <!-- /app -->
-
   <!-- Pull to Refresh Logic -->
 
 
-  <script src="js/event-main.js?v=31"></script>
+  <script src="js/event-main.js?v=80"></script>
   
 </body>
 </html>
-
-
-

@@ -1,30 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<script src="js/page-init.js"></script>
 
-  <meta charset="UTF-8"/>
+<head>
+  <script src="js/page-init.js"></script>
+
+  <meta charset="UTF-8" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Notepay — Join Event</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="css/global.css?v=32"/>
-  
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/global.css?v=32" />
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  
+
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  
+
   <script>
-if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
+    if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark") {
       document.documentElement.classList.add("dark");
       window.addEventListener('DOMContentLoaded', () => { document.body.classList.add("dark-mode"); });
     }
-</script>
+  </script>
 
   <style>
     /* Exact Dashboard Shell Theme & Tokens */
@@ -60,6 +64,7 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
       --font-ui: 'Inter', -apple-system, sans-serif;
       --font-brand: 'Plus Jakarta Sans', 'Inter', sans-serif;
     }
+
     html.dark {
       --bg: #09090b;
       --surface: #18181b;
@@ -86,419 +91,1181 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
       --shadow-card: 0 0 0 1px rgba(255, 255, 255, .05), 0 4px 12px rgba(0, 0, 0, .5);
       --shadow-modal: 0 20px 60px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .05);
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; touch-action: none; font-family: var(--font-ui); background: var(--bg); color: var(--t1); -webkit-font-smoothing: antialiased; font-size: 14px; }
-    body { height: 100vh; /* Use static vh - not affected by keyboard */ }
-    button, input { font-family: inherit; }
-    svg { display: block; flex-shrink: 0; }
-    a { text-decoration: none; color: inherit; }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--t1);
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
+    }
+
+    body {
+      height: 100vh;
+      /* Use static vh - not affected by keyboard */
+    }
+
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    svg {
+      display: block;
+      flex-shrink: 0;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
 
     /* Instant Page Transition (<100ms perceived) */
     .page-view-container {
       animation: smoothAppear 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
     @keyframes smoothAppear {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* App Shell */
-    .app { display: flex; height: 100%; overflow: hidden; }
+    .app {
+      display: flex;
+      height: 100%;
+      overflow: hidden;
+    }
 
     /* Sidebar (Exact Dashboard Match - Persistent & Fixed) */
     .sidebar {
-      display: none; width: 236px; min-width: 236px; background: var(--surface);
-      border-right: 1px solid var(--border); flex-direction: column; flex-shrink: 0;
+      display: none;
+      width: 236px;
+      min-width: 236px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      flex-direction: column;
+      flex-shrink: 0;
     }
-    @media (min-width: 900px) { .sidebar { display: flex; } }
-    .sb-brand { height: 58px; padding: 0 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
-    .brand-logo-img { width: 30px; height: 30px; border-radius: 6px; }
-    .sb-brand-name { font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--np-navy); }
-    .sb-nav { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-    .sb-section { font-size: 10px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px 4px; margin-top: 6px; }
-    .sb-section:first-child { margin-top: 0; }
-    .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--r-sm); font-size: 13.5px; font-weight: 500; color: var(--t2); cursor: pointer; transition: all .13s; user-select: none; }
-    .sb-item.active { background: var(--np-navy-lt); color: var(--np-navy); font-weight: 600; }
-    .sb-count { margin-left: auto; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: var(--border); color: var(--t3); min-width: 22px; text-align: center; }
-    .sb-item.active .sb-count { background: var(--np-navy-md); color: var(--np-navy); }
-    .sb-divider { height: 1px; background: var(--border); margin: 6px 10px; }
-    .sb-footer { padding: 10px; border-top: 1px solid var(--border); }
-    .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-sm); cursor: pointer; transition: background .13s; }
-    @media (hover: hover) { .sb-user:hover { background: var(--surface-2); } }
-    .sb-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--np-navy); color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-    .sb-uname { font-size: 13px; font-weight: 600; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
-    .sb-uphon { font-size: 11px; color: var(--t3); }
+
+    @media (min-width: 900px) {
+      .sidebar {
+        display: flex;
+      }
+    }
+
+    .sb-brand {
+      height: 58px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-logo-img {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+    }
+
+    .sb-brand-name {
+      font-family: var(--font-brand);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--np-navy);
+    }
+
+    .sb-nav {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sb-section {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--t3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 10px 8px 4px;
+      margin-top: 6px;
+    }
+
+    .sb-section:first-child {
+      margin-top: 0;
+    }
+
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: var(--r-sm);
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--t2);
+      cursor: pointer;
+      transition: all .13s;
+      user-select: none;
+    }
+
+    .sb-item.active {
+      background: var(--np-navy-lt);
+      color: var(--np-navy);
+      font-weight: 600;
+    }
+
+    .sb-count {
+      margin-left: auto;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: var(--border);
+      color: var(--t3);
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .sb-item.active .sb-count {
+      background: var(--np-navy-md);
+      color: var(--np-navy);
+    }
+
+    .sb-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 6px 10px;
+    }
+
+    .sb-footer {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sb-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: background .13s;
+    }
+
+    @media (hover: hover) {
+      .sb-user:hover {
+        background: var(--surface-2);
+      }
+    }
+
+    .sb-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--np-navy);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sb-uname {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 130px;
+    }
+
+    .sb-uphon {
+      font-size: 11px;
+      color: var(--t3);
+    }
 
     /* Main Area */
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; background: var(--bg); touch-action: none; }
-    /* ── Page header ── */
-    .pg-header { height:auto; min-height:60px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; padding:10px 16px 10px 12px; flex-shrink:0; }
-    @media (min-width: 900px) {
-      .pg-header { padding: 0 28px; height: 58px; min-height: 58px; gap: 10px; }
-      .pg-title { font-size: 18px !important; }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+      background: var(--bg);
+      touch-action: none;
     }
-    .pg-back { width:34px; height:34px; border-radius:50%; background:transparent; border:none; color:var(--t2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .13s, color .13s; flex-shrink:0; }
-    @media (hover:hover) { .pg-back:hover { background:var(--surface-2); color:var(--t1); } }
-    .pg-back:active { background:var(--border); }
-    @media (min-width: 900px) { .pg-back { display: none; } }
-    .pg-title-wrap { display:flex; flex-direction:column; gap:1px; min-width:0; }
-    .pg-title { font-family:var(--font-brand); font-size:15px; font-weight:800; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
-    .pg-sub { font-size:11.5px; font-weight:500; color:var(--t3); line-height:1.3; }
 
-    .secure-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--np-teal-dk); background: var(--np-teal-lt); padding: 5px 12px; border-radius: 20px; }
-    html.dark .secure-badge { color: var(--np-teal); }
+    /* ── Page header ── */
+    .pg-header {
+      height: auto;
+      min-height: 60px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px 10px 12px;
+      flex-shrink: 0;
+    }
+
+    @media (min-width: 900px) {
+      .pg-header {
+        padding: 0 28px;
+        height: 58px;
+        min-height: 58px;
+        gap: 10px;
+      }
+
+      .pg-title {
+        font-size: 18px !important;
+      }
+    }
+
+    .pg-back {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: var(--t2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background .13s, color .13s;
+      flex-shrink: 0;
+    }
+
+    @media (hover:hover) {
+      .pg-back:hover {
+        background: var(--surface-2);
+        color: var(--t1);
+      }
+    }
+
+    .pg-back:active {
+      background: var(--border);
+    }
+
+    @media (min-width: 900px) {
+      .pg-back {
+        display: none;
+      }
+    }
+
+    .pg-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .pg-title {
+      font-family: var(--font-brand);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--t1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+
+    .pg-sub {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--t3);
+      line-height: 1.3;
+    }
+
+    .secure-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--np-teal-dk);
+      background: var(--np-teal-lt);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    html.dark .secure-badge {
+      color: var(--np-teal);
+    }
 
     /* Scrollable Form Content */
-    .scroll-area { flex: 1; overflow: hidden !important; padding: 28px 20px; display: flex; align-items: flex-start; justify-content: center; }
-    .form-container { width: 100%; max-width: 480px; margin: 16px auto 32px; background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); flex-shrink: 0; }
-    @media (max-width: 900px) { .scroll-area { padding: 0; } .form-container { margin: 0; padding: 24px; padding-bottom: 40px; border-radius: 0; border: none; box-shadow: none; min-height: 100%; } }
+    .scroll-area {
+      flex: 1;
+      overflow: hidden !important;
+      padding: 28px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
 
-    .form-header { margin-bottom: 20px; text-align: center; }
-    @media (min-width: 900px) { .form-header { text-align: left; } }
-    .form-header h1 { font-family: var(--font-brand); font-size: 24px; font-weight: 800; color: var(--t1); margin-bottom: 6px; }
-    .form-header p { font-size: 14px; color: var(--t3); line-height: 1.45; }
+    .form-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 16px auto 32px;
+      background: var(--surface);
+      padding: 32px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 900px) {
+      .scroll-area {
+        padding: 0;
+      }
+
+      .form-container {
+        margin: 0;
+        padding: 24px;
+        padding-bottom: 40px;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        min-height: 100%;
+      }
+    }
+
+    .form-header {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    @media (min-width: 900px) {
+      .form-header {
+        text-align: left;
+      }
+    }
+
+    .form-header h1 {
+      font-family: var(--font-brand);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--t1);
+      margin-bottom: 6px;
+    }
+
+    .form-header p {
+      font-size: 14px;
+      color: var(--t3);
+      line-height: 1.45;
+    }
 
     /* Form Fields */
-    .field-group { margin-bottom: 16px; }
-    .field-label { font-size: 12px; font-weight: 700; color: var(--t2); margin: 0; }
-    .field { width: 100%; background: var(--bg); border: 1px solid transparent; border-radius: 12px; padding: 0 16px; height: 48px; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; }
-    .field:focus-within { border-color: var(--np-navy); box-shadow: 0 0 0 4px var(--np-navy-lt); }
-    .field input { flex: 1; border: none; outline: none; background: transparent; font-size: 16px; font-weight: 600; color: var(--t1); width: 100%; text-transform: uppercase; }
-    .field input::placeholder { color: var(--t3); font-weight: 500; text-transform: none; }
-    .field.err { border-color: var(--np-red); }
-    .field.warn { border-color: var(--np-amber); }
+    .field-group {
+      margin-bottom: 16px;
+    }
 
-    .val-err, .val-warn { font-size: 12.5px; font-weight: 600; margin-top: 6px; display: none; align-items: center; gap: 6px; }
-    .val-err { color: var(--np-red); }
-    .val-warn { color: var(--np-amber); }
-    .val-err.visible, .val-warn.visible { display: flex; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-3px); } 40%, 60% { transform: translateX(3px); } }
+    .field-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--t2);
+      margin: 0;
+    }
+
+    .field {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 0 16px;
+      height: 48px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .field:focus-within {
+      border-color: var(--np-navy);
+      box-shadow: 0 0 0 4px var(--np-navy-lt);
+    }
+
+    .field input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--t1);
+      width: 100%;
+      text-transform: uppercase;
+    }
+
+    .field input::placeholder {
+      color: var(--t3);
+      font-weight: 500;
+      text-transform: none;
+    }
+
+    .field.err {
+      border-color: var(--np-red);
+    }
+
+    .field.warn {
+      border-color: var(--np-amber);
+    }
+
+    .val-err,
+    .val-warn {
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-top: 6px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .val-err {
+      color: var(--np-red);
+    }
+
+    .val-warn {
+      color: var(--np-amber);
+    }
+
+    .val-err.visible,
+    .val-warn.visible {
+      display: flex;
+      animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    @keyframes shake {
+
+      10%,
+      90% {
+        transform: translateX(-1px);
+      }
+
+      20%,
+      80% {
+        transform: translateX(2px);
+      }
+
+      30%,
+      50%,
+      70% {
+        transform: translateX(-3px);
+      }
+
+      40%,
+      60% {
+        transform: translateX(3px);
+      }
+    }
 
     /* Security Box */
-    .security-box { display: flex; align-items: center; gap: 12px; background: var(--np-green-lt); border: 1px solid rgba(26, 122, 94, 0.18); padding: 12px 14px; border-radius: 12px; margin: 16px 0 24px; }
-    .security-box svg { color: var(--np-green); flex-shrink: 0; }
-    .sec-t { font-size: 13px; font-weight: 700; color: var(--np-green-dk); html.dark & { color: var(--np-green); } }
-    .sec-d { font-size: 12px; color: var(--t2); margin-top: 2px; }
+    .security-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--np-green-lt);
+      border: 1px solid rgba(26, 122, 94, 0.18);
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin: 16px 0 24px;
+    }
+
+    .security-box svg {
+      color: var(--np-green);
+      flex-shrink: 0;
+    }
+
+    .sec-t {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--np-green-dk);
+
+      html.dark & {
+        color: var(--np-green);
+      }
+    }
+
+    .sec-d {
+      font-size: 12px;
+      color: var(--t2);
+      margin-top: 2px;
+    }
 
     /* Action Buttons */
-    .action-row { display: flex; flex-direction: column; gap: 8px; }
-    .btn-primary { width: 100%; height: 48px; background: var(--np-navy); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: var(--shadow-sm); transition: background .15s; }
-    .btn-primary:hover { background: var(--np-navy-dk); }
-    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
-    .btn-primary.loading .btn-text, .btn-primary.loading svg { display: none; }
-    .btn-primary.loading .spinner { display: block; }
-    .spinner { display: none; width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .action-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-    .btn-cancel { width: 100%; height: 40px; background: none; border: none; color: var(--t2); font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; }
-    .btn-cancel:hover { color: var(--t1); }
-    @media (min-width: 900px) { .btn-cancel { display: none !important; } }
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: var(--np-navy);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: background .15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--np-navy-dk);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .btn-primary.loading .btn-text,
+    .btn-primary.loading svg {
+      display: none;
+    }
+
+    .btn-primary.loading .spinner {
+      display: block;
+    }
+
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255, 255, 255, .3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .btn-cancel {
+      width: 100%;
+      height: 40px;
+      background: none;
+      border: none;
+      color: var(--t2);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-cancel:hover {
+      color: var(--t1);
+    }
+
+    @media (min-width: 900px) {
+      .btn-cancel {
+        display: none !important;
+      }
+    }
 
     /* Modal / Bottom Sheet */
-    .modal-backdrop { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-    @media (min-width: 600px) { .modal-backdrop { align-items: center; } }
-    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
-    .sheet-modal { background: var(--surface); width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 24px; box-shadow: var(--shadow-modal); border: 1px solid var(--border); transform: translateY(100%); transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85dvh; overflow-y: auto; }
-    @media (min-width: 600px) { .sheet-modal { border-radius: 18px; transform: scale(0.95); } }
-    .modal-backdrop.open .sheet-modal { transform: translateY(0); }
-    @media (min-width: 600px) { .modal-backdrop.open .sheet-modal { transform: scale(1); } }
-    html.dark .sheet-modal, html.dark-mode .sheet-modal { background: #1c1c22; border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85); }
-    
-    .sheet-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .sheet-title { font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--t1); }
-    .sheet-close { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface-2); color: var(--t2); font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .sheet-sub { font-size: 13.5px; color: var(--t3); margin-bottom: 20px; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
 
-    .sheet-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-    .sheet-item { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all .15s; }
-    @media (hover: hover) { .sheet-item:hover { border-color: var(--np-navy); background: var(--surface); } }
-    .si-ic { width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs); }
-    .si-t { font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 2px; }
-    .si-d { font-size: 12px; color: var(--t3); line-height: 1.35; }
-    .si-arr { margin-left: auto; color: var(--t3); }
+    @media (min-width: 600px) {
+      .modal-backdrop {
+        align-items: center;
+      }
+    }
 
-    .btn-modal-gotit { width: 100%; height: 48px; background: var(--np-navy); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
-    .btn-modal-gotit:hover { background: var(--np-navy-dk); }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet-modal {
+      background: var(--surface);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      box-shadow: var(--shadow-modal);
+      border: 1px solid var(--border);
+      transform: translateY(100%);
+      transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85dvh;
+      overflow-y: auto;
+    }
+
+    @media (min-width: 600px) {
+      .sheet-modal {
+        border-radius: 18px;
+        transform: scale(0.95);
+      }
+    }
+
+    .modal-backdrop.open .sheet-modal {
+      transform: translateY(0);
+    }
+
+    @media (min-width: 600px) {
+      .modal-backdrop.open .sheet-modal {
+        transform: scale(1);
+      }
+    }
+
+    html.dark .sheet-modal,
+    html.dark-mode .sheet-modal {
+      background: #1c1c22;
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+    }
+
+    .sheet-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .sheet-title {
+      font-family: var(--font-brand);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--t1);
+    }
+
+    .sheet-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--surface-2);
+      color: var(--t2);
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sheet-sub {
+      font-size: 13.5px;
+      color: var(--t3);
+      margin-bottom: 20px;
+    }
+
+    .sheet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sheet-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    @media (hover: hover) {
+      .sheet-item:hover {
+        border-color: var(--np-navy);
+        background: var(--surface);
+      }
+    }
+
+    .si-ic {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--np-navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .si-t {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--t1);
+      margin-bottom: 2px;
+    }
+
+    .si-d {
+      font-size: 12px;
+      color: var(--t3);
+      line-height: 1.35;
+    }
+
+    .si-arr {
+      margin-left: auto;
+      color: var(--t3);
+    }
+
+    .btn-modal-gotit {
+      width: 100%;
+      height: 48px;
+      background: var(--np-navy);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-modal-gotit:hover {
+      background: var(--np-navy-dk);
+    }
   </style>
-  <link rel="stylesheet" href="css/components.css?v=35"/>
-  <link rel="stylesheet" href="css/forms.css?v=32"/>
+  <link rel="stylesheet" href="css/components.css?v=35" />
+  <link rel="stylesheet" href="css/forms.css?v=32" />
   <script src="js/components.js?v=34"></script>
 </head>
+
 <body>
-<style id="np-spinner-css">#np-circle-spinner{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;align-items:center;justify-content:center;background:transparent;opacity:1;pointer-events:none;transition:opacity .15s ease}@media(min-width:900px){#np-circle-spinner{left:236px;width:calc(100vw - 236px)}}.np-designed-spinner{width:28px;height:28px;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(20,184,166,.3))}.np-arc-1{position:absolute;width:100%;height:100%;border:2.5px solid transparent;border-top-color:#14b8a6;border-right-color:#ffffff;border-radius:50%;animation:npSpinFast .65s linear infinite}.np-arc-2{position:absolute;width:65%;height:65%;border:2px solid transparent;border-bottom-color:#14b8a6;border-left-color:#ffffff;border-radius:50%;animation:npSpinRev .85s linear infinite}@keyframes npSpinFast{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes npSpinRev{0%{transform:rotate(360deg)}100%{transform:rotate(0deg)}}</style><div id="np-circle-spinner"><div class="np-designed-spinner"><div class="np-arc-1"></div><div class="np-arc-2"></div></div></div>
+  <style id="np-spinner-css">
+    #np-circle-spinner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      opacity: 1;
+      pointer-events: none;
+      transition: opacity .15s ease
+    }
 
-<div class="app">
-  <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) -->
-  <np-sidebar active-link="join"></np-sidebar>
+    @media(min-width:900px) {
+      #np-circle-spinner {
+        left: 236px;
+        width: calc(100vw - 236px)
+      }
+    }
 
-  <!-- MAIN AREA -->
-  <div class="main">
-    <header class="pg-header">
-      <button onclick="goBack()" class="pg-back" title="Back" aria-label="Go back">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      </button>
-      <div class="pg-title-wrap">
-        <div class="pg-title">Join Event</div>
-      </div>
-      <button type="button" onclick="openHelpModal()" class="pg-help-btn" style="margin-left: auto; background: none; border: none; color: var(--np-navy); font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3.3px; padding: 4px 8px;">Need Help?</button>
-    </header>
+    .np-designed-spinner {
+      width: 28px;
+      height: 28px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 6px rgba(20, 184, 166, .3))
+    }
 
-    <div class="scroll-area">
-      <div class="form-container page-view-container">
+    .np-arc-1 {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 2.5px solid transparent;
+      border-top-color: #14b8a6;
+      border-right-color: #ffffff;
+      border-radius: 50%;
+      animation: npSpinFast .65s linear infinite
+    }
 
-        <div class="field-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label class="field-label">Event Code</label>
-          </div>
-          <div class="field" id="code-field">
-            <span style="font-weight:700; color:var(--t3); font-size:16px;">#</span>
-            <input type="text" id="code-input" placeholder="e.g. A1B2C-3D4E-5F6G7" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false" />
-          </div>
-          <div class="val-warn" id="warn-note">
-            <span>This event is currently deactivated. Contact your organizer.</span>
-          </div>
-          <div class="val-err" id="err-note">
-            <span id="err-txt">Invalid event code. Please check and try again.</span>
-          </div>
+    .np-arc-2 {
+      position: absolute;
+      width: 65%;
+      height: 65%;
+      border: 2px solid transparent;
+      border-bottom-color: #14b8a6;
+      border-left-color: #ffffff;
+      border-radius: 50%;
+      animation: npSpinRev .85s linear infinite
+    }
+
+    @keyframes npSpinFast {
+      0% {
+        transform: rotate(0deg)
+      }
+
+      100% {
+        transform: rotate(360deg)
+      }
+    }
+
+    @keyframes npSpinRev {
+      0% {
+        transform: rotate(360deg)
+      }
+
+      100% {
+        transform: rotate(0deg)
+      }
+    }
+  </style>
+  <div id="np-circle-spinner">
+    <div class="np-designed-spinner">
+      <div class="np-arc-1"></div>
+      <div class="np-arc-2"></div>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) -->
+    <np-sidebar active-link="join"></np-sidebar>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+      <header class="pg-header">
+        <button onclick="goBack()" class="pg-back" title="Back" aria-label="Go back">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div class="pg-title-wrap">
+          <div class="pg-title">Join Event</div>
         </div>
+        <button type="button" onclick="openHelpModal()" class="pg-help-btn"
+          style="margin-left: auto; background: none; border: none; color: var(--np-navy); font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3.3px; padding: 4px 8px;">Need
+          Help?</button>
+      </header>
 
-        <!-- Premium Preview Card Container -->
-        <div id="join-preview-wrapper" style="position:relative; height:94px; margin-bottom:20px; border-radius:16px; overflow:hidden;">
-          <!-- Resolved State (Premium Placeholder) -->
-          <div id="preview-resolved-state" style="position:absolute; inset:0; background:linear-gradient(135deg, var(--surface) 0%, var(--np-navy-lt) 100%); border:1px solid rgba(96,165,250,0.3); border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px; transition:opacity 0.3s ease; opacity:1; pointer-events:auto; box-shadow:0 4px 16px rgba(96,165,250,0.08);">
-            <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--np-navy);"></div>
-            <div style="width:48px; height:48px; border-radius:14px; background:var(--np-navy); color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(96,165,250,0.3); flex-shrink:0;">
-              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div class="scroll-area">
+        <div class="form-container page-view-container">
+
+          <div class="field-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="field-label">Event Code</label>
             </div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:11px; font-weight:800; color:var(--np-navy); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:2px;">You are joining</div>
-              <div style="font-size:17px; font-weight:800; color:var(--t1); margin-bottom:4px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="preview-event-name">—</div>
-              <div style="display:inline-flex; align-items:center; gap:6px; background:var(--bg); padding:4px 10px; border-radius:8px; border:1px solid var(--border);">
-                <div style="width:18px; height:18px; border-radius:50%; background:var(--np-navy); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;" id="preview-org-initial">O</div>
-                <div style="font-size:12px; font-weight:700; color:var(--t2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;" id="preview-organizer-name">—</div>
+            <div class="field" id="code-field">
+              <span style="font-weight:700; color:var(--t3); font-size:16px;">#</span>
+              <input type="text" id="code-input" placeholder="e.g. A1B2C-3D4E-5F6G7" maxlength="16" autocomplete="off"
+                autocorrect="off" spellcheck="false" />
+            </div>
+            <div class="val-warn" id="warn-note">
+              <span>This event is currently deactivated. Contact your organizer.</span>
+            </div>
+            <div class="val-err" id="err-note">
+              <span id="err-txt">Invalid event code. Please check and try again.</span>
+            </div>
+          </div>
+
+          <!-- Premium Preview Card Container -->
+          <div id="join-preview-wrapper"
+            style="position:relative; height:94px; margin-bottom:20px; border-radius:16px; overflow:hidden;">
+            <!-- Resolved State (Premium Placeholder) -->
+            <div id="preview-resolved-state"
+              style="position:absolute; inset:0; background:linear-gradient(135deg, var(--surface) 0%, var(--np-navy-lt) 100%); border:1px solid rgba(96,165,250,0.3); border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px; transition:opacity 0.3s ease; opacity:1; pointer-events:auto; box-shadow:0 4px 16px rgba(96,165,250,0.08);">
+              <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--np-navy);"></div>
+              <div
+                style="width:48px; height:48px; border-radius:14px; background:var(--np-navy); color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(96,165,250,0.3); flex-shrink:0;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <div
+                  style="font-size:11px; font-weight:800; color:var(--np-navy); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:2px;">
+                  You are joining</div>
+                <div
+                  style="font-size:17px; font-weight:800; color:var(--t1); margin-bottom:4px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                  id="preview-event-name">—</div>
+                <div
+                  style="display:inline-flex; align-items:center; gap:6px; background:var(--bg); padding:4px 10px; border-radius:8px; border:1px solid var(--border);">
+                  <div
+                    style="width:18px; height:18px; border-radius:50%; background:var(--np-navy); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;"
+                    id="preview-org-initial">O</div>
+                  <div
+                    style="font-size:12px; font-weight:700; color:var(--t2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;"
+                    id="preview-organizer-name">—</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Security Message -->
-        <div class="security-box">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <!-- Security Message -->
+          <div class="security-box">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <div>
+              <div class="sec-t">Secure &amp; Private</div>
+              <div class="sec-d">Only authorized collectors can join using a valid event code.</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-row" style="margin-top: 24px;">
+            <button class="btn-primary" id="join-btn" type="button" style="width: 100%;">
+              <span class="btn-text">Join Event</span>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+              <span class="spinner"></span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEED HELP MODAL -->
+  <div class="sheet-ov" id="help-modal" style="display: none; position: fixed; z-index: 100000;">
+    <div class="sheet-box">
+      <div class="sheet-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="sheet-title">Need help joining?</div>
+        <button
+          onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');"
+          style="background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-weight:700; cursor:pointer; color:var(--text-mut);">×</button>
+      </div>
+      <div class="sheet-sub">There are two ways to join an event on Notepay.</div>
+
+      <div class="sheet-list">
+        <div class="sheet-item"
+          onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg></div>
           <div>
-            <div class="sec-t">Secure &amp; Private</div>
-            <div class="sec-d">Only authorized collectors can join using a valid event code.</div>
+            <div class="si-t">16-Character Invite Code</div>
+            <div class="si-d">Enter the unique 16-character code shared by the event organizer to join as a collector.
+            </div>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="action-row" style="margin-top: 24px;">
-          <button class="btn-primary" id="join-btn" type="button" style="width: 100%;">
-            <span class="btn-text">Join Event</span>
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            <span class="spinner"></span>
-          </button>
+        <div class="sheet-item"
+          onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg></div>
+          <div>
+            <div class="si-t">Direct Join Link</div>
+            <div class="si-d">Click on an invite link shared by the organizer to join as a collector.</div>
+          </div>
         </div>
-
       </div>
+      <button
+        onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');"
+        class="btn btn-solid-primary" style="width:100%; border:none; border-radius:12px !important;">Got it, thanks!</button>
     </div>
   </div>
-</div>
-
-<!-- NEED HELP MODAL -->
-<div class="modal-backdrop" id="help-modal" onclick="if(event.target===this)closeHelpModal()">
-  <div class="sheet-modal">
-    <div class="sheet-hdr">
-      <div class="sheet-title">Need help joining?</div>
-      <button class="sheet-close" onclick="closeHelpModal()">×</button>
-    </div>
-    <div class="sheet-sub">Can't find the event code? Here are a few ways to get it.</div>
-    
-    <div class="sheet-list">
-      <div class="sheet-item" onclick="closeHelpModal()">
-        <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-        <div>
-          <div class="si-t">Ask your organizer</div>
-          <div class="si-d">Request the event code directly from the organizer.</div>
-        </div>
-        <svg class="si-arr" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-
-      <div class="sheet-item" onclick="closeHelpModal()">
-        <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
-        <div>
-          <div class="si-t">Check WhatsApp or SMS</div>
-          <div class="si-d">Organizers usually share the event code in WhatsApp or SMS.</div>
-        </div>
-        <svg class="si-arr" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-
-      <div class="sheet-item" onclick="closeHelpModal()">
-        <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-        <div>
-          <div class="si-t">Look for an invitation link</div>
-          <div class="si-d">If the organizer shared an invite link, open it to join the event.</div>
-        </div>
-        <svg class="si-arr" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-
-      <div class="sheet-item" onclick="closeHelpModal()">
-        <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <div>
-          <div class="si-t">Why do I need a code?</div>
-          <div class="si-d">Event codes keep events private and only allow authorized collectors to join.</div>
-        </div>
-        <svg class="si-arr" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-    </div>
-
-    <button class="btn-modal-gotit" onclick="closeHelpModal()">Got it</button>
-  </div>
-</div>
 
   <script src="js/firebase-config.js?v=31"></script>
   <script src="js/shared-utils.js?v=31"></script>
   <script src="js/api.js?v=31"></script>
   <script src="js/icons.js?v=31"></script>
   <script src="js/auth-guard.js?v=31"></script>
-<script>
-  function openHelpModal() { document.getElementById("help-modal").classList.add("open"); }
-  function closeHelpModal() { document.getElementById("help-modal").classList.remove("open"); }
-
-  waitForAuthReady().finally(() => {
-    if (typeof hideCircleLoading === 'function') hideCircleLoading(true);
-  });
-
-  document.getElementById("code-input").addEventListener("input", function() {
-    let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    let formatted = "";
-    if (val.length > 0) formatted += val.substring(0, 5);
-    if (val.length > 5) formatted += "-" + val.substring(5, 9);
-    if (val.length > 9) formatted += "-" + val.substring(9, 14);
-    this.value = formatted;
-
-    document.getElementById("code-field").classList.remove("err","warn");
-    document.getElementById("err-note").classList.remove("visible");
-    document.getElementById("warn-note").classList.remove("visible");
-    
-    // Reset to placeholder when typing
-    document.getElementById("preview-event-name").textContent = "—";
-    document.getElementById("preview-organizer-name").textContent = "—";
-    const init = document.getElementById("preview-org-initial");
-    if (init) init.textContent = "O";
-    
-    if (formatted.length === 16) {
-      resolvePreview(formatted);
+  <script>
+    function openHelpModal() {
+      const modal = document.getElementById("help-modal");
+      if (modal) modal.style.display = "flex";
     }
-  });
+    function closeHelpModal() {
+      const modal = document.getElementById("help-modal");
+      if (modal) modal.style.display = "none";
+    }
 
-  async function resolvePreview(code) {
-    const nameEl = document.getElementById("preview-event-name");
-    const orgEl = document.getElementById("preview-organizer-name");
-    const field = document.getElementById("code-field");
-    const err = document.getElementById("err-note");
-    const errTxt = document.getElementById("err-txt");
-    const warn = document.getElementById("warn-note");
-    const initialEl = document.getElementById("preview-org-initial");
+    waitForAuthReady().finally(() => {
+      if (typeof hideCircleLoading === 'function') hideCircleLoading(true);
+    });
 
-    nameEl.textContent = "Resolving code...";
-    orgEl.textContent = "Please wait";
-    if (initialEl) initialEl.textContent = "O";
+    document.getElementById("code-input").addEventListener("input", function () {
+      let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      let formatted = "";
+      if (val.length > 0) formatted += val.substring(0, 5);
+      if (val.length > 5) formatted += "-" + val.substring(5, 9);
+      if (val.length > 9) formatted += "-" + val.substring(9, 14);
+      this.value = formatted;
 
-    field.classList.remove("err", "warn");
-    err.classList.remove("visible");
-    warn.classList.remove("visible");
+      document.getElementById("code-field").classList.remove("err", "warn");
+      document.getElementById("err-note").classList.remove("visible");
+      document.getElementById("warn-note").classList.remove("visible");
 
-    try {
-      const res = await previewEventCode(code);
-      if (!res.is_active) {
-        field.classList.add("warn");
-        warn.classList.add("visible");
+      // Reset to placeholder when typing
+      document.getElementById("preview-event-name").textContent = "—";
+      document.getElementById("preview-organizer-name").textContent = "—";
+      const init = document.getElementById("preview-org-initial");
+      if (init) init.textContent = "O";
+
+      if (formatted.length === 16) {
+        resolvePreview(formatted);
+      }
+    });
+
+    async function resolvePreview(code) {
+      const nameEl = document.getElementById("preview-event-name");
+      const orgEl = document.getElementById("preview-organizer-name");
+      const field = document.getElementById("code-field");
+      const err = document.getElementById("err-note");
+      const errTxt = document.getElementById("err-txt");
+      const warn = document.getElementById("warn-note");
+      const initialEl = document.getElementById("preview-org-initial");
+
+      nameEl.textContent = "Resolving code...";
+      orgEl.textContent = "Please wait";
+      if (initialEl) initialEl.textContent = "O";
+
+      field.classList.remove("err", "warn");
+      err.classList.remove("visible");
+      warn.classList.remove("visible");
+
+      try {
+        const res = await previewEventCode(code);
+        if (!res.is_active) {
+          field.classList.add("warn");
+          warn.classList.add("visible");
+          nameEl.textContent = "—";
+          orgEl.textContent = "—";
+          if (initialEl) initialEl.textContent = "O";
+        } else {
+          nameEl.textContent = res.name;
+          orgEl.textContent = res.organizer_name;
+          const initial = res.organizer_name ? res.organizer_name.charAt(0).toUpperCase() : "O";
+          if (initialEl) initialEl.textContent = initial;
+        }
+      } catch (e) {
         nameEl.textContent = "—";
         orgEl.textContent = "—";
         if (initialEl) initialEl.textContent = "O";
-      } else {
-        nameEl.textContent = res.name;
-        orgEl.textContent = res.organizer_name;
-        const initial = res.organizer_name ? res.organizer_name.charAt(0).toUpperCase() : "O";
-        if (initialEl) initialEl.textContent = initial;
-      }
-    } catch(e) {
-      nameEl.textContent = "—";
-      orgEl.textContent = "—";
-      if (initialEl) initialEl.textContent = "O";
-      field.classList.add("err");
-      errTxt.textContent = e.message || "Invalid event code. Please check and try again.";
-      err.classList.add("visible");
-    }
-  }
-
-  document.getElementById("join-btn").addEventListener("click", async () => {
-    const code = document.getElementById("code-input").value.trim();
-    const btn  = document.getElementById("join-btn");
-    const err  = document.getElementById("err-note");
-    const errTxt = document.getElementById("err-txt");
-    const warn = document.getElementById("warn-note");
-
-    if (!code) { errTxt.textContent="Please enter an event code."; err.classList.add("visible"); return; }
-    if (code.length !== 16) { errTxt.textContent = "Event code must be 16 characters."; err.classList.add("visible"); return; }
-
-    btn.classList.add("loading"); btn.disabled = true;
-    err.classList.remove("visible");
-    warn.classList.remove("visible");
-
-    try {
-      const res = await joinEvent(code);
-      showToast("Joined event!");
-      const splash = document.getElementById("app-splash");
-      if (splash) {
-        splash.style.display = "flex";
-        splash.style.opacity = "1";
-        splash.classList.remove("hidden");
-      } else {
-        if (typeof showCircleLoading === 'function') showCircleLoading();
-      }
-      setTimeout(() => {
-        window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
-      }, 50);
-    } catch(e) {
-      const msg = e.message || "";
-      if (msg.toLowerCase().includes("deactivated")) {
-        document.getElementById("code-field").classList.add("warn");
-        warn.classList.add("visible");
-      } else {
-        document.getElementById("code-field").classList.add("err");
-        errTxt.textContent = msg.includes("Invalid") ? "Invalid event code. Please check and try again." : msg;
+        field.classList.add("err");
+        errTxt.textContent = e.message || "Invalid event code. Please check and try again.";
         err.classList.add("visible");
       }
-      btn.classList.remove("loading"); btn.disabled = false;
     }
-  });
 
-  window.addEventListener("load", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const codeParam = urlParams.get('code');
-    if (codeParam) {
-      const code = codeParam.trim().toUpperCase();
-      document.getElementById('code-input').value = code;
-      resolvePreview(code);
-      await waitForAuthReady();
-      const btn = document.getElementById('join-btn');
-      if (btn) btn.click();
-    }
-  });
-</script>
-<script>
-// Load sidebar event counts instantly from cache
-  const cachedCounts = localStorage.getItem("np_event_counts");
-  if (cachedCounts) {
-    try {
-      const counts = JSON.parse(cachedCounts);
-      for (let i = 0; i < 4; i++) {
-        const el = document.getElementById(`sb-count-${i}`);
-        if (el) el.textContent = counts[i];
+    document.getElementById("join-btn").addEventListener("click", async () => {
+      const code = document.getElementById("code-input").value.trim();
+      const btn = document.getElementById("join-btn");
+      const err = document.getElementById("err-note");
+      const errTxt = document.getElementById("err-txt");
+      const warn = document.getElementById("warn-note");
+
+      if (!code) { errTxt.textContent = "Please enter an event code."; err.classList.add("visible"); return; }
+      if (code.length !== 16) { errTxt.textContent = "Event code must be 16 characters."; err.classList.add("visible"); return; }
+
+      btn.classList.add("loading"); btn.disabled = true;
+      err.classList.remove("visible");
+      warn.classList.remove("visible");
+
+      try {
+        const res = await joinEvent(code);
+        showToast("Joined event!");
+        const splash = document.getElementById("app-splash");
+        if (splash) {
+          splash.style.display = "flex";
+          splash.style.opacity = "1";
+          splash.classList.remove("hidden");
+        } else {
+          if (typeof showCircleLoading === 'function') showCircleLoading();
+        }
+        setTimeout(() => {
+          window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
+        }, 50);
+      } catch (e) {
+        const msg = e.message || "";
+        if (msg.toLowerCase().includes("deactivated")) {
+          document.getElementById("code-field").classList.add("warn");
+          warn.classList.add("visible");
+        } else {
+          document.getElementById("code-field").classList.add("err");
+          errTxt.textContent = msg.includes("Invalid") ? "Invalid event code. Please check and try again." : msg;
+          err.classList.add("visible");
+        }
+        btn.classList.remove("loading"); btn.disabled = false;
       }
-    } catch(e) {}
-  }
-</script>
+    });
+
+    window.addEventListener("load", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeParam = urlParams.get('code');
+      if (codeParam) {
+        const code = codeParam.trim().toUpperCase();
+        document.getElementById('code-input').value = code;
+        resolvePreview(code);
+        await waitForAuthReady();
+        const btn = document.getElementById('join-btn');
+        if (btn) btn.click();
+      }
+    });
+  </script>
+  <script>
+    // Load sidebar event counts instantly from cache
+    const cachedCounts = localStorage.getItem("np_event_counts");
+    if (cachedCounts) {
+      try {
+        const counts = JSON.parse(cachedCounts);
+        for (let i = 0; i < 4; i++) {
+          const el = document.getElementById(`sb-count-${i}`);
+          if (el) el.textContent = counts[i];
+        }
+      } catch (e) { }
+    }
+  </script>
 </body>
+
 </html>

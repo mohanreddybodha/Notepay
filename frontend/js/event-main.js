@@ -14,13 +14,16 @@
     }
 
     function getSmartDashTab() {
-      if (fallbackDashTab !== null && fallbackDashTab !== undefined) return fallbackDashTab;
-      if (typeof isVisitor !== 'undefined' && isVisitor) return '3';
-      if (typeof isOrganizer !== 'undefined' && isOrganizer) return '1';
-      return '0';
+      let tab = '2';
+      if (fallbackDashTab !== null && fallbackDashTab !== undefined) tab = fallbackDashTab;
+      else if (typeof isOrganizer !== 'undefined' && isOrganizer) tab = '1';
+      else if (typeof isVisitor !== 'undefined' && isVisitor) tab = '3';
+      
+      localStorage.setItem('np_dash_tab', tab);
+      return tab;
     }
 
-    const eventId = params.get("id") || params.get("eventId");
+    const eventId = params.get("id") || params.get("eventId") || params.get("event_id");
     let eventData = null;
     let myUserId = null;
     let isOrganizer = false;
@@ -474,15 +477,21 @@
         const ib = document.getElementById("info-bar");
         if (ib) ib.style.display = "flex";
 
-        // Privacy Menu labels
-        const privLbl = document.getElementById("privacy-lbl");
-        const shareBtn = document.getElementById("share-link-btn");
+        // Privacy Menu labels (legacy ones removed from HTML)
         const pdfBtn = document.getElementById("pdf-report-btn");
         const upiSetupBtn = document.getElementById("upi-setup-btn");
-        if (privLbl) privLbl.textContent = eventData.is_public ? "Public Access: ON" : "Public Access: OFF";
-        if (shareBtn) shareBtn.style.display = (isOrganizer && eventData.is_public) ? "flex" : "none";
-        if (pdfBtn) pdfBtn.style.display = (eventData.is_public) ? "flex" : "none";
+        if (pdfBtn) pdfBtn.style.display = "flex";
         if (upiSetupBtn) upiSetupBtn.style.display = isOrganizer ? "flex" : "none";
+
+        // Hide member badges for non-organizers
+        const memberBadges = document.querySelectorAll(".badge-members");
+        memberBadges.forEach(badge => {
+          if (isOrganizer) {
+            badge.style.display = "flex";
+          } else {
+            badge.style.setProperty("display", "none", "important");
+          }
+        });
 
         // Table visibility labels
         const showDon = eventData.show_donations !== false;
@@ -580,19 +589,20 @@
 
         // Members badge / Role Badge
         const mb = document.getElementById("members-badge");
-        if (mb) {
-          mb.style.display = "flex";
-          if (isOrganizer) {
-            mb.className = "badge-members";
-            mb.innerHTML = npIcon("user", { size: 14 }) + " Members";
+        const expMb = document.querySelector("#pane-exp .badge-members");
+        
+        if (isOrganizer) {
+          if (mb) {
+            mb.style.display = "flex";
+            mb.className = "flt-btn badge-members";
+            mb.innerHTML = (typeof npIcon === 'function' ? npIcon("user", { size: 14 }) : "") + " Members";
             mb.onclick = openMembersSheet;
             mb.style.cursor = "pointer";
-          } else {
-            mb.className = "badge-col";
-            mb.textContent = isVisitor ? "Visitor" : "Collector";
-            mb.onclick = null;
-            mb.style.cursor = "default";
           }
+          if (expMb) expMb.style.display = "flex";
+        } else {
+          if (mb) mb.style.setProperty("display", "none", "important");
+          if (expMb) expMb.style.setProperty("display", "none", "important");
         }
 
         const colActionLbl = document.getElementById("col-action-lbl");
@@ -1049,8 +1059,8 @@
         </div>
         `;
         let receiptHtml = d.receipt_key 
-            ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${d.id || d._id}', event)"></span>` 
-            : (isOrganizer || String(d.collected_by) === String(myUserId) ? `<span data-np-icon="upload" data-np-size="14" style="margin-left:auto; color:var(--text3); cursor:pointer;" onclick="triggerManualReceiptUpload('${d.id || d._id}', 'don'); event.stopPropagation();" title="Upload Receipt"></span>` : '');
+            ? `<button type="button" style="margin-left:auto; background:none; border:none; color:var(--primary); cursor:pointer; padding:6px; margin-right:-6px; display:inline-flex; align-items:center; justify-content:center; position:relative; z-index:10;" onclick="event.stopPropagation(); openReceiptModal('${d.id || d._id}', event, 'don');" title="View Payment Proof">${npIcon("file-text", {size: 16, tone: "primary"})}</button>` 
+            : (isOrganizer || String(d.collected_by) === String(myUserId) ? `<button type="button" style="margin-left:auto; background:none; border:none; color:var(--text3); cursor:pointer; padding:6px; margin-right:-6px; display:inline-flex; align-items:center; justify-content:center; position:relative; z-index:10;" onclick="event.stopPropagation(); triggerManualReceiptUpload('${d.id || d._id}', 'don');" title="Upload Receipt">${npIcon("upload", {size: 16, tone: "muted"})}</button>` : '');
             
         rowHTML += `<div class="sc" style="width:${getColWidth('don_amt', 90)}px; display:flex; align-items:center;"><span class="cg">${d.amount ? formatINR(d.amount) : '₹0'}</span>${receiptHtml}</div>`;
         
@@ -1208,8 +1218,8 @@
         </div>
         `;
         let receiptHtmlExp = e.receipt_key 
-            ? `<span data-np-icon="file-text" data-np-size="14" style="margin-left:auto; color:var(--primary); cursor:pointer;" onclick="openReceiptModal('${e.id || e._id}', event, 'exp')"></span>` 
-            : (isOrganizer || String(e.collected_by) === String(myUserId) ? `<span data-np-icon="upload" data-np-size="14" style="margin-left:auto; color:var(--text3); cursor:pointer;" onclick="triggerManualReceiptUpload('${e.id || e._id}', 'exp'); event.stopPropagation();" title="Upload Receipt"></span>` : '');
+            ? `<button type="button" style="margin-left:auto; background:none; border:none; color:var(--primary); cursor:pointer; padding:6px; margin-right:-6px; display:inline-flex; align-items:center; justify-content:center; position:relative; z-index:10;" onclick="event.stopPropagation(); openReceiptModal('${e.id || e._id}', event, 'exp');" title="View Receipt">${npIcon("file-text", {size: 16, tone: "primary"})}</button>` 
+            : (isOrganizer || String(e.collected_by) === String(myUserId) ? `<button type="button" style="margin-left:auto; background:none; border:none; color:var(--text3); cursor:pointer; padding:6px; margin-right:-6px; display:inline-flex; align-items:center; justify-content:center; position:relative; z-index:10;" onclick="event.stopPropagation(); triggerManualReceiptUpload('${e.id || e._id}', 'exp');" title="Upload Receipt">${npIcon("upload", {size: 16, tone: "muted"})}</button>` : '');
             
         rowHTML += `<div class="sc" style="width:${getColWidth('exp_amt', 90)}px; display:flex; align-items:center;"><span class="cr">${e.amount ? formatINR(e.amount) : '₹0'}</span>${receiptHtmlExp}</div>`;
         
@@ -2881,50 +2891,6 @@
       localStorage.removeItem("ev_cache_" + eventId);
     }
 
-    // ── Privacy / Public Access ──
-    function handlePrivacyToggleClick() {
-      closeDD();
-      if (eventData.is_public) {
-        // If turning OFF, do it immediately
-        togglePrivacy(false);
-      } else {
-        // If turning ON, show confirmation
-        document.getElementById("privacy-event-name").textContent = eventData.name;
-        document.getElementById("privacy-pop").style.display = "flex";
-      }
-    }
-    function closePrivacyPop() { document.getElementById("privacy-pop").style.display = "none"; }
-    async function confirmPrivacyToggle() {
-      closePrivacyPop();
-      await togglePrivacy(true);
-    }
-    async function togglePrivacy(val) {
-      try {
-        await updateEventPrivacy(eventId, val);
-        eventData.is_public = val;
-        clearEventCache();
-        renderPage();
-        showToast(val ? "Public access enabled — share the visitor link!" : "Event is now private", val ? "success" : "info");
-      } catch (e) {
-        showToast("Failed to update privacy settings", "error");
-      }
-    }
-    async function shareMessageWithLogo({ title, text, url }) {
-      if (navigator.share) {
-        navigator.share({ title, text, url }).catch(() => {});
-      } else {
-        copyToClipboard(`${text}\n${url}`, "Share message copied to clipboard!");
-      }
-    }
-
-    function sharePublicLink() {
-      const cleanPath = typeof getCleanUrl === 'function' ? getCleanUrl(`event.html?id=${eventId}`) : `event.html?id=${eventId}`;
-      const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
-      const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-      const publicUrl = `${origin}${path}`;
-      const publicMsg = `📊 Notepay — Event Contributions & Expenses Tracker\n\nYou are invited to view the real-time financial ledger for "${eventData.name}".\n\nTrack collections, manage contributions, and monitor expenses with complete transparency.\n\n👉 Click below to view live data:`;
-      shareMessageWithLogo({ title: `Notepay Public Ledger — ${eventData.name}`, text: publicMsg, url: publicUrl });
-    }
 
     function shareEventJoinCode() {
       const code = eventData.invite_code;
@@ -3684,7 +3650,7 @@
           return `<div class="sc" data-col="${escHtml(n)}" style="width:${w}px;">${escHtml(val)}</div>`;
         }).join("");
 
-        let receiptHtml = entry.receipt_key ? `<span style="margin-left:auto; color:var(--primary); cursor:pointer; display:flex; align-items:center;" onclick="openReceiptModal('${entry.id || entry._id}', event, '${type}')">${npIcon("file-text", {size: 14})}</span>` : '';
+        let receiptHtml = entry.receipt_key ? `<button type="button" style="margin-left:auto; background:none; border:none; color:var(--primary); cursor:pointer; padding:6px; margin-right:-6px; display:inline-flex; align-items:center; justify-content:center; position:relative; z-index:10;" onclick="event.stopPropagation(); openReceiptModal('${entry.id || entry._id}', event, '${type}');" title="View Payment Proof">${npIcon("file-text", {size: 16, tone: "primary"})}</button>` : '';
         let versionHtml = (entry.version && entry.version > 1) ? `<span style="font-size:10px; color:var(--text3); margin-left:4px;">v${entry.version}</span>` : '';
 
         let rowHTML = `
@@ -4320,7 +4286,10 @@
       doc.setTextColor(120);
       doc.text("VERIFY REAL-TIME DATA:", 15, currentY + 6);
 
-      const link = window.location.href;
+      const cleanPath = getCleanUrl('event.html');
+      const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+      const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+      const link = origin + path + '?id=' + eventId;
       doc.setTextColor(PRIMARY_DK[0], PRIMARY_DK[1], PRIMARY_DK[2]);
       doc.setFont("helvetica", "normal");
       doc.text(link, 15, currentY + 11);
@@ -5655,7 +5624,10 @@ function openUpiSheet() {
   }
 
   if (eventData.upi_id && eventData.upi_owner_name) {
-    const link = window.location.origin + '/donate?event_id=' + eventId;
+    const cleanPath = getCleanUrl('donate.html');
+    const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+    const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+    const link = origin + path + '?event_id=' + eventId;
     document.getElementById('upi-link-text').innerText = link;
     document.getElementById('upi-share-section').style.display = 'block';
     document.getElementById('btn-upi-save').style.display = '';
@@ -5675,25 +5647,31 @@ let activeModalDonationId = null;
 let activeModalEntryType = 'don';
 
 async function openReceiptModal(donationIdStr, event, type = 'don') {
-  if (event) event.stopPropagation();
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
   const collection = type === 'don' ? donations : expenses;
-  const d = collection.find(x => String(x.id || x._id) === donationIdStr);
-  if (!d || !d.receipt_key) return;
+  let d = collection.find(x => String(x.id || x._id) === String(donationIdStr));
+  if (!d) {
+    // Fallback search across both collections in case of mismatched type param
+    d = donations.find(x => String(x.id || x._id) === String(donationIdStr)) ||
+        expenses.find(x => String(x.id || x._id) === String(donationIdStr));
+  }
+  if (!d || (!d.receipt_key && !d.receipt_url && !d.cached_receipt_url)) return;
   
   activeModalDonationId = donationIdStr;
   activeModalEntryType = type;
   
   const img = document.getElementById('receipt-img');
-  img.src = '';
+  if (img) img.src = '';
   
   const donorNameEl = document.getElementById('receipt-donor-name');
   if (donorNameEl) {
-    let rawName = type === 'don' ? d.donor_name : d.description;
-    let cleanName = rawName.replace(/^\((M|AI|AI-P)\)\s*/, '');
-    donorNameEl.innerText = (type === 'don' ? "Donor: " : "Expense: ") + cleanName;
+    let rawName = type === 'don' ? (d.donor_name || 'Contributor') : (d.description || 'Expense');
+    let cleanName = String(rawName || "").replace(/^\((M|AI|AI-P)\)\s*/, '');
+    donorNameEl.innerText = (type === 'don' ? "Contributor: " : "Expense: ") + cleanName;
   }
   
-  document.getElementById('receipt-modal').style.display = 'flex';
+  const receiptModalEl = document.getElementById('receipt-modal');
+  if (receiptModalEl) receiptModalEl.style.display = 'flex';
   
   // Security & Actions Logic
   const canModify = isOrganizer || String(d.collected_by) === String(myUserId);
@@ -5758,50 +5736,75 @@ function hideLoading() {
 }
 
 // Custom Confirm Modal
-function showConfirmModal(title, message, btnText, btnColor, onConfirm, iconName = null, titleColor = "var(--text)") {
+function showConfirmModal(title, message, btnText, btnColor, onConfirm, iconName = null, titleColor = "var(--t1)") {
   let modal = document.getElementById("np-confirm-modal");
   if (!modal) {
     modal = document.createElement("div");
     modal.id = "np-confirm-modal";
-    modal.className = "pop-ov";
-    modal.style.display = "none";
+    modal.className = "popup-modal";
     modal.style.zIndex = "100050";
     modal.innerHTML = `
-      <div class="pop-box">
-        <div id="np-confirm-ic-box" class="pop-ic" style="display:none; justify-content:center; align-items:center; margin-bottom:16px;"></div>
-        <div id="np-confirm-title" class="pop-t"></div>
-        <div id="np-confirm-msg" class="pop-m"></div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" id="np-confirm-cancel">Cancel</button>
-          <button class="btn" id="np-confirm-ok" style="border:none;"></button>
+      <div class="popup-content" id="np-confirm-content" style="background:var(--card, var(--surface)); border-radius:20px; padding:24px; max-width:340px; width:90%; box-shadow:var(--shadow-modal);">
+        <div id="np-confirm-ic-box" class="popup-icon" style="display:none;"></div>
+        <div id="np-confirm-title" class="popup-title" style="font-size:18px; font-weight:800; margin-bottom:8px;"></div>
+        <div id="np-confirm-msg" class="popup-desc" style="font-size:13.5px; color:var(--text2, var(--t2)); line-height:1.5; margin-bottom:20px;"></div>
+        <div style="display:flex; gap:10px; width:100%;">
+          <button class="popup-btn" style="background:var(--surface-2, var(--surface)); color:var(--text); border:1px solid var(--border); border-radius:12px !important; padding:12px; font-size:14px; font-weight:700; cursor:pointer; flex:1;" id="np-confirm-cancel">Cancel</button>
+          <button class="popup-btn" id="np-confirm-ok" style="border:none; border-radius:12px !important; padding:12px; font-size:14px; font-weight:700; cursor:pointer; flex:1; display:flex; align-items:center; justify-content:center; gap:6px;"></button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
-    document.getElementById("np-confirm-cancel").onclick = () => { modal.style.display = "none"; };
+    document.getElementById("np-confirm-cancel").onclick = () => { modal.classList.remove("open"); };
   }
   
   const titleEl = document.getElementById("np-confirm-title");
   titleEl.innerText = title;
-  titleEl.style.color = titleColor;
+  
+  const isDanger = (btnColor === "#ef4444" || btnColor === "var(--red)" || btnColor === "var(--np-red)");
+  if (isDanger) {
+    titleEl.style.color = "var(--red, #ef4444)";
+  } else if (titleColor && titleColor !== "var(--t1)") {
+    titleEl.style.color = titleColor;
+  } else if (btnColor === "#10b981" || btnColor === "green" || btnColor === "var(--green)") {
+    titleEl.style.color = "#10b981";
+  } else {
+    titleEl.style.color = "var(--text, var(--t1))";
+  }
 
   document.getElementById("np-confirm-msg").innerHTML = message;
   
   const okBtn = document.getElementById("np-confirm-ok");
   okBtn.innerText = btnText;
-  if (btnColor === "#ef4444" || btnColor === "var(--red)") {
-    okBtn.className = "btn btn-solid-danger";
-    okBtn.style.background = ""; // let css handle it
+  
+  const contentBox = document.getElementById("np-confirm-content");
+  contentBox.style.background = "var(--card, var(--surface))";
+  
+  if (isDanger) {
+    okBtn.style.background = "var(--red, #ef4444)";
+    okBtn.style.color = "white";
+    contentBox.style.border = "2px solid var(--red, #ef4444)";
+  } else if (btnColor === "#10b981" || btnColor === "green" || btnColor === "var(--green)") {
+    okBtn.style.background = "#10b981";
+    okBtn.style.color = "white";
+    contentBox.style.border = "2px solid #10b981";
   } else {
-    okBtn.className = "btn btn-solid-primary";
-    okBtn.style.background = btnColor;
+    okBtn.style.background = btnColor || "var(--primary)";
+    okBtn.style.color = "white";
+    contentBox.style.border = "1px solid var(--border)";
   }
   
   const icBox = document.getElementById("np-confirm-ic-box");
   if (iconName) {
-    const tone = (btnColor === "#ef4444" || btnColor === "var(--red)") ? "red" : "primary";
-    icBox.innerHTML = `<span data-np-icon="${iconName}" data-np-size="32" data-np-tone="${tone}"></span>`;
+    icBox.className = "popup-icon " + (isDanger ? "pi-red" : "pi-amber");
+    if (!isDanger && (btnColor === "#10b981" || btnColor === "green" || btnColor === "var(--green)")) {
+      icBox.style.background = "rgba(16, 185, 129, 0.15)";
+      icBox.style.color = "#10b981";
+    } else {
+      icBox.style.background = "";
+      icBox.style.color = "";
+    }
+    icBox.innerHTML = `<span data-np-icon="${iconName}" data-np-size="24"></span>`;
     icBox.style.display = "flex";
     if (typeof initIcons === 'function') initIcons();
   } else {
@@ -5809,11 +5812,11 @@ function showConfirmModal(title, message, btnText, btnColor, onConfirm, iconName
   }
   
   okBtn.onclick = () => {
-    modal.style.display = "none";
+    modal.classList.remove("open");
     if (onConfirm) onConfirm();
   };
   
-  modal.style.display = "flex";
+  modal.classList.add("open");
 }
 
 function toggleReceiptZoom() {
@@ -5853,7 +5856,7 @@ async function verifyReceiptDonation() {
   
   showConfirmModal(
     "Accept Payment Proof",
-    `Are you sure you want to approve the payment proof for '${donorName}'? This collection entry will be treated as verified. <br><br><span style="color:var(--red);">Note: You will not be allowed to modify this entry once accepted.</span>`,
+    `Are you sure you want to approve the payment proof for '${donorName}'? This collection entry will be treated as verified.`,
     "Accept",
     "#10b981",
     async () => {
@@ -6082,7 +6085,10 @@ async function saveUpiId() {
     eventData.donation_custom_columns = res.donation_custom_columns || updatedDonCols;
     
     if (eventData.upi_id && eventData.upi_owner_name) {
-      const link = window.location.origin + '/donate?event_id=' + eventId;
+      const cleanPath = getCleanUrl('donate.html');
+      const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+      const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+      const link = origin + path + '?event_id=' + eventId;
       document.getElementById('upi-link-text').innerText = link;
       document.getElementById('upi-share-section').style.display = 'block';
       document.getElementById('btn-upi-save').style.display = '';
@@ -6100,11 +6106,14 @@ async function saveUpiId() {
 }
 
 function shareDonationLink() {
-  const link = window.location.origin + '/donate?event_id=' + eventId;
+  const cleanPath = getCleanUrl('donate.html');
+  const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+  const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+  const link = origin + path + '?event_id=' + eventId;
   if (navigator.share) {
     navigator.share({
-      title: 'Support ' + (eventData.name || 'our event'),
-      text: 'Please support our event by donating here! It only takes 30 seconds.',
+      title: 'Contribution for ' + (eventData.name || 'our event'),
+      text: `Please help us make ${eventData.name || 'our event'} a success! Your support means a lot to us. You can easily contribute here:\n\n`,
       url: link
     }).catch(() => {});
   } else {
@@ -6114,7 +6123,10 @@ function shareDonationLink() {
 }
 
 function copyDonationLink(btnElement) {
-  const link = window.location.origin + '/donate?event_id=' + eventId;
+  const cleanPath = getCleanUrl('donate.html');
+  const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+  const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+  const link = origin + path + '?event_id=' + eventId;
   navigator.clipboard.writeText(link);
   
   if (btnElement) {
@@ -6151,3 +6163,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.querySelectorAll('.sov').forEach(el => sovObserver.observe(el, { attributes: true, attributeFilter: ['style'] }));
 });
+
+// Expose all event filter, sort, receipt, and modal handlers globally to window for reliable HTML onclick/oninput invocation
+window.openFilterModal = typeof openFilterModal !== 'undefined' ? openFilterModal : null;
+window.closeFilterModal = typeof closeFilterModal !== 'undefined' ? closeFilterModal : null;
+window.syncEventFilterPills = typeof syncEventFilterPills !== 'undefined' ? syncEventFilterPills : null;
+window.setEventSortPill = typeof setEventSortPill !== 'undefined' ? setEventSortPill : null;
+window.setEventDatePill = typeof setEventDatePill !== 'undefined' ? setEventDatePill : null;
+window.toggleEventFilterPill = typeof toggleEventFilterPill !== 'undefined' ? toggleEventFilterPill : null;
+window.clearEventFilterMenu = typeof clearEventFilterMenu !== 'undefined' ? clearEventFilterMenu : null;
+window.applyFilterSort = typeof applyFilterSort !== 'undefined' ? applyFilterSort : null;
+window.openReceiptModal = typeof openReceiptModal !== 'undefined' ? openReceiptModal : null;
+window.closeReceiptModal = typeof closeReceiptModal !== 'undefined' ? closeReceiptModal : null;
+window.verifyReceiptDonation = typeof verifyReceiptDonation !== 'undefined' ? verifyReceiptDonation : null;
+window.rejectReceiptDonation = typeof rejectReceiptDonation !== 'undefined' ? rejectReceiptDonation : null;
+window.removeReceiptDonation = typeof removeReceiptDonation !== 'undefined' ? removeReceiptDonation : null;
+window.toggleReceiptZoom = typeof toggleReceiptZoom !== 'undefined' ? toggleReceiptZoom : null;
+window.triggerModalReceiptEdit = typeof triggerModalReceiptEdit !== 'undefined' ? triggerModalReceiptEdit : null;
+window.triggerManualReceiptUpload = typeof triggerManualReceiptUpload !== 'undefined' ? triggerManualReceiptUpload : null;
+window.handleManualReceiptUpload = typeof handleManualReceiptUpload !== 'undefined' ? handleManualReceiptUpload : null;
+

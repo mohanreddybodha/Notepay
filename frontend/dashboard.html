@@ -389,77 +389,93 @@
       <div style="display:flex;gap:8px;width:100%;">
         <button class="popup-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);"
           onclick="closeExitModal()">Cancel</button>
-        <button class="popup-btn" style="background:var(--np-red);" onclick="executeExitEvent()">Exit</button>
+        <button class="popup-btn" style="background:var(--red);color:white;border:none;"
+          onclick="executeExitEvent()">Exit</button>
       </div>
     </div>
   </div>
 
   <!-- NEED HELP JOINING MODAL -->
-  <div class="popup-modal" id="help-modal" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100000; align-items: center; justify-content: center; display: none;">
-    <div class="popup-content" style="max-width: 440px; text-align: left; padding: 24px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-        <div style="font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--text);">How to join an event?</div>
+  <div class="sheet-ov" id="help-modal" style="display: none; z-index: 100000;">
+    <div class="sheet-box">
+      <div class="sheet-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="sheet-title">How to join an event?</div>
         <button onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');" style="background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-weight:700; cursor:pointer; color:var(--text-mut);">×</button>
       </div>
-      <div style="font-size: 13.5px; color: var(--text-mut); line-height: 1.5; margin-bottom: 16px;">
-        Every event created on Notepay gets a unique 16-character invite code (e.g. <strong style="color:var(--text);">A1B2C-3D4E-5F6G7</strong>).
-      </div>
-      <div style="background: var(--surface-2); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
-        <div style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Steps to follow:</div>
-        <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.5;">
-        1. Ask the Event Organizer to share their invite link or code.<br>
-          2. Paste the exact code into the box below.<br>
-          3. Click <strong>Join Event</strong> to instantly access the ledger.
+      <div class="sheet-sub">Every event created on Notepay gets a unique 16-character invite code (e.g. <strong style="color:var(--text);">A1B2C-3D4E-5F6G7</strong>).</div>
+      
+      <div class="sheet-list" style="margin-bottom: 24px;">
+        <div class="sheet-item">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></div>
+          <div>
+            <div class="si-t">1. Get the Link or Code</div>
+            <div class="si-d">Ask the Event Organizer to share their invite link or code.</div>
+          </div>
+        </div>
+        <div class="sheet-item">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></div>
+          <div>
+            <div class="si-t">2. Enter the Code</div>
+            <div class="si-d">Paste the exact code into the box on the Join screen.</div>
+          </div>
+        </div>
+        <div class="sheet-item">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+          <div>
+            <div class="si-t">3. Access the Ledger</div>
+            <div class="si-d">Click Join Event to instantly access the ledger and features.</div>
+          </div>
         </div>
       </div>
-      <button onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');" class="btn btn-primary" style="width:100%; height:44px; border-radius:10px; font-weight:700;">Got it</button>
+      <button onclick="document.getElementById('help-modal').style.display='none'; document.getElementById('help-modal').classList.remove('open');" class="btn btn-solid-primary" style="width:100%; border:none;">Got it</button>
     </div>
   </div>
 
   <!-- CREATE EVENT TIPS MODAL -->
-  <div class="popup-modal" id="tips-modal" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100000; align-items: center; justify-content: center; display: none;">
-    <div class="popup-content" style="max-width: 460px; text-align: left; padding: 24px; max-height: 85vh; overflow-y: auto;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-        <div style="font-family: var(--font-brand); font-size: 18px; font-weight: 800; color: var(--text);">Need help creating?</div>
+  <div class="sheet-ov" id="tips-modal" style="display: none; z-index: 100000;">
+    <div class="sheet-box">
+      <div class="sheet-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="sheet-title">Need help creating?</div>
         <button onclick="document.getElementById('tips-modal').style.display='none'; document.getElementById('tips-modal').classList.remove('open');" style="background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-weight:700; cursor:pointer; color:var(--text-mut);">×</button>
       </div>
-      <div style="font-size: 13.5px; color: var(--text-mut); margin-bottom: 20px;">A few tips to help you get started.</div>
+      <div class="sheet-sub">A few tips to help you get started.</div>
       
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="sheet-list">
+        <div class="sheet-item" onclick="document.getElementById('tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
           <div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">Use a clear event name</div>
-            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">Example: Annual Tech Conference 2026, Charity Gala &amp; Fundraiser, Alumni Meetup</div>
+            <div class="si-t">Use a clear event name</div>
+            <div class="si-d">Example: Annual Tech Conference 2026, Charity Gala &amp; Fundraiser, Alumni Meetup</div>
           </div>
         </div>
 
-        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="sheet-item" onclick="document.getElementById('tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
           <div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">Keep the description short</div>
-            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">Add a brief description about the event (optional).</div>
+            <div class="si-t">Keep the description short</div>
+            <div class="si-d">Add a brief description about the event (optional).</div>
           </div>
         </div>
 
-        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <div class="sheet-item" onclick="document.getElementById('tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
           <div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">Goal amount is optional</div>
-            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">Set a goal to track fundraising progress visually.</div>
+            <div class="si-t">Goal amount is optional</div>
+            <div class="si-d">Set a goal to track fundraising progress visually.</div>
           </div>
         </div>
 
-        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--np-teal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-xs);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="sheet-item" onclick="document.getElementById('tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
           <div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;">You'll be able to</div>
-            <div style="font-size: 12.5px; color: var(--text-mut); line-height: 1.4;">• Add collectors • Create custom columns • Change settings • Manage members and more later.</div>
+            <div class="si-t">Powerful management features</div>
+            <div class="si-d">After creation, you can add custom columns, invite collectors, and view analytics.</div>
           </div>
         </div>
       </div>
-
-      <button onclick="document.getElementById('tips-modal').style.display='none'; document.getElementById('tips-modal').classList.remove('open');" class="btn btn-primary" style="width:100%; height:44px; border-radius:10px; font-weight:700;">Got it</button>
+      <button onclick="document.getElementById('tips-modal').style.display='none'; document.getElementById('tips-modal').classList.remove('open');" class="btn btn-solid-primary" style="width:100%; border:none; border-radius:12px !important;">Got it, thanks!</button>
     </div>
   </div>
 

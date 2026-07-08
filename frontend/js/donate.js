@@ -180,7 +180,7 @@ const btnSubmit = document.getElementById('btn-submit');
 fileInput.addEventListener('change', () => {
   if (fileInput.files.length > 0) {
     btnSelect.innerHTML = `<i class="icon-check"></i> ${fileInput.files[0].name}`;
-    btnSelect.style.backgroundColor = "var(--green, #10b981)";
+    btnSelect.style.backgroundColor = "#6b7280"; // Gray color instead of green
     btnSelect.style.color = "#ffffff";
     btnSubmit.style.display = "block"; // Show submit button
   }
@@ -268,6 +268,7 @@ btnSubmit.addEventListener('click', async () => {
     console.log("   Verification:", verification);
 
     // Show Final Success UI immediately
+    document.getElementById('main-card').style.display = 'block';
     document.getElementById('content').innerHTML = `
       <i class="icon-check-circle" style="font-size: 60px; color: #10b981; margin-bottom:15px;"></i>
       <h2 style="margin: 0 0 10px 0; color: #1f2937; font-size: 24px;">Thank You!</h2>
@@ -427,8 +428,8 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
     const val = inp.value.trim();
     const colName = inp.dataset.colName;
     if (!val) {
-      const errDiv = document.querySelector(`.err-custom-field[data-col-name="${colName}"]`);
-      if (errDiv) {
+      const errDiv = inp.nextElementSibling;
+      if (errDiv && errDiv.classList.contains('err-custom-field')) {
         errDiv.innerText = `${colName} is required.`;
         errDiv.style.display = 'block';
       }
@@ -475,6 +476,7 @@ document.getElementById('btn-manual-submit').addEventListener('click', async () 
     console.log("✅ Manual Contribution Recorded:", data);
 
     // Show Final Success UI immediately
+    document.getElementById('main-card').style.display = 'block';
     document.getElementById('content').innerHTML = `
       <i class="icon-check-circle" style="font-size: 60px; color: #10b981; margin-bottom:15px;"></i>
       <h2 style="margin: 0 0 10px 0; color: #1f2937; font-size: 24px;">Thank You!</h2>

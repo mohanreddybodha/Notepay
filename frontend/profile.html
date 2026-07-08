@@ -200,12 +200,12 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
     html.dark .c-gray, html.dark-mode .c-gray { background: #27272a; color: #a1a1aa; border: 1px solid #3f3f46; }
 
     /* Toggle Switch */
-    .toggle { width: 44px; height: 26px; background: var(--border-str); border-radius: 13px; position: relative; cursor: pointer; transition: background .25s ease; }
+    .toggle { width: 44px; height: 24px; background: var(--border-str); border-radius: 12px; position: relative; cursor: pointer; transition: all .3s; flex-shrink: 0; }
     .toggle.on { background: var(--np-teal); }
     html.dark .toggle.on, html.dark-mode .toggle.on { background: var(--np-teal); }
     html.dark .toggle:not(.on), html.dark-mode .toggle:not(.on) { background: var(--border-str); }
-    .toggle-th { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform .25s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
-    .toggle.on .toggle-th { transform: translateX(18px); }
+    .toggle-th { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: all .3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+    .toggle.on .toggle-th { left: 22px; transform: none !important; }
 
     /* Modals (Centered confirmation popups) */
     .modal-backdrop { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
@@ -225,6 +225,16 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
     .btn-modal-danger:hover { background: var(--np-red); opacity: 0.9; }
     .btn-modal-primary { background: var(--np-navy); color: white; }
     .btn-modal-primary:hover { background: var(--np-navy-dk); }
+    
+    /* Confirmation Popup Variant (Consistent with Dashboard & Event Popups) */
+    .sheet-modal.confirm-modal { max-width: 320px; padding: 24px 20px; text-align: center; }
+    .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--np-red-lt); color: var(--np-red); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .sheet-modal.confirm-modal .modal-title { font-size: 18px; font-weight: 700; color: var(--t1); margin-bottom: 8px; }
+    .sheet-modal.confirm-modal .modal-desc { font-size: 13.5px; color: var(--t3); line-height: 1.45; margin-bottom: 24px; }
+    .sheet-modal.confirm-modal .modal-btns { margin-top: 0; gap: 8px; }
+    .sheet-modal.confirm-modal .btn-modal { height: 44px; font-size: 14.5px; }
+    .sheet-modal.confirm-modal .btn-modal-sec { background: var(--surface); color: var(--t1); border: 1px solid var(--border); font-weight: 600; }
+    .sheet-modal.confirm-modal .btn-modal-sec:hover { background: var(--surface-2); }
     
     /* Inputs inside modal */
     .input-field { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--border-str); background: var(--surface); color: var(--t1); font-size: 14.5px; font-weight: 500; outline: none; transition: border-color .2s; }
@@ -474,10 +484,11 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
 
 <!-- Logout Popup -->
 <div class="modal-backdrop" id="logout-pop">
-  <div class="sheet-modal" onclick="event.stopPropagation()">
-    <div class="sheet-hdr">
-      <div class="modal-title" style="color:var(--np-red);">Confirm Logout</div>
+  <div class="sheet-modal confirm-modal" onclick="event.stopPropagation()">
+    <div class="confirm-icon">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </div>
+    <div class="modal-title">Confirm Logout</div>
     <div class="modal-desc">Are you sure you want to sign out? You will need to verify your phone number to sign back in.</div>
     <div class="modal-btns">
       <button class="btn-modal btn-modal-sec" onclick="closeLogoutPop()">Cancel</button>
@@ -547,13 +558,36 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
     document.documentElement.classList.toggle("dark-mode", isDark);
     document.documentElement.classList.toggle("dark", isDark);
     document.body.classList.toggle("dark-mode", isDark);
-    // Persist preference
-    localStorage.setItem("np_dark", isDark ? "1" : "");
+    // Persist preference across all theme flags
+    if (isDark) {
+      localStorage.setItem("np_dark", "1");
+      if (localStorage.getItem("np_admin_theme") !== null) {
+        localStorage.setItem("np_admin_theme", "dark");
+      }
+      if (localStorage.getItem("np_index_theme") !== null) {
+        localStorage.setItem("np_index_theme", "dark");
+      }
+    } else {
+      localStorage.removeItem("np_dark");
+      if (localStorage.getItem("np_admin_theme") !== null) {
+        localStorage.setItem("np_admin_theme", "light");
+      }
+      if (localStorage.getItem("np_index_theme") !== null) {
+        localStorage.setItem("np_index_theme", "light");
+      }
+    }
   }
 
-  // Restore dark mode preference
-  if (localStorage.getItem("np_dark")) {
-    document.getElementById("dark-toggle")?.classList.add("on");
+  // Restore dark mode preference properly on load
+  const isDarkModeActive = localStorage.getItem("np_dark") || 
+                           localStorage.getItem("np_admin_theme") === "dark" || 
+                           document.documentElement.classList.contains("dark") || 
+                           document.documentElement.classList.contains("dark-mode") || 
+                           document.body.classList.contains("dark-mode");
+  const togEl = document.getElementById("dark-toggle");
+  if (togEl) {
+    if (isDarkModeActive) togEl.classList.add("on");
+    else togEl.classList.remove("on");
   }
 
   /* Modals */

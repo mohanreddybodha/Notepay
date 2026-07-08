@@ -35,8 +35,17 @@ let currentCollections = 0;
     }
   }
 
-  function openTipsModal() { document.getElementById("tips-modal").classList.add("open"); }
-  function closeTipsModal() { document.getElementById("tips-modal").classList.remove("open"); }
+  function openTipsModal() {
+    const modalId = editId ? "manage-tips-modal" : "tips-modal";
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = "flex";
+  }
+  function closeTipsModal() {
+    const createModal = document.getElementById("tips-modal");
+    const manageModal = document.getElementById("manage-tips-modal");
+    if (createModal) createModal.style.display = "none";
+    if (manageModal) manageModal.style.display = "none";
+  }
 
   function showNativeConfirmModal({ title, description, iconClass, iconSvg, btnText, btnColor, onConfirm }) {
     const modal = document.getElementById("confirm-popup-modal");
@@ -252,6 +261,86 @@ let currentCollections = 0;
               deactivateBtn.style.cssText = "width:100%; height:40px; background:var(--surface); border:1.5px solid var(--np-green); color:var(--np-green); border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer;";
             }
           }
+
+          // Set Public Access Box
+          const publicAccessBox = document.getElementById("public-access-box");
+          const publicToggleBtn = document.getElementById("public-toggle-btn");
+          const publicLinkOptions = document.getElementById("public-link-options");
+          
+          if (publicAccessBox && publicToggleBtn && publicLinkOptions) {
+            publicAccessBox.style.display = "block";
+            let isPub = ev.is_public === true;
+            
+            const updatePubUI = (pub) => {
+              if (pub) {
+                publicToggleBtn.classList.add("on");
+                publicLinkOptions.style.display = "block";
+              } else {
+                publicToggleBtn.classList.remove("on");
+                publicLinkOptions.style.display = "none";
+              }
+            };
+            
+            updatePubUI(isPub);
+            
+            publicToggleBtn.onclick = async () => {
+              try {
+                publicToggleBtn.disabled = true;
+                const newPub = !isPub;
+                await updateEventPrivacy(editId, newPub);
+                isPub = newPub;
+                updatePubUI(isPub);
+                showToast(isPub ? "Public Access Enabled" : "Public Access Disabled");
+              } catch(err) {
+                showToast(err.message || "Failed to update public access", "error");
+              } finally {
+                publicToggleBtn.disabled = false;
+              }
+            };
+
+            const copyPubLinkBtn = document.getElementById("copy-public-link-btn");
+            const sharePubLinkBtn = document.getElementById("share-public-link-btn");
+            const getPubLink = () => {
+              const cleanPath = getCleanUrl('event.html');
+              const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
+              const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+              return origin + path + '?id=' + editId;
+            };
+
+            if (copyPubLinkBtn) {
+              let copyTimeout;
+              copyPubLinkBtn.onclick = () => {
+                navigator.clipboard.writeText(getPubLink());
+                showToast("Public view link copied!");
+                
+                const originalHtml = `<span data-np-icon="copy" data-np-size="14" style="margin-right:6px;"></span> Copy Link`;
+                copyPubLinkBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Copied!`;
+                
+                clearTimeout(copyTimeout);
+                copyTimeout = setTimeout(() => {
+                  copyPubLinkBtn.innerHTML = (typeof npIcon === 'function') ? `${npIcon('copy', {size:14})} Copy Link` : originalHtml;
+                  if (typeof initIcons === 'function') initIcons();
+                }, 3000);
+              };
+            }
+
+            if (sharePubLinkBtn) {
+              sharePubLinkBtn.onclick = async () => {
+                if (navigator.share) {
+                  try {
+                    await navigator.share({
+                      title: `Notepay Public Ledger — ${ev.name}`,
+                      text: `📊 You are invited to view the real-time financial ledger for "${ev.name}". Track collections and expenses transparently.\n\n👉 View live data here:`,
+                      url: getPubLink()
+                    });
+                  } catch(e) { console.error("Share failed", e); }
+                } else {
+                  showToast("Sharing not supported on this device.");
+                }
+              };
+            }
+          }
+
         }
       } catch(e) {
         console.error("Failed to load event details", e);
@@ -271,11 +360,12 @@ let currentCollections = 0;
 
     deactivateBtn.addEventListener("click", async () => {
       const isCurrentlyActive = !deactivateBtn.classList.contains("reactivate-theme");
+      const eventName = document.getElementById("ev-name").value.trim() || "this event";
       showNativeConfirmModal({
         title: isCurrentlyActive ? "Deactivate Event" : "Reactivate Event",
         description: isCurrentlyActive
-          ? "Are you sure you want to deactivate this event? Collectors will be locked out immediately."
-          : "Are you sure you want to reactivate this event? Collectors will regain access.",
+          ? `Are you sure you want to deactivate '${eventName}'? Collectors will be locked out immediately.`
+          : `Are you sure you want to reactivate '${eventName}'? Collectors will regain access.`,
         iconClass: isCurrentlyActive ? "pi-red" : "pi-amber",
         iconSvg: isCurrentlyActive
           ? `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`

@@ -46,7 +46,6 @@
     @media (min-width: 900px) {
       .pg-header { padding: 0 28px; height: 58px; min-height: 58px; gap: 10px; }
       .pg-title { font-size: 18px !important; }
-      .pg-back { display: none !important; }
     }
 
     .pg-back {

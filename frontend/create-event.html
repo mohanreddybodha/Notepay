@@ -129,9 +129,96 @@
       <div class="np-arc-2"></div>
     </div>
   </div>
+  <style>
+    /* Toggle Switch */
+    .toggle {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: var(--border-str, #e4e4e7);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .toggle.on {
+      background: var(--np-teal, #14b8a6);
+    }
+
+    .toggle-th {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s;
+    }
+
+    .toggle.on .toggle-th {
+      left: 22px;
+    }
+
+    /* Modal Sheet List */
+    .sheet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sheet-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: left;
+    }
+
+    @media (hover: hover) {
+      .sheet-item:hover {
+        border-color: var(--np-navy);
+        background: var(--surface);
+      }
+    }
+
+    .si-ic {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--np-navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .si-t {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--t1);
+      margin-bottom: 2px;
+    }
+
+    .si-d {
+      font-size: 12px;
+      color: var(--t3);
+      line-height: 1.35;
+    }
+  </style>
 
   <div class="app">
-    <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) -->    <np-sidebar active-link="create"></np-sidebar>
+    <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) --> <np-sidebar
+      active-link="create"></np-sidebar>
 
     <!-- MAIN AREA -->
     <div class="main">
@@ -378,6 +465,45 @@
             </div>
           </div>
 
+          <!-- Public Access Box (only visible in edit mode) -->
+          <div id="public-access-box" class="card-block" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="flex:1; padding-right:12px;">
+                <div style="font-size:14px; font-weight:800; color:var(--t1); margin-bottom:4px;">Public Access</div>
+                <div style="font-size:12px; color:var(--t2); line-height:1.4;">Allow anyone with the public link to view
+                  the ledger.</div>
+              </div>
+              <div class="toggle" id="public-toggle-btn" onclick="event.stopPropagation();">
+                <div class="toggle-th"></div>
+              </div>
+            </div>
+
+            <div id="public-link-options"
+              style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;">
+              <div style="font-size:12px; color:var(--t2); margin-bottom:12px; line-height:1.4;">The public view link is
+                currently active.</div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" id="copy-public-link-btn"
+                  style="flex:1; height:36px; background:var(--surface); border:1.5px solid var(--border); border-radius:8px; font-size:12.5px; font-weight:700; color:var(--t1); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg> Copy
+                </button>
+                <button type="button" id="share-public-link-btn"
+                  style="flex:1; height:36px; background:var(--np-teal); color:white; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  </svg> Share
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Danger Zone (only visible in edit mode) -->
           <div id="danger-zone-box" class="card-block"
             style="display:none; border: 1.5px solid var(--np-red); background: var(--np-red-lt);">
@@ -400,28 +526,32 @@
   </div>
 
   <!-- CREATE EVENT TIPS MODAL -->
-  <div class="modal-backdrop" id="tips-modal" onclick="if(event.target===this)closeTipsModal()">
-    <div class="sheet-modal">
-      <div class="sheet-hdr">
+  <div class="sheet-ov" id="tips-modal" style="display: none; position: fixed; z-index: 100000;">
+    <div class="sheet-box">
+      <div class="sheet-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="sheet-title">Need help creating?</div>
-        <button class="sheet-close" onclick="closeTipsModal()">×</button>
+        <button
+          onclick="document.getElementById('tips-modal').style.display='none'; document.getElementById('tips-modal').classList.remove('open');"
+          style="background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-weight:700; cursor:pointer; color:var(--text-mut);">×</button>
       </div>
       <div class="sheet-sub">A few tips to help you get started.</div>
 
-      <div class="tip-list">
-        <div class="tip-item">
-          <div class="ti-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+      <div class="sheet-list">
+        <div class="sheet-item" onclick="closeTipsModal()">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
               viewBox="0 0 24 24">
               <polyline points="20 6 9 17 4 12" />
             </svg></div>
           <div>
-            <div class="ti-t">Use a clear event name</div>
-            <div class="ti-d">Example: Annual Tech Conference 2026, Charity Gala &amp; Fundraiser, Alumni Meetup</div>
+            <div class="si-t">Use a clear event name</div>
+            <div class="si-d">Choose a recognizable name for your event. e.g., "Tech Conference 2026" or "Alumni
+              Meetup".</div>
           </div>
         </div>
 
-        <div class="tip-item">
-          <div class="ti-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+        <div class="sheet-item" onclick="closeTipsModal()">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
               viewBox="0 0 24 24">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
@@ -429,26 +559,26 @@
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg></div>
           <div>
-            <div class="ti-t">Keep the description short</div>
-            <div class="ti-d">Add a brief description about the event (optional).</div>
+            <div class="si-t">Keep the description short</div>
+            <div class="si-d">A brief description gives participants context. You can always edit this later.</div>
           </div>
         </div>
 
-        <div class="tip-item">
-          <div class="ti-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+        <div class="sheet-item" onclick="closeTipsModal()">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
               viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10" />
               <circle cx="12" cy="12" r="6" />
               <circle cx="12" cy="12" r="2" />
             </svg></div>
           <div>
-            <div class="ti-t">Goal amount is optional</div>
-            <div class="ti-d">Set a goal to track fundraising progress visually.</div>
+            <div class="si-t">Goal amount is optional</div>
+            <div class="si-d">Setting a goal adds a visual progress bar, which can help motivate contributors.</div>
           </div>
         </div>
 
-        <div class="tip-item">
-          <div class="ti-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+        <div class="sheet-item" onclick="closeTipsModal()">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
               viewBox="0 0 24 24">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -456,14 +586,87 @@
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg></div>
           <div>
-            <div class="ti-t">You'll be able to</div>
-            <div class="ti-d">• Add collectors • Create custom columns • Change settings • Manage members and more
-              later.</div>
+            <div class="si-t">Powerful management features</div>
+            <div class="si-d">After creation, you can add custom columns, invite collectors, and view detailed
+              analytics.</div>
           </div>
         </div>
       </div>
 
-      <button class="btn-modal-gotit" onclick="closeTipsModal()">Got it</button>
+      <button class="btn btn-solid-primary" style="width:100%; border:none; border-radius:12px !important;" onclick="closeTipsModal()">Got it,
+        thanks!</button>
+    </div>
+  </div>
+
+  <!-- MANAGE EVENT TIPS MODAL -->
+  <div class="sheet-ov" id="manage-tips-modal"
+    style="display: none; position: fixed; z-index: 100000;">
+    <div class="sheet-box">
+      <div class="sheet-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="sheet-title">Need help managing?</div>
+        <button
+          onclick="document.getElementById('manage-tips-modal').style.display='none'; document.getElementById('manage-tips-modal').classList.remove('open');"
+          style="background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-weight:700; cursor:pointer; color:var(--text-mut);">×</button>
+      </div>
+      <div class="sheet-sub">A few tips to help you manage your event effectively.</div>
+
+      <div class="sheet-list">
+        <div class="sheet-item" onclick="document.getElementById('manage-tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg></div>
+          <div>
+            <div class="si-t">Adding Collectors</div>
+            <div class="si-d">Collectors can join your event either by using the 16-character event code or by clicking
+              your direct join link.</div>
+          </div>
+        </div>
+
+        <div class="sheet-item" onclick="document.getElementById('manage-tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              viewBox="0 0 24 24">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg></div>
+          <div>
+            <div class="si-t">Public Read-Only View</div>
+            <div class="si-d">If your event is set to Public, anyone with the public link can view event details in
+              read-only mode.</div>
+          </div>
+        </div>
+
+        <div class="sheet-item" onclick="document.getElementById('manage-tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+            </svg></div>
+          <div>
+            <div class="si-t">Deactivate Event</div>
+            <div class="si-d">Temporarily lock out collectors. They will not be able to join or access data until
+              reactivated.</div>
+          </div>
+        </div>
+
+        <div class="sheet-item" onclick="document.getElementById('manage-tips-modal').style.display='none';">
+          <div class="si-ic"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg></div>
+          <div>
+            <div class="si-t">Delete Event</div>
+            <div class="si-d">Permanently erase the event and all associated contributions and expenses.</div>
+          </div>
+        </div>
+      </div>
+      <button
+        onclick="document.getElementById('manage-tips-modal').style.display='none'; document.getElementById('manage-tips-modal').classList.remove('open');"
+        class="btn btn-solid-primary" style="width:100%; border:none; border-radius:12px !important;">Got it, thanks!</button>
     </div>
   </div>
 
@@ -487,7 +690,7 @@
   <script src="js/api.js?v=31"></script>
   <script src="js/icons.js?v=31"></script>
   <script src="js/auth-guard.js?v=31"></script>
-  <script src="js/create-event.js"></script>
+  <script src="js/create-event.js?v=32"></script>
   <script>
     // Load sidebar event counts instantly from cache
     const cachedCounts = localStorage.getItem("np_event_counts");
