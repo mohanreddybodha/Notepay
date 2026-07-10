@@ -2353,7 +2353,7 @@
       if (btn) btn.disabled = true;
 
       const meetUrl = generateUniqueMeetUrl();
-      const msg = GROUP_CALL_PREFIX + meetUrl;
+      const msg = '[[GROUP_CALL]]' + meetUrl;
 
       try {
         await apiFetch('POST', `/events/${eventId}/chat`, { message: msg });

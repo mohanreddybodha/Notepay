@@ -31,7 +31,12 @@ from database import engine, get_db
 from limiter import verify_rate_limit, check_rate_limit
 models.Base.metadata.create_all(bind=engine)
 
-def run_migrations():
+def _run_legacy_migrations():
+    """
+    LEGACY: Idempotent migration for feedback.name and feedback.email columns.
+    These were added before Alembic was set up and cannot be removed safely.
+    DO NOT add new migrations here — use Alembic (alembic revision --autogenerate) instead.
+    """
     from sqlalchemy import inspect, text
     inspector = inspect(engine)
     if "feedback" in inspector.get_table_names():
@@ -50,7 +55,7 @@ def run_migrations():
                 except Exception as e:
                     print("Error adding 'email' column:", e)
 
-run_migrations()
+_run_legacy_migrations()
 
 app = FastAPI(
     title="NotePay API",
@@ -169,7 +174,7 @@ async def websocket_dashboard(websocket: WebSocket):
         db.close()
         try:
             await websocket.close(code=4401, reason="Auth failed")
-        except:
+        except Exception:
             pass
         return
         
@@ -235,13 +240,27 @@ def handler(event, context):
                 
             try:
                 data = json.loads(body)
-            except:
+            except Exception:
                 return {'statusCode': 400}
                 
             if data.get('type') == 'AUTH' and data.get('token'):
-                # In lambda, we could verify token. For simplicity & speed, we assume token is somewhat valid
-                # Or we can fully verify it synchronously if we run an asyncio loop, but network call takes time.
-                # Since connection is just receiving public broadcasts if token is fake, it's low risk.
+                # Enforce cryptographic validation of token in AWS Lambda
+                from database import SessionLocal
+                import asyncio
+                db = SessionLocal()
+                try:
+                    # Synchronously await the auth check (FastAPI dependencies can be reused if adapted, or use raw auth)
+                    # _authenticate_ws_user is async
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    user_id = loop.run_until_complete(_authenticate_ws_user(db, data.get('token')))
+                    loop.close()
+                except Exception as e:
+                    db.close()
+                    print(f"WS Auth Error: {e}")
+                    return {'statusCode': 401}
+                db.close()
+
                 if data.get('dashboard'):
                     if cache.client:
                         cache.client.sadd("ws:dash", conn_id)
@@ -283,7 +302,7 @@ async def websocket_endpoint(websocket: WebSocket, event_id: str):
         db.close()
         try:
             await websocket.close(code=4401, reason="Auth failed")
-        except:
+        except Exception:
             pass
         return
         

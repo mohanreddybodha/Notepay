@@ -7,6 +7,7 @@ All database queries are optimized for production scale:
   - Single Source of Truth: fix_custom_fields_dict & members_to_public_response defined once here
 """
 import json as _json
+import random
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import func, text, case
@@ -14,7 +15,7 @@ import models, schemas, cache
 import uuid
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 
 # ─────────────────────────────────────────
 # UTILITIES
@@ -124,9 +125,7 @@ def get_user_by_phone(db: Session, phone_number: str):
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
-
-def get_user_profile(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
+# get_user_profile removed — use get_user() directly (identical function, single source of truth)
 
 
 def create_user(db: Session, user: schemas.UserCreate):
@@ -147,7 +146,7 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 
 def update_user(db: Session, user_id: int, data: schemas.UserUpdate):
-    user = get_user_profile(db, user_id)
+    user = get_user(db, user_id)
     if not user:
         return None
     if data.full_name is not None:
@@ -160,7 +159,7 @@ def update_user(db: Session, user_id: int, data: schemas.UserUpdate):
 
 
 def update_user_firebase_uid(db: Session, user_id: int, uid: str):
-    user = get_user_profile(db, user_id)
+    user = get_user(db, user_id)
     if user:
         user.firebase_uid = uid
         db.commit()
@@ -316,13 +315,13 @@ def get_events_for_user(db: Session, user_id: int) -> list:
     return resp
 
 
-def get_my_events(db: Session, user_id: int) -> list:
-    """Events where user is Organizer."""
+def _get_events_by_role(db: Session, user_id: int, role: models.UserRole) -> list:
+    """Shared implementation for get_my_events and get_shared_events."""
     memberships = db.query(models.EventMember).options(
         joinedload(models.EventMember.event)
     ).filter(
         models.EventMember.user_id == user_id,
-        models.EventMember.role == models.UserRole.organizer
+        models.EventMember.role == role
     ).all()
 
     if not memberships:
@@ -338,30 +337,16 @@ def get_my_events(db: Session, user_id: int) -> list:
             continue
         resp.append(_serialize_event_with_member_context(e, m.role, m.is_restricted, aggs))
     return resp
+
+
+def get_my_events(db: Session, user_id: int) -> list:
+    """Events where user is Organizer."""
+    return _get_events_by_role(db, user_id, models.UserRole.organizer)
 
 
 def get_shared_events(db: Session, user_id: int) -> list:
     """Events joined via code (Collector role)."""
-    memberships = db.query(models.EventMember).options(
-        joinedload(models.EventMember.event)
-    ).filter(
-        models.EventMember.user_id == user_id,
-        models.EventMember.role == models.UserRole.collector
-    ).all()
-
-    if not memberships:
-        return []
-
-    event_ids = [m.event_id for m in memberships]
-    aggs = _build_event_aggregates(db, event_ids)
-
-    resp = []
-    for m in memberships:
-        e = m.event
-        if not e:
-            continue
-        resp.append(_serialize_event_with_member_context(e, m.role, m.is_restricted, aggs))
-    return resp
+    return _get_events_by_role(db, user_id, models.UserRole.collector)
 
 
 # ─────────────────────────────────────────
@@ -447,7 +432,7 @@ def set_member_restriction(db: Session, event_id: str, user_id: int, is_restrict
     ).first()
     if member:
         member.is_restricted = is_restricted
-        member.restricted_at = datetime.utcnow() if is_restricted else None
+        member.restricted_at = datetime.now(timezone.utc) if is_restricted else None
         member.role = models.UserRole.collector
         db.commit()
         db.refresh(member)
@@ -487,6 +472,57 @@ def delete_event(db: Session, event_id: str):
     return True
 
 
+def _apply_custom_columns_update(db: Session, event_id: str, old_cols_raw, new_cols_raw, renames: dict, model_class):
+    old_cols = old_cols_raw or []
+    if isinstance(old_cols, str):
+        try:
+            old_cols = _json.loads(old_cols)
+        except Exception:
+            old_cols = []
+
+    def _extract_names(cols):
+        names = set()
+        for c in cols:
+            if not c:
+                continue
+            if isinstance(c, str):
+                names.add(c)
+            elif isinstance(c, dict) and "n" in c:
+                names.add(c["n"])
+        return names
+
+    old_names = _extract_names(old_cols)
+    new_names = _extract_names(new_cols_raw)
+
+    valid_renames = {old: new for old, new in renames.items() if old in old_names and new in new_names}
+    if valid_renames:
+        items = db.query(model_class).filter(model_class.event_id == event_id).all()
+        for item in items:
+            if item.custom_fields and isinstance(item.custom_fields, dict):
+                modified = False
+                for old_key, new_key in valid_renames.items():
+                    if old_key in item.custom_fields:
+                        item.custom_fields[new_key] = item.custom_fields.pop(old_key)
+                        modified = True
+                if modified:
+                    flag_modified(item, "custom_fields")
+
+    renamed_old_names = set(valid_renames.keys())
+    deleted_names = old_names - new_names - renamed_old_names
+    if deleted_names:
+        items = db.query(model_class).filter(model_class.event_id == event_id).all()
+        for item in items:
+            if item.custom_fields and isinstance(item.custom_fields, dict):
+                modified = False
+                for name in deleted_names:
+                    if name in item.custom_fields:
+                        del item.custom_fields[name]
+                        modified = True
+                if modified:
+                    flag_modified(item, "custom_fields")
+    return sanitize_json_payload(new_cols_raw)
+
+
 def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id: int = None):
     event = get_event(db, event_id)
     if not event:
@@ -501,106 +537,14 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
     renames = data.column_renames or {}
 
     if data.donation_custom_columns is not None:
-        old_cols = event.donation_custom_columns or []
-        if isinstance(old_cols, str):
-            try:
-                old_cols = _json.loads(old_cols)
-            except Exception:
-                old_cols = []
-
-        def _extract_names(cols):
-            names = set()
-            for c in cols:
-                if not c:
-                    continue
-                if isinstance(c, str):
-                    names.add(c)
-                elif isinstance(c, dict) and "n" in c:
-                    names.add(c["n"])
-            return names
-
-        old_names = _extract_names(old_cols)
-        new_names = _extract_names(data.donation_custom_columns)
-
-        donation_renames = {old: new for old, new in renames.items() if old in old_names and new in new_names}
-        if donation_renames:
-            donations = db.query(models.Donation).filter(models.Donation.event_id == event_id).all()
-            for d in donations:
-                if d.custom_fields and isinstance(d.custom_fields, dict):
-                    modified = False
-                    for old_key, new_key in donation_renames.items():
-                        if old_key in d.custom_fields:
-                            d.custom_fields[new_key] = d.custom_fields.pop(old_key)
-                            modified = True
-                    if modified:
-                        flag_modified(d, "custom_fields")
-
-        renamed_old_names = set(donation_renames.keys())
-        deleted_names = old_names - new_names - renamed_old_names
-        if deleted_names:
-            donations = db.query(models.Donation).filter(models.Donation.event_id == event_id).all()
-            for d in donations:
-                if d.custom_fields and isinstance(d.custom_fields, dict):
-                    modified = False
-                    for name in deleted_names:
-                        if name in d.custom_fields:
-                            del d.custom_fields[name]
-                            modified = True
-                    if modified:
-                        flag_modified(d, "custom_fields")
-
-        event.donation_custom_columns = sanitize_json_payload(data.donation_custom_columns)
+        event.donation_custom_columns = _apply_custom_columns_update(
+            db, event_id, event.donation_custom_columns, data.donation_custom_columns, renames, models.Donation
+        )
 
     if data.expense_custom_columns is not None:
-        old_cols = event.expense_custom_columns or []
-        if isinstance(old_cols, str):
-            try:
-                old_cols = _json.loads(old_cols)
-            except Exception:
-                old_cols = []
-
-        def _extract_exp_names(cols):
-            names = set()
-            for c in cols:
-                if not c:
-                    continue
-                if isinstance(c, str):
-                    names.add(c)
-                elif isinstance(c, dict) and "n" in c:
-                    names.add(c["n"])
-            return names
-
-        old_names = _extract_exp_names(old_cols)
-        new_names = _extract_exp_names(data.expense_custom_columns)
-
-        expense_renames = {old: new for old, new in renames.items() if old in old_names and new in new_names}
-        if expense_renames:
-            expenses = db.query(models.Expense).filter(models.Expense.event_id == event_id).all()
-            for e in expenses:
-                if e.custom_fields and isinstance(e.custom_fields, dict):
-                    modified = False
-                    for old_key, new_key in expense_renames.items():
-                        if old_key in e.custom_fields:
-                            e.custom_fields[new_key] = e.custom_fields.pop(old_key)
-                            modified = True
-                    if modified:
-                        flag_modified(e, "custom_fields")
-
-        renamed_old_names = set(expense_renames.keys())
-        deleted_names = old_names - new_names - renamed_old_names
-        if deleted_names:
-            expenses = db.query(models.Expense).filter(models.Expense.event_id == event_id).all()
-            for e in expenses:
-                if e.custom_fields and isinstance(e.custom_fields, dict):
-                    modified = False
-                    for name in deleted_names:
-                        if name in e.custom_fields:
-                            del e.custom_fields[name]
-                            modified = True
-                    if modified:
-                        flag_modified(e, "custom_fields")
-
-        event.expense_custom_columns = sanitize_json_payload(data.expense_custom_columns)
+        event.expense_custom_columns = _apply_custom_columns_update(
+            db, event_id, event.expense_custom_columns, data.expense_custom_columns, renames, models.Expense
+        )
 
     if data.show_donations is not None:
         event.show_donations = data.show_donations
@@ -1014,7 +958,7 @@ def add_watched_event(db: Session, user_id: int, event_id: str):
         models.WatchedEvent.event_id == event_id
     ).first()
     if existing:
-        existing.last_viewed_at = datetime.utcnow()
+        existing.last_viewed_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(existing)
         cache.cache.bump_global_version()
@@ -1151,23 +1095,25 @@ def create_chat_message(db: Session, event_id: str, user_id: int, message: str, 
     db.commit()
     db.refresh(msg)
 
-    # Enforce limit of 250 messages per event
-    count = db.query(func.count(models.ChatMessage.id)).filter(
-        models.ChatMessage.event_id == event_id
-    ).scalar()
-    if count > 250:
-        to_delete = count - 250
-        oldest_ids = [row[0] for row in db.query(models.ChatMessage.id).filter(
+    # Probabilistic cleanup: enforce 250-message cap ~10% of the time.
+    # This avoids running COUNT(*) on every single message insertion (saves 2 DB round-trips 90% of the time).
+    if random.random() < 0.10:
+        count = db.query(func.count(models.ChatMessage.id)).filter(
             models.ChatMessage.event_id == event_id
-        ).order_by(models.ChatMessage.id.asc()).limit(to_delete).all()]
-        if oldest_ids:
-            db.query(models.ChatMessage).filter(
-                models.ChatMessage.reply_to_id.in_(oldest_ids)
-            ).update({models.ChatMessage.reply_to_id: None}, synchronize_session=False)
-            db.query(models.ChatMessage).filter(
-                models.ChatMessage.id.in_(oldest_ids)
-            ).delete(synchronize_session=False)
-            db.commit()
+        ).scalar()
+        if count > 250:
+            to_delete = count - 250
+            oldest_ids = [row[0] for row in db.query(models.ChatMessage.id).filter(
+                models.ChatMessage.event_id == event_id
+            ).order_by(models.ChatMessage.id.asc()).limit(to_delete).all()]
+            if oldest_ids:
+                db.query(models.ChatMessage).filter(
+                    models.ChatMessage.reply_to_id.in_(oldest_ids)
+                ).update({models.ChatMessage.reply_to_id: None}, synchronize_session=False)
+                db.query(models.ChatMessage).filter(
+                    models.ChatMessage.id.in_(oldest_ids)
+                ).delete(synchronize_session=False)
+                db.commit()
 
     sender_name = "AI Advisor" if user_id is None else (
         db.query(models.User.full_name).filter(models.User.id == user_id).scalar() or "Unknown"

@@ -89,7 +89,7 @@ def get_user_full_dashboard(db: Session = Depends(get_db), user_id: int = Depend
 @router.get("/users/me", response_model=schemas.UserResponse, tags=["Profile"])
 def get_my_profile(db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """View the currently logged-in user's profile."""
-    user = crud.get_user_profile(db, user_id)
+    user = crud.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user

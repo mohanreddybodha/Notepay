@@ -5,7 +5,7 @@ import os
 import time
 import requests
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.encoders import jsonable_encoder
@@ -259,7 +259,7 @@ async def send_chat_message(event_id: str, data: schemas.ChatMessageCreate, back
     
     ai_limit_reached = False
     if clean_msg.lower().startswith("@ai "):
-        today_str = datetime.utcnow().strftime('%Y-%m-%d')
+        today_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         if not check_rate_limit(f"event:{event_id}:user:{user_id}:ai_chat:{today_str}", limit=10, window=86400):
             ai_limit_reached = True
     

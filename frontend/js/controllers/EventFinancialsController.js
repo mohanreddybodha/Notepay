@@ -920,7 +920,6 @@
 
 
       function renderInlineEntryForm(type, scroll = true) {
-        console.log(`[debug] renderInlineEntryForm: type=${type}, scroll=${scroll}, activeInlineAddType=${activeInlineAddType}`);
         activeInlineAddType = type;
         const isDon = type === 'don';
         let tblBody;
@@ -1072,7 +1071,6 @@
 
 
       async function submitInlineEntry(type, btn, skipDupCheck = false) {
-        console.log(`[debug] submitInlineEntry: type=${type}, activeInlineAddType=${activeInlineAddType}`);
         const nr = btn.closest('.new-row');
         const tblBody = nr.parentElement;
         const row = tblBody.querySelector('.inline-entry-row');

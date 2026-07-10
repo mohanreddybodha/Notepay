@@ -108,6 +108,8 @@ function handleOfflineWrite(method, path, body) {
   });
   localStorage.setItem("np_offline_queue", JSON.stringify(queue));
   showToast("Offline mode: Action queued locally!", "warning");
+  // Start the sync interval now that queue is non-empty
+  if (typeof window._notifyOfflineQueueUpdated === 'function') window._notifyOfflineQueueUpdated();
 
   if (method === "DELETE") {
     return { message: "Deleted" };
@@ -373,100 +375,11 @@ async function getSummary(eventId) {
   return apiFetch("GET", `/events/${eventId}/summary`);
 }
 
-// ══════════════════════════════════════════════
-//  UTILITIES (use shared-utils when available)
-// ═════════════════════════════════════════════=
-
-if (typeof window.formatINR !== 'function') {
-  window.formatINR = function(amount) {
-    if (amount === null || amount === undefined || amount === "") return "—";
-    return "₹ " + Number(amount).toLocaleString("en-IN");
-  };
-}
-
-if (typeof window.formatDate !== 'function') {
-  window.formatDate = function(isoString) {
-    if (!isoString) return "—";
-    return new Date(isoString).toLocaleDateString("en-IN", {
-      day: "numeric", month: "short", year: "numeric"
-    });
-  };
-}
-
-if (typeof window.formatDateTime !== 'function') {
-  window.formatDateTime = function(isoString) {
-    if (!isoString) return "—";
-    return new Date(isoString).toLocaleString("en-IN", {
-      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-    });
-  };
-}
-
-if (typeof window.showToast !== 'function') {
-  window.showToast = function(msg, type = "default") {
-    if (typeof window.NPUtils?.showToast === 'function') {
-      return window.NPUtils.showToast(msg, type);
-    }
-    const old = document.querySelector(".toast");
-    if (old) old.remove();
-    const t = document.createElement("div");
-    t.className = "toast";
-    if (type === "error") t.classList.add("toast-error");
-    else if (type === "warning") t.classList.add("toast-warning");
-    else if (type === "success") t.classList.add("toast-success");
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2300);
-  };
-}
-
-if (typeof window.getInitials !== 'function') {
-  window.getInitials = function(name = "") {
-    if (typeof window.NPUtils?.getInitials === 'function') return window.NPUtils.getInitials(name);
-    return String(name || "")
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() || "")
-      .join("") || "??";
-  };
-}
-
-if (typeof window.getAvatarColor !== 'function') {
-  window.getAvatarColor = function(name = "") {
-    if (typeof window.NPUtils?.getAvatarColor === 'function') return window.NPUtils.getAvatarColor(name);
-    const colors = ["#A855F7", "#3b82f6", "#14b8a6", "#f59e0b", "#10b981", "#ec4899", "#6366f1", "#8b5cf6"];
-    let hash = 0;
-    for (let i = 0; i < String(name || "").length; i++) {
-      hash = String(name || "").charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  };
-}
-
-if (typeof window.applyAvatar !== 'function') {
-  window.applyAvatar = function(el, name = "") {
-    if (!el) return;
-    if (typeof window.NPUtils?.applyAvatar === 'function') {
-      window.NPUtils.applyAvatar(el, name);
-      return;
-    }
-    el.textContent = window.getInitials(name);
-    el.style.background = window.getAvatarColor(name);
-  };
-}
+// ── Utilities are provided by shared-utils.js (loaded before this file in all pages).
+// formatINR, formatDate, formatDateTime, showToast, getInitials, getAvatarColor,
+// applyAvatar, buildUrl, getCleanUrl are all available on window.* via NPUtils.
 
 let _spinnerActiveCount = 0;
-// Ensure functions provided by shared-utils are used when available
-if (typeof window.NPUtils === 'object') {
-  try {
-    if (typeof window.NPUtils.showToast === 'function') window.showToast = window.NPUtils.showToast;
-    if (typeof window.NPUtils.getCleanUrl === 'function') window.getCleanUrl = window.NPUtils.getCleanUrl;
-  } catch (e) {
-    // ignore
-  }
-}
 function injectSpinnerCSS() {
   if (typeof document === "undefined" || !document.head) return;
   let st = document.getElementById("np-spinner-css");
@@ -668,21 +581,39 @@ async function syncOfflineQueue() {
   }
 }
 
-// Watch network status
+// Watch network status — immediately flush queue on reconnect
 window.addEventListener("online", () => {
   syncOfflineQueue();
 });
 
-// Periodic sync check every 15 seconds
-setInterval(() => {
-  if (navigator.onLine) {
-    syncOfflineQueue();
-  }
-}, 15000);
+// Smart offline sync interval: only runs while there is actually something in the queue.
+// Avoids waking the JS engine every 15s when the queue is empty (battery + CPU savings on mobile).
+let _offlineSyncInterval = null;
 
-// Run initial sync on load after a brief delay
+function _startOfflineSyncInterval() {
+  if (_offlineSyncInterval) return; // Already running
+  _offlineSyncInterval = setInterval(() => {
+    const queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+    if (!queue.length) {
+      // Queue is empty — stop polling
+      clearInterval(_offlineSyncInterval);
+      _offlineSyncInterval = null;
+      return;
+    }
+    if (navigator.onLine) syncOfflineQueue();
+  }, 15000);
+}
+
+// Start the interval only if there is something pending on page load
 setTimeout(() => {
-  if (navigator.onLine) {
+  const queue = JSON.parse(localStorage.getItem("np_offline_queue") || "[]");
+  if (queue.length > 0 && navigator.onLine) {
     syncOfflineQueue();
+    _startOfflineSyncInterval();
   }
 }, 1500);
+
+// Also start the interval whenever an item is added to the queue (hooked via apiFetch offline logic)
+window._notifyOfflineQueueUpdated = function() {
+  _startOfflineSyncInterval();
+};

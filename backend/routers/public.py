@@ -7,7 +7,9 @@ import json
 import uuid
 import base64
 from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -15,6 +17,10 @@ import crud
 import schemas
 from storage import storage_service
 from ws_manager import manager
+try:
+    from cache import cache
+except ImportError:
+    cache = None
 
 router = APIRouter()
 
@@ -47,13 +53,13 @@ async def upload_receipt(event_id: str, file: UploadFile = File(...), db: Sessio
         def get_fallback_response(msg):
             session_id = str(uuid.uuid4())
             try:
-                from cache import cache
-                cache.set(f"receipt:{session_id}", {
-                    "receipt_key": receipt_key,
-                    "extraction_api": "manual_fallback"
-                }, expire=900)
+                if cache:
+                    cache.set(f"receipt:{session_id}", {
+                        "receipt_key": receipt_key,
+                        "extraction_api": "manual_fallback"
+                    }, expire=900)
             except Exception as e:
-                pass
+                print(f"Failed to cache fallback receipt session: {e}")
             return {
                 "status": "extraction_failed",
                 "extraction_failed": True,
@@ -259,7 +265,8 @@ Return ONLY valid JSON:
 
         try:
             transaction_date = datetime.strptime(transaction_date_str, "%Y-%m-%d") if transaction_date_str else datetime.now()
-        except:
+        except Exception as _date_err:
+            print(f"Date parse warning (value={transaction_date_str!r}): {_date_err}. Falling back to now().")
             transaction_date = datetime.now()
 
         # Check if there are any required donor custom columns
@@ -268,7 +275,7 @@ Return ONLY valid JSON:
         if isinstance(cols, str):
             try:
                 cols = json.loads(cols)
-            except:
+            except Exception:
                 cols = []
         for col in cols:
             if isinstance(col, dict) and col.get("reqByDonor") and not col.get("hidden"):
@@ -279,14 +286,14 @@ Return ONLY valid JSON:
         if not donor_name or has_required_donor_cols:
             session_id = str(uuid.uuid4())
             try:
-                from cache import cache
-                cache.set(f"receipt:{session_id}", {
-                    "amount": amount,
-                    "transaction_date": transaction_date.isoformat(),
-                    "receiver_name": receiver_name,
-                    "extraction_api": extraction_api,
-                    "receipt_key": receipt_key
-                }, expire=900) # 15 minutes
+                if cache:
+                    cache.set(f"receipt:{session_id}", {
+                        "amount": amount,
+                        "transaction_date": transaction_date.isoformat(),
+                        "receiver_name": receiver_name,
+                        "extraction_api": extraction_api,
+                        "receipt_key": receipt_key
+                    }, expire=900)  # 15 minutes
             except Exception as e:
                 print(f"Failed to cache receipt session: {e}")
 
@@ -320,7 +327,7 @@ Return ONLY valid JSON:
         )
         
         res = crud.create_donation(db, event_id, event.organizer_id, new_donation)
-        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_auto"})
+        await manager.broadcast_change(event_id, {"type": "DONATION_ADDED", "data": jsonable_encoder(res)})
         await manager.broadcast_dashboard_update()
         
         return {
@@ -362,9 +369,8 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
         receipt_key = None
         
         # Secure Partial AI Validation Logic
-        if data.receipt_session_id:
+        if data.receipt_session_id and cache:
             try:
-                from cache import cache
                 cached_data = cache.get(f"receipt:{data.receipt_session_id}")
                 if cached_data:
                     # Enforce cached values
@@ -379,11 +385,11 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
                         status = "manual_entry"
                         extraction_api = "manual_fallback"
                         method = "Manual Entry (with image)"
-                        
+
                     try:
                         if cached_data.get("transaction_date"):
                             transaction_date = datetime.fromisoformat(cached_data.get("transaction_date"))
-                    except:
+                    except Exception:
                         pass
                     receipt_receiver_name = cached_data.get("receiver_name")
                     receipt_key = cached_data.get("receipt_key")
@@ -418,7 +424,7 @@ async def submit_manual_donation(event_id: str, data: schemas.ManualDonationEntr
             receipt_key=receipt_key
         )
         res = crud.create_donation(db, event_id, event.organizer_id, new_donation, is_public_entry=True)
-        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add_manual"})
+        await manager.broadcast_change(event_id, {"type": "DONATION_ADDED", "data": jsonable_encoder(res)})
         await manager.broadcast_dashboard_update()
         return {
             "message": "Success",
@@ -437,7 +443,7 @@ def get_public_event(event_id: str, db: Session = Depends(get_db)):
     if not event or not event.is_active:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    organizer = crud.get_user_profile(db, event.organizer_id)
+    organizer = crud.get_user(db, event.organizer_id)
     
     return {
         "id": event.id,

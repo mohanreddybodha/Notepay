@@ -1,10 +1,9 @@
 """
 routers/donations_expenses.py — Donations, expenses, receipt uploads, summary, and full details endpoints
 """
-import os
-import boto3
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -14,7 +13,7 @@ import schemas
 from dependencies import get_current_user_id, verify_membership, verify_event_active_for_collector
 from limiter import verify_rate_limit
 from ws_manager import manager
-from storage import storage_service
+from storage import storage_service, fetch_receipt_response
 
 router = APIRouter()
 
@@ -34,7 +33,7 @@ async def add_donation(event_id: str, donation: schemas.DonationCreate, db: Sess
     verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60, detail="Adding entries too fast. Slow down.")
     res = crud.create_donation(db, event_id, user_id, donation)
     # Broadcast change
-    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_add"})
+    await manager.broadcast_change(event_id, {"type": "DONATION_ADDED", "data": jsonable_encoder(res)})
     await manager.broadcast_dashboard_update()
     return res
 
@@ -51,7 +50,7 @@ async def update_donation(event_id: str, donation_id: int, data: schemas.Donatio
         raise HTTPException(status_code=403, detail="You can only edit your own entries")
     result = crud.update_donation(db, donation_id, data)
     # Broadcast change
-    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_update"})
+    await manager.broadcast_change(event_id, {"type": "DONATION_UPDATED", "data": jsonable_encoder(result)})
     await manager.broadcast_dashboard_update()
     return result
 
@@ -68,7 +67,7 @@ async def delete_donation(event_id: str, donation_id: int,
         raise HTTPException(status_code=403, detail="You can only delete your own entries")
     crud.delete_donation(db, donation_id)
     # Broadcast change
-    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "donation_delete"})
+    await manager.broadcast_change(event_id, {"type": "DONATION_DELETED", "data": {"id": donation_id}})
     await manager.broadcast_dashboard_update()
     return {"message": "Donation deleted"}
 
@@ -80,27 +79,7 @@ def get_donation_receipt(event_id: str, donation_id: int, db: Session = Depends(
     donation = db.query(models.Donation).filter_by(id=donation_id, event_id=event_id).first()
     if not donation or not donation.receipt_key:
         raise HTTPException(status_code=404, detail="Receipt not found")
-        
-    s3_bucket = os.getenv("RECEIPTS_BUCKET")
-    if not s3_bucket or donation.receipt_key.startswith("local://"):
-        # Local fallback
-        local_path = donation.receipt_key.replace("local://", "")
-        # Construct absolute path to backend/uploads
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        abs_local_path = os.path.join(base_dir, local_path)
-        if not os.path.exists(abs_local_path):
-            raise HTTPException(status_code=404, detail="Receipt image not found on local disk")
-        from fastapi.responses import FileResponse
-        return FileResponse(abs_local_path)
-        
-    try:
-        s3_client = boto3.client('s3')
-        obj = s3_client.get_object(Bucket=s3_bucket, Key=donation.receipt_key)
-        from fastapi.responses import StreamingResponse
-        return StreamingResponse(obj['Body'], media_type=obj['ContentType'])
-    except Exception as e:
-        print(f"Failed to fetch receipt from S3: {e}")
-        raise HTTPException(status_code=404, detail="Receipt image not found in storage")
+    return fetch_receipt_response(donation.receipt_key)
 
 
 @router.post("/events/{event_id}/donations/{donation_id}/receipt", tags=["Donations"])
@@ -118,7 +97,7 @@ async def upload_donation_receipt_manual(event_id: str, donation_id: int, file: 
         receipt_key = storage_service.upload_receipt(event_id, contents, file.content_type)
         donation.receipt_key = receipt_key
         db.commit()
-        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "receipt_upload"})
+        await manager.broadcast_change(event_id, {"type": "DONATION_UPDATED", "data": jsonable_encoder(donation)})
         return {"receipt_key": receipt_key, "message": "Receipt uploaded successfully"}
     except Exception as e:
         print(f"Failed to upload manual receipt: {e}")
@@ -140,7 +119,7 @@ async def add_expense(event_id: str, expense: schemas.ExpenseCreate, db: Session
     verify_rate_limit(f"user:{user_id}:add_entry", limit=30, window=60, detail="Adding entries too fast. Slow down.")
     res = crud.create_expense(db, event_id, user_id, expense)
     # Broadcast change
-    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_add"})
+    await manager.broadcast_change(event_id, {"type": "EXPENSE_ADDED", "data": jsonable_encoder(res)})
     await manager.broadcast_dashboard_update()
     return res
 
@@ -157,7 +136,7 @@ async def update_expense(event_id: str, expense_id: int, data: schemas.ExpenseUp
         raise HTTPException(status_code=403, detail="You can only edit your own entries")
     res = crud.update_expense(db, expense_id, data)
     # Broadcast change
-    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_update"})
+    await manager.broadcast_change(event_id, {"type": "EXPENSE_UPDATED", "data": jsonable_encoder(res)})
     await manager.broadcast_dashboard_update()
     return res
 
@@ -174,7 +153,7 @@ async def delete_expense(event_id: str, expense_id: int,
         raise HTTPException(status_code=403, detail="You can only delete your own entries")
     crud.delete_expense(db, expense_id)
     # Broadcast change
-    await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_delete"})
+    await manager.broadcast_change(event_id, {"type": "EXPENSE_DELETED", "data": {"id": expense_id}})
     await manager.broadcast_dashboard_update()
     return {"message": "Expense deleted"}
 
@@ -186,25 +165,7 @@ def get_expense_receipt(event_id: str, expense_id: int, db: Session = Depends(ge
     expense = db.query(models.Expense).filter_by(id=expense_id, event_id=event_id).first()
     if not expense or not expense.receipt_key:
         raise HTTPException(status_code=404, detail="Receipt not found")
-        
-    s3_bucket = os.getenv("RECEIPTS_BUCKET")
-    if not s3_bucket or expense.receipt_key.startswith("local://"):
-        local_path = expense.receipt_key.replace("local://", "")
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        abs_local_path = os.path.join(base_dir, local_path)
-        if not os.path.exists(abs_local_path):
-            raise HTTPException(status_code=404, detail="Receipt image not found locally")
-        from fastapi.responses import FileResponse
-        return FileResponse(abs_local_path)
-        
-    try:
-        s3_client = boto3.client('s3')
-        obj = s3_client.get_object(Bucket=s3_bucket, Key=expense.receipt_key)
-        from fastapi.responses import StreamingResponse
-        return StreamingResponse(obj['Body'], media_type=obj['ContentType'])
-    except Exception as e:
-        print(f"Failed to fetch expense receipt from S3: {e}")
-        raise HTTPException(status_code=404, detail="Receipt image not found in storage")
+    return fetch_receipt_response(expense.receipt_key)
 
 
 @router.post("/events/{event_id}/expenses/{expense_id}/receipt", tags=["Expenses"])
@@ -222,7 +183,7 @@ async def upload_expense_receipt_manual(event_id: str, expense_id: int, file: Up
         receipt_key = storage_service.upload_receipt(event_id, contents, file.content_type)
         expense.receipt_key = receipt_key
         db.commit()
-        await manager.broadcast_change(event_id, {"type": "DATA_CHANGED", "source": "expense_receipt_upload"})
+        await manager.broadcast_change(event_id, {"type": "EXPENSE_UPDATED", "data": jsonable_encoder(expense)})
         return {"receipt_key": receipt_key, "message": "Receipt uploaded successfully"}
     except Exception as e:
         print(f"Failed to upload expense manual receipt: {e}")

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, desc
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 
 from database import get_db
@@ -14,6 +14,10 @@ from admin_auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     require_admin
 )
+try:
+    from cache import cache
+except ImportError:
+    cache = None
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
@@ -42,7 +46,6 @@ def login_for_access_token(
     
     # Check if IP is blocked in production
     if is_prod:
-        from cache import cache
         if cache and cache.get(f"admin_block:{ip}"):
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -90,7 +93,7 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_admin: models.Adm
     total_donations = db.query(func.sum(models.Donation.amount)).scalar() or 0.0
     total_expenses = db.query(func.sum(models.Expense.amount)).scalar() or 0.0
     
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     new_users_today = db.query(models.User).filter(func.date(models.User.created_at) == today).count()
     
     active_events = db.query(models.Event).filter(models.Event.is_active == True).count()
@@ -145,6 +148,8 @@ def ban_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Depend
     user.is_banned = True
     user.ban_reason = req.reason
     db.commit()
+    if cache:
+        cache.bump_global_version()
     log_admin_action(db, current_admin.id, "ban_user", "user", str(user_id), {"reason": req.reason})
     return {"status": "success", "message": "User banned"}
 
@@ -156,6 +161,8 @@ def unban_user(user_id: int, req: schemas.AdminActionRequest, db: Session = Depe
     user.is_banned = False
     user.ban_reason = None
     db.commit()
+    if cache:
+        cache.bump_global_version()
     log_admin_action(db, current_admin.id, "unban_user", "user", str(user_id), {"reason": req.reason})
     return {"status": "success", "message": "User unbanned"}
 
@@ -232,11 +239,14 @@ def deactivate_event(event_id: str, req: schemas.AdminActionRequest, db: Session
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
         raise HTTPException(404, "Event not found")
-    
+
     # Toggle active status
     event.is_active = not event.is_active
     db.commit()
-    
+    if cache:
+        cache.invalidate_event(event_id)
+        cache.bump_global_version()
+
     action = "deactivate_event" if not event.is_active else "reactivate_event"
     log_admin_action(db, current_admin.id, action, "event", event_id, {"reason": req.reason})
     return {"status": "success", "is_active": event.is_active}
@@ -246,16 +256,19 @@ def delete_event(event_id: str, req: schemas.AdminActionRequest, db: Session = D
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
         raise HTTPException(404, "Event not found")
-        
+
     db.query(models.EventMember).filter(models.EventMember.event_id == event_id).delete()
     db.query(models.Donation).filter(models.Donation.event_id == event_id).delete()
     db.query(models.Expense).filter(models.Expense.event_id == event_id).delete()
     db.query(models.WatchedEvent).filter(models.WatchedEvent.event_id == event_id).delete()
     db.query(models.ChatMessage).filter(models.ChatMessage.event_id == event_id).delete()
-    
+
     db.delete(event)
     db.commit()
-    
+    if cache:
+        cache.invalidate_event(event_id)
+        cache.bump_global_version()
+
     log_admin_action(db, current_admin.id, "delete_event", "event", event_id, {"reason": req.reason})
     return {"status": "success", "message": "Event deleted"}
 

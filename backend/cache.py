@@ -94,7 +94,7 @@ class CacheManager:
         if self.client:
             try:
                 return self.client.get("dash_v") or "1"
-            except: return "1"
+            except Exception: return "1"
         return str(self._local_cache.get("dash_v", "1"))
 
     def bump_global_version(self):
@@ -103,7 +103,7 @@ class CacheManager:
             try:
                 self.client.incr("dash_v")
                 print(" Global Dashboard Version Bumped (Real-time Sync)")
-            except: pass
+            except Exception: pass
         else:
             v = int(self._local_cache.get("dash_v", "1"))
             self._local_cache["dash_v"] = str(v + 1)

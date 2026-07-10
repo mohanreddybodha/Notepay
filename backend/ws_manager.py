@@ -89,15 +89,24 @@ class ConnectionManager:
             conns = cache.client.smembers("ws:dash")
             if conns:
                 try:
-                    endpoint = os.getenv("WEBSOCKET_URL", "").replace("wss://", "https://")
-                    apigw = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint)
+                    global apigw_client
+                    if apigw_client is None:
+                        endpoint = os.getenv("WEBSOCKET_URL", "").replace("wss://", "https://")
+                        apigw_client = boto3.client('apigatewaymanagementapi', endpoint_url=endpoint)
                     msg_str = json.dumps({"type": "DASHBOARD_UPDATE"})
-                    dead = []
-                    for cid in conns:
+
+                    def _send_dash(cid):
                         try:
-                            apigw.post_to_connection(ConnectionId=cid, Data=msg_str.encode('utf-8'))
+                            apigw_client.post_to_connection(ConnectionId=cid, Data=msg_str.encode('utf-8'))
+                            return None
                         except Exception:
-                            dead.append(cid)
+                            return cid
+
+                    # Fire all dashboard WS posts in parallel (same pattern as broadcast_change)
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        results = list(executor.map(_send_dash, conns))
+                        dead = [r for r in results if r]
+
                     if dead:
                         cache.client.srem("ws:dash", *dead)
                 except Exception as e:
