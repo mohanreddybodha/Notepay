@@ -1039,14 +1039,6 @@
       padding: 10px 16px 100px;
     }
 
-    .scroll-area::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .scroll-area::-webkit-scrollbar-thumb {
-      background: var(--border-str);
-      border-radius: 2px;
-    }
 
     @media (min-width: 900px) {
       .scroll-area {
