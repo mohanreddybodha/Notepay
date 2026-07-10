@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, JSON, Enum as SQLEnum, Index
 from sqlalchemy.orm import relationship
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from database import Base
 
@@ -22,7 +22,7 @@ class User(Base):
     phone_number = Column(String, unique=True, index=True)
     full_name = Column(String, index=True)
     gender = Column(SQLEnum(GenderEnum))
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     is_banned = Column(Boolean, default=False, index=True)
     ban_reason = Column(String, nullable=True)
 
@@ -37,7 +37,7 @@ class Event(Base):
     name = Column(String, index=True)
     description = Column(String)
     event_date = Column(DateTime, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     invite_code = Column(String, unique=True, index=True)
     is_active = Column(Boolean, default=True, index=True)
     is_public = Column(Boolean, default=False, index=True)
@@ -77,7 +77,7 @@ class EventMember(Base):
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
     event_id = Column(String(32), ForeignKey("events.id"), index=True)
     role = Column(SQLEnum(UserRole), index=True)
-    joined_at = Column(DateTime, default=datetime.utcnow)
+    joined_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     is_restricted = Column(Boolean, default=False)
     restricted_at = Column(DateTime, nullable=True)
 
@@ -99,7 +99,7 @@ class Donation(Base):
     donor_name = Column(String, index=True)
     amount = Column(Float, nullable=True)
     collected_by = Column(Integer, ForeignKey("users.id"), index=True)
-    collected_at = Column(DateTime, default=datetime.utcnow, index=True)
+    collected_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     custom_fields = Column(JSON, nullable=True)
     receipt_key = Column(String, nullable=True)
     version = Column(Integer, default=1)
@@ -122,7 +122,7 @@ class Expense(Base):
     description = Column(String, index=True)
     amount = Column(Float, nullable=True)
     collected_by = Column(Integer, ForeignKey("users.id"), index=True)
-    collected_at = Column(DateTime, default=datetime.utcnow, index=True)
+    collected_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     custom_fields = Column(JSON, nullable=True)
     receipt_key = Column(String, nullable=True)
     version = Column(Integer, default=1)
@@ -141,7 +141,7 @@ class WatchedEvent(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
     event_id = Column(String(32), ForeignKey("events.id"), index=True)
-    last_viewed_at = Column(DateTime, default=datetime.utcnow, index=True)
+    last_viewed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
     user = relationship("User")
     event = relationship("Event")
@@ -162,7 +162,7 @@ class ChatMessage(Base):
     reactions = Column(JSON, default=dict)  # {"❤️": [1,3], "👍": [2]}
     delivered_to = Column(JSON, default=list)  # [1, 2, 3]
     read_by = Column(JSON, default=list)  # [1, 2]
-    sent_at = Column(DateTime, default=datetime.utcnow)
+    sent_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User")
     event = relationship("Event")
@@ -177,7 +177,7 @@ class AdminUser(Base):
     name = Column(String, nullable=True)
     password_hash = Column(String, nullable=False)
     role = Column(String, default="admin")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class AdminAuditLog(Base):
     __tablename__ = "admin_audit_log"
@@ -188,7 +188,7 @@ class AdminAuditLog(Base):
     target_type = Column(String)
     target_id = Column(String)
     details = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 class Feedback(Base):
     __tablename__ = "feedback"
@@ -200,7 +200,7 @@ class Feedback(Base):
     type = Column(String)
     message = Column(String)
     status = Column(String, default="pending", index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 class ErrorLog(Base):
     __tablename__ = "error_logs"
@@ -209,4 +209,4 @@ class ErrorLog(Base):
     endpoint = Column(String)
     error_message = Column(String)
     traceback = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)

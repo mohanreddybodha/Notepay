@@ -284,10 +284,40 @@
   global.getCleanUrl = getCleanUrl;
   global.showToast = showToast;
   global.showGlobalConfirmModal = showGlobalConfirmModal;
-  // escHtml: short alias used throughout dashboard.js and event-main.js
   global.escHtml = escapeHtml;
-  // goBack: shared navigation helper (duplicated in 8 locations previously)
   global.goBack = function () { window.history.back(); };
+
+  // NPThemeManager: Centralized theme manager
+  const NPThemeManager = {
+    init() {
+      const isDark = localStorage.getItem("np_dark") === "1" || localStorage.getItem("np_dark") === "true" || localStorage.getItem("np_dark") === "yes";
+      if (isDark) {
+        document.documentElement.classList.add("dark-mode");
+        if (document.body) document.body.classList.add("dark-mode");
+        else window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
+      } else {
+        document.documentElement.classList.remove("dark-mode");
+        if (document.body) document.body.classList.remove("dark-mode");
+      }
+    },
+    toggle(enable) {
+      const isDark = enable !== undefined ? enable : !document.documentElement.classList.contains("dark-mode");
+      localStorage.setItem("np_dark", isDark ? "1" : "0");
+      if (isDark) {
+        document.documentElement.classList.add("dark-mode");
+        if (document.body) document.body.classList.add("dark-mode");
+      } else {
+        document.documentElement.classList.remove("dark-mode");
+        if (document.body) document.body.classList.remove("dark-mode");
+      }
+      return isDark;
+    },
+    isDark() {
+      return document.documentElement.classList.contains("dark-mode");
+    }
+  };
+  NPThemeManager.init();
+  global.NPThemeManager = NPThemeManager;
 })(window);
 
 // Improve responsiveness: default certain high-frequency events to passive

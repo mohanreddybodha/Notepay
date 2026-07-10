@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from models import GenderEnum, UserRole
@@ -23,8 +23,7 @@ class UserResponse(BaseModel):
     full_name: Optional[str] = None
     gender: Optional[str] = None
     created_at: Optional[datetime] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserPublicResponse(BaseModel):
     """User fields safe to expose to other event members (no phone)."""
@@ -32,8 +31,7 @@ class UserPublicResponse(BaseModel):
     full_name: Optional[str] = None
     gender: Optional[str] = None
     created_at: Optional[datetime] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class MemberContactResponse(BaseModel):
     user_id: int
@@ -69,8 +67,7 @@ class EventResponse(EventCreate):
     total_expenses: Optional[float] = 0.0
     balance: Optional[float] = 0.0
     total_to_collect: Optional[float] = 0.0
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PublicEventResponse(BaseModel):
     id: str
@@ -80,8 +77,7 @@ class PublicEventResponse(BaseModel):
     organizer_name: Optional[str] = None
     upi_id: Optional[str] = None
     upi_owner_name: Optional[str] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DonationCreate(BaseModel):
     donor_name: str
@@ -102,8 +98,7 @@ class DonationResponse(DonationCreate):
     version: int
     is_public_entry: bool
     payment_received: bool = True
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ManualDonationEntry(BaseModel):
     """Schema for manual donation entry when AI extraction fails."""
@@ -112,13 +107,14 @@ class ManualDonationEntry(BaseModel):
     receipt_session_id: Optional[str] = None
     receipt_key: Optional[str] = None
     custom_fields: Optional[Dict[str, Any]] = None
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "donor_name": "BODA MOHAN REDDY",
                 "amount": 110.00
             }
         }
+    )
 
 class ExpenseCreate(BaseModel):
     description: str
@@ -133,8 +129,7 @@ class ExpenseResponse(ExpenseCreate):
     collected_at: datetime
     version: int
     receipt_key: Optional[str] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EventMemberResponse(BaseModel):
     id: int
@@ -144,8 +139,7 @@ class EventMemberResponse(BaseModel):
     is_restricted: bool
     restricted_at: Optional[datetime] = None
     user: UserResponse
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EventMemberPublicResponse(BaseModel):
     id: int
@@ -155,8 +149,7 @@ class EventMemberPublicResponse(BaseModel):
     is_restricted: bool
     restricted_at: Optional[datetime] = None
     user: UserPublicResponse
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class RecentTransaction(BaseModel):
     id: int
@@ -223,8 +216,7 @@ class WatchedEventResponse(BaseModel):
     event_id: str
     last_viewed_at: datetime
     event: EventResponse
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EventFullDetailsResponse(BaseModel):
     event: EventResponse
@@ -303,8 +295,7 @@ class AdminErrorLogResponse(BaseModel):
     error_message: str
     traceback: str
     created_at: datetime
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AdminAuditLogResponse(BaseModel):
     id: int
@@ -315,15 +306,13 @@ class AdminAuditLogResponse(BaseModel):
     target_id: str
     details: Optional[Dict[str, Any]] = None
     created_at: datetime
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AdminUserResponse(UserResponse):
     is_banned: Optional[bool] = False
     ban_reason: Optional[str] = None
     events_count: Optional[int] = 0
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class FeedbackCreate(BaseModel):
     type: str
@@ -341,5 +330,4 @@ class AdminFeedbackResponse(BaseModel):
     message: str
     status: str
     created_at: datetime
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

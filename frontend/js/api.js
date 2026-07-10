@@ -584,7 +584,9 @@ function hideTopLoadingBar() { hideCircleLoading(); }
 // ══════════════════════════════════════════════
 //  THEME INITIALIZATION
 // ══════════════════════════════════════════════
-if (localStorage.getItem("np_dark")) {
+if (window.NPThemeManager) {
+  window.NPThemeManager.init();
+} else if (localStorage.getItem("np_dark")) {
   document.documentElement.classList.add("dark-mode");
   if (document.body) document.body.classList.add("dark-mode");
 }

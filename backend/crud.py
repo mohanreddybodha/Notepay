@@ -35,6 +35,28 @@ def fix_custom_fields_dict(obj_dict: dict) -> dict:
     return obj_dict
 
 
+try:
+    import bleach
+    _BLEACH_AVAILABLE = True
+except ImportError:
+    _BLEACH_AVAILABLE = False
+
+
+def sanitize_json_payload(data):
+    """Recursively sanitize string values inside dictionaries and lists to prevent stored XSS."""
+    if not data:
+        return data
+    if isinstance(data, str):
+        if _BLEACH_AVAILABLE:
+            return bleach.clean(data, strip=True)
+        return data
+    if isinstance(data, dict):
+        return {str(k): sanitize_json_payload(v) for k, v in data.items()}
+    if isinstance(data, list):
+        return [sanitize_json_payload(item) for item in data]
+    return data
+
+
 def _parse_json_columns(d: dict) -> dict:
     """Parse donation_custom_columns / expense_custom_columns JSON strings (SQLite compat)."""
     for col in ("donation_custom_columns", "expense_custom_columns"):
@@ -265,6 +287,14 @@ def _build_event_aggregates(db: Session, event_ids: list[str]) -> dict:
     return result
 
 
+def _serialize_event_with_member_context(e, role, is_restricted, aggs):
+    e_dict = fix_event_json(e)
+    e_dict["my_role"] = role
+    e_dict["is_restricted"] = is_restricted
+    e_dict.update(aggs.get(e.id, {}))
+    return e_dict
+
+
 def get_events_for_user(db: Session, user_id: int) -> list:
     """All events the user belongs to (organizer + collector)."""
     memberships = db.query(models.EventMember).options(
@@ -282,11 +312,7 @@ def get_events_for_user(db: Session, user_id: int) -> list:
         e = m.event
         if not e:
             continue
-        e_dict = fix_event_json(e)
-        e_dict["my_role"] = m.role
-        e_dict["is_restricted"] = m.is_restricted
-        e_dict.update(aggs.get(e.id, {}))
-        resp.append(e_dict)
+        resp.append(_serialize_event_with_member_context(e, m.role, m.is_restricted, aggs))
     return resp
 
 
@@ -310,11 +336,7 @@ def get_my_events(db: Session, user_id: int) -> list:
         e = m.event
         if not e:
             continue
-        e_dict = fix_event_json(e)
-        e_dict["my_role"] = m.role
-        e_dict["is_restricted"] = m.is_restricted
-        e_dict.update(aggs.get(e.id, {}))
-        resp.append(e_dict)
+        resp.append(_serialize_event_with_member_context(e, m.role, m.is_restricted, aggs))
     return resp
 
 
@@ -338,11 +360,7 @@ def get_shared_events(db: Session, user_id: int) -> list:
         e = m.event
         if not e:
             continue
-        e_dict = fix_event_json(e)
-        e_dict["my_role"] = m.role
-        e_dict["is_restricted"] = m.is_restricted
-        e_dict.update(aggs.get(e.id, {}))
-        resp.append(e_dict)
+        resp.append(_serialize_event_with_member_context(e, m.role, m.is_restricted, aggs))
     return resp
 
 
@@ -531,7 +549,7 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
                     if modified:
                         flag_modified(d, "custom_fields")
 
-        event.donation_custom_columns = data.donation_custom_columns
+        event.donation_custom_columns = sanitize_json_payload(data.donation_custom_columns)
 
     if data.expense_custom_columns is not None:
         old_cols = event.expense_custom_columns or []
@@ -582,7 +600,7 @@ def update_event(db: Session, event_id: str, data: schemas.EventUpdate, user_id:
                     if modified:
                         flag_modified(e, "custom_fields")
 
-        event.expense_custom_columns = data.expense_custom_columns
+        event.expense_custom_columns = sanitize_json_payload(data.expense_custom_columns)
 
     if data.show_donations is not None:
         event.show_donations = data.show_donations
@@ -651,7 +669,7 @@ def create_donation(db: Session, event_id: str, collector_id: int, donation: sch
         donor_name=donation.donor_name,
         amount=donation.amount,
         collected_by=collector_id,
-        custom_fields=donation.custom_fields,
+        custom_fields=sanitize_json_payload(donation.custom_fields),
         receipt_key=getattr(donation, 'receipt_key', None),
         is_public_entry=is_public_entry,
         payment_received=donation.payment_received if donation.payment_received is not None else True
@@ -673,7 +691,7 @@ def update_donation(db: Session, donation_id: int, data: schemas.DonationUpdate)
     if data.amount is not None:
         donation.amount = data.amount
     if data.custom_fields is not None:
-        donation.custom_fields = data.custom_fields
+        donation.custom_fields = sanitize_json_payload(data.custom_fields)
     if data.receipt_key is not None:
         donation.receipt_key = data.receipt_key if data.receipt_key != "" else None
     if data.payment_received is not None:
@@ -743,7 +761,7 @@ def create_expense(db: Session, event_id: str, collector_id: int, expense: schem
         description=expense.description,
         amount=expense.amount,
         collected_by=collector_id,
-        custom_fields=expense.custom_fields,
+        custom_fields=sanitize_json_payload(expense.custom_fields),
         receipt_key=getattr(expense, 'receipt_key', None)
     )
     db.add(db_expense)
@@ -763,7 +781,7 @@ def update_expense(db: Session, expense_id: int, data: schemas.ExpenseUpdate):
     if data.amount is not None:
         expense.amount = data.amount
     if data.custom_fields is not None:
-        expense.custom_fields = data.custom_fields
+        expense.custom_fields = sanitize_json_payload(data.custom_fields)
     if data.receipt_key is not None:
         expense.receipt_key = data.receipt_key if data.receipt_key != "" else None
     expense.version += 1

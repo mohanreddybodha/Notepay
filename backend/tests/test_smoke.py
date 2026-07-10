@@ -187,7 +187,6 @@ def test_feedback_auth_submission(auth_client):
 
 def test_preview_code_success(auth_client):
     import models
-    # Let's seed a mock event and organizer in the test DB session
     db = TestingSessionLocal()
     
     # Create a test organizer user
@@ -200,7 +199,7 @@ def test_preview_code_success(auth_client):
         id="test-event-id-999",
         name="Birthday Bash",
         description="Birthday party",
-        event_date=models.datetime.utcnow(),
+        event_date=models.datetime.now(models.timezone.utc),
         invite_code="ABCDE-FGHI-JKLMN",
         is_active=True,
         organizer_id=2
@@ -226,7 +225,23 @@ def test_preview_code_success(auth_client):
     assert data["organizer_name"] == "Alice Organizer"
     assert data["is_active"] is True
 
+
 def test_preview_code_not_found(auth_client):
     res = auth_client.get("/events/preview-code?invite_code=INVALID-CODE-XYZ")
     assert res.status_code == 404
 
+
+def test_sanitize_json_payload():
+    import crud
+    dirty = {
+        "field1": "<script>alert('xss')</script>Hello",
+        "nested": {
+            "key": "Click <a href='javascript:alert(1)'>here</a>"
+        },
+        "list_items": ["Safe", "<img src=x onerror=alert(1)>"]
+    }
+    cleaned = crud.sanitize_json_payload(dirty)
+    assert "<script>" not in cleaned["field1"]
+    assert "Hello" in cleaned["field1"]
+    assert "javascript:" not in cleaned["nested"]["key"]
+    assert "<img" not in cleaned["list_items"][1]

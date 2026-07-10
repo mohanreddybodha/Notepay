@@ -5,12 +5,17 @@
 // ══════════════════════════════════════════════
 
 (function initLoadingOverlay() {
-  const isDark = localStorage.getItem("np_dark") || 
-                 localStorage.getItem("np_admin_theme") === "dark";
-  if (isDark) {
-    document.documentElement.classList.add("dark-mode", "dark");
+  let isDark = false;
+  if (window.NPThemeManager) {
+    window.NPThemeManager.init();
+    isDark = document.documentElement.classList.contains("dark") || document.documentElement.classList.contains("dark-mode");
   } else {
-    document.documentElement.classList.remove("dark-mode", "dark");
+    isDark = localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark";
+    if (isDark) {
+      document.documentElement.classList.add("dark-mode", "dark");
+    } else {
+      document.documentElement.classList.remove("dark-mode", "dark");
+    }
   }
 
   const isInternalNav = (document.referrer && document.referrer.includes(window.location.host)) || sessionStorage.getItem('np_session_active') === 'true';
