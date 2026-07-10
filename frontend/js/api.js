@@ -489,6 +489,10 @@ function injectSpinnerCSS() {
         pointer-events: none;
         transition: opacity 0.15s ease;
       }
+      #np-circle-spinner.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
       @media (min-width: 900px) {
         #np-circle-spinner {
           left: 236px;
@@ -498,39 +502,32 @@ function injectSpinnerCSS() {
       .np-designed-spinner {
         width: 28px;
         height: 28px;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        filter: drop-shadow(0 2px 6px rgba(20, 184, 166, 0.3));
-      }
-      .np-arc-1 {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border: 2.5px solid transparent;
-        border-top-color: #14b8a6;
-        border-right-color: #ffffff;
+        border: 3px solid rgba(26, 78, 140, 0.08);
+        border-top-color: var(--primary, #1A4E8C);
+        border-left-color: var(--primary, #1A4E8C);
         border-radius: 50%;
-        animation: npSpinFast 0.65s linear infinite;
+        animation: npSpinUnique 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        box-shadow: 0 0 8px rgba(26, 78, 140, 0.15);
       }
-      .np-arc-2 {
-        position: absolute;
-        width: 65%;
-        height: 65%;
-        border: 2px solid transparent;
-        border-bottom-color: #14b8a6;
-        border-left-color: #ffffff;
-        border-radius: 50%;
-        animation: npSpinRev 0.85s linear infinite;
+      body.dark-mode .np-designed-spinner {
+        border-color: rgba(96, 165, 250, 0.08);
+        border-top-color: var(--primary);
+        border-left-color: var(--primary);
+        box-shadow: 0 0 8px rgba(96, 165, 250, 0.25);
       }
-      @keyframes npSpinFast {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      @keyframes npSpinRev {
-        0% { transform: rotate(360deg); }
-        100% { transform: rotate(0deg); }
+      @keyframes npSpinUnique {
+        0% {
+          transform: rotate(0deg);
+          border-radius: 50%;
+        }
+        50% {
+          transform: rotate(180deg);
+          border-radius: 38% 62% 38% 62%;
+        }
+        100% {
+          transform: rotate(360deg);
+          border-radius: 50%;
+        }
       }
     `;
     document.head.appendChild(st);
@@ -538,7 +535,7 @@ function injectSpinnerCSS() {
 }
 if (typeof document !== "undefined") injectSpinnerCSS();
 
-/** Compact Designed Orbital Loading Spinner (Teal & White) */
+/** Compact Designed Loading Spinner (Single Circle) */
 function showCircleLoading() {
   _spinnerActiveCount++;
   const oldBar = document.getElementById("np-top-progress");
@@ -551,10 +548,7 @@ function showCircleLoading() {
     spinner = document.createElement("div");
     spinner.id = "np-circle-spinner";
     spinner.innerHTML = `
-      <div class="np-designed-spinner">
-        <div class="np-arc-1"></div>
-        <div class="np-arc-2"></div>
-      </div>
+      <div class="np-designed-spinner"></div>
     `;
     if (document.body) document.body.appendChild(spinner);
   }
