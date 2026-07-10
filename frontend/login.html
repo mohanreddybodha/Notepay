@@ -567,18 +567,11 @@ if (localStorage.getItem("np_dark")) {
     <div class="split-right">
       <div class="auth-container">
         
-        <div class="mobile-logo">
-          <div class="mobile-logo-icon">
-            <img src="favicon.svg" alt="Notepay"/>
-          </div>
-          <span class="brand-logo-text">Notepay</span>
-        </div>
-
         <div class="auth-views">
           <!-- PHONE SECTION -->
           <div id="section-phone" class="auth-view active">
             <div class="auth-header">
-              <h2>Welcome back</h2>
+              <h2>Welcome</h2>
               <p>Enter your mobile number to continue</p>
             </div>
             
@@ -600,7 +593,7 @@ if (localStorage.getItem("np_dark")) {
 
             <div id="recaptcha-container" style="margin-bottom:8px;"></div>
 
-            <button class="btn-primary" id="send-btn" type="button">
+            <button class="btn-primary" id="send-btn" type="button" style="border-radius: 24px;">
               <span class="btn-text">Continue</span>
               <span class="loading-text" style="display: none;"><span class="spinner"></span> Sending OTP...</span>
             </button>
@@ -641,7 +634,7 @@ if (localStorage.getItem("np_dark")) {
               <span id="otp-err-text">Invalid OTP. Please try again.</span>
             </div>
 
-            <button class="btn-primary" id="verify-btn" type="button" style="display: none;" disabled>
+            <button class="btn-primary" id="verify-btn" type="button" style="display: none; border-radius: 24px;" disabled>
               <span class="btn-text">Verify &amp; Continue</span>
             </button>
 
@@ -650,9 +643,8 @@ if (localStorage.getItem("np_dark")) {
               <span>Verifying secure code...</span>
             </div>
 
-            <div class="resend-row">
-              <div class="resend-timer">Resend in <strong id="countdown">60</strong>s</div>
-              <div class="resend-link" id="resend-link" onclick="resendOTP()">Resend OTP</div>
+            <div class="resend-row" style="justify-content: center;">
+              <div class="resend-link" id="resend-link" onclick="resendOTP()">Resend in <strong id="countdown">60</strong>s</div>
             </div>
 
             <div class="auth-footer" style="margin-top: 32px;">
@@ -958,15 +950,19 @@ async function verifyOTP() {
 // ─────────────────────────────────────────────
 function startCountdown() {
   let secs = 60;
-  const cd  = document.getElementById("countdown");
   const rl  = document.getElementById("resend-link");
   rl.classList.remove("active");
-  cd.textContent = secs;
+  rl.innerHTML = 'Resend in <strong id="countdown">' + secs + '</strong>s';
   if (countdownTimer) clearInterval(countdownTimer);
   countdownTimer = setInterval(() => {
     secs--;
-    cd.textContent = secs;
-    if (secs <= 0) { clearInterval(countdownTimer); rl.classList.add("active"); }
+    const cd = document.getElementById("countdown");
+    if (cd) cd.textContent = secs;
+    if (secs <= 0) { 
+      clearInterval(countdownTimer); 
+      rl.classList.add("active"); 
+      rl.innerHTML = "Resend OTP";
+    }
   }, 1000);
 }
 
@@ -992,8 +988,8 @@ async function resendOTP() {
     }
   } catch(err) {
     if (countdownTimer) clearInterval(countdownTimer);
-    document.getElementById("countdown").textContent = "0";
     rl.classList.add("active");
+    rl.innerHTML = "Resend OTP";
     showOTPError(getFriendlyError(err));
   }
 }
