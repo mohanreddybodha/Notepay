@@ -830,9 +830,7 @@
       justify-content: center;
     }
 
-    .scroll-list::-webkit-scrollbar {
-      display: none;
-    }
+
 
     /* Save button */
     .save-btn {
@@ -1137,9 +1135,7 @@
       overflow-y: auto;
     }
 
-    .sum-body::-webkit-scrollbar {
-      display: none;
-    }
+
 
     .bal-card {
       background: var(--card);
@@ -1475,9 +1471,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    .sbox-body::-webkit-scrollbar {
-      display: none;
-    }
+
 
     .sbox-footer {
       padding: 12px 18px 32px;
@@ -2004,9 +1998,7 @@
       padding: 14px 16px;
     }
 
-    .rot-ov-body.sum-mode::-webkit-scrollbar {
-      display: none;
-    }
+
 
     .rot-close {
       background: var(--surf-var);

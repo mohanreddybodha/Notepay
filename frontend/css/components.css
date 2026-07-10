@@ -229,7 +229,7 @@ html.dark .sheet-modal, html.dark-mode .sheet-modal { background: #1c1c22; borde
       bottom: -2px;
       left: 0;
       height: 2.5px;
-      background: var(--teal);
+      background: var(--np-navy, #1A4E8C);
       border-radius: 2px;
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 2;
