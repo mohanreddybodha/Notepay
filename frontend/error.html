@@ -6,22 +6,106 @@
   <meta charset="UTF-8">
   <title>Redirecting...</title>
   <script>
-    // This page is served when CloudFront gets a 404.
+  <script>
+    // This page is served when CloudFront gets a 404 or an unknown path.
     // It reconstructs the correct .html URL and redirects the user.
-    var path = window.location.pathname;
-    var search = window.location.search;
-    var hash = window.location.hash;
+    var path    = window.location.pathname;
+    var search  = window.location.search;
+    var hash    = window.location.hash;
+    var params  = new URLSearchParams(search);
 
-    // Map clean paths back to .html files
-    var knownPages = ['/event', '/dashboard', '/login', '/join-event', '/create-event', '/profile', '/edit-profile', '/profile-setup', '/privacy', '/terms', '/guide', '/contact'];
-    var matched = knownPages.find(function(p) { return path === p || path.startsWith(p + '?'); });
-
-    if (path === '/signup') {
-      window.location.replace('/login.html' + search + hash);
-    } else if (matched) {
-      window.location.replace(matched + '.html' + search + hash);
-    } else {
-      window.location.replace('/login.html');
+    // ── 1. Backward compatibility: old .html?param= style URLs ──────────────
+    // Redirect /event.html?id=ABCD123 → /event/ABCD123
+    if (path === '/event.html' || path === '/event') {
+      var id = params.get('id') || params.get('eventId') || params.get('event_id');
+      if (id) {
+        var tab = params.get('tab');
+        var seg = tab === 'don' ? '/collections' : tab === 'exp' ? '/expenses' : tab === 'sum' ? '/summary' : '';
+        window.location.replace('/event/' + encodeURIComponent(id) + seg);
+      } else {
+        window.location.replace('/event.html' + search + hash);
+      }
+    }
+    // Redirect /donate.html?event_id=ABCD123 → /donate/ABCD123
+    else if (path === '/donate.html' || path === '/donate') {
+      var eid = params.get('event_id') || params.get('id');
+      if (eid) window.location.replace('/donate/' + encodeURIComponent(eid));
+      else window.location.replace('/donate.html' + search + hash);
+    }
+    // Redirect /create-event.html?edit=ABCD123 → /edit-event/ABCD123
+    else if (path === '/create-event.html') {
+      var editId = params.get('edit');
+      if (editId) window.location.replace('/edit-event/' + encodeURIComponent(editId));
+      else window.location.replace('/create-event');
+    }
+    // Redirect /join-event.html → /join (preserve ?code= param)
+    else if (path === '/join-event.html') {
+      window.location.replace('/join' + search + hash);
+    }
+    // Redirect /dashboard.html → /dashboard (tab from localStorage)
+    else if (path === '/dashboard.html') {
+      window.location.replace('/dashboard' + hash);
+    }
+    // Redirect /profile.html → /profile
+    else if (path === '/profile.html') {
+      window.location.replace('/profile' + hash);
+    }
+    // Redirect /edit-profile.html → /profile/edit
+    else if (path === '/edit-profile.html') {
+      window.location.replace('/profile/edit' + hash);
+    }
+    // Redirect /profile-setup.html → /profile/setup
+    else if (path === '/profile-setup.html') {
+      window.location.replace('/profile/setup' + hash);
+    }
+    // Redirect /login.html → /login
+    else if (path === '/login.html') {
+      window.location.replace('/login' + search + hash);
+    }
+    // ── 2. Segment-based clean path routing ─────────────────────────────────
+    // /event/ABCD123 or /event/ABCD123/collections → event.html
+    else if (path.startsWith('/event/')) {
+      window.location.replace('/event.html' + search + hash);
+    }
+    // /edit-event/ABCD123 → create-event.html
+    else if (path.startsWith('/edit-event/')) {
+      window.location.replace('/create-event.html' + search + hash);
+    }
+    // /donate/ABCD123 → donate.html
+    else if (path.startsWith('/donate/')) {
+      window.location.replace('/donate.html' + search + hash);
+    }
+    // /join or /join?code= → join-event.html
+    else if (path === '/join' || path.startsWith('/join/')) {
+      window.location.replace('/join-event.html' + search + hash);
+    }
+    // /profile/edit → edit-profile.html
+    else if (path === '/profile/edit') {
+      window.location.replace('/edit-profile.html' + hash);
+    }
+    // /profile/setup → profile-setup.html
+    else if (path === '/profile/setup') {
+      window.location.replace('/profile-setup.html' + hash);
+    }
+    // ── 3. Simple clean path pages ───────────────────────────────────────────
+    else {
+      var knownPages = {
+        '/dashboard':     '/dashboard.html',
+        '/login':         '/login.html',
+        '/create-event':  '/create-event.html',
+        '/profile':       '/profile.html',
+        '/admin':         '/admin.html',
+        '/guide':         '/guide.html',
+        '/privacy':       '/privacy.html',
+        '/terms':         '/terms.html',
+        '/signup':        '/login.html',
+      };
+      var mapped = knownPages[path];
+      if (mapped) {
+        window.location.replace(mapped + search + hash);
+      } else {
+        window.location.replace('/login.html');
+      }
     }
   </script>
 <link rel="icon" type="image/png" href="favicon.png" />

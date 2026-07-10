@@ -56,15 +56,130 @@
     el.style.background = getAvatarColor(name);
   }
 
+  // ── URL Helpers ──────────────────────────────────────────────────────────
+  // Tab name → URL segment mapping for event pages
+  const EVENT_TAB_SEGMENTS = { don: 'collections', exp: 'expenses', sum: 'summary' };
+  // URL segment → tab name reverse map
+  const EVENT_SEGMENT_TABS = { collections: 'don', expenses: 'exp', summary: 'sum' };
+
+  /**
+   * buildUrl(page, ...segments) — builds a clean absolute path.
+   * On localhost/.html environment: returns legacy .html?param URL for compatibility.
+   * On production: returns clean /path/segments URL.
+   *
+   * Examples:
+   *   buildUrl("dashboard")                      → "/dashboard"
+   *   buildUrl("event", "ABCD123")               → "/event/ABCD123"
+   *   buildUrl("event", "ABCD123", "collections")→ "/event/ABCD123/collections"
+   *   buildUrl("edit-event", "ABCD123")          → "/edit-event/ABCD123"
+   *   buildUrl("donate", "ABCD123")              → "/donate/ABCD123"
+   *   buildUrl("join")                           → "/join"
+   *   buildUrl("login")                          → "/login"
+   */
+  function buildUrl(page, ...segments) {
+    const isLocal = window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:';
+
+    // Legacy HTML filenames for pages that need ?param style on localhost
+    const pageToHtml = {
+      'dashboard':   'dashboard.html',
+      'event':       'event.html',
+      'edit-event':  'create-event.html',
+      'create-event':'create-event.html',
+      'join':        'join-event.html',
+      'donate':      'donate.html',
+      'profile':     'profile.html',
+      'profile/edit':'edit-profile.html',
+      'profile/setup':'profile-setup.html',
+      'login':       'login.html',
+      'admin':       'admin.html',
+      'guide':       'guide.html',
+      'privacy':     'privacy.html',
+      'terms':       'terms.html',
+    };
+
+    if (isLocal) {
+      // On localhost, use the upgraded serve_frontend.py clean routing
+      // Build clean path — the dev server now handles all clean paths
+      const parts = [page, ...segments.filter(Boolean)];
+      return '/' + parts.join('/');
+    }
+
+    // Production: clean path segments
+    const parts = [page, ...segments.filter(Boolean)];
+    return '/' + parts.join('/');
+  }
+
+  /**
+   * parseCurrentPath() — extracts structured context from window.location.pathname.
+   *
+   * Examples:
+   *   /event/ABCD123/collections → { page: "event", id: "ABCD123", sub: "collections", tab: "don" }
+   *   /edit-event/ABCD123        → { page: "edit-event", id: "ABCD123", sub: null, tab: null }
+   *   /dashboard                 → { page: "dashboard", id: null, sub: null, tab: null }
+   *   /donate/ABCD123            → { page: "donate", id: "ABCD123", sub: null, tab: null }
+   *
+   * Also handles legacy .html?param URLs for backward compatibility:
+   *   /event.html?id=ABCD123&tab=don → { page: "event", id: "ABCD123", sub: "collections", tab: "don" }
+   */
+  function parseCurrentPath() {
+    const pathname = window.location.pathname;
+    const search   = window.location.search;
+
+    // Normalize: strip leading slash, strip .html suffix
+    let clean = pathname.replace(/^\//, '').replace(/\.html$/, '');
+    const parts = clean.split('/').filter(Boolean);
+
+    let page = parts[0] || '';
+    let id   = parts[1] || null;
+    let sub  = parts[2] || null;
+
+    // Normalize page aliases
+    if (page === 'join-event') page = 'join';
+    if (page === 'create-event' && id) { page = 'edit-event'; }
+    if (page === 'edit-profile') { page = 'profile'; sub = 'edit'; id = null; }
+    if (page === 'profile-setup') { page = 'profile'; sub = 'setup'; id = null; }
+
+    // Derive tab name from sub segment
+    let tab = sub ? (EVENT_SEGMENT_TABS[sub] || null) : null;
+
+    // Backward compatibility: if no id in path, check ?id= query param
+    if (!id || id === 'undefined') {
+      const p = new URLSearchParams(search);
+      id = p.get('id') || p.get('eventId') || p.get('event_id') || p.get('edit') || null;
+    }
+    // Backward compatibility: if no tab in path, check ?tab= query param
+    if (!tab) {
+      const p = new URLSearchParams(search);
+      const t = p.get('tab');
+      if (t && EVENT_TAB_SEGMENTS[t]) {
+        tab = t;
+        sub = EVENT_TAB_SEGMENTS[t];
+      }
+    }
+
+    return { page, id, sub, tab };
+  }
+
+  /**
+   * getCleanUrl(url) — legacy alias kept for backward compatibility.
+   * Strips .html extensions on production. Existing call sites work unchanged.
+   */
   function getCleanUrl(url) {
-    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:";
-    if (!isLocal && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && window.location.protocol !== "file:") {
-      const u = new URL(url, window.location.href);
-      u.pathname = u.pathname.replace(/\.html$/, "");
-      return u.pathname + u.search + u.hash;
+    const isLocal = window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:';
+    if (!isLocal) {
+      try {
+        const u = new URL(url, window.location.href);
+        u.pathname = u.pathname.replace(/\.html$/, '');
+        return u.pathname + u.search + u.hash;
+      } catch (e) { /* ignore bad URLs */ }
     }
     return url;
   }
+
 
   function showToast(msg, type = "default") {
     const existing = document.querySelector(".toast");
@@ -87,6 +202,8 @@
     getInitials,
     getAvatarColor,
     applyAvatar,
+    buildUrl,
+    parseCurrentPath,
     getCleanUrl,
     showToast
   };
@@ -99,6 +216,8 @@
   global.getInitials = getInitials;
   global.getAvatarColor = getAvatarColor;
   global.applyAvatar = applyAvatar;
+  global.buildUrl = buildUrl;
+  global.parseCurrentPath = parseCurrentPath;
   global.getCleanUrl = getCleanUrl;
   global.showToast = showToast;
   // escHtml: short alias used throughout dashboard.js and event-main.js

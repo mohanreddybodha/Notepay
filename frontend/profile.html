@@ -725,14 +725,11 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
 </script>
 <script>
 function goBackOrDashboard() {
-      const dbtab = new URLSearchParams(window.location.search).get('dbtab');
-      const qs = dbtab !== null ? `?tab=${dbtab}` : '';
-      if (window.history.length > 1 && document.referrer.includes('dashboard')) {
-        history.back();
-      } else if (window.history.length > 1 && document.referrer.includes('event')) {
+      // Tab state is in localStorage (np_dash_tab) — no need to pass it in the URL
+      if (window.history.length > 1 && document.referrer && (document.referrer.includes('dashboard') || document.referrer.includes('event'))) {
         history.back();
       } else {
-        window.location.href = getCleanUrl(`dashboard.html${qs}`);
+        window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html');
       }
     }
 </script>

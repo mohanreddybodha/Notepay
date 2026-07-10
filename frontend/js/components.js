@@ -30,14 +30,14 @@ class NPSidebar extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
     <aside class="sidebar">
-      <div class="sb-brand" onclick="window.location.href='dashboard.html'" style="cursor:pointer;">
+      <div class="sb-brand" onclick="window.location.href='/dashboard'" style="cursor:pointer;">
         <img src="favicon.svg" alt="Notepay Logo" class="brand-logo-img">
         <span class="sb-brand-name">Notepay</span>
       </div>
 
       <nav class="sb-nav">
         <div class="sb-section">Events</div>
-        <div class="sb-item" id="sb-tab-0" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(0)} else {window.location.href='dashboard.html?tab=0'}">
+        <div class="sb-item" id="sb-tab-0" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(0)} else {window.location.href='/dashboard'}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
@@ -45,7 +45,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           All Events <span class="sb-count" id="sb-count-0">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-1" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(1)} else {window.location.href='dashboard.html?tab=1'}">
+        <div class="sb-item" id="sb-tab-1" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(1)} else {window.location.href='/dashboard'}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
@@ -54,7 +54,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           My Events <span class="sb-count" id="sb-count-1">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-2" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(2)} else {window.location.href='dashboard.html?tab=2'}">
+        <div class="sb-item" id="sb-tab-2" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(2)} else {window.location.href='/dashboard'}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -63,7 +63,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           Shared Events <span class="sb-count" id="sb-count-2">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-3" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(3)} else {window.location.href='dashboard.html?tab=3'}">
+        <div class="sb-item" id="sb-tab-3" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(3)} else {window.location.href='/dashboard'}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
             <circle cx="12" cy="12" r="3" />
@@ -73,7 +73,7 @@ class NPSidebar extends HTMLElement {
 
         <div class="sb-divider"></div>
         <div class="sb-section" style="margin-top:0;">Add</div>
-        <a href="create-event.html" class="sb-item" id="sb-create">
+        <a href="/create-event" class="sb-item" id="sb-create">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="16" />
@@ -81,7 +81,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           Create Event
         </a>
-        <a href="join-event.html" class="sb-item" id="sb-join">
+        <a href="/join" class="sb-item" id="sb-join">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
             <polyline points="10 17 15 12 10 7" />
@@ -92,7 +92,7 @@ class NPSidebar extends HTMLElement {
       </nav>
 
       <div class="sb-footer">
-        <a href="profile.html" class="sb-user">
+        <a href="/profile" class="sb-user">
           <div class="sb-avatar" id="av-btn-side">??</div>
           <div>
             <div class="sb-uname" id="user-name-side">My Profile</div>
@@ -141,7 +141,7 @@ class NPSidebar extends HTMLElement {
       const el = this.querySelector('#sb-' + activeLink);
       if (el) {
         el.classList.add('active');
-      } else if (activeLink === 'event' || window.location.pathname.includes('event.html')) {
+      } else if (activeLink === 'event' || window.location.pathname.startsWith('/event/') || window.location.pathname.includes('event.html')) {
         let tabNum = '0';
         try {
           const uParams = new URLSearchParams(window.location.search);

@@ -17,21 +17,13 @@ let currentCollections = 0;
     }
   } catch(e) {}
   function goBack() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const from = urlParams.get("from");
-    const editId = urlParams.get("edit");
-    const tab = urlParams.get("from_tab") || "0";
-    const qs = "?tab=" + tab;
-    if (from === "dashboard") {
-      window.location.href = getCleanUrl("dashboard.html") + qs;
-    } else if (from === "event" && editId) {
-      window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
+    // editId comes from clean path /edit-event/ABCD123 or legacy ?edit= param
+    const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
+    const editId = pathCtx.id || new URLSearchParams(window.location.search).get('edit');
+    if (editId) {
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('event', editId) : getCleanUrl('event.html') + '?id=' + encodeURIComponent(editId);
     } else {
-      if (editId) {
-        window.location.href = getCleanUrl("event.html") + "?id=" + encodeURIComponent(editId);
-      } else {
-        window.location.href = getCleanUrl("dashboard.html") + qs;
-      }
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html');
     }
   }
 
@@ -124,8 +116,9 @@ let currentCollections = 0;
   });
 
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const editId = urlParams.get("edit");
+  // Extract editId from clean path (/edit-event/ABCD123) or legacy ?edit= param
+  const _pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
+  const editId = _pathCtx.id || new URLSearchParams(window.location.search).get('edit');
 
   if (!editId) {
     waitForAuthReady().finally(() => {

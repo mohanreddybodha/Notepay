@@ -3,19 +3,15 @@ let currentTab = 0;
 let isFirstLoad = true;
 let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: 'all', date: 'all', dStart: '', dEnd: '' };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab') || urlParams.get('dbtab') || urlParams.get('from_tab');
-    if (tabParam !== null) {
-      currentTab = parseInt(tabParam) || 0;
-    } else {
-      const savedTab = localStorage.getItem('np_dash_tab');
-      if (savedTab !== null) {
-        currentTab = parseInt(savedTab) || 0;
-      }
+    // Tab is driven by localStorage only (industry standard: UI prefs not in URL)
+    const savedTab = localStorage.getItem('np_dash_tab');
+    if (savedTab !== null) {
+      currentTab = parseInt(savedTab) || 0;
     }
 
     // Set tab immediately on load to prevent visual flashing
     switchTab(currentTab, true);
+    const urlParams = new URLSearchParams(window.location.search);
     const viewParam = urlParams.get('view');
     if (viewParam === 'create') {
       switchSPAView('create');
@@ -840,8 +836,8 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         const dateInput = document.getElementById("spa-ev-date");
         if (dateInput && !dateInput.value) dateInput.valueAsDate = new Date();
       } else if (viewName === 'join') {
-        // Removed SPA join view. Navigates to standalone join-event.html
-        window.location.href = getCleanUrl('join-event.html');
+        // Navigate to standalone join page (clean URL)
+        window.location.href = (typeof buildUrl === 'function') ? buildUrl('join') : getCleanUrl('join-event.html');
 
       } else {
         cr.style.display = 'none';
@@ -856,7 +852,7 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         if (document.querySelector('.tb-title')) document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
         document.getElementById('sb-tab-' + (typeof currentTab !== 'undefined' ? currentTab : 0))?.classList.add('active');
         if (window.location.pathname.indexOf('dashboard') === -1 && window.location.pathname !== '/' && !window.location.pathname.endsWith('/')) {
-          history.pushState({spa: 'overview'}, '', getCleanUrl('dashboard.html?tab=' + (typeof currentTab !== 'undefined' ? currentTab : 0)));
+          history.pushState({spa: 'overview'}, '', (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html'));
         }
       }
       window.scrollTo(0, 0);

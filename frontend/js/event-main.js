@@ -3,15 +3,8 @@
       window.addEventListener('DOMContentLoaded', () => document.body.classList.add("dark-mode"));
     }
     // ── State ──
-    const params = new URLSearchParams(location.search);
-    
+    // fallbackDashTab: tab state is managed by localStorage only (not URL params)
     let fallbackDashTab = null;
-    {
-      const params = new URLSearchParams(window.location.search);
-      const t = params.get('tab') || params.get('from_tab') || params.get('dbtab');
-      if (['0', '1', '2', '3'].includes(t)) fallbackDashTab = t;
-      else fallbackDashTab = null;
-    }
 
     function getSmartDashTab() {
       if (fallbackDashTab !== null && fallbackDashTab !== undefined) {
@@ -30,7 +23,11 @@
       return tab;
     }
 
-    const eventId = params.get("id") || params.get("eventId") || params.get("event_id");
+    // Extract eventId from clean path (/event/ABCD123) or legacy ?id= param
+    const eventId = (typeof parseCurrentPath === 'function' ? parseCurrentPath().id : null)
+      || new URLSearchParams(location.search).get('id')
+      || new URLSearchParams(location.search).get('eventId')
+      || new URLSearchParams(location.search).get('event_id');
     let eventData = null;
     let myUserId = null;
     let isOrganizer = false;
@@ -127,7 +124,10 @@
             <div style="font-size:48px; margin-bottom:20px;">❌</div>
             <div style="font-weight:900; font-size:22px; margin-bottom:10px;">Invalid event link</div>
             <div style="color:var(--text3); line-height:1.6; margin-bottom:20px;">This event could not be opened because the page URL is missing a valid event ID.</div>
-            <button class="btn" onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + getSmartDashTab())" style="padding:12px 28px; border-radius:14px; margin-top: 10px;">Back to Dashboard</button>
+            <button onclick="window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard'):getCleanUrl('dashboard.html'))" class="btn" 
+                  style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+                  ← Back to Dashboard
+                </button>
           </div>
         `;
       }
@@ -351,7 +351,7 @@
               <div style="font-size:72px; margin-bottom:20px;">🔒</div>
               <div style="font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Access Denied</div>
               <div style="font-size:15px;color:var(--text3);line-height:1.6;max-width:300px;margin:0 auto 24px;">This event is private or you do not have permission to view it.</div>
-              <button onclick="window.location.href=getCleanUrl('dashboard.html?tab=' + getSmartDashTab())" class="btn" 
+              <button onclick="window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard'):getCleanUrl('dashboard.html'))" class="btn" 
                 style="margin-top:10px; padding:14px 40px; border-radius:18px; background:var(--primary); color:white; font-weight:900; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
                 ← Back to Dashboard
               </button>
@@ -683,9 +683,17 @@
       }
       currentTab = tab;
       if (updateUrl) {
-        const p = new URLSearchParams(window.location.search);
-        p.set("tab", tab);
-        history.replaceState(null, "", "?" + p.toString());
+        // Write clean path segment URL: /event/ABCD123/collections
+        const tabSegment = { don: 'collections', exp: 'expenses', sum: 'summary' }[tab];
+        if (eventId && tabSegment) {
+          const cleanBase = (typeof buildUrl === 'function') ? buildUrl('event', eventId, tabSegment) : window.location.pathname;
+          history.replaceState(null, '', cleanBase);
+        } else {
+          // Fallback: update query param on old-style URL
+          const p = new URLSearchParams(window.location.search);
+          p.set('tab', tab);
+          history.replaceState(null, '', '?' + p.toString());
+        }
       }
       ["don", "exp", "sum"].forEach(t => {
         const el = document.getElementById("tab-" + t);
@@ -4306,7 +4314,8 @@
     }
 
     function goBackToDashboard() {
-      window.location.href = getCleanUrl(`dashboard.html?tab=${getSmartDashTab()}`);
+      // Tab is stored in localStorage (getSmartDashTab persists it), no need in URL
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html');
     }
     // ── CHAT MODULE ──
     let chatMessages = [];

@@ -1,8 +1,10 @@
-// Extract Event ID from URL
+// Extract Event ID from clean URL path (/donate/ABCD123) or legacy ?event_id= param
 const urlParams = new URLSearchParams(window.location.search);
-const eventId = urlParams.get('event_id');
+const eventId = (typeof parseCurrentPath === 'function' ? parseCurrentPath().id : null)
+  || urlParams.get('event_id')
+  || urlParams.get('id');
 
-// Hide .html extension from URL bar
+// Hide .html extension from URL bar (legacy pages only)
 if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
   const cleanPath = window.location.pathname.slice(0, -5);
   window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
