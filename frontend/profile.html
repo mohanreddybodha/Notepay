@@ -510,9 +510,8 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
     if (cachedProfile) renderProfile(JSON.parse(cachedProfile));
   } catch(e) {}
 
-  if (typeof showCircleLoading === "function") showCircleLoading();
   waitForAuthReady().then(async user => {
-    if (!user) { hideCircleLoading(true); return; }
+    if (!user) { return; }
 
     try {
       const p = await getMyProfile();
@@ -535,8 +534,6 @@ if (localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") ==
       } else {
         showToast("Failed to load profile.","error");
       }
-    } finally {
-      hideCircleLoading(true);
     }
   });
 

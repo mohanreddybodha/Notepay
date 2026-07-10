@@ -518,15 +518,9 @@ function injectSpinnerCSS() {
       @keyframes npSpinUnique {
         0% {
           transform: rotate(0deg);
-          border-radius: 50%;
-        }
-        50% {
-          transform: rotate(180deg);
-          border-radius: 38% 62% 38% 62%;
         }
         100% {
           transform: rotate(360deg);
-          border-radius: 50%;
         }
       }
     `;

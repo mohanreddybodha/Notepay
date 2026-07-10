@@ -928,33 +928,32 @@
           </div>
 
           <!-- Premium Preview Card Container -->
-          <div id="join-preview-wrapper"
-            style="position:relative; height:94px; margin-bottom:20px; border-radius:16px; overflow:hidden;">
-            <!-- Resolved State (Premium Placeholder) -->
+          <div id="join-preview-wrapper" style="display: none; margin-bottom: 24px;">
+            <!-- Resolved State (Premium Card) -->
             <div id="preview-resolved-state"
-              style="position:absolute; inset:0; background:linear-gradient(135deg, var(--surface) 0%, var(--np-navy-lt) 100%); border:1px solid rgba(96,165,250,0.3); border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px; transition:opacity 0.3s ease; opacity:1; pointer-events:auto; box-shadow:0 4px 16px rgba(96,165,250,0.08);">
-              <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--np-navy);"></div>
-              <div
-                style="width:48px; height:48px; border-radius:14px; background:var(--np-navy); color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(96,165,250,0.3); flex-shrink:0;">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-card); position: relative;">
+              <div style="position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: var(--np-navy); border-top-left-radius: 14px; border-bottom-left-radius: 14px;"></div>
+              
+              <!-- Icon wrapper -->
+              <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--np-navy-lt); color: var(--np-navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(26, 78, 140, 0.05);">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
               </div>
-              <div style="flex:1; min-width:0;">
-                <div
-                  style="font-size:11px; font-weight:800; color:var(--np-navy); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:2px;">
-                  You are joining</div>
-                <div
-                  style="font-size:17px; font-weight:800; color:var(--t1); margin-bottom:4px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
-                  id="preview-event-name">—</div>
-                <div
-                  style="display:inline-flex; align-items:center; gap:6px; background:var(--bg); padding:4px 10px; border-radius:8px; border:1px solid var(--border);">
-                  <div
-                    style="width:18px; height:18px; border-radius:50%; background:var(--np-navy); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;"
-                    id="preview-org-initial">O</div>
-                  <div
-                    style="font-size:12px; font-weight:700; color:var(--t2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;"
-                    id="preview-organizer-name">—</div>
+              
+              <!-- Content details -->
+              <div style="flex: 1; min-width: 0; padding-left: 4px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">You're invited to join</div>
+                <div id="preview-event-name" style="font-size: 16px; font-weight: 800; color: var(--t1); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2;">—</div>
+                <div style="font-size: 13px; color: var(--t2); display: flex; align-items: center; gap: 6px; line-height: 1.2;">
+                  <span style="color: var(--t3);">Organizer:</span>
+                  <div style="display: inline-flex; align-items: center; gap: 4px; min-width: 0;">
+                    <div id="preview-org-initial" style="width: 16px; height: 16px; border-radius: 50%; background: var(--np-navy); display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: bold; flex-shrink: 0;">O</div>
+                    <span id="preview-organizer-name" style="font-weight: 600; color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">—</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1065,7 +1064,8 @@
       document.getElementById("err-note").classList.remove("visible");
       document.getElementById("warn-note").classList.remove("visible");
 
-      // Reset to placeholder when typing
+      // Hide preview card immediately when user edits or changes input
+      document.getElementById("join-preview-wrapper").style.display = "none";
       document.getElementById("preview-event-name").textContent = "—";
       document.getElementById("preview-organizer-name").textContent = "—";
       const init = document.getElementById("preview-org-initial");
@@ -1084,14 +1084,12 @@
       const errTxt = document.getElementById("err-txt");
       const warn = document.getElementById("warn-note");
       const initialEl = document.getElementById("preview-org-initial");
-
-      nameEl.textContent = "Resolving code...";
-      orgEl.textContent = "Please wait";
-      if (initialEl) initialEl.textContent = "O";
+      const wrapperEl = document.getElementById("join-preview-wrapper");
 
       field.classList.remove("err", "warn");
       err.classList.remove("visible");
       warn.classList.remove("visible");
+      wrapperEl.style.display = "none"; // Hide initially while fetching
 
       try {
         const res = await previewEventCode(code);
@@ -1106,6 +1104,7 @@
           orgEl.textContent = res.organizer_name;
           const initial = res.organizer_name ? res.organizer_name.charAt(0).toUpperCase() : "O";
           if (initialEl) initialEl.textContent = initial;
+          wrapperEl.style.display = "block"; // Show only on active and correct code
         }
       } catch (e) {
         nameEl.textContent = "—";
