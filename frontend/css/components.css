@@ -229,7 +229,7 @@ html.dark .sheet-modal, html.dark-mode .sheet-modal { background: #1c1c22; borde
       bottom: -2px;
       left: 0;
       height: 2.5px;
-      background: var(--np-navy, #1A4E8C);
+      background: var(--teal);
       border-radius: 2px;
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 2;
@@ -243,11 +243,14 @@ html.dark .sheet-modal, html.dark-mode .sheet-modal { background: #1c1c22; borde
       font-weight: 900;
       color: var(--text3);
       cursor: pointer;
-      transition: color .15s;
+      border-bottom: 2.5px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
       user-select: none;
     }
 .tab-h.active {
       color: var(--primary);
+      border-bottom-color: var(--teal);
     }
 
 .tab-chip {
