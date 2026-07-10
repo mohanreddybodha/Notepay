@@ -196,7 +196,6 @@
 
     .tab-h.active {
       color: var(--teal);
-      border-bottom-color: var(--teal);
     }
 
     .tab-h.active svg {
@@ -216,8 +215,13 @@
     }
 
     .tab-indicator {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
       height: 2.5px;
       background: var(--teal);
+      border-radius: 2px 2px 0 0;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Table */
