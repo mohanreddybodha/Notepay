@@ -485,7 +485,7 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
 
       let clickAction = "";
       if (canClick) {
-        clickAction = `onclick="window.location.href='${eventUrl}&dbtab=' + currentTab"`;
+        clickAction = `onclick="window.location.href='${eventUrl}'"`;
       } else {
         let blockTitle = "";
         let blockReason = "";

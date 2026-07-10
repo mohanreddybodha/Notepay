@@ -39,6 +39,9 @@ function showRejectionPopup(message) {
   const modal = document.getElementById('rejection-modal');
   modal.style.display = 'flex';
   setBackgroundScroll(true);
+  // Ensure main-card is visible so background is not blank
+  const mainCard = document.getElementById('main-card');
+  if (mainCard) mainCard.style.display = 'block';
   // Restart animation
   const box = modal.querySelector('div');
   box.style.animation = 'none';
@@ -397,6 +400,8 @@ function showManualEntryForm(isPartial = false, lockedAmount = null, receiverNam
 document.getElementById('btn-manual-cancel').addEventListener('click', () => {
   document.getElementById('manual-entry-modal').style.display = 'none';
   setBackgroundScroll(false);
+  const mainCard = document.getElementById('main-card');
+  if (mainCard) mainCard.style.display = 'block';
 });
 
 document.getElementById('btn-manual-submit').addEventListener('click', async () => {

@@ -139,7 +139,24 @@ class NPSidebar extends HTMLElement {
 
     if (activeLink) {
       const el = this.querySelector('#sb-' + activeLink);
-      if (el) el.classList.add('active');
+      if (el) {
+        el.classList.add('active');
+      } else if (activeLink === 'event' || window.location.pathname.includes('event.html')) {
+        let tabNum = '0';
+        try {
+          const uParams = new URLSearchParams(window.location.search);
+          const t = uParams.get('tab') || uParams.get('from_tab') || uParams.get('dbtab');
+          if (['0', '1', '2', '3'].includes(t)) {
+            tabNum = t;
+            localStorage.setItem('np_dash_tab', t);
+          } else {
+            const saved = localStorage.getItem('np_dash_tab');
+            if (saved && ['0', '1', '2', '3'].includes(saved)) tabNum = saved;
+          }
+        } catch(e) {}
+        const tabEl = this.querySelector('#sb-tab-' + tabNum);
+        if (tabEl) tabEl.classList.add('active');
+      }
     }
   }
 }

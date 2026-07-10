@@ -14,9 +14,16 @@
     }
 
     function getSmartDashTab() {
-      let tab = '2';
-      if (fallbackDashTab !== null && fallbackDashTab !== undefined) tab = fallbackDashTab;
-      else if (typeof isOrganizer !== 'undefined' && isOrganizer) tab = '1';
+      if (fallbackDashTab !== null && fallbackDashTab !== undefined) {
+        localStorage.setItem('np_dash_tab', fallbackDashTab);
+        return fallbackDashTab;
+      }
+      const savedTab = localStorage.getItem('np_dash_tab');
+      if (savedTab && ['0', '1', '2', '3'].includes(savedTab)) {
+        return savedTab;
+      }
+      let tab = '0';
+      if (typeof isOrganizer !== 'undefined' && isOrganizer) tab = '1';
       else if (typeof isVisitor !== 'undefined' && isVisitor) tab = '3';
       
       localStorage.setItem('np_dash_tab', tab);
@@ -209,9 +216,9 @@
         if (npSide) {
           // Clear any existing active markers
           npSide.querySelectorAll('.sb-item.active').forEach(el => el.classList.remove('active'));
-          // If organizer, highlight "My Events" (tab 1), otherwise default to "All Events" (tab 0)
-          const tabToActivate = isOrganizer ? '1' : '0';
-          const el = npSide.querySelector('#sb-tab-' + tabToActivate);
+          // Highlight the exact dashboard tab where the event was opened from (0, 1, 2, or 3)
+          const activeTabNum = typeof getSmartDashTab === 'function' ? getSmartDashTab() : (localStorage.getItem('np_dash_tab') || '0');
+          const el = npSide.querySelector('#sb-tab-' + activeTabNum);
           if (el) el.classList.add('active');
         }
       } catch (err) { /* non-fatal */ }
@@ -5594,12 +5601,7 @@ function openUpiSheet() {
       const isReq = typeof col === 'object' ? col.reqByDonor : false;
       
       const lbl = document.createElement('label');
-      lbl.style.display = 'flex';
-      lbl.style.alignItems = 'center';
-      lbl.style.gap = '8px';
-      lbl.style.fontSize = '13px';
-      lbl.style.color = 'var(--text)';
-      lbl.style.cursor = 'pointer';
+      lbl.className = 'upi-col-checkbox-label';
       
       const cb = document.createElement('input');
       cb.type = 'checkbox';
@@ -5616,11 +5618,11 @@ function openUpiSheet() {
       reqColsContainer.style.display = 'block';
     } else {
       reqColsContainer.style.display = 'block';
-      reqColsList.innerHTML = '<div style="font-size:12px; color:var(--text3); padding:4px;">No custom columns added yet. Add columns to the Collections table first.</div>';
+      reqColsList.innerHTML = '<div class="upi-cols-help-text" style="margin-top: 0;">No custom columns added yet. Add columns to the Collections table first.</div>';
     }
   } else {
     reqColsContainer.style.display = 'block';
-    reqColsList.innerHTML = '<div style="font-size:12px; color:var(--text3); padding:4px;">No custom columns added yet. Add columns to the Collections table first.</div>';
+    reqColsList.innerHTML = '<div class="upi-cols-help-text" style="margin-top: 0;">No custom columns added yet. Add columns to the Collections table first.</div>';
   }
 
   if (eventData.upi_id && eventData.upi_owner_name) {

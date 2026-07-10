@@ -508,12 +508,20 @@
 
     <!-- UPI Setup Sheet -->
     <div id="upi-sheet" class="sov" style="display:none;" onclick="closeUpiSheet()">
-        <div class="sbox" onclick="event.stopPropagation()">
-          <div class="sbox-header">
-            <div class="sh-handle"></div>
-            <div class="sh-title">Auto-Contribution Setup</div>
-          </div>
+      <div class="sbox" onclick="event.stopPropagation()">
+        <div class="sbox-header">
+          <div class="sh-handle"></div>
+          <div class="sh-title">Auto-Contribution Setup</div>
+        </div>
         <div class="sbox-body">
+          <div class="upi-setup-intro">
+            <div class="upi-setup-icon">
+              <span data-np-icon="smartphone" data-np-size="24"></span>
+            </div>
+            <div class="upi-setup-title">Receive UPI Payments</div>
+            <div class="upi-setup-subtitle">Enable automatic contribution collection and verification using UPI and receipt scanning.</div>
+          </div>
+
           <div class="ef-field">
             <div class="ef-label">UPI ID <span style="color:var(--red);">*</span></div>
             <input class="ef-input" id="upi-id-input" type="text" placeholder="e.g. yourname@upi" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -523,29 +531,48 @@
             <div class="ef-label">UPI Registered Name <span style="color:var(--red);">*</span></div>
             <input class="ef-input" id="upi-owner-name-input" type="text" placeholder="e.g. John Doe" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             <div id="upi-name-error" style="color:var(--red); font-size:12px; margin-top:4px; display:none;"></div>
-            <p style="font-size:12px; color:var(--text3); margin-top:8px;">This name will be shown to contributors.<br><strong style="color:var(--red);">Important:</strong> The receiver name found in contributor payment receipts must match this UPI registered name. Receipts with a different receiver name will be rejected.</p>
-            <div id="upi-share-section" style="display:none; margin-top:20px; min-width:0; width:100%; box-sizing:border-box;">
-              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Your Public Contribution Link</div>
-              <div style="display:flex; align-items:center; min-width:0; width:100%; box-sizing:border-box; background:var(--bg); border:2px solid var(--primary); border-radius:8px; padding:10px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);">
-                <div id="upi-link-text" style="flex:1; min-width:0; font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
-                <button onclick="shareDonationLink()" style="background:none; border:none; cursor:pointer; color:var(--primary); padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;" title="Share Link">
-                  <span data-np-icon="share" data-np-size="18"></span>
-                </button>
-                <button onclick="copyDonationLink(this)" style="background:none; border:none; cursor:pointer; color:var(--primary); padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;" title="Copy Link">
-                  <span data-np-icon="copy" data-np-size="18"></span>
-                </button>
-              </div>
-            </div>
+          </div>
 
-            <div id="upi-donor-req-cols-container" style="display:none; margin-top:20px;">
-              <div style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px;">Required columns contributor need to fill</div>
-              <div id="upi-donor-req-cols-list" style="max-height: 150px; overflow-y:auto; border-radius: 8px; padding: 10px; background: var(--bg2); display:flex; flex-direction:column; gap:8px;">
-                <!-- Checkboxes injected via JS -->
+          <div class="upi-info-card">
+            <div class="upi-info-card-icon">
+              <span data-np-icon="alert-circle" data-np-size="18"></span>
+            </div>
+            <div class="upi-info-card-content">
+              <div class="upi-info-card-title">Important Verification Rule</div>
+              <div class="upi-info-card-text">
+                The receiver name found in contributor payment receipts must match this UPI registered name. Receipts with a different receiver name will be rejected.
               </div>
-              <p style="font-size:11px; color:var(--text3); margin-top:6px;">If no columns are selected, contributors will only see the default name and amount fields.</p>
             </div>
           </div>
-          
+
+          <div id="upi-share-section" style="display:none; margin-top:20px; min-width:0; width:100%; box-sizing:border-box;">
+            <div class="upi-section-title">
+              <span data-np-icon="link" data-np-size="14"></span>
+              Your Public Contribution Link
+            </div>
+            <div class="upi-link-card">
+              <div id="upi-link-text" class="upi-link-text-container"></div>
+              <button onclick="shareDonationLink()" class="upi-link-action-btn" title="Share Link">
+                <span data-np-icon="share" data-np-size="16"></span>
+              </button>
+              <button onclick="copyDonationLink(this)" class="upi-link-action-btn" title="Copy Link">
+                <span data-np-icon="copy" data-np-size="16"></span>
+              </button>
+            </div>
+          </div>
+
+          <div id="upi-donor-req-cols-container" style="display:none; margin-top:20px;">
+            <div class="upi-section-title">
+              <span data-np-icon="file-text" data-np-size="14"></span>
+              Required Contributor Fields
+            </div>
+            <div class="upi-cols-card">
+              <div id="upi-donor-req-cols-list" class="upi-cols-list">
+                <!-- Checkboxes injected via JS -->
+              </div>
+            </div>
+            <p class="upi-cols-help-text">Select custom columns contributors must fill. If none are selected, only default name and amount are required.</p>
+          </div>
         </div>
         <div class="sbox-footer">
           <div class="ef-btns">

@@ -1166,17 +1166,11 @@ body.dark-mode .logo-box {
 }
 
 #upi-donor-req-cols-list {
-  border: 1px solid var(--border);
+  border: none !important;
 }
 /* Dark Mode visibility overrides */
 body.dark-mode .mem-row {
   border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-}
-body.dark-mode #upi-donor-req-cols-list {
-  border: 2px solid var(--primary) !important;
-}
-.dark-mode #upi-donor-req-cols-list {
-  border: 2px solid var(--primary) !important;
 }
 
 /* ── Global Orbital Loading Spinner (Teal & White) ── */
