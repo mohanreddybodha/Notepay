@@ -1005,3 +1005,4 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         btn.disabled = false; btn.style.opacity = "1";
       }
     });
+window.addEventListener('load', () => switchTab(typeof currentTab !== 'undefined' ? currentTab : 0, true));

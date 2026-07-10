@@ -2614,6 +2614,20 @@
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 200px;
+      font-size: 11px;
+    }
+
+    .chat-msg-own .chat-reply-snippet {
+      background: rgba(255, 255, 255, 0.15);
+      border-left-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .chat-msg-own .chat-reply-snippet .rsp-name {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .chat-msg-own .chat-reply-snippet .rsp-text {
+      color: rgba(255, 255, 255, 0.8);
     }
 
     /* Reactions */
@@ -2650,17 +2664,18 @@
 
     /* Highlight */
     @keyframes highlightFlash {
-      0% {
-        background-color: rgba(13, 139, 139, 0.3);
-      }
-
-      100% {
-        background-color: transparent;
-      }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      30%, 70% { opacity: 0.4; transform: scale(0.97); }
+      50% { opacity: 1; transform: scale(1); }
     }
 
     .highlight-msg {
-      animation: highlightFlash 1.5s ease-out;
+      animation: highlightFlash 1.2s ease-in-out;
+      transform-origin: center right;
+    }
+
+    .chat-msg-other .highlight-msg {
+      transform-origin: center left;
     }
 
     /* Context Menu */

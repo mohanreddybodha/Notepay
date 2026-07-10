@@ -643,7 +643,7 @@
     }
 
     .tab.active {
-      color: var(--np-navy);
+      color: var(--teal);
       font-weight: 600;
     }
 
@@ -652,7 +652,7 @@
       bottom: -1px;
       left: 0;
       height: 2.5px;
-      background: var(--np-navy);
+      background: var(--teal);
       border-radius: 2px 2px 0 0;
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
