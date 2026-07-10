@@ -2367,7 +2367,7 @@
       const desc = `An entry with the ${label} <strong>${escHtml(name)}</strong> and amount ${amtStr} already 
 exist. Do you want to add it again?`;
 
-      showConfirmModal({
+      showGlobalConfirmModal({
         title: "Duplicate Entry?",
         desc: desc,
         iconTone: "amber",
@@ -2837,7 +2837,7 @@ exist. Do you want to add it again?`;
     }
 
     function openExitPop() {
-      showConfirmModal({
+      showGlobalConfirmModal({
         title: "Exit Event",
         desc: "Are you sure you want to exit this event? Your entries will be preserved.",
         iconTone: "red",
@@ -3009,7 +3009,7 @@ exist. Do you want to add it again?`;
     }
 
     function showDelEventPop() {
-      showConfirmModal({
+      showGlobalConfirmModal({
         title: "Delete Event?",
         desc: `Are you sure you want to delete the event "<strong>${escHtml(eventData.name)}</strong>"? This will permanently remove all data and cannot be undone.`,
         iconTone: "red",

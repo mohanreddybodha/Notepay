@@ -213,7 +213,7 @@
     setTimeout(() => toast.remove(), 2300);
   }
 
-  function showConfirmModal({ title, desc, iconSvg, iconTone = 'red', confirmText = 'Confirm', confirmColor = 'var(--red)', onConfirm, cancelText = 'Cancel' }) {
+  function showGlobalConfirmModal({ title, desc, iconSvg, iconTone = 'red', confirmText = 'Confirm', confirmColor = 'var(--red)', onConfirm, cancelText = 'Cancel' }) {
     const existing = document.getElementById("np-global-confirm-modal");
     if (existing) existing.remove();
     
@@ -268,7 +268,7 @@
     parseCurrentPath,
     getCleanUrl,
     showToast,
-    showConfirmModal
+    showGlobalConfirmModal
   };
 
   global.NPUtils = utils;
@@ -283,7 +283,7 @@
   global.parseCurrentPath = parseCurrentPath;
   global.getCleanUrl = getCleanUrl;
   global.showToast = showToast;
-  global.showConfirmModal = showConfirmModal;
+  global.showGlobalConfirmModal = showGlobalConfirmModal;
   // escHtml: short alias used throughout dashboard.js and event-main.js
   global.escHtml = escapeHtml;
   // goBack: shared navigation helper (duplicated in 8 locations previously)
