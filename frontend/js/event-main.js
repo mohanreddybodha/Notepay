@@ -683,13 +683,12 @@
       }
       currentTab = tab;
       if (updateUrl) {
-        // Write clean path segment URL: /event/ABCD123/collections
         const tabSegment = { don: 'collections', exp: 'expenses', sum: 'summary' }[tab];
-        if (eventId && tabSegment) {
-          const cleanBase = (typeof buildUrl === 'function') ? buildUrl('event', eventId, tabSegment) : window.location.pathname;
-          history.replaceState(null, '', cleanBase);
+        if (eventId && tabSegment && typeof buildUrl === 'function') {
+          // buildUrl handles localhost (.html?param) vs production (/path/segments) automatically
+          history.replaceState(null, '', buildUrl('event', eventId, tabSegment));
         } else {
-          // Fallback: update query param on old-style URL
+          // Fallback: update query param on old-style URL or when buildUrl not available
           const p = new URLSearchParams(window.location.search);
           p.set('tab', tab);
           history.replaceState(null, '', '?' + p.toString());

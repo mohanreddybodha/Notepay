@@ -81,29 +81,48 @@
                     window.location.hostname === '127.0.0.1' ||
                     window.location.protocol === 'file:';
 
-    // Legacy HTML filenames for pages that need ?param style on localhost
-    const pageToHtml = {
-      'dashboard':   'dashboard.html',
-      'event':       'event.html',
-      'edit-event':  'create-event.html',
-      'create-event':'create-event.html',
-      'join':        'join-event.html',
-      'donate':      'donate.html',
-      'profile':     'profile.html',
-      'profile/edit':'edit-profile.html',
-      'profile/setup':'profile-setup.html',
-      'login':       'login.html',
-      'admin':       'admin.html',
-      'guide':       'guide.html',
-      'privacy':     'privacy.html',
-      'terms':       'terms.html',
-    };
+    // Reverse tab segment map for localhost query params
+    const segToTab = { 'collections': 'don', 'expenses': 'exp', 'summary': 'sum' };
 
     if (isLocal) {
-      // On localhost, use the upgraded serve_frontend.py clean routing
-      // Build clean path — the dev server now handles all clean paths
-      const parts = [page, ...segments.filter(Boolean)];
-      return '/' + parts.join('/');
+      // Localhost: use .html files with query params — visible in URL bar as-is
+      const pageToHtml = {
+        'dashboard':    'dashboard.html',
+        'event':        'event.html',
+        'edit-event':   'create-event.html',
+        'create-event': 'create-event.html',
+        'join':         'join-event.html',
+        'donate':       'donate.html',
+        'profile':      'profile.html',
+        'profile/edit': 'edit-profile.html',
+        'profile/setup':'profile-setup.html',
+        'login':        'login.html',
+        'admin':        'admin.html',
+        'guide':        'guide.html',
+        'privacy':      'privacy.html',
+        'terms':        'terms.html',
+      };
+      const html = pageToHtml[page] || (page + '.html');
+
+      // event.html?id=ABCD123[&tab=don]
+      if (page === 'event' && segments[0]) {
+        let url = html + '?id=' + encodeURIComponent(segments[0]);
+        if (segments[1]) {
+          const tab = segToTab[segments[1]] || segments[1];
+          url += '&tab=' + tab;
+        }
+        return url;
+      }
+      // create-event.html?edit=ABCD123
+      if (page === 'edit-event' && segments[0]) {
+        return html + '?edit=' + encodeURIComponent(segments[0]);
+      }
+      // donate.html?event_id=ABCD123
+      if (page === 'donate' && segments[0]) {
+        return html + '?event_id=' + encodeURIComponent(segments[0]);
+      }
+      // join-event.html (code stays as ?code= query param — no path change)
+      return html;
     }
 
     // Production: clean path segments
