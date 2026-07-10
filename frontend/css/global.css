@@ -1272,22 +1272,26 @@ html.dark .popup-content, html.dark-mode .popup-content {
   margin: 0 auto 16px;
 }
 .pi-red {
-  background: var(--np-red-lt);
-  color: var(--np-red);
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--red);
 }
 .pi-amber {
-  background: var(--np-amber-lt);
-  color: var(--np-amber);
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--amber);
+}
+.pi-teal {
+  background: rgba(45, 212, 191, 0.15);
+  color: var(--teal);
 }
 .popup-title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--t1);
+  color: var(--text);
   margin-bottom: 8px;
 }
 .popup-desc {
   font-size: 14px;
-  color: var(--t2);
+  color: var(--text2);
   line-height: 1.4;
   margin-bottom: 24px;
 }
@@ -1296,10 +1300,10 @@ html.dark .popup-content, html.dark-mode .popup-content {
   padding: 12px;
   font-size: 15px;
   font-weight: 600;
-  background: var(--border-str);
-  color: var(--t1);
-  border: none;
-  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   cursor: pointer;
   transition: background .15s;
 }
@@ -1307,5 +1311,6 @@ html.dark .popup-content, html.dark-mode .popup-content {
   .popup-btn:hover {
     background: var(--border);
   }
+}
 }
 

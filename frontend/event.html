@@ -730,21 +730,7 @@
       </div>
     </div>
 
-    <!-- Remove Event Confirmation Popup -->
-    <div id="remove-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box">
-        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Remove Event?</div>
-        <div class="pop-m">Do you want to remove event <strong id="remove-event-name"></strong> from your
-          <strong>Visited Events</strong> tab? You will need to visit the link again to see it.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="closeRemovePop()">Cancel</button>
-          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmRemove()">Remove</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- Remove Event Confirmation Popup handled by global modal -->
     <!-- Demote Organizer Confirmation Popup -->
     <div id="demote-pop" class="pop-ov" style="display:none;">
       <div class="pop-box" style="border:2px solid var(--red);">

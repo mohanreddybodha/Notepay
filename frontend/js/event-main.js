@@ -2863,17 +2863,20 @@ exist. Do you want to add it again?`;
     }
 
     function openRemovePop() {
-      document.getElementById("remove-event-name").textContent = eventData ? eventData.name : "";
-      document.getElementById("remove-pop").style.display = "flex";
+      showGlobalConfirmModal({
+        title: "Remove Event?",
+        desc: `Do you want to remove event <strong>${escHtml(eventData ? eventData.name : "")}</strong> from your <strong>Visited Events</strong> tab? You will need to visit the link again to see it.`,
+        iconTone: "red",
+        confirmText: "Remove",
+        confirmColor: "var(--red)",
+        onConfirm: confirmRemove
+      });
     }
-    function closeRemovePop() {
-      document.getElementById("remove-pop").style.display = "none";
-    }
+
     async function confirmRemove() {
       const lp = document.getElementById("loading-pane");
       try {
         if (lp) lp.style.display = "flex";
-        document.getElementById("remove-pop").style.display = "none";
         // If user was promoted to member, exit properly first
         try { await apiFetch("POST", `/events/${eventId}/exit`); } catch (ex) { /* Not a member, that's fine */ }
         // Then remove from discover/watched tab
