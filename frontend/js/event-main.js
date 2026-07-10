@@ -101,12 +101,12 @@
       });
       return res;
     }
-    let currentTab = params.get("tab") || "don";
+    let currentTab = new URLSearchParams(location.search).get("tab") || "don";
     let ctxTarget = null; // { type:'don'|'exp', entry, row }
     let editTarget = null;
     let isVisitor = false;
     let isRestricted = false;
-    let activeTheaterTab = params.get("theater");
+    let activeTheaterTab = new URLSearchParams(location.search).get("theater");
     let theaterRotation = 0;
     const tabRotations = { don: 0, exp: 0, sum: 0 };
     let summaryData = null; // Backend Summary data
