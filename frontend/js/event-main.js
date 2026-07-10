@@ -4663,7 +4663,7 @@
       
       let msgContent = formatChatMessageText(m.message);
       if (isDeleted) {
-        msgContent = `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-style:italic;">${npIcon('trash', {size: 16, tone: 'muted'})} This message was deleted.</span>`;
+        msgContent = `<span style="display:inline-flex;align-items:center;gap:6px;opacity:0.85;font-style:italic;font-weight:500;">${npIcon('trash', {size: 16})} This message was deleted.</span>`;
       } else if (m.id === 'ai-loading') {
         msgContent = `<div class="ai-typing-indicator"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
       }
