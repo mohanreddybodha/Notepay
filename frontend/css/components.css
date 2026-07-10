@@ -243,14 +243,11 @@ html.dark .sheet-modal, html.dark-mode .sheet-modal { background: #1c1c22; borde
       font-weight: 900;
       color: var(--text3);
       cursor: pointer;
-      border-bottom: 2.5px solid transparent;
-      margin-bottom: -2px;
-      transition: color .15s, border-color .15s;
+      transition: color .15s;
       user-select: none;
     }
 .tab-h.active {
       color: var(--primary);
-      border-bottom-color: var(--teal);
     }
 
 .tab-chip {
