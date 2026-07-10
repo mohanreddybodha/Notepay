@@ -2372,7 +2372,7 @@ exist. Do you want to add it again?`;
         desc: desc,
         iconTone: "amber",
         confirmText: "Add Anyway",
-        confirmColor: "var(--np-amber)",
+        confirmColor: "var(--amber)",
         onConfirm: onConfirm
       });
     }
