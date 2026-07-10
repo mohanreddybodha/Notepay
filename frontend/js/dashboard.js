@@ -693,6 +693,14 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         document.getElementById('p' + x).classList.toggle('hidden', x !== idx);
       });
 
+      // Update sliding indicator
+      const activeTabEl = document.getElementById('mob-tab-' + idx);
+      const indicator = document.getElementById('tab-indicator');
+      if (activeTabEl && indicator) {
+        indicator.style.width = activeTabEl.offsetWidth + 'px';
+        indicator.style.transform = `translateX(${activeTabEl.offsetLeft}px)`;
+      }
+
       // Clear filters on tab switch
       if (!noRender) {
         document.getElementById('search-input').value = '';
@@ -871,6 +879,13 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         if (document.querySelector('.tb-title')) {
           document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
         }
+      }
+      
+      const activeTabEl = document.getElementById('mob-tab-' + (typeof currentTab !== 'undefined' ? currentTab : 0));
+      const indicator = document.getElementById('tab-indicator');
+      if (activeTabEl && indicator) {
+        indicator.style.width = activeTabEl.offsetWidth + 'px';
+        indicator.style.transform = `translateX(${activeTabEl.offsetLeft}px)`;
       }
     });
 

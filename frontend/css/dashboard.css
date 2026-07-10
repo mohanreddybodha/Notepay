@@ -647,15 +647,14 @@
       font-weight: 600;
     }
 
-    .tab.active::after {
-      content: '';
+    .tab-indicator {
       position: absolute;
       bottom: -1px;
       left: 0;
-      right: 0;
       height: 2.5px;
       background: var(--np-navy);
       border-radius: 2px 2px 0 0;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .tab-chip {

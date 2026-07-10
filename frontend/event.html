@@ -365,34 +365,7 @@
       </div>
     </div>
 
-    <!-- Confirm Delete Popup -->
-    <div id="del-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box">
-        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Delete Entry?</div>
-        <div class="pop-m">"<span id="del-nm">Entry</span>" will be permanently deleted.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="closeDelPop()">Cancel</button>
-          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmDelete()">Delete</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Confirm Delete Column Popup -->
-    <div id="del-col-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box">
-        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Hide this column?</div>
-        <div class="pop-m">Are you sure you want to hide "<strong id="del-col-nm">Column</strong>"? Existing data in
-          this column will no longer be visible in the table.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="closeDelColPop()">Cancel</button>
-          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmDeleteColumn()">Hide</button>
-        </div>
-      </div>
-    </div>
+    <!-- Confirm Delete Popups are now handled globally via showConfirmModal -->
 
     <!-- Theater Mode Rotation Overlay -->
     <div id="rot-overlay" class="rot-ov">

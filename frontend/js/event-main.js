@@ -2555,32 +2555,46 @@ exist. Do you want to add it again?`;
 
     function openDelPop() {
       const name = ctxType === "don" ? ctxEntry.donor_name : ctxEntry.description;
-      document.getElementById("del-nm").textContent = name;
-      document.getElementById("del-pop").style.display = "flex";
+      showGlobalConfirmModal({
+        title: "Delete Entry?",
+        desc: `"<strong>${escHtml(name)}</strong>" will be permanently deleted.`,
+        iconTone: "red",
+        confirmText: "Delete",
+        confirmColor: "var(--red)",
+        onConfirm: confirmDelete
+      });
     }
-    function closeDelPop() { document.getElementById("del-pop").style.display = "none"; }
 
     let colToDeleteType = "custom";
 
     function openDelColPop() {
       if (!editingColName) return;
       colToDeleteType = "custom";
-      document.getElementById("del-col-nm").textContent = editingColName;
-      document.getElementById("del-col-pop").style.display = "flex";
+      showGlobalConfirmModal({
+        title: "Hide this column?",
+        desc: `Are you sure you want to hide "<strong>${escHtml(editingColName)}</strong>"? Existing data in this column will be preserved.`,
+        iconTone: "red",
+        confirmText: "Hide",
+        confirmColor: "var(--red)",
+        onConfirm: confirmDeleteColumn
+      });
     }
     
     function openDelDefColPop() {
       colToDeleteType = "default";
       const title = document.getElementById("def-col-title").textContent;
-      document.getElementById("del-col-nm").textContent = title;
-      document.getElementById("del-col-pop").style.display = "flex";
+      showGlobalConfirmModal({
+        title: "Hide this column?",
+        desc: `Are you sure you want to hide "<strong>${escHtml(title)}</strong>"? Existing data in this column will be preserved.`,
+        iconTone: "red",
+        confirmText: "Hide",
+        confirmColor: "var(--red)",
+        onConfirm: confirmDeleteColumn
+      });
     }
-
-    function closeDelColPop() { document.getElementById("del-col-pop").style.display = "none"; }
 
     async function confirmDeleteColumn() {
       if (colToDeleteType === "default") {
-        document.getElementById("del-col-pop").style.display = "none";
         await hideDefCol();
         return;
       }
@@ -2608,11 +2622,9 @@ exist. Do you want to add it again?`;
           if (activeColType === "don") renderDonations(); else renderExpenses();
         }
         closeCustomColSheet();
-        closeDelColPop();
         showToast("Column hidden.");
       } catch (e) {
         showToast(e.message || "Failed.", "error");
-        closeDelColPop();
       }
     }
 
@@ -2623,8 +2635,8 @@ exist. Do you want to add it again?`;
         clearEventCache();
         summaryData = null; // Invalidate cache
         if (activeTheaterTab) switchTheaterTab(activeTheaterTab, true);
-        closeDelPop(); showToast("Entry deleted.");
-      } catch (e) { showToast(e.message || "Failed.", "error"); closeDelPop(); }
+        showToast("Entry deleted.");
+      } catch (e) { showToast(e.message || "Failed.", "error"); }
     }
 
     function isPinned(type, id) {
