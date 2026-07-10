@@ -2360,18 +2360,21 @@
     }
 
     function openDupPop(onConfirm, name, amount, type) {
-      const msg = document.getElementById("dup-msg");
       const color = type === "don" ? "var(--green)" : "var(--red)";
       const label = type === "don" ? "contributor" : "expense";
       const amtStr = `<span style="color:${color};font-weight:900;">₹${(amount || 0).toLocaleString()}</span>`;
 
-      msg.innerHTML = `An Entry with the ${label} <strong>${escHtml(name)}</strong> and amount ${amtStr} already exist. Do you want to add it again?`;
+      const desc = `An entry with the ${label} <strong>${escHtml(name)}</strong> and amount ${amtStr} already 
+exist. Do you want to add it again?`;
 
-      document.getElementById("duplicate-pop").style.display = "flex";
-      document.getElementById("dup-confirm-btn").onclick = () => {
-        closeDupPop();
-        onConfirm();
-      };
+      showConfirmModal({
+        title: "Duplicate Entry?",
+        desc: desc,
+        iconTone: "amber",
+        confirmText: "Add Anyway",
+        confirmColor: "var(--np-amber)",
+        onConfirm: onConfirm
+      });
     }
     function closeDupPop() { document.getElementById("duplicate-pop").style.display = "none"; }
 
@@ -2834,16 +2837,20 @@
     }
 
     function openExitPop() {
-      document.getElementById("exit-pop").style.display = "flex";
+      showConfirmModal({
+        title: "Exit Event",
+        desc: "Are you sure you want to exit this event? Your entries will be preserved.",
+        iconTone: "red",
+        confirmText: "Exit",
+        confirmColor: "var(--red)",
+        onConfirm: confirmExit
+      });
     }
-    function closeExitPop() {
-      document.getElementById("exit-pop").style.display = "none";
-    }
+    
     async function confirmExit() {
       const lp = document.getElementById("loading-pane");
       try {
         if (lp) lp.style.display = "flex";
-        document.getElementById("exit-pop").style.display = "none";
         await apiFetch("POST", `/events/${eventId}/exit`);
         // Clear all cached state so user loses access immediately
         clearEventCache();
@@ -3002,12 +3009,18 @@
     }
 
     function showDelEventPop() {
-      document.getElementById("del-ev-msg").innerHTML = `Are you sure you want to delete the event "<strong>${escHtml(eventData.name)}</strong>"? This will permanently remove all data and cannot be undone.`;
-      document.getElementById("del-ev-pop").style.display = "flex";
+      showConfirmModal({
+        title: "Delete Event?",
+        desc: `Are you sure you want to delete the event "<strong>${escHtml(eventData.name)}</strong>"? This will permanently remove all data and cannot be undone.`,
+        iconTone: "red",
+        confirmText: "Delete",
+        confirmColor: "var(--red)",
+        onConfirm: doDeleteEvent
+      });
     }
     async function doDeleteEvent() {
       try { await deleteEvent(eventId); window.location.replace("dashboard.html"); }
-      catch (e) { showToast(e.message || "Delete failed.", "error"); document.getElementById("del-ev-pop").style.display = "none"; }
+      catch (e) { showToast(e.message || "Delete failed.", "error"); }
     }
 
     // ── Code Sheet ──

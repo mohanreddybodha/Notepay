@@ -473,38 +473,7 @@
       </div>
     </div>
 
-    <!-- Delete Event Popup -->
-    <div id="del-ev-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box">
-        <div class="pop-ic"><span data-np-icon="trash" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Delete Event?</div>
-        <div class="pop-m" id="del-ev-msg">All contributions, expenses and members will be permanently deleted. This cannot
-          be undone.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="document.getElementById('del-ev-pop').style.display='none'">Cancel</button>
-          <button class="btn btn-solid-danger" onclick="doDeleteEvent()">Delete</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Exit Event Confirmation Popup -->
-    <div id="exit-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box">
-        <div class="pop-ic"><span data-np-icon="log-out" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Exit Event?</div>
-        <div class="pop-m">You will no longer have access to this event. You will need a new invite code to re-join.
-          Previous entries will not be deleted.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="closeExitPop()">Cancel</button>
-          <button class="btn btn-solid-danger" style="border:none;" onclick="confirmExit()">Leave</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Duplicate Entry Warning Popup -->
-
+    <!-- Delete and Exit Popups are now handled globally via showConfirmModal -->
 
     <!-- UPI Setup Sheet -->
     <div id="upi-sheet" class="sov" style="display:none;" onclick="closeUpiSheet()">
@@ -576,23 +545,9 @@
         </div>
         <div class="sbox-footer">
           <div class="ef-btns">
-            <button class="btn btn-text-secondary" id="btn-upi-cancel" onclick="closeUpiSheet()">Cancel</button>
+            <button class="btn btn-text-secondary" style="border: 1px solid var(--border);" id="btn-upi-cancel" onclick="closeUpiSheet()">Cancel</button>
             <button class="btn btn-solid-primary" id="btn-upi-save" onclick="saveUpiId()">Save</button>
           </div>
-        </div>
-      </div>
-    </div>
-    <div id="duplicate-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box">
-        <div class="pop-ic"><span data-np-icon="alert-triangle" data-np-size="32" data-np-tone="amber"></span></div>
-        <div class="pop-t" style="color:var(--np-amber);">Duplicate Entry?</div>
-        <div class="pop-m" id="dup-msg">An entry with this name and amount already exists. Do you want to add it again?
-        </div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="closeDupPop()">Cancel</button>
-          <button class="btn btn-solid-amber" style="border:none;" id="dup-confirm-btn">Add
-            Anyway</button>
         </div>
       </div>
     </div>

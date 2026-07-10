@@ -213,6 +213,49 @@
     setTimeout(() => toast.remove(), 2300);
   }
 
+  function showConfirmModal({ title, desc, iconSvg, iconTone = 'red', confirmText = 'Confirm', confirmColor = 'var(--red)', onConfirm, cancelText = 'Cancel' }) {
+    const existing = document.getElementById("np-global-confirm-modal");
+    if (existing) existing.remove();
+    
+    const modal = document.createElement("div");
+    modal.className = "popup-modal";
+    modal.id = "np-global-confirm-modal";
+    
+    let iconClass = iconTone === 'red' ? 'pi-red' : (iconTone === 'amber' ? 'pi-amber' : 'pi-teal');
+    if (!iconSvg) {
+      if (iconTone === 'red') iconSvg = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+      else if (iconTone === 'amber') iconSvg = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+      else iconSvg = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    }
+    
+    modal.innerHTML = `
+      <div class="popup-content">
+        <div class="popup-icon ${iconClass}">${iconSvg}</div>
+        <div class="popup-title">${escapeHtml(title)}</div>
+        <div class="popup-desc" style="margin-bottom:16px;">${desc}</div>
+        <div style="display:flex;gap:8px;width:100%;">
+          <button class="popup-btn" id="ngcm-cancel" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">${escapeHtml(cancelText)}</button>
+          <button class="popup-btn" id="ngcm-confirm" style="background:${confirmColor};color:white;border:none;">${escapeHtml(confirmText)}</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.offsetHeight; // Force reflow
+    modal.classList.add("open");
+    
+    const closeModal = () => {
+      modal.classList.remove("open");
+      setTimeout(() => modal.remove(), 200);
+    };
+    
+    document.getElementById("ngcm-cancel").onclick = closeModal;
+    document.getElementById("ngcm-confirm").onclick = () => {
+      closeModal();
+      if (onConfirm) onConfirm();
+    };
+  }
+
   const utils = {
     escapeHtml,
     formatINR,
@@ -224,7 +267,8 @@
     buildUrl,
     parseCurrentPath,
     getCleanUrl,
-    showToast
+    showToast,
+    showConfirmModal
   };
 
   global.NPUtils = utils;
@@ -239,6 +283,7 @@
   global.parseCurrentPath = parseCurrentPath;
   global.getCleanUrl = getCleanUrl;
   global.showToast = showToast;
+  global.showConfirmModal = showConfirmModal;
   // escHtml: short alias used throughout dashboard.js and event-main.js
   global.escHtml = escapeHtml;
   // goBack: shared navigation helper (duplicated in 8 locations previously)
