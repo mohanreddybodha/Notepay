@@ -16,7 +16,7 @@
       flex-direction: column;
       background: var(--surface);
       width: 100%;
-      max-width: 480px;
+      max-width: 100%;
       margin: 0 auto;
       box-shadow: 0 0 0 1px var(--border);
       transition: background 0.3s, color 0.3s;
