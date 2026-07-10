@@ -1005,4 +1005,14 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         btn.disabled = false; btn.style.opacity = "1";
       }
     });
-window.addEventListener('load', () => switchTab(typeof currentTab !== 'undefined' ? currentTab : 0, true));
+
+    function initTabIndicator() {
+      if (typeof switchTab === 'function') switchTab(typeof currentTab !== 'undefined' ? currentTab : 0, true);
+    }
+    
+    window.addEventListener('load', initTabIndicator);
+    window.addEventListener('pageshow', initTabIndicator);
+    
+    if (document.fonts) {
+      document.fonts.ready.then(initTabIndicator);
+    }

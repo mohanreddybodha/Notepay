@@ -195,7 +195,7 @@
     }
 
     .tab-h.active {
-      color: var(--teal);
+      color: var(--np-navy, #1A4E8C);
     }
 
     .tab-h.active svg {
@@ -205,7 +205,7 @@
     @media (max-width: 380px) {
       .tab-h {
         gap: 3px !important;
-        font-size: clamp(10.5px, 3.1vw, 12px) !important;
+        font-size: clamp(11.5px, 3.1vw, 12.5px) !important;
         padding: 10px 2px !important;
       }
       .tab-h svg {
@@ -219,7 +219,7 @@
       bottom: -2px;
       left: 0;
       height: 2.5px;
-      background: var(--teal);
+      background: var(--np-navy, #1A4E8C);
       border-radius: 2px 2px 0 0;
       transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -2595,6 +2595,12 @@
       border-radius: 8px;
       margin-bottom: 4px;
       font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chat-msg-own .chat-reply-snippet {
+      background: rgba(255, 255, 255, 0.15);
+      border-left-color: rgba(255, 255, 255, 0.6);
     }
 
     .dark-mode .chat-reply-snippet {
@@ -2607,27 +2613,21 @@
       font-size: 11px;
     }
 
+    .chat-msg-own .chat-reply-snippet .rsp-name {
+      color: #ffffff;
+    }
+
     .chat-reply-snippet .rsp-text {
       font-weight: 600;
-      color: var(--text3);
+      color: var(--text2);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 200px;
-      font-size: 11px;
-    }
-
-    .chat-msg-own .chat-reply-snippet {
-      background: rgba(255, 255, 255, 0.15);
-      border-left-color: rgba(255, 255, 255, 0.7);
-    }
-
-    .chat-msg-own .chat-reply-snippet .rsp-name {
-      color: rgba(255, 255, 255, 0.95);
     }
 
     .chat-msg-own .chat-reply-snippet .rsp-text {
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.85);
     }
 
     /* Reactions */
@@ -2664,18 +2664,25 @@
 
     /* Highlight */
     @keyframes highlightFlash {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      30%, 70% { opacity: 0.4; transform: scale(0.97); }
-      50% { opacity: 1; transform: scale(1); }
+      0% {
+        opacity: 1;
+      }
+      25% {
+        opacity: 0.4;
+      }
+      50% {
+        opacity: 1;
+      }
+      75% {
+        opacity: 0.4;
+      }
+      100% {
+        opacity: 1;
+      }
     }
 
     .highlight-msg {
-      animation: highlightFlash 1.2s ease-in-out;
-      transform-origin: center right;
-    }
-
-    .chat-msg-other .highlight-msg {
-      transform-origin: center left;
+      animation: highlightFlash 2s ease-in-out;
     }
 
     /* Context Menu */

@@ -6220,6 +6220,3 @@ window.toggleReceiptZoom = typeof toggleReceiptZoom !== 'undefined' ? toggleRece
 window.triggerModalReceiptEdit = typeof triggerModalReceiptEdit !== 'undefined' ? triggerModalReceiptEdit : null;
 window.triggerManualReceiptUpload = typeof triggerManualReceiptUpload !== 'undefined' ? triggerManualReceiptUpload : null;
 window.handleManualReceiptUpload = typeof handleManualReceiptUpload !== 'undefined' ? handleManualReceiptUpload : null;
-
-
-window.addEventListener('load', () => { if (typeof switchTab === 'function') switchTab(typeof currentTab !== 'undefined' && currentTab ? currentTab : 'don', false, true); });
