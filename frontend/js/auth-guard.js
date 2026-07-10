@@ -13,7 +13,7 @@
     document.documentElement.classList.remove("dark-mode", "dark");
   }
 
-  const isInternalNav = document.referrer && document.referrer.includes(window.location.host);
+  const isInternalNav = (document.referrer && document.referrer.includes(window.location.host)) || sessionStorage.getItem('np_session_active') === 'true';
 
   if (!isInternalNav) {
     // Inject style block to set html hidden and style custom splash spinner
@@ -79,6 +79,7 @@
     const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.replace(`login.html?return=${returnUrl}`);
   } else {
+    sessionStorage.setItem('np_session_active', 'true');
     const isNewUser = localStorage.getItem("np_new_user") === "true";
     const setupExpiry = localStorage.getItem("np_setup_expiry");
 
