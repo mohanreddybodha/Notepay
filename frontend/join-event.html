@@ -1048,8 +1048,40 @@
       if (modal) modal.style.display = "none";
     }
 
-    waitForAuthReady().finally(() => {
-      if (typeof hideCircleLoading === 'function') hideCircleLoading(true);
+    waitForAuthReady().then(async user => {
+      if (!user) return;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (code) {
+        try {
+          const res = await joinEvent(code.trim().toUpperCase());
+          showToast("Joined event!");
+          window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
+        } catch (e) {
+          const msg = e.message || "Failed to join event";
+          showToast(msg, "error");
+
+          // Remove auth-guard splash to let the user see and correct the error
+          const splash = document.getElementById('auth-guard-splash');
+          if (splash) splash.remove();
+          const style = document.getElementById('auth-guard-splash-style');
+          if (style) style.remove();
+
+          document.getElementById('code-input').value = code.trim().toUpperCase();
+          document.getElementById("code-field").classList.add("err");
+          const errTxt = document.getElementById("err-txt");
+          if (errTxt) errTxt.textContent = msg;
+          const err = document.getElementById("err-note");
+          if (err) err.classList.add("visible");
+        }
+      } else {
+        // No auto-join code in URL, show page
+        const splash = document.getElementById('auth-guard-splash');
+        if (splash) splash.remove();
+        const style = document.getElementById('auth-guard-splash-style');
+        if (style) style.remove();
+      }
     });
 
     document.getElementById("code-input").addEventListener("input", function () {
@@ -1158,18 +1190,7 @@
       }
     });
 
-    window.addEventListener("load", async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const codeParam = urlParams.get('code');
-      if (codeParam) {
-        const code = codeParam.trim().toUpperCase();
-        document.getElementById('code-input').value = code;
-        resolvePreview(code);
-        await waitForAuthReady();
-        const btn = document.getElementById('join-btn');
-        if (btn) btn.click();
-      }
-    });
+
   </script>
   <script>
     // Load sidebar event counts instantly from cache
