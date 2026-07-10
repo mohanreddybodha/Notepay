@@ -868,7 +868,7 @@
       }
     }
 
-    @media (max-width: 380px) {
+    @media (max-width: 600px) {
       #info-bar {
         flex-wrap: wrap;
         gap: 2px 6px;
