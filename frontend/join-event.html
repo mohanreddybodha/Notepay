@@ -1034,11 +1034,11 @@
     </div>
   </div>
 
-  <script src="js/firebase-config.js?v=35"></script>
-  <script src="js/shared-utils.js?v=35"></script>
-  <script src="js/api.js?v=35"></script>
-  <script src="js/icons.js?v=35"></script>
-  <script src="js/auth-guard.js?v=35"></script>
+  <script src="js/firebase-config.js?v=36"></script>
+  <script src="js/shared-utils.js?v=36"></script>
+  <script src="js/api.js?v=36"></script>
+  <script src="js/icons.js?v=36"></script>
+  <script src="js/auth-guard.js?v=36"></script>
   <script>
     function openHelpModal() {
       const modal = document.getElementById("help-modal");
@@ -1056,6 +1056,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const code = pathCtx.id || urlParams.get('code');
       if (code) {
+        if (typeof showCircleLoading === 'function') showCircleLoading();
         try {
           const res = await joinEvent(code.trim().toUpperCase());
           showToast("Joined event!");
