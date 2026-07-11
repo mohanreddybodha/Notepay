@@ -1146,7 +1146,11 @@
       } catch (e) { showToast(e.message || "Failed.", "error"); }
     }
 
-    function openRenameSheet() { window.location.href = getCleanUrl('create-event.html') + `?edit=${eventId}&from=event`; }
+    function openRenameSheet() { 
+      window.location.href = (typeof buildUrl === 'function') 
+        ? buildUrl('edit-event', eventId) + '?from=event'
+        : `create-event.html?edit=${eventId}&from=event`; 
+    }
 
     // ── Helpers ──
         function formatPrefixes(s) {
