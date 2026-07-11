@@ -10,8 +10,8 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **AWS SAM template infrastructure**: [template.yaml](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/template.yaml)
-*   **Performance Optimization references**: [docs/performance.md](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/docs/performance.md)
+*   **AWS SAM template infrastructure**: [template.yaml](../template.yaml)
+*   **Performance Optimization references**: [docs/performance.md](performance.md)
 
 ---
 

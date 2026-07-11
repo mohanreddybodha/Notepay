@@ -10,10 +10,10 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Database Schema Models**: [backend/models.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/models.py)
-*   **Database Session Manager**: [backend/database.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/database.py)
-*   **SQL Aggregation Queries**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `_build_event_aggregates()`)
-*   **Alembic Database Configurations**: [backend/alembic.ini](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/alembic.ini)
+*   **Database Schema Models**: [backend/models.py](../backend/models.py)
+*   **Database Session Manager**: [backend/database.py](../backend/database.py)
+*   **SQL Aggregation Queries**: [backend/crud.py](../backend/crud.py) (Function: `_build_event_aggregates()`)
+*   **Alembic Database Configurations**: [backend/alembic.ini](../backend/alembic.ini)
 
 ---
 
@@ -54,7 +54,7 @@ engine = create_engine(
 
 ## 📂 Entity Models & Schema Specs
 
-The database models are defined in [models.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/models.py):
+The database models are defined in [models.py](../backend/models.py):
 
 ```mermaid
 erDiagram

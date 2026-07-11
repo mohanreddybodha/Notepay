@@ -10,10 +10,10 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Frontend Action**: [frontend/join-event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/join-event.html) (Script: `js/join-event.js`)
-*   **FastAPI Router Endpoints**: [backend/routers/events.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/events.py) (Functions: `preview_invite_code()`, `join_event()`)
-*   **Database CRUD Layer**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `join_event()`)
-*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/ws_manager.py) (Functions: `broadcast_change()`, `broadcast_dashboard_update()`)
+*   **Frontend Action**: [frontend/join-event.html](../../frontend/join-event.html) (Script: `js/join-event.js`)
+*   **FastAPI Router Endpoints**: [backend/routers/events.py](../../backend/routers/events.py) (Functions: `preview_invite_code()`, `join_event()`)
+*   **Database CRUD Layer**: [backend/crud.py](../../backend/crud.py) (Function: `join_event()`)
+*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](../../backend/ws_manager.py) (Functions: `broadcast_change()`, `broadcast_dashboard_update()`)
 
 ---
 
@@ -54,7 +54,7 @@ sequenceDiagram
 ### 1. User Interaction (Frontend)
 *   The collector clicks **Join by Code** in the sidebar (or navigates to `/join`).
 *   The collector enters the invite code (e.g. `ABCDE-FGHI-JKLMN`) and clicks verify.
-*   The page controller [join-event.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/join-event.html) calls `previewEventCode()`.
+*   The page controller [join-event.js](../../frontend/join-event.html) calls `previewEventCode()`.
 *   Once validated, the user clicks **Confirm Join**, triggering `joinEvent()`.
 
 ### 2. API Routing (Backend)
@@ -62,7 +62,7 @@ sequenceDiagram
 *   **Join Route**: Resolves at `POST /events/join`. Enforces a rate limit of 5 joins per minute.
 
 ### 3. Database Mutations (CRUD)
-*   The method `join_event()` inside [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py):
+*   The method `join_event()` inside [crud.py](../../backend/crud.py):
     1.  Queries the `events` table to find the record matching the `invite_code`.
     2.  Verifies the event is active. If deactivated, it returns an HTTP 403 error.
     3.  Checks the `event_members` table to see if the user is already joined.

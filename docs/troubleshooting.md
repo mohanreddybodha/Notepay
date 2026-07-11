@@ -10,8 +10,8 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Error Logs Schema**: [backend/models.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/models.py) (Class: `ErrorLog`)
-*   **System Operations Logs**: [docs/operations.md](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/docs/operations.md)
+*   **Error Logs Schema**: [backend/models.py](../backend/models.py) (Class: `ErrorLog`)
+*   **System Operations Logs**: [docs/operations.md](operations.md)
 
 ---
 
@@ -20,7 +20,7 @@ status: "Verified ✓"
 ### 1. CORS Policy Blocks (API Request Rejected)
 *   **Symptom**: Console outputs `Access-Control-Allow-Origin header is missing` or `CORS preflight request failed`.
 *   **Causes**:
-    *   The frontend is accessed via `http://localhost:3000`, but port `3000` is missing from `_ALLOWED_ORIGINS` in [main.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/main.py).
+    *   The frontend is accessed via `http://localhost:3000`, but port `3000` is missing from `_ALLOWED_ORIGINS` in [main.py](../backend/main.py).
     *   The API crashed during execution, returning a 500 error that bypassed standard CORS middlewares.
 *   **Resolution**:
     *   Verify that your local URL is whitelisted in `main.py` CORS origins.
@@ -55,7 +55,7 @@ status: "Verified ✓"
 *   **Symptom**: Accessing `dashboard.html` redirects to `login.html` even after entering valid credentials.
 *   **Cause**: Firebase's `onAuthStateChanged` fires a brief `null` event on page load before loading the user session from IndexedDB, causing the auth guard to redirect the user.
 *   **Resolution**:
-    *   Verify that `waitForAuthReady()` is active in [firebase-config.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/firebase-config.js). This ensures the guard waits up to 3.5 seconds to see if a valid session is restored before redirecting.
+    *   Verify that `waitForAuthReady()` is active in [firebase-config.js](../frontend/js/firebase-config.js). This ensures the guard waits up to 3.5 seconds to see if a valid session is restored before redirecting.
 
 ---
 

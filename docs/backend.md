@@ -16,7 +16,7 @@ Notepay's backend is a high-performance API built with **FastAPI (Python 3.11)**
 
 ## 🛠️ Main API Configuration & CORS Gates
 
-The API entry point is configured inside [main.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/main.py):
+The API entry point is configured inside [main.py](../backend/main.py):
 *   **Startup Migrations**: The application triggers `_run_legacy_migrations()` at launch. This checks for the existence of `feedback` tables and appends legacy columns (`name` and `email`) if missing.
 *   **CORS Configuration**:
     *   **Production**: CORS settings restrict requests to named domains (`https://notepay.in`, `https://www.notepay.in`), the administration dashboard domain (`ADMIN_DOMAIN`), and explicitly whitelisted IP ranges.
@@ -56,7 +56,7 @@ This returns immediately, preventing unnecessary database connection lookups.
 
 ## 🔒 Security Dependencies & Auth Verification
 
-FastAPI endpoint protection is consolidated inside [dependencies.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/dependencies.py):
+FastAPI endpoint protection is consolidated inside [dependencies.py](../backend/dependencies.py):
 
 ### 1. User Authentication Checks
 *   `get_current_user_id`: Enforces token verification via Firebase. If the user is registered, it returns their database ID. If the user is not found, but a phone number is encoded in the Firebase token, it checks if a record exists with that phone number and updates the user's `firebase_uid`. It also checks if the user is banned; if so, it raises an HTTP 403 Forbidden error with the ban reason.
@@ -72,7 +72,7 @@ FastAPI endpoint protection is consolidated inside [dependencies.py](file:///c:/
 
 ## ⚡ Dual-Mode Caching Layer
 
-Caching operations are abstracted inside [cache.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/cache.py).
+Caching operations are abstracted inside [cache.py](../backend/cache.py).
 
 ### 1. Redis Caching (Production)
 *   **Connection Routing**: Uses `redis.from_url` using the SSL protocol (`rediss://`) to communicate securely with Upstash Redis, enforcing a `socket_timeout=3.0` limit to prevent API bottlenecks if Redis is slow.
@@ -87,7 +87,7 @@ If `REDIS_URL` is missing:
 
 ## 📂 Dual-Mode Storage Layer
 
-Receipt image handling is consolidated in [storage.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/storage.py):
+Receipt image handling is consolidated in [storage.py](../backend/storage.py):
 
 ### 1. AWS S3 Uploads (Production)
 When `RECEIPTS_BUCKET` is configured, uploads are sent to S3:
@@ -108,11 +108,11 @@ If no bucket is configured, files are saved locally:
 
 ## 🛠️ Code Linkage & Implementation Reference
 
-*   **API Configuration Routes**: [backend/main.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/main.py) (Function: `global_exception_handler()`, Router mounting: `app.include_router()`)
-*   **Serverless ASGI & WS Adapter**: [backend/main.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/main.py) (Mangum handler wrapper: `handler()`)
-*   **Authorization Security Dependencies**: [backend/dependencies.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/dependencies.py) (Functions: `get_current_user_id()`, `verify_membership()`, `verify_event_active_for_collector()`)
-*   **Redis Caching Client**: [backend/cache.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/cache.py) (Class: `RedisCache`, Global Version Invalidation: `bump_global_version()`)
-*   **Receipt Storage & retrieval**: [backend/storage.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/storage.py) (Functions: `upload_receipt()`, `fetch_receipt_response()`)
+*   **API Configuration Routes**: [backend/main.py](../backend/main.py) (Function: `global_exception_handler()`, Router mounting: `app.include_router()`)
+*   **Serverless ASGI & WS Adapter**: [backend/main.py](../backend/main.py) (Mangum handler wrapper: `handler()`)
+*   **Authorization Security Dependencies**: [backend/dependencies.py](../backend/dependencies.py) (Functions: `get_current_user_id()`, `verify_membership()`, `verify_event_active_for_collector()`)
+*   **Redis Caching Client**: [backend/cache.py](../backend/cache.py) (Class: `RedisCache`, Global Version Invalidation: `bump_global_version()`)
+*   **Receipt Storage & retrieval**: [backend/storage.py](../backend/storage.py) (Functions: `upload_receipt()`, `fetch_receipt_response()`)
 
 ---
 

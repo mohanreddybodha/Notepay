@@ -34,9 +34,9 @@ The central hub for users to view and navigate their events.
 *   **Performance Optimization**: To prevent N+1 query loops, the system fetches all membership records in a single query and aggregates data (contributions, expenses, and member counts) using SQL `GROUP BY` operations rather than Python loops.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Frontend Controller**: [frontend/dashboard.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/dashboard.html) (Client Script: `js/dashboard.js`)
-*   **Router Endpoint**: [backend/routers/profile.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/profile.py) (Function: `get_user_full_dashboard()`)
-*   **Database Query**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `get_user_full_dashboard()`, SQL Aggregations helper: `_build_event_aggregates()`)
+*   **Frontend Controller**: [frontend/dashboard.html](../frontend/dashboard.html) (Client Script: `js/dashboard.js`)
+*   **Router Endpoint**: [backend/routers/profile.py](../backend/routers/profile.py) (Function: `get_user_full_dashboard()`)
+*   **Database Query**: [backend/crud.py](../backend/crud.py) (Function: `get_user_full_dashboard()`, SQL Aggregations helper: `_build_event_aggregates()`)
 
 ---
 
@@ -57,9 +57,9 @@ Allows organizers to create new events and invite collectors.
 *   **Cache Management**: Bumps the global version in Redis, invalidating cached dashboards for the user.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Frontend View**: [frontend/create-event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/create-event.html)
-*   **Router Endpoint**: [backend/routers/events.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/events.py) (Function: `create_event()`)
-*   **Database Query**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `create_event()`)
+*   **Frontend View**: [frontend/create-event.html](../frontend/create-event.html)
+*   **Router Endpoint**: [backend/routers/events.py](../backend/routers/events.py) (Function: `create_event()`)
+*   **Database Query**: [backend/crud.py](../backend/crud.py) (Function: `create_event()`)
 
 ---
 
@@ -78,9 +78,9 @@ Allows collectors to join an existing event ledger.
 *   Bumps the global version in Redis. If the organizer is online, their dashboard updates in real-time, showing the new member.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Frontend View**: [frontend/join-event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/join-event.html)
-*   **Router Endpoints**: [backend/routers/events.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/events.py) (Functions: `preview_invite_code()`, `join_event()`)
-*   **Database Query**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `join_event()`)
+*   **Frontend View**: [frontend/join-event.html](../frontend/join-event.html)
+*   **Router Endpoints**: [backend/routers/events.py](../backend/routers/events.py) (Functions: `preview_invite_code()`, `join_event()`)
+*   **Database Query**: [backend/crud.py](../backend/crud.py) (Function: `join_event()`)
 
 ---
 
@@ -105,9 +105,9 @@ The core ledger tracking payments and spending.
     If columns are deleted, the keys are purged from all records.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Frontend View**: [frontend/event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/event.html) (Script: `js/controllers/EventFinancialsController.js`)
-*   **Router Endpoints**: [backend/routers/contributions_expenses.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/contributions_expenses.py) (Functions: `add_contribution()`, `add_expense()`, `update_event_columns()`)
-*   **Database Queries**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Functions: `create_contribution()`, `create_expense()`, `_apply_custom_columns_update()`)
+*   **Frontend View**: [frontend/event.html](../frontend/event.html) (Script: `js/controllers/EventFinancialsController.js`)
+*   **Router Endpoints**: [backend/routers/contributions_expenses.py](../backend/routers/contributions_expenses.py) (Functions: `add_contribution()`, `add_expense()`, `update_event_columns()`)
+*   **Database Queries**: [backend/crud.py](../backend/crud.py) (Functions: `create_contribution()`, `create_expense()`, `_apply_custom_columns_update()`)
 
 ---
 
@@ -129,8 +129,8 @@ Real-time totals and transaction logs.
 *   **Caching**: Results are cached in Redis under `sum:{event_id}`.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Router Endpoint**: [backend/routers/contributions_expenses.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/contributions_expenses.py) (Function: `get_event_summary()`)
-*   **Database Query**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `get_event_summary()`)
+*   **Router Endpoint**: [backend/routers/contributions_expenses.py](../backend/routers/contributions_expenses.py) (Function: `get_event_summary()`)
+*   **Database Query**: [backend/crud.py](../backend/crud.py) (Function: `get_event_summary()`)
 
 ---
 
@@ -157,10 +157,10 @@ Communication channel with built-in AI assistance.
 *   **Typing State**: Broadcasts `AI_TYPING` to display a typing indicator, and broadcasts `NEW_CHAT_MSG` once the response is ready.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Frontend Controller**: [frontend/event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/event.html) (Script: `js/controllers/EventChatController.js`)
-*   **Router Endpoint**: [backend/routers/chat.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/chat.py) (Function: `send_chat_message()`)
-*   **AI Processing Background Task**: [backend/routers/chat.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/chat.py) (Function: `process_ai_chat()`)
-*   **Probabilistic Cleanup & Insert**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `create_chat_message()`)
+*   **Frontend Controller**: [frontend/event.html](../frontend/event.html) (Script: `js/controllers/EventChatController.js`)
+*   **Router Endpoint**: [backend/routers/chat.py](../backend/routers/chat.py) (Function: `send_chat_message()`)
+*   **AI Processing Background Task**: [backend/routers/chat.py](../backend/routers/chat.py) (Function: `process_ai_chat()`)
+*   **Probabilistic Cleanup & Insert**: [backend/crud.py](../backend/crud.py) (Function: `create_chat_message()`)
 
 ---
 
@@ -177,9 +177,9 @@ Automated UPI payment receipt verification.
     *   **Manual Fallback**: If the AI extraction fails, the image is saved to storage and the user is redirected to input all transaction details manually.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Frontend View**: [frontend/contribute.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/contribute.html)
-*   **Router Endpoints**: [backend/routers/public.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/public.py) (Functions: `upload_receipt()`, `submit_manual_contribution()`)
-*   **Receipt Parsing Methods**: [backend/routers/public.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/public.py) (Function: `extract_receipt_data_with_fallback()`)
+*   **Frontend View**: [frontend/contribute.html](../frontend/contribute.html)
+*   **Router Endpoints**: [backend/routers/public.py](../backend/routers/public.py) (Functions: `upload_receipt()`, `submit_manual_contribution()`)
+*   **Receipt Parsing Methods**: [backend/routers/public.py](../backend/routers/public.py) (Function: `extract_receipt_data_with_fallback()`)
 
 ---
 
@@ -198,8 +198,8 @@ Tracks public events viewed by visitors.
 *   The database filters out events that the user has subsequently joined as an active collector or organizer, keeping lists clean.
 
 #### 🛠️ Code Linkage & Implementation Reference
-*   **Router Endpoint**: [backend/routers/events.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/events.py) (Function: `get_event()`)
-*   **Database Queries**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `add_watched_event()`, `remove_watched_event()`)
+*   **Router Endpoint**: [backend/routers/events.py](../backend/routers/events.py) (Function: `get_event()`)
+*   **Database Queries**: [backend/crud.py](../backend/crud.py) (Function: `add_watched_event()`, `remove_watched_event()`)
 
 ---
 

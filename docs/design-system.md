@@ -10,9 +10,9 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Global Layout CSS Tokens**: [frontend/css/global.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/global.css)
-*   **Web Components Layout**: [frontend/js/components.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/components.js)
-*   **Toast, Spinner, & Sheets styling**: [frontend/css/components.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/components.css)
+*   **Global Layout CSS Tokens**: [frontend/css/global.css](../frontend/css/global.css)
+*   **Web Components Layout**: [frontend/js/components.js](../frontend/js/components.js)
+*   **Toast, Spinner, & Sheets styling**: [frontend/css/components.css](../frontend/css/components.css)
 
 ---
 

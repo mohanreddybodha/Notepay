@@ -10,15 +10,15 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Global Variables & Themes**: [frontend/css/global.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/global.css)
-*   **Web Components Layout**: [frontend/js/components.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/components.js) (Class: `NpSidebar`)
-*   **Custom Theme CSS**: [frontend/css/components.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/components.css), [frontend/css/dashboard.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/dashboard.css)
+*   **Global Variables & Themes**: [frontend/css/global.css](../frontend/css/global.css)
+*   **Web Components Layout**: [frontend/js/components.js](../frontend/js/components.js) (Class: `NpSidebar`)
+*   **Custom Theme CSS**: [frontend/css/components.css](../frontend/css/components.css), [frontend/css/dashboard.css](../frontend/css/dashboard.css)
 
 ---
 
 ## 🎨 CSS Custom Properties (Design Tokens)
 
-Notepay defines a central palette of design tokens inside [global.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/global.css). Styling is modified dynamically by toggling the `.dark-mode` class on the `<html>` or `<body>` element.
+Notepay defines a central palette of design tokens inside [global.css](../frontend/css/global.css). Styling is modified dynamically by toggling the `.dark-mode` class on the `<html>` or `<body>` element.
 
 ### Brand & Surface Token Values
 
@@ -58,11 +58,11 @@ Notepay imports fonts from Google Fonts:
 ## 📂 CSS Stylesheet Structure
 
 The frontend styles are organized modularly:
-1.  **[global.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/global.css)**: Core CSS variables, button styles, modal variables, input fields, scrollbars, and helper classes.
-2.  **[components.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/components.css)**: Definitions for custom elements, navigation sidebars, header bars, user avatars, and toast notifications.
-3.  **[dashboard.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/dashboard.css)**: Dashboard structures, statistics grids, event search filters, and profile layout cards.
-4.  **[event.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/event.css)**: Transaction spreadsheets, financial summary metrics, chat logs, member manager grids, and receipt upload forms.
-5.  **[admin.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/admin.css)**: Admin dashboard layouts, audit trails, and system log formats.
+1.  **[global.css](../frontend/css/global.css)**: Core CSS variables, button styles, modal variables, input fields, scrollbars, and helper classes.
+2.  **[components.css](../frontend/css/components.css)**: Definitions for custom elements, navigation sidebars, header bars, user avatars, and toast notifications.
+3.  **[dashboard.css](../frontend/css/dashboard.css)**: Dashboard structures, statistics grids, event search filters, and profile layout cards.
+4.  **[event.css](../frontend/css/event.css)**: Transaction spreadsheets, financial summary metrics, chat logs, member manager grids, and receipt upload forms.
+5.  **[admin.css](../frontend/css/admin.css)**: Admin dashboard layouts, audit trails, and system log formats.
 
 ---
 

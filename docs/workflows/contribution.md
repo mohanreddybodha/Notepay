@@ -10,10 +10,10 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Frontend Action**: [frontend/event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/event.html) (Script: `js/controllers/EventFinancialsController.js` -> `addContribution()`)
-*   **FastAPI Router Endpoint**: [backend/routers/contributions_expenses.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/contributions_expenses.py) (Function: `add_contribution()`)
-*   **Database CRUD Layer**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `create_contribution()`, Sanitization: `sanitize_json_payload()`)
-*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/ws_manager.py) (Function: `broadcast_change()`)
+*   **Frontend Action**: [frontend/event.html](../../frontend/event.html) (Script: `js/controllers/EventFinancialsController.js` -> `addContribution()`)
+*   **FastAPI Router Endpoint**: [backend/routers/contributions_expenses.py](../../backend/routers/contributions_expenses.py) (Function: `add_contribution()`)
+*   **Database CRUD Layer**: [backend/crud.py](../../backend/crud.py) (Function: `create_contribution()`, Sanitization: `sanitize_json_payload()`)
+*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](../../backend/ws_manager.py) (Function: `broadcast_change()`)
 
 ---
 
@@ -49,8 +49,8 @@ sequenceDiagram
 ### 1. User Interaction (Frontend)
 *   The collector navigates to the event's detailed page, opens the **Collections** tab, and clicks **Add Contribution** (or opens the entry form).
 *   The user enters the donor name, payment amount, and dynamic custom field values (e.g. "T-Shirt: Medium").
-*   The page controller [EventFinancialsController.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/controllers/EventFinancialsController.js) calls `addContribution()`.
-*   The client calls `addContribution` inside [api.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/api.js), sending the request payload:
+*   The page controller [EventFinancialsController.js](../../frontend/js/controllers/EventFinancialsController.js) calls `addContribution()`.
+*   The client calls `addContribution` inside [api.js](../../frontend/js/api.js), sending the request payload:
     ```json
     {
       "donor_name": "Jane Smith",
@@ -63,12 +63,12 @@ sequenceDiagram
     ```
 
 ### 2. API Routing (Backend)
-*   The route `POST /events/{event_id}/contributions` resolves inside [contributions_expenses.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/contributions_expenses.py).
+*   The route `POST /events/{event_id}/contributions` resolves inside [contributions_expenses.py](../../backend/routers/contributions_expenses.py).
 *   Enforces a rate limit of 30 writes per user per minute.
 *   Enforces the access guard dependency `verify_event_active_for_collector(..., for_write=True)`. This checks if the user is a member of the event and is not restricted, and if the event is active.
 
 ### 3. Database Mutations (CRUD)
-*   The method `create_contribution()` inside [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py):
+*   The method `create_contribution()` inside [crud.py](../../backend/crud.py):
     1.  Recursively sanitizes all text values in `custom_fields` and `donor_name` using `sanitize_json_payload(data)` to prevent stored XSS attacks.
     2.  Creates the `Contribution` ORM instance and inserts it into the `contributions` table.
     3.  Sets the `collected_by` column to the collector's user ID.

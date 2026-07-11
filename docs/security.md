@@ -10,12 +10,12 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **User Authentication System**: [backend/auth.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/auth.py)
-*   **Admin JWT Signatures**: [backend/admin_auth.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/admin_auth.py)
-*   **Role Authorization Dependencies**: [backend/dependencies.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/dependencies.py)
-*   **XSS HTML Sanitizer**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `sanitize_json_payload()`)
-*   **Magic Byte Image Scanner**: [backend/storage.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/storage.py) (Function: `validate_receipt_content()`)
-*   **Brute-Force Rate Limiter**: [backend/limiter.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/limiter.py)
+*   **User Authentication System**: [backend/auth.py](../backend/auth.py)
+*   **Admin JWT Signatures**: [backend/admin_auth.py](../backend/admin_auth.py)
+*   **Role Authorization Dependencies**: [backend/dependencies.py](../backend/dependencies.py)
+*   **XSS HTML Sanitizer**: [backend/crud.py](../backend/crud.py) (Function: `sanitize_json_payload()`)
+*   **Magic Byte Image Scanner**: [backend/storage.py](../backend/storage.py) (Function: `validate_receipt_content()`)
+*   **Brute-Force Rate Limiter**: [backend/limiter.py](../backend/limiter.py)
 
 ---
 
@@ -50,7 +50,7 @@ To prevent malicious JavaScript injection (Stored XSS) in transaction names, des
 FastAPI route parameters utilize Pydantic schemas to validate and clean input types (e.g., converting inputs to floats, strings, or booleans, and rejecting malformed payloads with HTTP 422 errors).
 
 ### 2. HTML Sanitization via Bleach
-Before saving values to the database, the backend sanitizes text inputs using the `bleach` library. This is handled by `sanitize_json_payload(data)` inside [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py):
+Before saving values to the database, the backend sanitizes text inputs using the `bleach` library. This is handled by `sanitize_json_payload(data)` inside [crud.py](../backend/crud.py):
 *   **Recursive Sanitization**: The function recursively traverses lists and dictionaries (such as dynamic custom fields).
 *   **HTML Strip**: It applies `bleach.clean(value, tags=[], strip=True)` to strip out all HTML tags, script elements, styles, or inline attributes (e.g., converting `<script>alert('xss')</script>Hello` to `Hello`).
 *   **JSON Safety**: Ensures JSON parameters saved in SQLite or PostgreSQL cannot execute script payloads in client browsers.
@@ -83,7 +83,7 @@ To prevent users from uploading unrelated receipts (e.g., a payment screenshot f
 
 ## 🛡️ Throttling & Brute-Force Protection
 
-To prevent denial of service (DoS) and account cracking attempts, the backend implements rate limiting inside [limiter.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/limiter.py):
+To prevent denial of service (DoS) and account cracking attempts, the backend implements rate limiting inside [limiter.py](../backend/limiter.py):
 
 ### 1. Endpoint Rate Limiting
 Critical paths utilize the `verify_rate_limit(key, limit, window)` function:

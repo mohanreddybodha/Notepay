@@ -10,10 +10,10 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Frontend Action**: [frontend/create-event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/create-event.html) (Script: `js/create-event.js`)
-*   **FastAPI Router Endpoint**: [backend/routers/events.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/events.py) (Function: `create_event()`)
-*   **Database CRUD Layer**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `create_event()`)
-*   **Cache Invalidation**: [backend/cache.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/cache.py) (Function: `bump_global_version()`)
+*   **Frontend Action**: [frontend/create-event.html](../../frontend/create-event.html) (Script: `js/create-event.js`)
+*   **FastAPI Router Endpoint**: [backend/routers/events.py](../../backend/routers/events.py) (Function: `create_event()`)
+*   **Database CRUD Layer**: [backend/crud.py](../../backend/crud.py) (Function: `create_event()`)
+*   **Cache Invalidation**: [backend/cache.py](../../backend/cache.py) (Function: `bump_global_version()`)
 
 ---
 
@@ -48,9 +48,9 @@ sequenceDiagram
 
 ### 1. User Interaction (Frontend)
 *   The organizer clicks the **Create Event** button in the sidebar (or navigates to `/create-event`).
-*   The user fills out the form inside [create-event.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/create-event.js) and clicks submit.
+*   The user fills out the form inside [create-event.js](../../frontend/js/create-event.js) and clicks submit.
 *   The script validates the inputs (e.g., verifying that the name is at least 3 characters and the event date is set in the future).
-*   The client calls `createEvent()` inside [api.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/api.js), sending the request payload:
+*   The client calls `createEvent()` inside [api.js](../../frontend/js/api.js), sending the request payload:
     ```json
     {
       "name": "Annual Gathering",
@@ -63,12 +63,12 @@ sequenceDiagram
     ```
 
 ### 2. API Routing (Backend)
-*   The route `POST /events` resolves inside [events.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/events.py).
+*   The route `POST /events` resolves inside [events.py](../../backend/routers/events.py).
 *   The API enforces a rate limit check (`verify_rate_limit(..., limit=5, window=60)`).
 *   Calls `crud.create_event()`.
 
 ### 3. Database Mutations (CRUD)
-*   The method `create_event()` inside [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py):
+*   The method `create_event()` inside [crud.py](../../backend/crud.py):
     1.  Generates a 14-character string code (e.g., `ABCDE-FGHI-JKLMN`).
     2.  Creates the `Event` ORM instance and inserts it into the `events` table.
     3.  Creates an `EventMember` instance with `role = UserRole.organizer` and links it to the creator's user ID.

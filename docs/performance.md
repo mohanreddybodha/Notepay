@@ -10,9 +10,9 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Database Query Optimization Layer**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `_build_event_aggregates()`, `get_event_summary()`)
-*   **Heartbeat version caching**: [backend/cache.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/cache.py) (Class: `RedisCache`, Global Version: `bump_global_version()`)
-*   **WebSocket Broadcast Multi-threading**: [backend/ws_manager.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/ws_manager.py) (Parallel executors wrapper)
+*   **Database Query Optimization Layer**: [backend/crud.py](../backend/crud.py) (Function: `_build_event_aggregates()`, `get_event_summary()`)
+*   **Heartbeat version caching**: [backend/cache.py](../backend/cache.py) (Class: `RedisCache`, Global Version: `bump_global_version()`)
+*   **WebSocket Broadcast Multi-threading**: [backend/ws_manager.py](../backend/ws_manager.py) (Parallel executors wrapper)
 
 ---
 

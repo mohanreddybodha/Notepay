@@ -17,8 +17,8 @@ This handbook establishes the core engineering constraints and architecture rule
 ## 🛠️ Core Engineering Principles
 
 ### 1. Don't Repeat Yourself (DRY)
-*   **Business Logic**: Core calculations (like transaction aggregations or permissions checks) must not be duplicated. If logic is needed in multiple locations, extract it to a shared helper function in [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) or [dependencies.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/dependencies.py).
-*   **Frontend Helpers**: Do not write ad-hoc date or currency formatting code in page controllers. Use the central formatting wrappers (`formatINR`, `formatDate`) in [shared-utils.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/shared-utils.js).
+*   **Business Logic**: Core calculations (like transaction aggregations or permissions checks) must not be duplicated. If logic is needed in multiple locations, extract it to a shared helper function in [crud.py](../backend/crud.py) or [dependencies.py](../backend/dependencies.py).
+*   **Frontend Helpers**: Do not write ad-hoc date or currency formatting code in page controllers. Use the central formatting wrappers (`formatINR`, `formatDate`) in [shared-utils.js](../frontend/js/shared-utils.js).
 
 ### 2. Component Decoupling
 *   **API Layer**: Route files inside `/routers` are only responsible for handling HTTP parameters, checking rate limits, and enforcing permissions. They must not contain direct database queries or business logic.
@@ -26,7 +26,7 @@ This handbook establishes the core engineering constraints and architecture rule
 
 ### 3. Database Integrity & Performance
 *   **Eager Loading**: Never perform database queries inside loops (the N+1 query problem). Use SQLAlchemy's `joinedload` option or write aggregated SQL queries using `GROUP BY`.
-*   **Indexes**: Every foreign key column or column frequently used in `WHERE`, `ORDER BY`, or `JOIN` operations must have a database index configured in [models.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/models.py).
+*   **Indexes**: Every foreign key column or column frequently used in `WHERE`, `ORDER BY`, or `JOIN` operations must have a database index configured in [models.py](../backend/models.py).
 *   **Input Sanitization**: All user-submitted text saved to the database must be sanitized recursively using the bleach-equivalent HTML sanitizer in `crud.py` to prevent stored XSS attacks.
 
 ### 4. API Stability & Documentation

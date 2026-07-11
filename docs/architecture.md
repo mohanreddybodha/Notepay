@@ -221,11 +221,11 @@ If no match is found, the payment is rejected (blocking uploads of receipts made
 
 ## 🛠️ Code Linkage & Implementation Reference
 
-*   **FastAPI & Mangum Entry Handler**: [backend/main.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/main.py) (Function: `handler`, Router mapping: `main.app`)
-*   **WebSocket Connection Manager**: [backend/ws_manager.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/ws_manager.py) (Class: `WebSocketManager`, Connection Broadcast: `broadcast_change()`, Client Handshake: `connect()`)
-*   **API Auth Validation Guards**: [backend/auth.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/auth.py) (Function: `verify_token()`, Local Auth Cache: `_local_token_cache`)
-*   **Role Permission Guards**: [backend/dependencies.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/dependencies.py) (Functions: `verify_membership()`, `verify_event_active_for_collector()`)
-*   **Receipt Verification Handler**: [backend/routers/public.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/public.py) (Function: `upload_receipt()`, Image Validation: `validate_receipt_content()`)
+*   **FastAPI & Mangum Entry Handler**: [backend/main.py](../backend/main.py) (Function: `handler`, Router mapping: `main.app`)
+*   **WebSocket Connection Manager**: [backend/ws_manager.py](../backend/ws_manager.py) (Class: `WebSocketManager`, Connection Broadcast: `broadcast_change()`, Client Handshake: `connect()`)
+*   **API Auth Validation Guards**: [backend/auth.py](../backend/auth.py) (Function: `verify_token()`, Local Auth Cache: `_local_token_cache`)
+*   **Role Permission Guards**: [backend/dependencies.py](../backend/dependencies.py) (Functions: `verify_membership()`, `verify_event_active_for_collector()`)
+*   **Receipt Verification Handler**: [backend/routers/public.py](../backend/routers/public.py) (Function: `upload_receipt()`, Image Validation: `validate_receipt_content()`)
 
 ---
 

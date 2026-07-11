@@ -10,8 +10,8 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Pytest Smoke Testing Suite**: [backend/tests/test_smoke.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/tests/test_smoke.py)
-*   **Offline Synchronization Client Logic**: [frontend/js/api.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/api.js) (Function: `syncOfflineQueue()`)
+*   **Pytest Smoke Testing Suite**: [backend/tests/test_smoke.py](../backend/tests/test_smoke.py)
+*   **Offline Synchronization Client Logic**: [frontend/js/api.js](../frontend/js/api.js) (Function: `syncOfflineQueue()`)
 
 ---
 
@@ -20,7 +20,7 @@ status: "Verified ✓"
 Backend testing uses **Pytest** and the **FastAPI TestClient** to run integration tests against a mock SQLite database.
 
 ### 1. Test Environment Setup
-The smoke testing suite in [test_smoke.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/tests/test_smoke.py) overrides the default database connection:
+The smoke testing suite in [test_smoke.py](../backend/tests/test_smoke.py) overrides the default database connection:
 ```python
 # Force in-memory SQLite for tests to isolate them from development databases
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test_notepay.db")

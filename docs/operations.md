@@ -10,9 +10,9 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Error Logs Database Model**: [backend/models.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/models.py) (Class: `ErrorLog`)
-*   **API Middleware Log handler**: [backend/main.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/main.py)
-*   **AWS Systems Manager resolving template**: [template.yaml](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/template.yaml)
+*   **Error Logs Database Model**: [backend/models.py](../backend/models.py) (Class: `ErrorLog`)
+*   **API Middleware Log handler**: [backend/main.py](../backend/main.py)
+*   **AWS Systems Manager resolving template**: [template.yaml](../template.yaml)
 
 ---
 

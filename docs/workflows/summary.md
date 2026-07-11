@@ -10,10 +10,10 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Frontend Tab Switching**: [frontend/event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/event.html) (Script: `js/controllers/EventFinancialsController.js` -> `switchTab()`)
-*   **FastAPI Router Endpoint**: [backend/routers/contributions_expenses.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/contributions_expenses.py) (Function: `get_event_summary()`)
-*   **Database Aggregations CRUD**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `get_event_summary()`)
-*   **Redis Caching Key**: `sum:{event_id}` in [backend/cache.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/cache.py)
+*   **Frontend Tab Switching**: [frontend/event.html](../../frontend/event.html) (Script: `js/controllers/EventFinancialsController.js` -> `switchTab()`)
+*   **FastAPI Router Endpoint**: [backend/routers/contributions_expenses.py](../../backend/routers/contributions_expenses.py) (Function: `get_event_summary()`)
+*   **Database Aggregations CRUD**: [backend/crud.py](../../backend/crud.py) (Function: `get_event_summary()`)
+*   **Redis Caching Key**: `sum:{event_id}` in [backend/cache.py](../../backend/cache.py)
 
 ---
 
@@ -56,15 +56,15 @@ sequenceDiagram
 
 ### 1. User Interaction (Frontend)
 *   The user accesses the event's detailed page and clicks the **Summary** tab.
-*   The controller [EventFinancialsController.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/controllers/EventFinancialsController.js) triggers a load request.
-*   The client calls `getSummary()` inside [api.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/api.js).
+*   The controller [EventFinancialsController.js](../../frontend/js/controllers/EventFinancialsController.js) triggers a load request.
+*   The client calls `getSummary()` inside [api.js](../../frontend/js/api.js).
 
 ### 2. API Routing (Backend)
-*   The route `GET /events/{event_id}/summary` resolves inside [contributions_expenses.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/contributions_expenses.py).
+*   The route `GET /events/{event_id}/summary` resolves inside [contributions_expenses.py](../../backend/routers/contributions_expenses.py).
 *   Enforces the access guard dependency `verify_membership()`. Banned or restricted members cannot access the summary.
 
 ### 3. Caching & Database Aggregations (CRUD)
-*   The method `get_event_summary()` inside [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py):
+*   The method `get_event_summary()` inside [crud.py](../../backend/crud.py):
     1.  Checks if a cached summary exists in Redis under the key `sum:{event_id}`. If a cache hit occurs, it returns the cached data immediately.
     2.  If a cache miss occurs, the backend executes SQL aggregates to calculate financial totals:
         *   `total_contributions`: `SUM(amount)` where `payment_received != False`.

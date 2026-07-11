@@ -10,11 +10,11 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Frontend Action**: [frontend/contribute.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/contribute.html)
-*   **FastAPI Router Endpoints**: [backend/routers/public.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/public.py) (Functions: `upload_receipt()`, `submit_manual_contribution()`)
-*   **Magic Byte Image Scanner**: [backend/storage.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/storage.py) (Function: `validate_receipt_content()`)
-*   **Vision AI Parser Fallback**: [backend/routers/public.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/public.py) (Function: `extract_receipt_data_with_fallback()`)
-*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/ws_manager.py) (Function: `broadcast_change()`)
+*   **Frontend Action**: [frontend/contribute.html](../../frontend/contribute.html)
+*   **FastAPI Router Endpoints**: [backend/routers/public.py](../../backend/routers/public.py) (Functions: `upload_receipt()`, `submit_manual_contribution()`)
+*   **Magic Byte Image Scanner**: [backend/storage.py](../../backend/storage.py) (Function: `validate_receipt_content()`)
+*   **Vision AI Parser Fallback**: [backend/routers/public.py](../../backend/routers/public.py) (Function: `extract_receipt_data_with_fallback()`)
+*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](../../backend/ws_manager.py) (Function: `broadcast_change()`)
 
 ---
 
@@ -74,7 +74,7 @@ sequenceDiagram
 
 ### 1. Ingestion & Storage Validation
 *   The donor uploads a UPI payment screenshot to the guest portal.
-*   The client calls `upload_receipt` in [public.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/public.py).
+*   The client calls `upload_receipt` in [public.py](../../backend/routers/public.py).
 *   **Pre-Check**: Validates that the file type is an image before reading the body.
 *   **File Constraints**: Enforces a strict 5MB maximum limit.
 *   **Magic Byte Signature Verification**: The system inspects the file's first bytes (magic numbers) to verify it is a valid JPEG, PNG, GIF, or WEBP image, blocking malicious payloads or non-image types.

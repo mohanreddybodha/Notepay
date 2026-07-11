@@ -10,8 +10,8 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Architecture Enforcement**: [docs/architecture-rules.md](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/docs/architecture-rules.md)
-*   **PR Contributions**: [CONTRIBUTING.md](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/CONTRIBUTING.md)
+*   **Architecture Enforcement**: [docs/architecture-rules.md](architecture-rules.md)
+*   **PR Contributions**: [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ---
 
@@ -48,7 +48,7 @@ Maintain a clear separation between backend logic and frontend templates:
 
 ### 1. Data Access Isolation (CRUD Layer)
 *   Do not write direct database SQL operations or ORM queries inside router files. 
-*   All queries, updates, and deletes must reside in [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) as the single data access layer, keeping router scripts lightweight.
+*   All queries, updates, and deletes must reside in [crud.py](../backend/crud.py) as the single data access layer, keeping router scripts lightweight.
 
 ### 2. No N+1 Query Loops (Performance)
 *   Never write database query calls inside Python iteration loops (such as calling a query for each event in a list).
@@ -56,7 +56,7 @@ Maintain a clear separation between backend logic and frontend templates:
 *   **SQL Aggregations**: Calculate sums, averages, and counts inside the database engine using `SUM`, `COUNT`, and `GROUP BY` SQL statements. Do not fetch records into memory to calculate aggregates in Python.
 
 ### 3. Schema Schema Contracts
-*   Every route input payload and output response must utilize Pydantic schemas defined in [schemas.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/schemas.py).
+*   Every route input payload and output response must utilize Pydantic schemas defined in [schemas.py](../backend/schemas.py).
 *   Ensure that internal database columns (like password hashes or system tokens) are excluded from public responses.
 
 ### 4. Input Sanitization (stored XSS check)
@@ -68,11 +68,11 @@ Maintain a clear separation between backend logic and frontend templates:
 
 ### 1. Framework Restrictions
 *   **No Frameworks**: Do not introduce frameworks like React, Angular, Svelte, or Vue unless explicitly requested. All changes must use Vanilla JS.
-*   **Web Components**: Reusable UI elements must be defined as Custom Web Components in [components.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/components.js).
+*   **Web Components**: Reusable UI elements must be defined as Custom Web Components in [components.js](../frontend/js/components.js).
 
 ### 2. Decoupled Route Helpers
 *   Never hardcode file names like `dashboard.html` or `/dashboard` directly in navigation bindings. 
-*   Always use `buildUrl(page, ...segments)` in [shared-utils.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/shared-utils.js) to resolve paths, ensuring the URL resolves correctly in both local development environments and production.
+*   Always use `buildUrl(page, ...segments)` in [shared-utils.js](../frontend/js/shared-utils.js) to resolve paths, ensuring the URL resolves correctly in both local development environments and production.
 
 ### 3. Local Formatting Wrappers
 *   To format dates, numbers, and currencies, use the shared helper functions defined in `NPUtils` (e.g., `formatINR(amount)`, `formatDate(date)`). Do not write custom formatting logic inside page controllers.

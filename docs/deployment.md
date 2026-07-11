@@ -10,9 +10,9 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **AWS SAM Deployment Template**: [template.yaml](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/template.yaml)
-*   **Local Frontend Dev Server**: [serve_frontend.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/serve_frontend.py)
-*   **CI/CD Workflow Settings**: [.github/workflows/deploy.yml](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/.github/workflows/deploy.yml)
+*   **AWS SAM Deployment Template**: [template.yaml](../template.yaml)
+*   **Local Frontend Dev Server**: [serve_frontend.py](../serve_frontend.py)
+*   **CI/CD Workflow Settings**: [.github/workflows/deploy.yml](../.github/workflows/deploy.yml)
 
 ---
 
@@ -45,7 +45,7 @@ Since the frontend uses clean URL mapping (e.g. `/dashboard` instead of `dashboa
 2.  Open your browser and navigate to `http://localhost:3000`.
 
 ### 💡 Clean URL Emulator (`serve_frontend.py`)
-The script [serve_frontend.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/serve_frontend.py) runs a customized HTTP server:
+The script [serve_frontend.py](../serve_frontend.py) runs a customized HTTP server:
 *   **Static Routes**: Maps exact paths directly to HTML files (e.g., `/dashboard` resolves to `/frontend/dashboard.html`).
 *   **Prefix Segment Routing**: Maps dynamic prefix segments to the appropriate HTML controllers:
     *   `/event/*` resolves to `/frontend/event.html`
@@ -58,7 +58,7 @@ The script [serve_frontend.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY
 
 ## ☁️ AWS Production Serverless Architecture
 
-In production, Notepay is deployed to AWS using the **AWS Serverless Application Model (SAM)** defined in [template.yaml](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/template.yaml).
+In production, Notepay is deployed to AWS using the **AWS Serverless Application Model (SAM)** defined in [template.yaml](../template.yaml).
 
 ```mermaid
 graph TD

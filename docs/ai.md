@@ -10,9 +10,9 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Vision AI Receipt Parser**: [backend/routers/public.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/public.py) (Function: `extract_receipt_data_with_fallback()`)
-*   **AI Chat Advisor Worker**: [backend/routers/chat.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/chat.py) (Function: `process_ai_chat()`)
-*   **Chat DB Message Capper**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `create_chat_message()`)
+*   **Vision AI Receipt Parser**: [backend/routers/public.py](../backend/routers/public.py) (Function: `extract_receipt_data_with_fallback()`)
+*   **AI Chat Advisor Worker**: [backend/routers/chat.py](../backend/routers/chat.py) (Function: `process_ai_chat()`)
+*   **Chat DB Message Capper**: [backend/crud.py](../backend/crud.py) (Function: `create_chat_message()`)
 
 ---
 

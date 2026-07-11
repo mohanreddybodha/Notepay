@@ -43,13 +43,13 @@ To prevent dependency cycles and maintain a clean separation of concerns, the co
 ```
 
 ### 1. Frontend Boundaries
-*   **Decoupled Pages**: Frontend views (e.g., `dashboard.html`) do not query backend databases directly. All API requests must route through the central API client `apiFetch()` in [api.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/api.js).
-*   **Shared Utilities**: Formatting and URL translation must be handled by `NPUtils` inside [shared-utils.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/shared-utils.js) rather than writing custom logic inside views.
+*   **Decoupled Pages**: Frontend views (e.g., `dashboard.html`) do not query backend databases directly. All API requests must route through the central API client `apiFetch()` in [api.js](../frontend/js/api.js).
+*   **Shared Utilities**: Formatting and URL translation must be handled by `NPUtils` inside [shared-utils.js](../frontend/js/shared-utils.js) rather than writing custom logic inside views.
 
 ### 2. Backend Boundaries
 *   **Router Responsibility**: Router files inside `/routers` are only responsible for parsing HTTP parameters, checking rate limits, and enforcing permissions. They must not contain business logic or database queries.
-*   **CRUD Responsibility**: Database reads, inserts, updates, and deletes must reside in [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py).
-*   **Data Models**: Database schema structures are defined in [models.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/models.py). The schema models must be kept decoupled from the request/response validation logic defined in [schemas.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/schemas.py).
+*   **CRUD Responsibility**: Database reads, inserts, updates, and deletes must reside in [crud.py](../backend/crud.py).
+*   **Data Models**: Database schema structures are defined in [models.py](../backend/models.py). The schema models must be kept decoupled from the request/response validation logic defined in [schemas.py](../backend/schemas.py).
 
 ---
 

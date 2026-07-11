@@ -6,13 +6,13 @@ This directory contains Vanilla CSS stylesheets defining Notepay's Design System
 
 ## 📂 Stylesheet Index
 
-*   [global.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/global.css): Core configuration. Contains the Light/Dark mode design tokens (CSS variables), input element styles, button templates, and alignment classes.
-*   [components.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/components.css): Layout styles for reusable components (such as sidebars, headers, user avatar circles, loading spinners, and toast notifications).
-*   [dashboard.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/dashboard.css): Styles for user dashboards, stats cards, creation forms, search inputs, and event grids.
-*   [event.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/event.css): Layouts for event details. Styled spreadsheets, financial summaries, the chat message timeline, and receipt upload forms.
-*   [admin.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/admin.css): Administrative interface styles. Audit trail lists, user status cards, and resolve switches.
-*   [forms.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/forms.css): Standard input field sizes.
-*   [icons.css](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/css/icons.css): Styling parameters for SVG icons.
+*   [global.css](global.css): Core configuration. Contains the Light/Dark mode design tokens (CSS variables), input element styles, button templates, and alignment classes.
+*   [components.css](components.css): Layout styles for reusable components (such as sidebars, headers, user avatar circles, loading spinners, and toast notifications).
+*   [dashboard.css](dashboard.css): Styles for user dashboards, stats cards, creation forms, search inputs, and event grids.
+*   [event.css](event.css): Layouts for event details. Styled spreadsheets, financial summaries, the chat message timeline, and receipt upload forms.
+*   [admin.css](admin.css): Administrative interface styles. Audit trail lists, user status cards, and resolve switches.
+*   [forms.css](forms.css): Standard input field sizes.
+*   [icons.css](icons.css): Styling parameters for SVG icons.
 
 ---
 

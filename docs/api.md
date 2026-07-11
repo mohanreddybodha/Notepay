@@ -10,9 +10,9 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Implementation Routers**: [backend/routers/](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/) (`profile.py`, `events.py`, `contributions_expenses.py`, `chat.py`, `public.py`, `admin.py`)
-*   **Validation Schemas**: [backend/schemas.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/schemas.py)
-*   **Auth & Roles Guards**: [backend/dependencies.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/dependencies.py)
+*   **Implementation Routers**: [backend/routers/](../backend/routers) (`profile.py`, `events.py`, `contributions_expenses.py`, `chat.py`, `public.py`, `admin.py`)
+*   **Validation Schemas**: [backend/schemas.py](../backend/schemas.py)
+*   **Auth & Roles Guards**: [backend/dependencies.py](../backend/dependencies.py)
 
 ---
 

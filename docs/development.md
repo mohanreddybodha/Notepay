@@ -10,8 +10,8 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Engineering Constraints Handbook**: [docs/architecture-rules.md](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/docs/architecture-rules.md)
-*   **PR Contributions & Commits**: [CONTRIBUTING.md](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/CONTRIBUTING.md)
+*   **Engineering Constraints Handbook**: [docs/architecture-rules.md](architecture-rules.md)
+*   **PR Contributions & Commits**: [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ---
 
@@ -20,7 +20,7 @@ status: "Verified ✓"
 To add a new endpoint, follow this sequence:
 
 ### Step A: Define the Data Schemas
-Open [schemas.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/schemas.py) and define the request input and response output schemas using Pydantic:
+Open [schemas.py](../backend/schemas.py) and define the request input and response output schemas using Pydantic:
 ```python
 class ItemCreate(BaseModel):
     name: str
@@ -35,7 +35,7 @@ class ItemResponse(BaseModel):
 ```
 
 ### Step B: Create the Database Operation (CRUD)
-Open [crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) and write the database operations:
+Open [crud.py](../backend/crud.py) and write the database operations:
 ```python
 def create_item(db: Session, item: schemas.ItemCreate, user_id: int):
     db_item = models.Item(name=item.name, quantity=item.quantity, owner_id=user_id)
@@ -59,7 +59,7 @@ def add_new_item(
 ```
 
 ### Step D: Add Smoke Tests
-Open [test_smoke.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/tests/test_smoke.py) and add tests:
+Open [test_smoke.py](../backend/tests/test_smoke.py) and add tests:
 ```python
 def test_create_item_requires_auth(client):
     res = client.post("/items", json={"name": "Apples", "quantity": 5})
@@ -87,7 +87,7 @@ Create a new HTML file in `/frontend` (e.g. `invite.html`) using the global styl
 ```
 
 ### Step B: Register the Route in serve_frontend.py
-Open [serve_frontend.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/serve_frontend.py) and register the clean URL routing path:
+Open [serve_frontend.py](../serve_frontend.py) and register the clean URL routing path:
 ```python
 STATIC_ROUTES = {
     '/':                '/',
@@ -97,7 +97,7 @@ STATIC_ROUTES = {
 ```
 
 ### Step C: Update buildUrl in shared-utils.js
-Open [shared-utils.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/shared-utils.js) and register the page to allow clean URL resolution on localhost:
+Open [shared-utils.js](../frontend/js/shared-utils.js) and register the page to allow clean URL resolution on localhost:
 ```javascript
 const pageToHtml = {
   'dashboard':    'dashboard.html',
@@ -110,7 +110,7 @@ const pageToHtml = {
 ## ➕ 3. How to Add a New Database Model
 
 ### Step A: Define the SQLAlchemy Model
-Open [models.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/models.py) and declare the new table class:
+Open [models.py](../backend/models.py) and declare the new table class:
 ```python
 class Item(Base):
     __tablename__ = "items"

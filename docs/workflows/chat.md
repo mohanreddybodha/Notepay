@@ -10,11 +10,11 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Frontend Action**: [frontend/event.html](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/event.html) (Script: `js/controllers/EventChatController.js`)
-*   **FastAPI Router Endpoint**: [backend/routers/chat.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/chat.py) (Function: `send_chat_message()`)
-*   **AI Context Builder Worker**: [backend/routers/chat.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/chat.py) (Function: `process_ai_chat()`)
-*   **Database CRUD Layer**: [backend/crud.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/crud.py) (Function: `create_chat_message()`)
-*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/ws_manager.py) (Function: `broadcast_change()`)
+*   **Frontend Action**: [frontend/event.html](../../frontend/event.html) (Script: `js/controllers/EventChatController.js`)
+*   **FastAPI Router Endpoint**: [backend/routers/chat.py](../../backend/routers/chat.py) (Function: `send_chat_message()`)
+*   **AI Context Builder Worker**: [backend/routers/chat.py](../../backend/routers/chat.py) (Function: `process_ai_chat()`)
+*   **Database CRUD Layer**: [backend/crud.py](../../backend/crud.py) (Function: `create_chat_message()`)
+*   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](../../backend/ws_manager.py) (Function: `broadcast_change()`)
 
 ---
 
@@ -64,8 +64,8 @@ sequenceDiagram
 ### 1. User Interaction (Frontend)
 *   The user navigates to the event's detailed page, opens the **Chat** tab, enters text, and clicks send.
 *   If the message starts with `@ai `, it is routed to the AI Advisor.
-*   The page controller [EventChatController.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/controllers/EventChatController.js) calls `sendMessage()`.
-*   The client calls `sendChat` inside [api.js](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/frontend/js/api.js), sending the request payload:
+*   The page controller [EventChatController.js](../../frontend/js/controllers/EventChatController.js) calls `sendMessage()`.
+*   The client calls `sendChat` inside [api.js](../../frontend/js/api.js), sending the request payload:
     ```json
     {
       "message": "@ai How much did we spend on decorations?",
@@ -75,7 +75,7 @@ sequenceDiagram
     ```
 
 ### 2. API Routing & Idempotency Checks (Backend)
-*   The route `POST /events/{event_id}/chat` resolves inside [chat.py](file:///c:/Users/bodha/OneDrive/Documents/NOTEPAY/Notepay_App/backend/routers/chat.py).
+*   The route `POST /events/{event_id}/chat` resolves inside [chat.py](../../backend/routers/chat.py).
 *   Enforces a rate limit of 20 messages per user per minute.
 *   Enforces the access guard dependency `verify_membership(..., require_unrestricted=True)`. Restricted members cannot chat.
 *   **Idempotency Protection**: Checks if the user's `idempotency_key` exists in the cache. If it exists, the backend returns the previously generated message ID, preventing duplicate entries.
