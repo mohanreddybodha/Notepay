@@ -16,9 +16,8 @@ let currentCollections = 0;
       if (nameSide) nameSide.textContent = profileObj.full_name;
     }
   } catch(e) {}
-  const _urlParams = new URLSearchParams(window.location.search);
-  const fromEvent = _urlParams.get('from') === 'event';
-  if (fromEvent) {
+  const editFrom = sessionStorage.getItem('np_edit_from');
+  if (editFrom === 'event' || editFrom === 'dashboard') {
     const backBtn = document.querySelector('.pg-back');
     if (backBtn) {
       backBtn.style.setProperty('display', 'flex', 'important');
@@ -28,9 +27,13 @@ let currentCollections = 0;
   function goBack() {
     const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
     const editId = pathCtx.id || new URLSearchParams(window.location.search).get('edit');
-    const fromEvent = new URLSearchParams(window.location.search).get('from') === 'event';
-    if (fromEvent && editId) {
+    const editFrom = sessionStorage.getItem('np_edit_from');
+    if (editFrom === 'event' && editId) {
       window.location.href = (typeof buildUrl === 'function') ? buildUrl('event', editId) : getCleanUrl('event.html') + '?id=' + encodeURIComponent(editId);
+      return;
+    }
+    if (editFrom === 'dashboard') {
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html');
       return;
     }
     if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {

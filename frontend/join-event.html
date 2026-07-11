@@ -886,7 +886,7 @@
 </head>
 
 <body>
-
+  <div id="np-circle-spinner" style="background: var(--surface); pointer-events: all; display: none;"><div class="np-designed-spinner"></div></div>
 
   <div class="app">
     <!-- EXACT SIDEBAR FROM DASHBOARD (Support section removed on desktop) -->
@@ -1056,7 +1056,8 @@
       const urlParams = new URLSearchParams(window.location.search);
       const code = pathCtx.id || urlParams.get('code');
       if (code) {
-        if (typeof showCircleLoading === 'function') showCircleLoading();
+        const circleSpinner = document.getElementById("np-circle-spinner");
+        if (circleSpinner) circleSpinner.style.display = "flex";
         try {
           const res = await joinEvent(code.trim().toUpperCase());
           showToast("Joined event!");
@@ -1065,12 +1066,14 @@
           const msg = e.message || "Failed to join event";
           showToast(msg, "error");
 
+          if (circleSpinner) circleSpinner.style.display = "none";
+
           // Remove auth-guard splash to let the user see and correct the error
           const splash = document.getElementById('auth-guard-splash');
           if (splash) splash.remove();
           const style = document.getElementById('auth-guard-splash-style');
           if (style) style.remove();
-
+          
           document.getElementById('code-input').value = code.trim().toUpperCase();
           document.getElementById("code-field").classList.add("err");
           const errTxt = document.getElementById("err-txt");

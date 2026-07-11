@@ -578,9 +578,8 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         }
 
         if (role === 'organizer') {
-          const editHrefBase = (typeof buildUrl === 'function') ? buildUrl('edit-event', e.id) : `create-event.html?edit=${e.id}`;
-          const editHref = editHrefBase + (editHrefBase.includes('?') ? '&' : '?') + 'from=dashboard';
-          actRow += `<button class="ca-btn act-edit" onclick="event.stopPropagation();window.location.href='${editHref}'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Manage Event</button>`;
+          const editHref = (typeof buildUrl === 'function') ? buildUrl('edit-event', e.id) : `create-event.html?edit=${e.id}`;
+          actRow += `<button class="ca-btn act-edit" onclick="event.stopPropagation(); sessionStorage.setItem('np_edit_from', 'dashboard'); window.location.href='${editHref}'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Manage Event</button>`;
           actRow += `<button class="ca-btn act-summary" onclick="event.stopPropagation(); sessionStorage.setItem('np_from_all_tab', currentTab === 0 ? 'true' : 'false'); window.location.href='${summaryUrl}'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;
         } else if (role === 'collector') {
           actRow += `<button class="ca-btn act-summary" onclick="event.stopPropagation(); sessionStorage.setItem('np_from_all_tab', currentTab === 0 ? 'true' : 'false'); window.location.href='${summaryUrl}'"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Summary</button>`;

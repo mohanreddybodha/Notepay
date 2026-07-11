@@ -1160,9 +1160,8 @@ function openExitPop() {
     }
 
     function openRenameSheet() { 
-      const baseUrl = (typeof buildUrl === 'function') ? buildUrl('edit-event', eventId) : `create-event.html?edit=${eventId}`;
-      const sep = baseUrl.includes('?') ? '&' : '?';
-      window.location.href = baseUrl + sep + 'from=event';
+      sessionStorage.setItem('np_edit_from', 'event');
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('edit-event', eventId) : `create-event.html?edit=${eventId}`;
     }
 
     // ── Helpers ──
