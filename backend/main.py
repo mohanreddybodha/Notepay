@@ -21,15 +21,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 import requests
 
-import models, schemas, crud, auth
-from storage import storage_service
+_init_error = None
 try:
-    from cache import cache
-except ImportError:
-    cache = None
-from database import engine, get_db
-from limiter import verify_rate_limit, check_rate_limit
-models.Base.metadata.create_all(bind=engine)
+    import models, schemas, crud, auth
+    from storage import storage_service
+    try:
+        from cache import cache
+    except ImportError:
+        cache = None
+    from database import engine, get_db
+    from limiter import verify_rate_limit, check_rate_limit
+    models.Base.metadata.create_all(bind=engine)
+except Exception as e:
+    import traceback
+    _init_error = traceback.format_exc()
 
 def _run_legacy_migrations():
     """
@@ -210,9 +215,9 @@ try:
     #  AWS SERVERLESS HANDLER 
     from mangum import Mangum
     mangum_handler = Mangum(app)
-    _init_error = None
 except Exception as e:
-    _init_error = traceback.format_exc()
+    if _init_error is None:
+        _init_error = traceback.format_exc()
     mangum_handler = None
 
 
