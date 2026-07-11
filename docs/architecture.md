@@ -57,7 +57,7 @@ graph TD
     Lambda -->|Fallback AI Parsing| Gemini
 
     %% Development Connections
-    Browser -.->|HTTP / WS (localhost:3000/8000)| LocalServer
+    Browser -.->|"HTTP / WS (localhost:3000/8000)"| LocalServer
     LocalServer -->|Execute| LocalApp
     LocalApp -->|Local Cache| LocalDict
     LocalApp -->|SQL Read/Write| SQLite
