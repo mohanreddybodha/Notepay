@@ -23,19 +23,60 @@
   <script src="js/shared-utils.js?v=31"></script>
 <script>
     (async () => {
-      if (localStorage.getItem("np_my_id")) {
+      // If likely logged in, show the app spinner instead of flashing the landing page
+      const isLikelyLoggedIn = localStorage.getItem("np_my_id") || sessionStorage.getItem("np_session_active");
+      
+      let splashElement = null;
+      let styleElement = null;
+      
+      if (isLikelyLoggedIn) {
+        // Inject auth-guard style spinner
+        styleElement = document.createElement('style');
+        const isDark = localStorage.getItem("np_dark") || localStorage.getItem("np_admin_theme") === "dark";
+        styleElement.textContent = `
+          html { visibility: hidden !important; }
+          #auth-guard-splash {
+            visibility: visible !important;
+            position: fixed; inset: 0; z-index: 9999999;
+            display: flex; align-items: center; justify-content: center;
+            background: ${isDark ? '#09090b' : '#ffffff'};
+            opacity: 1; transition: opacity 0.2s ease;
+          }
+          #auth-guard-splash .np-designed-spinner {
+            width: 28px; height: 28px;
+            border: 3px solid ${isDark ? 'rgba(96, 165, 250, 0.08)' : 'rgba(26, 78, 140, 0.08)'};
+            border-top-color: ${isDark ? '#60a5fa' : '#1A4E8C'};
+            border-left-color: ${isDark ? '#60a5fa' : '#1A4E8C'};
+            border-radius: 50%;
+            animation: npSpinUnique 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            box-shadow: 0 0 8px ${isDark ? 'rgba(96, 165, 250, 0.25)' : 'rgba(26, 78, 140, 0.15)'};
+          }
+          @keyframes npSpinUnique { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        `;
+        document.head.appendChild(styleElement);
+        
+        splashElement = document.createElement('div');
+        splashElement.id = 'auth-guard-splash';
+        splashElement.innerHTML = '<div class="np-designed-spinner"></div>';
+        
+        if (document.body) document.body.insertBefore(splashElement, document.body.firstChild);
+        else document.addEventListener('DOMContentLoaded', () => document.body.insertBefore(splashElement, document.body.firstChild));
+        
         const user = await waitForAuthReady();
         if (user) {
           window.location.replace(getCleanUrl('dashboard.html'));
           return;
         }
       }
-      const hideSplash = () => {
-        const splash = document.getElementById('np-circle-spinner');
-        if (splash) splash.classList.add('hidden');
-        else setTimeout(hideSplash, 5);
-      };
-      hideSplash();
+      
+      // If not logged in, remove the splash smoothly and show the landing page
+      if (splashElement) {
+        splashElement.style.opacity = '0';
+        setTimeout(() => {
+          if (splashElement) splashElement.remove();
+          if (styleElement) styleElement.remove();
+        }, 200);
+      }
     })();
   </script>
 
