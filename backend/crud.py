@@ -36,52 +36,15 @@ def fix_custom_fields_dict(obj_dict: dict) -> dict:
     return obj_dict
 
 
-import re as _re
-from html.parser import HTMLParser as _HTMLParser
-
-
-class _TagStripper(_HTMLParser):
-    """Minimal stdlib HTML tag stripper — used when bleach is not installed."""
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self._parts = []
-
-    def handle_data(self, data):
-        self._parts.append(data)
-
-    def get_text(self):
-        return "".join(self._parts)
-
-
-def _strip_html(text: str) -> str:
-    """Strip all HTML tags and decode HTML entities from a string."""
-    # Remove javascript: protocol from any context
-    text = _re.sub(r'javascript\s*:', '', text, flags=_re.IGNORECASE)
-    try:
-        stripper = _TagStripper()
-        stripper.feed(text)
-        return stripper.get_text()
-    except Exception:
-        # Absolute fallback: crude regex tag removal
-        return _re.sub(r'<[^>]+>', '', text)
-
-
-try:
-    import bleach as _bleach
-    def _sanitize_str(s: str) -> str:
-        return _bleach.clean(s, tags=[], strip=True)
-except ImportError:
-    def _sanitize_str(s: str) -> str:  # type: ignore[misc]
-        return _strip_html(s)
+import bleach as _bleach
 
 
 def sanitize_json_payload(data):
-    """Recursively sanitize string values inside dicts and lists to prevent stored XSS.
-    Works with or without the optional 'bleach' package."""
+    """Recursively sanitize string values inside dicts and lists to prevent stored XSS."""
     if data is None:
         return data
     if isinstance(data, str):
-        return _sanitize_str(data)
+        return _bleach.clean(data, tags=[], strip=True)
     if isinstance(data, dict):
         return {str(k): sanitize_json_payload(v) for k, v in data.items()}
     if isinstance(data, list):
