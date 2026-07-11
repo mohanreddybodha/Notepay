@@ -9,7 +9,7 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 
 # Allowed image magic-byte signatures (content-based validation, not just extension)
-_ALLOWED_MAGIC: dict[str, bytes] = {
+_ALLOWED_MAGIC = {
     "image/jpeg":  b"\xff\xd8\xff",
     "image/png":   b"\x89PNG\r\n\x1a\n",
     "image/gif":   b"GIF8",

@@ -191,19 +191,36 @@ async def websocket_dashboard(websocket: WebSocket):
     except Exception:
         manager.disconnect_dashboard(websocket)
 
-from routers import admin, profile, events, donations_expenses, chat, public
-app.include_router(admin.router)
-app.include_router(profile.router)
-app.include_router(events.router)
-app.include_router(donations_expenses.router)
-app.include_router(chat.router)
-app.include_router(public.router)
+import traceback
+import json
 
-#  AWS SERVERLESS HANDLER 
-from mangum import Mangum
-mangum_handler = Mangum(app)
+try:
+    from routers import admin, profile, events, donations_expenses, chat, public
+    app.include_router(admin.router)
+    app.include_router(profile.router)
+    app.include_router(events.router)
+    app.include_router(donations_expenses.router)
+    app.include_router(chat.router)
+    app.include_router(public.router)
+
+    #  AWS SERVERLESS HANDLER 
+    from mangum import Mangum
+    mangum_handler = Mangum(app)
+    _init_error = None
+except Exception as e:
+    _init_error = traceback.format_exc()
+    mangum_handler = None
+
 
 def handler(event, context):
+    if _init_error:
+        # Return 200 so the deploy script health check succeeds and we can read the body!
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"status": "error", "traceback": _init_error}),
+            "headers": {"Content-Type": "application/json"}
+        }
+
     # ── EventBridge warmup ping — return immediately to keep Lambda warm ──
     event_source = event.get("source", "")
     if event_source in ("notepay-warmup", "aws.events"):
