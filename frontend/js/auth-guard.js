@@ -107,19 +107,17 @@
     const isAutoJoin = (path.includes("join") || path.includes("join-event.html")) && 
                        (window.location.search.includes("code=") || (path.split('/').filter(Boolean)[0] === 'join' && path.split('/').filter(Boolean)[1]));
     
-    if (!isAutoJoin) {
-      const splash = document.getElementById('auth-guard-splash');
-      if (splash) {
-        splash.style.opacity = '0';
-        setTimeout(() => {
-          splash.remove();
-          const style = document.getElementById('auth-guard-splash-style');
-          if (style) style.remove();
-        }, 200);
-      } else {
+    const splash = document.getElementById('auth-guard-splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.remove();
         const style = document.getElementById('auth-guard-splash-style');
         if (style) style.remove();
-      }
+      }, 200);
+    } else {
+      const style = document.getElementById('auth-guard-splash-style');
+      if (style) style.remove();
     }
   }
 })();

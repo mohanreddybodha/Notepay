@@ -310,14 +310,14 @@ let currentTab = new URLSearchParams(location.search).get("tab") || "don";
             // SAFETY VALVE: Only trust cache if it's ACTIVE. 
             // If it was deactivated/private, fetch fresh before showing anything to avoid "Ghost Lockout".
             if (cData.event && cData.event.is_active && (cData.event.is_public || cData.my_role !== 'visitor')) {
-              console.log("⚡️ Hydrating from Cache (Place 2)");
+              // console.log("⚡️ Hydrating from Cache (Place 2)");
               applyData(cData);
             }
           } catch (e) { console.warn("Cache parse failed", e); }
         }
       }
 
-      console.log(isBackground ? "🔄 Background Refreshing..." : "🚀 Fetching Fresh Data");
+      // console.log(isBackground ? "🔄 Background Refreshing..." : "🚀 Fetching Fresh Data");
       if (!isBackground && typeof showCircleLoading === "function") showCircleLoading();
       try {
         const res = await apiFetch("GET", `/events/${eventId}/full-details`);
@@ -683,7 +683,7 @@ let currentTab = new URLSearchParams(location.search).get("tab") || "don";
 
     // ── Tab switching ──
     function switchTab(tab, updateUrl = true, preserveInline = false) {
-      console.log(`[debug] switchTab: tab=${tab}, updateUrl=${updateUrl}, preserveInline=${preserveInline}, activeInlineAddType=${activeInlineAddType}`);
+      // console.log(`[debug] switchTab: tab=${tab}, updateUrl=${updateUrl}, preserveInline=${preserveInline}, activeInlineAddType=${activeInlineAddType}`);
       if (!preserveInline) {
         activeInlineAddType = null;
         activeInlineEditType = null;
@@ -1160,9 +1160,9 @@ function openExitPop() {
     }
 
     function openRenameSheet() { 
-      window.location.href = (typeof buildUrl === 'function') 
-        ? buildUrl('edit-event', eventId) + '?from=event'
-        : `create-event.html?edit=${eventId}&from=event`; 
+      const baseUrl = (typeof buildUrl === 'function') ? buildUrl('edit-event', eventId) : `create-event.html?edit=${eventId}`;
+      const sep = baseUrl.includes('?') ? '&' : '?';
+      window.location.href = baseUrl + sep + 'from=event';
     }
 
     // ── Helpers ──
