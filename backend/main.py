@@ -215,7 +215,7 @@ try:
 
     #  AWS SERVERLESS HANDLER 
     from mangum import Mangum
-    mangum_handler = Mangum(app)
+    mangum_handler = Mangum(app, lifespan="off")
 except Exception as e:
     if _init_error is None:
         _init_error = traceback.format_exc()
