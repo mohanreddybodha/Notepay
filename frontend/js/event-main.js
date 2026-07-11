@@ -104,7 +104,7 @@
     let eventDateFilter = 'all';
     let eventDateStart = '';
     let eventDateEnd = '';
-let currentTab = new URLSearchParams(location.search).get("tab") || "don";
+let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().tab : null) || new URLSearchParams(location.search).get("tab") || "don";
     let ctxTarget = null; // { type:'don'|'exp', entry, row }
     let editTarget = null;
     let isVisitor = false;

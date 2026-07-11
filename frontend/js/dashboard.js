@@ -729,7 +729,12 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
     }
 
     let sx = 0;
-    document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    let sy = 0;
+    document.addEventListener('touchstart', e => { 
+      sx = e.touches[0].clientX; 
+      sy = e.touches[0].clientY; 
+    }, { passive: true });
+    
     document.addEventListener('touchend', e => {
       const crView = document.getElementById('spa-view-create');
       const jnView = document.getElementById('spa-view-join');
@@ -737,7 +742,10 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       if (jnView && jnView.style.display !== 'none') return;
 
       const dx = e.changedTouches[0].clientX - sx;
-      if (Math.abs(dx) > 55) {
+      const dy = e.changedTouches[0].clientY - sy;
+      
+      // Swipe threshold: must be primarily horizontal and exceed 75px
+      if (Math.abs(dx) > 75 && Math.abs(dx) > Math.abs(dy) * 1.8) {
         if (dx < 0 && currentTab < 3) switchTab(currentTab + 1);
         else if (dx > 0 && currentTab > 0) switchTab(currentTab - 1);
       }

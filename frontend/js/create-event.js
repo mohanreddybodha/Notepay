@@ -422,7 +422,7 @@ let currentCollections = 0;
           try {
             await deleteEvent(editId);
             showToast("Event permanently deleted.");
-            window.location.href = getCleanUrl("dashboard.html");
+            window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl("dashboard.html");
           } catch(e) {
             showToast(e.message || "Failed to delete event.", "error");
             deleteBtn.disabled = false;
@@ -477,7 +477,7 @@ let currentCollections = 0;
       } else {
         await createEvent(name, desc, date, true, true, goalAmount);
         showToast("Event created!");
-        window.location.replace(getCleanUrl("dashboard.html"));
+        window.location.replace((typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl("dashboard.html"));
       }
     } catch(err) {
       mainErrTxt.textContent = err.message || "Failed to save event. Please try again.";
