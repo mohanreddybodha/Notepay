@@ -83,6 +83,7 @@
 
     // Reverse tab segment map for localhost query params
     const segToTab = { 'collections': 'don', 'expenses': 'exp', 'summary': 'sum' };
+    const dashTabIds = { 'my-events': '1', 'shared': '2', 'visited': '3' };
 
     if (isLocal) {
       // Localhost: use .html files with query params — visible in URL bar as-is
@@ -104,10 +105,16 @@
       };
       const html = pageToHtml[page] || (page + '.html');
 
-      // event.html?id=ABCD123[&tab=don]
+      // dashboard.html?tab=N
+      if (page === 'dashboard' && segments[0]) {
+        return html + '?tab=' + (dashTabIds[segments[0]] || '0');
+      }
+      // event.html?id=ABCD123[&tab=don][&chat=1]
       if (page === 'event' && segments[0]) {
         let url = html + '?id=' + encodeURIComponent(segments[0]);
-        if (segments[1]) {
+        if (segments[1] === 'chat') {
+          url += '&chat=1';
+        } else if (segments[1]) {
           const tab = segToTab[segments[1]] || segments[1];
           url += '&tab=' + tab;
         }
@@ -121,7 +128,10 @@
       if (page === 'donate' && segments[0]) {
         return html + '?event_id=' + encodeURIComponent(segments[0]);
       }
-      // join-event.html (code stays as ?code= query param — no path change)
+      // join-event.html?code=ABCD
+      if (page === 'join' && segments[0]) {
+        return html + '?code=' + encodeURIComponent(segments[0]);
+      }
       return html;
     }
 
@@ -137,10 +147,9 @@
    *   /event/ABCD123/collections → { page: "event", id: "ABCD123", sub: "collections", tab: "don" }
    *   /edit-event/ABCD123        → { page: "edit-event", id: "ABCD123", sub: null, tab: null }
    *   /dashboard                 → { page: "dashboard", id: null, sub: null, tab: null }
+   *   /dashboard/my-events       → { page: "dashboard", id: null, sub: null, tab: 1 }
    *   /donate/ABCD123            → { page: "donate", id: "ABCD123", sub: null, tab: null }
-   *
-   * Also handles legacy .html?param URLs for backward compatibility:
-   *   /event.html?id=ABCD123&tab=don → { page: "event", id: "ABCD123", sub: "collections", tab: "don" }
+   *   /join/ABCD                 → { page: "join", id: "ABCD", sub: null, tab: null }
    */
   function parseCurrentPath() {
     const pathname = window.location.pathname;
@@ -160,13 +169,20 @@
     if (page === 'edit-profile') { page = 'profile'; sub = 'edit'; id = null; }
     if (page === 'profile-setup') { page = 'profile'; sub = 'setup'; id = null; }
 
-    // Derive tab name from sub segment
+    const dashTabMap = { 'my-events': 1, 'shared': 2, 'visited': 3 };
     let tab = sub ? (EVENT_SEGMENT_TABS[sub] || null) : null;
+    
+    if (page === 'dashboard') {
+      if (id && dashTabMap[id]) {
+        tab = dashTabMap[id];
+        id = null;
+      }
+    }
 
-    // Backward compatibility: if no id in path, check ?id= query param
+    // Backward compatibility: if no id in path, check ?id= or ?code= query param
     if (!id || id === 'undefined') {
       const p = new URLSearchParams(search);
-      id = p.get('id') || p.get('eventId') || p.get('event_id') || p.get('edit') || null;
+      id = p.get('id') || p.get('eventId') || p.get('event_id') || p.get('edit') || p.get('code') || null;
     }
     // Backward compatibility: if no tab in path, check ?tab= query param
     if (!tab) {
@@ -175,6 +191,8 @@
       if (t && EVENT_TAB_SEGMENTS[t]) {
         tab = t;
         sub = EVENT_TAB_SEGMENTS[t];
+      } else if (t) {
+        tab = parseInt(t) || 0;
       }
     }
 

@@ -3,10 +3,15 @@ let currentTab = 0;
 let isFirstLoad = true;
 let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: 'all', date: 'all', dStart: '', dEnd: '' };
 
-    // Tab is driven by localStorage only (industry standard: UI prefs not in URL)
-    const savedTab = localStorage.getItem('np_dash_tab');
-    if (savedTab !== null) {
-      currentTab = parseInt(savedTab) || 0;
+    // Set active tab based on clean URL path first, fallback to localStorage
+    const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
+    if (pathCtx.page === 'dashboard' && pathCtx.tab !== null) {
+      currentTab = pathCtx.tab;
+    } else {
+      const savedTab = localStorage.getItem('np_dash_tab');
+      if (savedTab !== null) {
+        currentTab = parseInt(savedTab) || 0;
+      }
     }
 
     // Set tab immediately on load to prevent visual flashing
@@ -663,10 +668,14 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       // SPA views are closed by user explicitly clicking back or a tab.
       currentTab = idx;
 
-      // URL state and persistence
-      const u = new URLSearchParams(window.location.search);
-      u.set('tab', idx);
-      window.history.replaceState({}, '', getCleanUrl(`${window.location.pathname}?${u}`));
+      // Clean URL mapping
+      let tabSegment = null;
+      if (idx === 1) tabSegment = 'my-events';
+      else if (idx === 2) tabSegment = 'shared';
+      else if (idx === 3) tabSegment = 'visited';
+      
+      const cleanUrl = (typeof buildUrl === 'function') ? buildUrl('dashboard', tabSegment) : '/dashboard';
+      window.history.replaceState({}, '', cleanUrl);
       localStorage.setItem('np_dash_tab', idx);
 
       // Set tab description
@@ -837,12 +846,12 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
           if (spaTitle) spaTitle.textContent = 'Create Event';
         }
         document.querySelector('a[href="create-event.html"]')?.classList.add('active');
-        const qsTab = '?tab=' + (typeof currentTab !== 'undefined' ? currentTab : 0);
         if (window.location.pathname.indexOf('create-event') === -1) {
+          const createUrl = (typeof buildUrl === 'function') ? buildUrl('create-event') : '/create-event';
           if (window.location.search.includes('view=create')) {
-            history.replaceState({spa: 'create'}, '', getCleanUrl('create-event.html' + qsTab));
+            history.replaceState({spa: 'create'}, '', createUrl);
           } else {
-            history.pushState({spa: 'create'}, '', getCleanUrl('create-event.html' + qsTab));
+            history.pushState({spa: 'create'}, '', createUrl);
           }
         }
         const dateInput = document.getElementById("spa-ev-date");

@@ -17,6 +17,10 @@ let currentCollections = 0;
     }
   } catch(e) {}
   function goBack() {
+    if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+      window.history.back();
+      return;
+    }
     // editId comes from clean path /edit-event/ABCD123 or legacy ?edit= param
     const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
     const editId = pathCtx.id || new URLSearchParams(window.location.search).get('edit');

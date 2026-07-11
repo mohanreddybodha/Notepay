@@ -1052,8 +1052,9 @@
     waitForAuthReady().then(async user => {
       if (!user) return;
 
+      const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
       const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
+      const code = pathCtx.id || urlParams.get('code');
       if (code) {
         try {
           const res = await joinEvent(code.trim().toUpperCase());

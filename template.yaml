@@ -179,7 +179,7 @@ Resources:
                 request.uri = '/edit-profile.html';
             } else if (uri === '/profile/setup') {
                 request.uri = '/profile-setup.html';
-            } else if (uri === '/dashboard') {
+            } else if (uri === '/dashboard' || uri.indexOf('/dashboard/') === 0) {
                 request.uri = '/dashboard.html';
             } else if (uri === '/login' || uri === '/signup') {
                 request.uri = '/login.html';

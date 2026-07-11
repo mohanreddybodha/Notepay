@@ -122,11 +122,19 @@
     lockPageScrollForChat(true);
     document.getElementById('chat-overlay').style.display = 'flex';
     applyChatVisualViewport();
-    // Update URL to preserve chat open state on reload
-    const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.has('chat')) {
-      urlParams.set('chat', '1');
-      window.history.pushState({ chat: true }, '', `${window.location.pathname}?${urlParams}`);
+    // Update URL to clean path /event/<id>/chat if supported, otherwise fallback to ?chat=1
+    if (window.history.pushState) {
+      const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
+      if (pathCtx.page === 'event' && pathCtx.id) {
+        const cleanPath = `/event/${pathCtx.id}/chat`;
+        window.history.pushState({ chat: true }, '', cleanPath);
+      } else {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('chat')) {
+          urlParams.set('chat', '1');
+          window.history.pushState({ chat: true }, '', `${window.location.pathname}?${urlParams}`);
+        }
+      }
     }
 
     if (!chatHistoryLoaded) loadChatHistory();
@@ -165,16 +173,25 @@
       overlay.style.height = '';
       overlay.style.bottom = '';
     }
+    const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('chat')) {
+    if (pathCtx.sub === 'chat' || urlParams.has('chat')) {
       urlParams.delete('chat');
+      const tabToSegment = { don: 'collections', exp: 'expenses', sum: 'summary' };
+      const activeTabName = typeof activeTab !== 'undefined' ? activeTab : 'don';
+      const tabSegment = tabToSegment[activeTabName] || 'collections';
+      
       if (fromPopState === true) {
-        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+        const cleanPath = `/event/${eventId}/${tabSegment}`;
+        const finalUrl = (typeof buildUrl === 'function') ? buildUrl('event', eventId, tabSegment) : cleanPath;
+        window.history.replaceState({}, '', finalUrl);
       } else {
         if (history.state && history.state.chat) {
           window.history.back();
         } else {
-          window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+          const cleanPath = `/event/${eventId}/${tabSegment}`;
+          const finalUrl = (typeof buildUrl === 'function') ? buildUrl('event', eventId, tabSegment) : cleanPath;
+          window.history.replaceState({}, '', finalUrl);
         }
       }
     }

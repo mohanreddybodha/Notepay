@@ -103,7 +103,8 @@
     let yetToBeCollected = false;
     let eventDateFilter = 'all';
     let eventDateStart = '';
-    let eventDateEnd = '';let currentTab = new URLSearchParams(location.search).get("tab") || "don";
+    let eventDateEnd = '';
+let currentTab = new URLSearchParams(location.search).get("tab") || "don";
     let ctxTarget = null; // { type:'don'|'exp', entry, row }
     let editTarget = null;
     let isVisitor = false;
@@ -178,8 +179,9 @@
     }
 
     init().then(() => {
-      // Auto-reopen chat if ?chat=1 is in URL
-      if (new URLSearchParams(location.search).get("chat") === "1") {
+      // Auto-reopen chat if /chat path or ?chat=1 is in URL
+      const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
+      if (pathCtx.sub === 'chat' || new URLSearchParams(location.search).get("chat") === "1") {
         if (window.EventChatController && typeof window.EventChatController.openChat === 'function') {
           window.EventChatController.openChat();
         } else if (typeof openChat === 'function') {
@@ -729,16 +731,25 @@
 
     // --- Seamless Inline State Preservation ---
     let _draftInlineData = null;
-    let _preservedInlineFormNode = null;// ── Donations ──// ── Expenses ──// ── Summary ──
+    let _preservedInlineFormNode = null;
+// ── Donations ──
+// ── Expenses ──
+// ── Summary ──
     let sumDateFilter = 'all'; // all, month, week, today
-    let sumLimits = { don: 5, exp: 5, col: 5 };// ── Entry Form ──
+    let sumLimits = { don: 5, exp: 5, col: 5 };
+// ── Entry Form ──
     let entryType = "don";
     let activeInlineAddType = null;
     let activeInlineEditType = null;
-    let activeInlineEditId = null;// --- INLINE EDITING FOR THEATER MODE ---// ── Context menu ──
+    let activeInlineEditId = null;
+// --- INLINE EDITING FOR THEATER MODE ---
+// ── Context menu ──
     // Long press logic removed. Double tap works cleanly.
 
-    let ctxEntry = null, ctxType = null;let colToDeleteType = "custom";// Perfect Silent Update: Adopts the exact Event Page strategyfunction openExitPop() {
+    let ctxEntry = null, ctxType = null;
+let colToDeleteType = "custom";
+// Perfect Silent Update: Adopts the exact Event Page strategy
+function openExitPop() {
       showGlobalConfirmModal({
         title: "Exit Event",
         desc: "Are you sure you want to exit this event? Your entries will be preserved.",
@@ -2579,7 +2590,8 @@ function openUpiSheet() {
 // ==========================================
 let activeModalDonationId = null;
 
-let activeModalEntryType = 'don';// Global Loading State Dummies
+let activeModalEntryType = 'don';
+// Global Loading State Dummies
 function showLoading(msg) {
   // If you have a real spinner, you can show it here
   console.log('Loading:', msg);
@@ -2670,8 +2682,10 @@ function showConfirmModal(title, message, btnText, btnColor, onConfirm, iconName
   };
   
   modal.classList.add("open");
-}let pendingReceiptDonationId = null;
-let pendingReceiptEntryType = 'don';function closeUpiSheet() {
+}
+let pendingReceiptDonationId = null;
+let pendingReceiptEntryType = 'don';
+function closeUpiSheet() {
   document.getElementById('upi-sheet').style.display = 'none';
 }
 
