@@ -1059,7 +1059,7 @@
         try {
           const res = await joinEvent(code.trim().toUpperCase());
           showToast("Joined event!");
-          window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
+          window.location.replace((typeof buildUrl === 'function') ? buildUrl('event', res.event_id) : getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
         } catch (e) {
           const msg = e.message || "Failed to join event";
           showToast(msg, "error");
@@ -1176,7 +1176,7 @@
           if (typeof showCircleLoading === 'function') showCircleLoading();
         }
         setTimeout(() => {
-          window.location.replace(getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
+          window.location.replace((typeof buildUrl === 'function') ? buildUrl('event', res.event_id) : getCleanUrl("event.html") + "?id=" + encodeURIComponent(res.event_id) + "&from_tab=2");
         }, 50);
       } catch (e) {
         const msg = e.message || "";

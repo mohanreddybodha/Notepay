@@ -186,7 +186,9 @@ let currentCollections = 0;
                   const cleanPath = getCleanUrl('join-event.html');
                   const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
                   const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-                  const joinUrl = origin + path + '?code=' + code;
+                  const joinUrl = (typeof buildUrl === 'function')
+                    ? window.location.origin + buildUrl('join', code)
+                    : origin + path + '?code=' + code;
                   const inviteMsg = `🤝 Invitation to Collaborate\n\nYou have been invited as a Collector for "${ev.name}" on Notepay (Event Contributions & Expenses Tracker).\n\nManage contributions, log expenses, and maintain the event ledger in real time.\n\n🔑 Invite Code: ${code}\n\n👉 Click below to join as a Collector:`;
                   
                   await navigator.share({
@@ -301,7 +303,9 @@ let currentCollections = 0;
               const cleanPath = getCleanUrl('event.html');
               const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
               const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-              return origin + path + '?id=' + editId;
+              return (typeof buildUrl === 'function')
+                ? window.location.origin + buildUrl('event', editId)
+                : origin + path + '?id=' + editId;
             };
 
             if (copyPubLinkBtn) {

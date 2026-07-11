@@ -73,7 +73,7 @@ class NPSidebar extends HTMLElement {
 
         <div class="sb-divider"></div>
         <div class="sb-section" style="margin-top:0;">Add</div>
-        <a href="create-event.html" class="sb-item" id="sb-create">
+        <a href="${typeof getCleanUrl === 'function' ? getCleanUrl('create-event.html') : 'create-event.html'}" class="sb-item" id="sb-create">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="16" />
@@ -81,7 +81,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           Create Event
         </a>
-        <a href="join-event.html" class="sb-item" id="sb-join">
+        <a href="${typeof getCleanUrl === 'function' ? getCleanUrl('join-event.html') : 'join-event.html'}" class="sb-item" id="sb-join">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
             <polyline points="10 17 15 12 10 7" />
@@ -92,7 +92,7 @@ class NPSidebar extends HTMLElement {
       </nav>
 
       <div class="sb-footer">
-        <a href="profile.html" class="sb-user">
+        <a href="${typeof getCleanUrl === 'function' ? getCleanUrl('profile.html') : 'profile.html'}" class="sb-user">
           <div class="sb-avatar" id="av-btn-side">??</div>
           <div>
             <div class="sb-uname" id="user-name-side">My Profile</div>

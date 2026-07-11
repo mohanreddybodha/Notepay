@@ -835,7 +835,9 @@ function openExitPop() {
       const cleanPath = typeof getCleanUrl === 'function' ? getCleanUrl('join-event.html') : 'join-event.html';
       const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
       const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-      const joinUrl = origin + path + '?code=' + code;
+      const joinUrl = (typeof buildUrl === 'function')
+        ? window.location.origin + buildUrl('join', code)
+        : origin + path + '?code=' + code;
       const inviteMsg = `🤝 Invitation to Collaborate\n\nYou have been invited as a Collector for "${eventData.name}" on Notepay (Event Contributions & Expenses Tracker).\n\nManage contributions, log expenses, and maintain the event ledger in real time.\n\n🔑 Invite Code: ${code}\n\n👉 Click below to join as a Collector:`;
       shareMessageWithLogo({ title: `Notepay Invite — ${eventData.name}`, text: inviteMsg, url: joinUrl });
     }
@@ -2246,8 +2248,27 @@ function openExitPop() {
     }
 
     function goBackToDashboard() {
-      // Tab is stored in localStorage (getSmartDashTab persists it), no need in URL
-      window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html');
+      const fromAll = sessionStorage.getItem('np_from_all_tab') === 'true';
+      if (fromAll) {
+        localStorage.setItem('np_dash_tab', 0);
+        window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html');
+        return;
+      }
+
+      let targetTab = 0;
+      if (isOrganizer) targetTab = 1;
+      else if (!isVisitor) targetTab = 2; // collector
+      else targetTab = 3; // visitor
+
+      localStorage.setItem('np_dash_tab', targetTab);
+      
+      let tabSegment = null;
+      if (targetTab === 1) tabSegment = 'my-events';
+      else if (targetTab === 2) tabSegment = 'shared';
+      else if (targetTab === 3) tabSegment = 'visited';
+      
+      const cleanUrl = (typeof buildUrl === 'function') ? buildUrl('dashboard', tabSegment) : '/dashboard';
+      window.location.href = cleanUrl;
     }
     // ── CHAT MODULE (Delegated) ──
     function autoResizeChatInput(...args) { if (window.EventChatController && typeof window.EventChatController.autoResizeChatInput === 'function') return window.EventChatController.autoResizeChatInput(...args); }

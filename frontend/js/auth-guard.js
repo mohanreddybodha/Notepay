@@ -104,7 +104,8 @@
 
     // Hide overlay smoothly unless on auto-join flow (clean path /join or legacy join-event.html with ?code=)
     const path = window.location.pathname;
-    const isAutoJoin = (path.includes("join") || path.includes("join-event.html")) && window.location.search.includes("code=");
+    const isAutoJoin = (path.includes("join") || path.includes("join-event.html")) && 
+                       (window.location.search.includes("code=") || (path.split('/').filter(Boolean)[0] === 'join' && path.split('/').filter(Boolean)[1]));
     
     if (!isAutoJoin) {
       const splash = document.getElementById('auth-guard-splash');
