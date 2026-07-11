@@ -32,21 +32,22 @@ async def upload_receipt(event_id: str, file: UploadFile = File(...), db: Sessio
         raise HTTPException(status_code=404, detail="Event not found")
     if not event.upi_id or not event.upi_owner_name:
         raise HTTPException(status_code=409, detail="The organizer must verify the event UPI ID before accepting donations")
-    
+
+    # Fast pre-check: reject obvious non-images before reading the full body
     if not file.content_type or not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="File must be an image")
-    
+
     try:
         contents = await file.read()
         if not contents:
             raise HTTPException(status_code=400, detail="File is empty")
-        
-        if len(contents) > 5 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="File too large (max 5MB)")
-            
+
+        # Deep validation (magic bytes + size) is enforced inside storage_service.upload_receipt
         receipt_key = None
         try:
             receipt_key = storage_service.upload_receipt(event_id, contents, file.content_type)
+        except HTTPException:
+            raise  # propagate storage validation errors (wrong type, too large) to caller
         except Exception as e:
             print(f"Failed to upload receipt early: {e}")
 

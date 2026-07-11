@@ -8,6 +8,27 @@ import boto3
 from fastapi import HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 
+# Allowed image magic-byte signatures (content-based validation, not just extension)
+_ALLOWED_MAGIC: dict[str, bytes] = {
+    "image/jpeg":  b"\xff\xd8\xff",
+    "image/png":   b"\x89PNG\r\n\x1a\n",
+    "image/gif":   b"GIF8",
+    "image/webp":  b"RIFF",
+}
+_MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+def validate_receipt_content(contents: bytes, declared_content_type: str = "") -> str:
+    """Validate that the file bytes match a known image signature.
+    Returns the detected content_type string or raises HTTPException(400)."""
+    for mime, magic in _ALLOWED_MAGIC.items():
+        if contents[:len(magic)] == magic:
+            return mime
+    raise HTTPException(
+        status_code=400,
+        detail="Invalid file: only JPEG, PNG, GIF, or WEBP images are accepted"
+    )
+
 # Module-level S3 client — created once per Lambda container, reused across requests
 _s3_client = None
 
@@ -47,22 +68,27 @@ def fetch_receipt_response(receipt_key: str):
 class StorageService:
     @staticmethod
     def upload_receipt(event_id: str, contents: bytes, content_type: str = "image/jpeg") -> str:
-        """Upload a receipt file to S3 or local storage, returning the uniform storage key."""
+        """Upload a receipt file to S3 or local storage, returning the uniform storage key.
+        Validates magic bytes before storing — prevents non-image content from being stored."""
+        if len(contents) > _MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+        detected_type = validate_receipt_content(contents, content_type)
         s3_bucket = os.getenv("RECEIPTS_BUCKET")
+        safe_ext = {"image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp"}.get(detected_type, "jpg")
         if s3_bucket:
-            receipt_key = f"receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+            receipt_key = f"receipts/{event_id}/{uuid.uuid4().hex}.{safe_ext}"
             _get_s3_client().put_object(
                 Bucket=s3_bucket,
                 Key=receipt_key,
                 Body=contents,
-                ContentType=content_type or 'image/jpeg'
+                ContentType=detected_type
             )
             return receipt_key
         else:
             base_dir = os.path.dirname(os.path.abspath(__file__))
             local_dir = os.path.join(base_dir, f"uploads/receipts/{event_id}")
             os.makedirs(local_dir, exist_ok=True)
-            local_filename = f"uploads/receipts/{event_id}/{uuid.uuid4().hex}.jpg"
+            local_filename = f"uploads/receipts/{event_id}/{uuid.uuid4().hex}.{safe_ext}"
             abs_local_path = os.path.join(base_dir, local_filename)
             with open(abs_local_path, "wb") as f:
                 f.write(contents)
