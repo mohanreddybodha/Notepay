@@ -56,7 +56,7 @@ sequenceDiagram
       "name": "Annual Gathering",
       "description": "Shared cost ledger for family reunion",
       "event_date": "2026-10-15T12:00:00Z",
-      "show_contributions": true,
+      "show_donations": true,
       "show_expenses": true,
       "goal_amount": 25000
     }

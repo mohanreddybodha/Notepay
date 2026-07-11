@@ -59,11 +59,11 @@ The database models are defined in [models.py](../backend/models.py):
 ```mermaid
 erDiagram
     User ||--o{ EventMember : memberships
-    User ||--o{ Contribution : collections
+    User ||--o{ Donation : collections
     User ||--o{ Expense : tracked
     User ||--o{ WatchedEvent : watched
     Event ||--o{ EventMember : members
-    Event ||--o{ Contribution : contributions
+    Event ||--o{ Donation : donations
     Event ||--o{ Expense : expenses
     Event ||--o{ ChatMessage : chat_history
     ChatMessage }o--|| ChatMessage : reply_to
@@ -94,10 +94,10 @@ Stores event configuration, invite codes, and dynamic columns.
 *   `upi_id` (String, Nullable)
 *   `upi_owner_name` (String, Nullable)
 *   `upi_verified_at` (DateTime, Nullable)
-*   `show_contributions` (Boolean, Default: True)
+*   `show_donations` (Boolean, Default: True)
 *   `show_expenses` (Boolean, Default: True)
 *   `goal_amount` (Integer, Default: 0)
-*   `contribution_custom_columns` (JSON, Array of objects defining custom fields)
+*   `donation_custom_columns` (JSON, Array of objects defining custom fields)
 *   `expense_custom_columns` (JSON, Array of objects defining custom fields)
 
 ### 3. Event Member (`event_members`)
@@ -113,7 +113,7 @@ Associates users to events with roles.
     *   `idx_event_members_user_event`: Composite unique index on `(user_id, event_id)`. Prevents duplicate memberships.
     *   `idx_event_members_user_role`: Composite index on `(user_id, role)`. Speeds up dashboard queries filtering for My Events vs. Shared Events.
 
-### 4. Contribution (`contributions`)
+### 4. Donation (`donations`)
 Logs payment transactions.
 *   `id` (Integer, Primary Key)
 *   `event_id` (String(32), Foreign Key `events.id`, Indexed)
@@ -127,8 +127,8 @@ Logs payment transactions.
 *   `is_public_entry` (Boolean, Default: False)
 *   `payment_received` (Boolean, Default: True)
 *   **Indexes**:
-    *   `idx_contributions_event_collected_at`: Composite index on `(event_id, collected_at)`. Speeds up date sorting for transaction timelines.
-    *   `idx_contributions_event_payment`: Composite index on `(event_id, payment_received)`. Speeds up sum calculations of paid vs. pending contributions.
+    *   `idx_donations_event_collected_at`: Composite index on `(event_id, collected_at)`. Speeds up date sorting for transaction timelines.
+    *   `idx_donations_event_payment`: Composite index on `(event_id, payment_received)`. Speeds up sum calculations of paid vs. pending donations.
 
 ### 5. Expense (`expenses`)
 Logs expenditures.
@@ -177,17 +177,17 @@ Stores communication logs.
 
 ## ⚡ Optimized SQL Aggregation Strategy (No N+1)
 
-Standard ORM code frequently queries child records (like contributions) within Python loops, leading to N+1 database round-trips. Notepay prevents this by using optimized database queries.
+Standard ORM code frequently queries child records (like donations) within Python loops, leading to N+1 database round-trips. Notepay prevents this by using optimized database queries.
 
 ### Aggregate Event Metrics Query
 To load All Events, My Events, and Shared Events on the dashboard, the backend calculates totals inside `_build_event_aggregates(db, event_ids)` using three focused `GROUP BY` database queries:
-1.  **Contributions Aggregation**:
+1.  **Donations Aggregation**:
     ```sql
     SELECT 
         event_id,
         SUM(amount) AS total_paid,
         SUM(CASE WHEN payment_received = 0 THEN amount ELSE 0 END) AS total_pending
-    FROM contributions
+    FROM donations
     WHERE event_id IN (:event_ids)
     GROUP BY event_id;
     ```

@@ -10,8 +10,8 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Frontend Action**: [frontend/event.html](../../frontend/event.html) (Script: `js/controllers/EventFinancialsController.js` -> `addExpense()`)
-*   **FastAPI Router Endpoint**: [backend/routers/contributions_expenses.py](../../backend/routers/contributions_expenses.py) (Function: `add_expense()`)
+*   **Frontend Action**: [frontend/event.html](../../frontend/event.html) (Script: `js/controllers/EventFinancialsController.js` -> `submitInlineEntry('exp')`)
+*   **FastAPI Router Endpoint**: [backend/routers/donations_expenses.py](../../backend/routers/donations_expenses.py) (Function: `add_expense()`)
 *   **Database CRUD Layer**: [backend/crud.py](../../backend/crud.py) (Function: `create_expense()`, Sanitization: `sanitize_json_payload()`)
 *   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](../../backend/ws_manager.py) (Function: `broadcast_change()`)
 
@@ -49,7 +49,7 @@ sequenceDiagram
 ### 1. User Interaction (Frontend)
 *   The collector navigates to the event's detailed page, opens the **Expenses** tab, and clicks **Add Expense** (or opens the entry form).
 *   The user enters the expense description, cost, and dynamic custom field values.
-*   The page controller [EventFinancialsController.js](../../frontend/js/controllers/EventFinancialsController.js) calls `addExpense()`.
+*   The page controller [EventFinancialsController.js](../../frontend/js/controllers/EventFinancialsController.js) calls `submitInlineEntry('exp')`.
 *   The client calls `addExpense` inside [api.js](../../frontend/js/api.js), sending the request payload:
     ```json
     {
@@ -62,7 +62,7 @@ sequenceDiagram
     ```
 
 ### 2. API Routing (Backend)
-*   The route `POST /events/{event_id}/expenses` resolves inside [contributions_expenses.py](../../backend/routers/contributions_expenses.py).
+*   The route `POST /events/{event_id}/expenses` resolves inside [donations_expenses.py](../../backend/routers/donations_expenses.py).
 *   Enforces a rate limit of 30 writes per user per minute.
 *   Enforces the access guard dependency `verify_event_active_for_collector(..., for_write=True)`. This checks if the user is a member of the event and is not restricted, and if the event is active.
 

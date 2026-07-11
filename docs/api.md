@@ -10,7 +10,7 @@ status: "Verified ✓"
 > [!IMPORTANT]
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
-*   **Implementation Routers**: [backend/routers/](../backend/routers) (`profile.py`, `events.py`, `contributions_expenses.py`, `chat.py`, `public.py`, `admin.py`)
+*   **Implementation Routers**: [backend/routers/](../backend/routers) (`profile.py`, `events.py`, `donations_expenses.py`, `chat.py`, `public.py`, `admin.py`)
 *   **Validation Schemas**: [backend/schemas.py](../backend/schemas.py)
 *   **Auth & Roles Guards**: [backend/dependencies.py](../backend/dependencies.py)
 
@@ -113,7 +113,7 @@ All endpoints expect and return payloads according to these rules:
       "description": "Shared costs for food and transport",
       "event_date": "2026-08-15T10:00:00Z",
       "is_public": false,
-      "show_contributions": true,
+      "show_donations": true,
       "show_expenses": true,
       "goal_amount": 15000
     }
@@ -148,7 +148,7 @@ All endpoints expect and return payloads according to these rules:
     ```json
     {
       "name": "Updated Picnic",
-      "contribution_custom_columns": [{"n": "T-Shirt", "t": "text", "reqByDonor": true}],
+      "donation_custom_columns": [{"n": "T-Shirt", "t": "text", "reqByDonor": true}],
       "column_renames": {"Old Size": "T-Shirt"}
     }
     ```
@@ -156,7 +156,7 @@ All endpoints expect and return payloads according to these rules:
 ### Delete Event
 *   **Path**: `DELETE /events/{event_id}`
 *   **Auth Scope**: Organizer.
-*   **Description**: Permanently wipes the event and all associated contributions, expenses, chat logs, and memberships from the database.
+*   **Description**: Permanently wipes the event and all associated donations, expenses, chat logs, and memberships from the database.
 
 ### Toggle Event Status (Deactivate / Reactivate)
 *   **Path**: `PUT /events/{event_id}/deactivate` (or `/reactivate`)
@@ -168,13 +168,13 @@ All endpoints expect and return payloads according to these rules:
 ## 3. Financial Transaction Endpoints
 
 ### Fetch Ledgers
-*   **Paths**: `GET /events/{event_id}/contributions` and `GET /events/{event_id}/expenses`
+*   **Paths**: `GET /events/{event_id}/donations` and `GET /events/{event_id}/expenses`
 *   **Auth Scope**: Organizer / Collector / Public Visitor (Read-only if event is public).
 
-### Add Contribution Entry
-*   **Path**: `POST /events/{event_id}/contributions`
+### Add Donation Entry
+*   **Path**: `POST /events/{event_id}/donations`
 *   **Auth Scope**: Organizer / Collector.
-*   **Request Schema (`ContributionCreate`)**:
+*   **Request Schema (`DonationCreate`)**:
     ```json
     {
       "donor_name": "Jane Smith",
@@ -187,7 +187,7 @@ All endpoints expect and return payloads according to these rules:
     ```
 
 ### Update Transaction Row
-*   **Path**: `PUT /events/{event_id}/contributions/{contribution_id}` (same for `/expenses/{expense_id}`)
+*   **Path**: `PUT /events/{event_id}/donations/{donation_id}` (same for `/expenses/{expense_id}`)
 *   **Auth Scope**: Organizer (any entry) / Collector (only their own entries).
 *   **Rule**: Blocked if the event is deactivated or the collector is restricted.
 
@@ -224,7 +224,7 @@ All endpoints expect and return payloads according to these rules:
 ### Retrieve Public Event Profile
 *   **Path**: `GET /api/public/event/{event_id}`
 *   **Auth Scope**: Unauthenticated (Guest portal view).
-*   **Description**: Fetches basic profile, UPI ID, and receiver name. Required for guest contribution page rendering.
+*   **Description**: Fetches basic profile, UPI ID, and receiver name. Required for guest donation page rendering.
 
 ### Upload Receipt Screenshot
 *   **Path**: `POST /api/public/event/{event_id}/upload_receipt`
@@ -232,13 +232,13 @@ All endpoints expect and return payloads according to these rules:
 *   **Payload**: File parameter `file` (image).
 *   **AI Validation Logic**: Analyzes UPI receipt. If receiver name matches registered event UPI owner, logs the entry.
 *   **Responses**:
-    *   `200 OK (Success)`: Contribution logged (`payment_received=False`).
+    *   `200 OK (Success)`: Donation logged (`payment_received=False`).
     *   `200 OK (Partial Success)`: Receipt valid, returns a `receipt_session_id` and prompts user for missing donor name or custom fields.
     *   `200 OK (Extraction Failed)`: Image valid but parsing failed, returns fallback `receipt_session_id`.
 
-### Submit Manual Contribution (with fallback session)
-*   **Path**: `POST /api/public/event/{event_id}/submit_manual_contribution`
-*   **Request Schema (`ManualContributionEntry`)**:
+### Submit Manual Donation (with fallback session)
+*   **Path**: `POST /api/public/event/{event_id}/submit_manual_donation`
+*   **Request Schema (`ManualDonationEntry`)**:
     ```json
     {
       "donor_name": "Boda Mohan Reddy",

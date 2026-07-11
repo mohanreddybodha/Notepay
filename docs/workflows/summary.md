@@ -11,7 +11,7 @@ status: "Verified ✓"
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
 *   **Frontend Tab Switching**: [frontend/event.html](../../frontend/event.html) (Script: `js/controllers/EventFinancialsController.js` -> `switchTab()`)
-*   **FastAPI Router Endpoint**: [backend/routers/contributions_expenses.py](../../backend/routers/contributions_expenses.py) (Function: `get_event_summary()`)
+*   **FastAPI Router Endpoint**: [backend/routers/donations_expenses.py](../../backend/routers/donations_expenses.py) (Function: `get_event_summary()`)
 *   **Database Aggregations CRUD**: [backend/crud.py](../../backend/crud.py) (Function: `get_event_summary()`)
 *   **Redis Caching Key**: `sum:{event_id}` in [backend/cache.py](../../backend/cache.py)
 
@@ -36,11 +36,11 @@ sequenceDiagram
     alt Cache Hit
         Cache-->>API: Return cached JSON summary
     else Cache Miss
-        API->>DB: SQL SUM(amount) paid contributions
-        API->>DB: SQL SUM(amount) pending contributions
+        API->>DB: SQL SUM(amount) paid donations
+        API->>DB: SQL SUM(amount) pending donations
         API->>DB: SQL SUM(amount) expenses
-        API->>DB: SQL COUNT transactions (contributions, expenses)
-        API->>DB: SQL SELECT 50 recent contributions & 50 recent expenses
+        API->>DB: SQL COUNT transactions (donations, expenses)
+        API->>DB: SQL SELECT 50 recent donations & 50 recent expenses
         DB-->>API: Returns query result rows
         API->>API: Merge-sort recent transactions by date descending
         API->>Cache: SET sum:{event_id} -> JSON summary (expires 1 hour)
@@ -60,17 +60,17 @@ sequenceDiagram
 *   The client calls `getSummary()` inside [api.js](../../frontend/js/api.js).
 
 ### 2. API Routing (Backend)
-*   The route `GET /events/{event_id}/summary` resolves inside [contributions_expenses.py](../../backend/routers/contributions_expenses.py).
+*   The route `GET /events/{event_id}/summary` resolves inside [donations_expenses.py](../../backend/routers/donations_expenses.py).
 *   Enforces the access guard dependency `verify_membership()`. Banned or restricted members cannot access the summary.
 
 ### 3. Caching & Database Aggregations (CRUD)
 *   The method `get_event_summary()` inside [crud.py](../../backend/crud.py):
     1.  Checks if a cached summary exists in Redis under the key `sum:{event_id}`. If a cache hit occurs, it returns the cached data immediately.
     2.  If a cache miss occurs, the backend executes SQL aggregates to calculate financial totals:
-        *   `total_contributions`: `SUM(amount)` where `payment_received != False`.
+        *   `total_donations`: `SUM(amount)` where `payment_received != False`.
         *   `total_to_collect`: `SUM(amount)` where `payment_received == False`.
         *   `total_expenses`: `SUM(amount)`.
-    3.  Queries the database for the 50 most recent contributions and 50 most recent expenses.
+    3.  Queries the database for the 50 most recent donations and 50 most recent expenses.
     4.  Merge-sorts both lists by date descending in memory, keeping only the top 50 most recent transactions.
     5.  Saves the compiled summary JSON in Redis under the key `sum:{event_id}` (configured with a 1-hour expiry).
     6.  Returns the summary data.

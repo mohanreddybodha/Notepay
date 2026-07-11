@@ -126,7 +126,11 @@ To avoid embedding secrets inside codebase repositories or deployment templates,
 *   **Admin JWT Secret**: Resolved from SSM parameter path `{{resolve:ssm:/notepay/admin_jwt_secret}}`.
 *   **AI API Credentials**:
     *   Gemini API Key: `{{resolve:ssm:/notepay/gemini_key_1}}`
-    *   Groq API Key: `{{resolve:ssm:/notepay/groq_key}}`
+    *   Groq API Key (General): `{{resolve:ssm:/notepay/groq_key}}`
+    *   Groq API Keys (Receipt Vision Runtime):
+        *   `/notepay/groq_key_for_payment`
+        *   `/notepay/groq_key_for_payment-2`
+        *   `/notepay/groq_key_for_payment-3`
 
 ---
 
@@ -147,7 +151,7 @@ To avoid embedding secrets inside codebase repositories or deployment templates,
     *   Once tests pass, the pipeline executes database migrations via Alembic: `alembic upgrade head`.
 4.  **AWS SAM Packaging**:
     *   Packages the backend code: `sam build --use-container`.
-    *   Deploys cloud resources to AWS: `sam deploy --non-interactive --stack-name notepay-production --resolve-s3`.
+    *   Deploys cloud resources to AWS: `sam deploy --non-interactive --stack-name notepay-stack --resolve-s3`.
 5.  **Frontend Deployment**:
     *   Uploads files inside the `/frontend` directory to the CloudFront-backed S3 static bucket.
     *   Triggers an invalidation request in CloudFront to clear cached index pages.

@@ -50,7 +50,7 @@ Allows organizers to create new events and invite collectors.
 *   On submission, the client calls `POST /events` and redirects to the new event detail page.
 
 ### 2. Backend & Database Operations
-*   **Code Generation**: The API generates a unique, human-readable 14-character invite code:
+*   **Code Generation**: The API generates a unique, human-readable 16-character invite code (consisting of 14 hex characters and 2 dashes):
     *   Generates a UUID hex: `4F8E9C2A1B7D3E...`
     *   Takes the first 14 characters, capitalizes them, and structures them: `4F8E9-C2A1-B7D3E`.
 *   **Membership Setup**: The backend inserts the event row into the `events` table, sets `organizer_id`, and immediately adds a membership row in `event_members` with `role = UserRole.organizer`.
@@ -94,7 +94,7 @@ The core ledger tracking payments and spending.
 *   **Custom Fields**: Standard columns (Name, Amount, Date, Collector) are augmented with dynamic custom columns (e.g., "T-Shirt Size" or "Department").
 
 ### 2. Backend & Database Operations
-*   **Contributions**: Written to the `contributions` table. Direct dashboard entries are set with `payment_received=True`. UPI receipt uploads are set with `payment_received=False` until verified.
+*   **Donations**: Written to the `donations` table. Direct dashboard entries are set with `payment_received=True`. UPI receipt uploads are set with `payment_received=False` until verified.
 *   **Expenses**: Written to the `expenses` table.
 *   **Column Renaming (No Data Loss)**: When organizers rename custom columns, the backend migrates keys inside the `custom_fields` JSON column:
     ```python
@@ -103,11 +103,11 @@ The core ledger tracking payments and spending.
             item.custom_fields[new_key] = item.custom_fields.pop(old_key)
     ```
     If columns are deleted, the keys are purged from all records.
-
+ 
 #### 🛠️ Code Linkage & Implementation Reference
 *   **Frontend View**: [frontend/event.html](../frontend/event.html) (Script: `js/controllers/EventFinancialsController.js`)
-*   **Router Endpoints**: [backend/routers/contributions_expenses.py](../backend/routers/contributions_expenses.py) (Functions: `add_contribution()`, `add_expense()`, `update_event_columns()`)
-*   **Database Queries**: [backend/crud.py](../backend/crud.py) (Functions: `create_contribution()`, `create_expense()`, `_apply_custom_columns_update()`)
+*   **Router Endpoints**: [backend/routers/donations_expenses.py](../backend/routers/donations_expenses.py) (Functions: `add_donation()`, `add_expense()`), [backend/routers/events.py](../backend/routers/events.py) (Function: `update_event()`)
+*   **Database Queries**: [backend/crud.py](../backend/crud.py) (Functions: `create_donation()`, `create_expense()`, `_apply_custom_columns_update()`)
 
 ---
 

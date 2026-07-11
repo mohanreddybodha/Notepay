@@ -11,7 +11,7 @@ status: "Verified ✓"
 > **Code is the Source of Truth**: If this documentation differs from the implementation in the codebase, the implementation always wins.
 
 *   **Frontend Action**: [frontend/contribute.html](../../frontend/contribute.html)
-*   **FastAPI Router Endpoints**: [backend/routers/public.py](../../backend/routers/public.py) (Functions: `upload_receipt()`, `submit_manual_contribution()`)
+*   **FastAPI Router Endpoints**: [backend/routers/public.py](../../backend/routers/public.py) (Functions: `upload_receipt()`, `submit_manual_donation()`)
 *   **Magic Byte Image Scanner**: [backend/storage.py](../../backend/storage.py) (Function: `validate_receipt_content()`)
 *   **Vision AI Parser Fallback**: [backend/routers/public.py](../../backend/routers/public.py) (Function: `extract_receipt_data_with_fallback()`)
 *   **WebSocket Broadcast Trigger**: [backend/ws_manager.py](../../backend/ws_manager.py) (Function: `broadcast_change()`)
@@ -49,19 +49,19 @@ sequenceDiagram
         else Payee Matches
             Note over API: Check if payer name exists and if custom fields are required
             alt Full Success (Name exists & no required fields)
-                API->>DB: INSERT INTO contributions (payment_received=False, entry_source='ai')
-                API->>WS: Trigger broadcast_change(event_id, {"type": "CONTRIBUTION_ADDED", ...})
-                API-->>FE: Return success JSON (Contribution logged)
+                API->>DB: INSERT INTO donations (payment_received=False, entry_source='ai')
+                API->>WS: Trigger broadcast_change(event_id, {"type": "DONATION_ADDED", ...})
+                API-->>FE: Return success JSON (Donation logged)
             else Partial Success (Payer name or custom fields missing)
                 API->>Cache: SET receipt:session_id -> extracted data (expires 15 min)
                 API-->>FE: Return partial_success JSON with session_id
                 FE->>Donor: Displays missing fields form (Name / dynamic columns)
                 Donor->>FE: Fills missing details & clicks "Submit"
-                FE->>API: POST /submit_manual_contribution (with session_id & details)
+                FE->>API: POST /submit_manual_donation (with session_id & details)
                 API->>Cache: GET receipt:session_id
-                API->>DB: INSERT INTO contributions (payment_received=False, entry_source='ai_partial')
+                API->>DB: INSERT INTO donations (payment_received=False, entry_source='ai_partial')
                 API->>Cache: DELETE receipt:session_id (prevent reuse)
-                API->>WS: Trigger broadcast_change(event_id, {"type": "CONTRIBUTION_ADDED", ...})
+                API->>WS: Trigger broadcast_change(event_id, {"type": "DONATION_ADDED", ...})
                 API-->>FE: Return success JSON
             end
         end
@@ -89,5 +89,5 @@ sequenceDiagram
 *   **Receiver Verification**: Cleans and checks words inside the receipt's extracted `receiver_name` against the registered `upi_owner_name` on the event. If no matching words are found, the upload is rejected.
 *   **Transaction Status**: Rejects screenshots with status `failed`, `pending`, or `unrelated_image`.
 *   **Data Completion Gate**:
-    *   **Full Success**: If the payer's name is extracted and the event has no custom columns marked as `reqByDonor` (required by donor), the transaction is written immediately as a contribution with `payment_received=False` (unreconciled status), and WS clients are notified.
-    *   **Partial Success**: If the payer's name is missing or the event contains columns the donor must fill out, a temporary session is cached in Redis for 15 minutes. The user is prompted to enter their name or missing fields to complete the contribution.
+    *   **Full Success**: If the payer's name is extracted and the event has no custom columns marked as `reqByDonor` (required by donor), the transaction is written immediately as a donation with `payment_received=False` (unreconciled status), and WS clients are notified.
+    *   **Partial Success**: If the payer's name is missing or the event contains columns the donor must fill out, a temporary session is cached in Redis for 15 minutes. The user is prompted to enter their name or missing fields to complete the donation.
