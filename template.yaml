@@ -165,9 +165,37 @@ Resources:
         function handler(event) {
             var request = event.request;
             var uri = request.uri;
-            if (uri.endsWith('/')) {
+            if (uri.lastIndexOf('/') === uri.length - 1) {
                 request.uri += 'index.html';
-            } else if (!uri.includes('.')) {
+            } else if (uri.indexOf('/event/') === 0) {
+                request.uri = '/event.html';
+            } else if (uri.indexOf('/edit-event/') === 0) {
+                request.uri = '/create-event.html';
+            } else if (uri.indexOf('/donate/') === 0) {
+                request.uri = '/donate.html';
+            } else if (uri.indexOf('/join/') === 0 || uri === '/join') {
+                request.uri = '/join-event.html';
+            } else if (uri === '/profile/edit') {
+                request.uri = '/edit-profile.html';
+            } else if (uri === '/profile/setup') {
+                request.uri = '/profile-setup.html';
+            } else if (uri === '/dashboard') {
+                request.uri = '/dashboard.html';
+            } else if (uri === '/login' || uri === '/signup') {
+                request.uri = '/login.html';
+            } else if (uri === '/create-event') {
+                request.uri = '/create-event.html';
+            } else if (uri === '/profile') {
+                request.uri = '/profile.html';
+            } else if (uri === '/admin') {
+                request.uri = '/admin.html';
+            } else if (uri === '/guide') {
+                request.uri = '/guide.html';
+            } else if (uri === '/privacy') {
+                request.uri = '/privacy.html';
+            } else if (uri === '/terms') {
+                request.uri = '/terms.html';
+            } else if (uri.indexOf('.') === -1) {
                 request.uri += '.html';
             }
             return request;
