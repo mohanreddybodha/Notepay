@@ -223,94 +223,109 @@ except Exception as e:
 
 
 def handler(event, context):
-    if _init_error:
-        # Return 200 so the deploy script health check succeeds and we can read the body!
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"status": "error", "traceback": _init_error}),
-            "headers": {"Content-Type": "application/json"}
-        }
+    try:
+        if _init_error:
+            # Return 200 so the deploy script health check succeeds and we can read the body!
+            return {
+                "statusCode": 200,
+                "body": json.dumps({"status": "error", "traceback": _init_error}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
-    # ── EventBridge warmup ping — return immediately to keep Lambda warm ──
-    event_source = event.get("source", "")
-    if event_source in ("notepay-warmup", "aws.events"):
-        print("Lambda warmup ping received — container is warm.")
-        return {"statusCode": 200, "body": "warm"}
+        # ── EventBridge warmup ping — return immediately to keep Lambda warm ──
+        event_source = event.get("source", "")
+        if event_source in ("notepay-warmup", "aws.events"):
+            print("Lambda warmup ping received — container is warm.")
+            return {"statusCode": 200, "body": "warm"}
 
-    request_context = event.get('requestContext', {})
-    conn_id = request_context.get('connectionId')
-    
-    # Handle API Gateway WebSocket events natively, bypassing Mangum for WS
-    if conn_id and request_context.get('eventType'):
-        event_type = request_context['eventType']
+        request_context = event.get('requestContext', {})
+        conn_id = request_context.get('connectionId')
         
-        if event_type == 'CONNECT':
-            return {'statusCode': 200}
+        # Handle API Gateway WebSocket events natively, bypassing Mangum for WS
+        if conn_id and request_context.get('eventType'):
+            event_type = request_context['eventType']
             
-        elif event_type == 'DISCONNECT':
-            if cache.client:
-                mapping = cache.client.get(f"ws:conn:{conn_id}")
-                if mapping:
-                    if mapping.startswith("evt:"):
-                        evt_id = mapping.split(":")[1]
-                        cache.client.srem(f"ws:evt:{evt_id}", conn_id)
-                    elif mapping == "dash":
-                        cache.client.srem("ws:dash", conn_id)
-                    cache.client.delete(f"ws:conn:{conn_id}")
-            return {'statusCode': 200}
-            
-        elif event_type == 'MESSAGE':
-            body = event.get('body', '{}')
-            # Handle empty keep-alive ping
-            if body.strip() == '':
+            if event_type == 'CONNECT':
                 return {'statusCode': 200}
                 
-            try:
-                data = json.loads(body)
-            except Exception:
-                return {'statusCode': 400}
+            elif event_type == 'DISCONNECT':
+                if cache.client:
+                    mapping = cache.client.get(f"ws:conn:{conn_id}")
+                    if mapping:
+                        if mapping.startswith("evt:"):
+                            evt_id = mapping.split(":")[1]
+                            cache.client.srem(f"ws:evt:{evt_id}", conn_id)
+                        elif mapping == "dash":
+                            cache.client.srem("ws:dash", conn_id)
+                        cache.client.delete(f"ws:conn:{conn_id}")
+                return {'statusCode': 200}
                 
-            if data.get('type') == 'AUTH' and data.get('token'):
-                # Enforce cryptographic validation of token in AWS Lambda
-                from database import SessionLocal
-                import asyncio
-                db = SessionLocal()
+            elif event_type == 'MESSAGE':
+                body = event.get('body', '{}')
+                # Handle empty keep-alive ping
+                if body.strip() == '':
+                    return {'statusCode': 200}
+                    
                 try:
-                    # Synchronously await the auth check (FastAPI dependencies can be reused if adapted, or use raw auth)
-                    # _authenticate_ws_user is async
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    user_id = loop.run_until_complete(_authenticate_ws_user(db, data.get('token')))
-                    loop.close()
-                except Exception as e:
+                    data = json.loads(body)
+                except Exception:
+                    return {'statusCode': 400}
+                    
+                if data.get('type') == 'AUTH' and data.get('token'):
+                    # Enforce cryptographic validation of token in AWS Lambda
+                    from database import SessionLocal
+                    import asyncio
+                    db = SessionLocal()
+                    try:
+                        # Synchronously await the auth check (FastAPI dependencies can be reused if adapted, or use raw auth)
+                        # _authenticate_ws_user is async
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        user_id = loop.run_until_complete(_authenticate_ws_user(db, data.get('token')))
+                        loop.close()
+                    except Exception as e:
+                        db.close()
+                        print(f"WS Auth Error: {e}")
+                        return {'statusCode': 401}
                     db.close()
-                    print(f"WS Auth Error: {e}")
-                    return {'statusCode': 401}
-                db.close()
 
-                if data.get('dashboard'):
-                    if cache.client:
-                        cache.client.sadd("ws:dash", conn_id)
-                        cache.client.setex(f"ws:conn:{conn_id}", 86400, "dash")
-                        cache.client.expire("ws:dash", 86400)
-                elif data.get('eventId'):
-                    evt_id = str(data['eventId'])
-                    if cache.client:
-                        cache.client.sadd(f"ws:evt:{evt_id}", conn_id)
-                        cache.client.setex(f"ws:conn:{conn_id}", 86400, f"evt:{evt_id}")
-                        cache.client.expire(f"ws:evt:{evt_id}", 86400)
+                    if data.get('dashboard'):
+                        if cache.client:
+                            cache.client.sadd("ws:dash", conn_id)
+                            cache.client.setex(f"ws:conn:{conn_id}", 86400, "dash")
+                            cache.client.expire("ws:dash", 86400)
+                    elif data.get('eventId'):
+                        evt_id = str(data['eventId'])
+                        if cache.client:
+                            cache.client.sadd(f"ws:evt:{evt_id}", conn_id)
+                            cache.client.setex(f"ws:conn:{conn_id}", 86400, f"evt:{evt_id}")
+                            cache.client.expire(f"ws:evt:{evt_id}", 86400)
+                    
+                    # Send AUTH_OK back via boto3
+                    try:
+                        apigw = boto3.client('apigatewaymanagementapi', endpoint_url=os.getenv('WEBSOCKET_URL').replace('wss://', 'https://'))
+                        apigw.post_to_connection(ConnectionId=conn_id, Data=json.dumps({"type": "AUTH_OK"}).encode('utf-8'))
+                    except Exception as e:
+                        print("Boto3 WS Auth OK Error:", e)
                 
-                # Send AUTH_OK back via boto3
-                try:
-                    apigw = boto3.client('apigatewaymanagementapi', endpoint_url=os.getenv('WEBSOCKET_URL').replace('wss://', 'https://'))
-                    apigw.post_to_connection(ConnectionId=conn_id, Data=json.dumps({"type": "AUTH_OK"}).encode('utf-8'))
-                except Exception as e:
-                    print("Boto3 WS Auth OK Error:", e)
-            
-            return {'statusCode': 200}
-            
-    # If not a WebSocket event, route HTTP request through Mangum to FastAPI
-    return mangum_handler(event, context)
+                return {'statusCode': 200}
+                
+        # If not a WebSocket event, route HTTP request through Mangum to FastAPI
+        if mangum_handler:
+            return mangum_handler(event, context)
+        else:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"status": "error", "message": "mangum_handler is None but _init_error is also None?"}),
+                "headers": {"Content-Type": "application/json"}
+            }
+    except Exception as e:
+        import traceback
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"status": "handler_error", "traceback": traceback.format_exc()}),
+            "headers": {"Content-Type": "application/json"}
+        }
 
 
 @app.websocket("/ws/{event_id}")
