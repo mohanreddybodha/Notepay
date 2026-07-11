@@ -75,7 +75,11 @@ if os.getenv("ENVIRONMENT") == "production":
     admin_domain = os.getenv("ADMIN_DOMAIN")
     if admin_domain:
         _ALLOWED_ORIGINS.append(admin_domain)
-    _ALLOWED_ORIGINS.append("https://admin.notepay.in")
+    _ALLOWED_ORIGINS.extend([
+        "https://admin.notepay.in",
+        "https://notepay.in",
+        "https://www.notepay.in"
+    ])
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_ALLOWED_ORIGINS,
