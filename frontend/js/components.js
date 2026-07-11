@@ -139,9 +139,12 @@ class NPSidebar extends HTMLElement {
 
     if (activeLink) {
       const el = this.querySelector('#sb-' + activeLink);
-      if (el) {
+      if (el && !(activeLink === 'create' && (window.location.pathname.includes('edit-event') || window.location.search.includes('edit=')))) {
         el.classList.add('active');
-      } else if (activeLink === 'event' || window.location.pathname.startsWith('/event/') || window.location.pathname.includes('event.html')) {
+      } else if (activeLink === 'event' || 
+                 window.location.pathname.startsWith('/event/') || 
+                 window.location.pathname.includes('event.html') ||
+                 (activeLink === 'create' && (window.location.pathname.includes('edit-event') || window.location.search.includes('edit=')))) {
         let tabNum = '0';
         try {
           const uParams = new URLSearchParams(window.location.search);

@@ -16,14 +16,27 @@ let currentCollections = 0;
       if (nameSide) nameSide.textContent = profileObj.full_name;
     }
   } catch(e) {}
+  const _urlParams = new URLSearchParams(window.location.search);
+  const fromEvent = _urlParams.get('from') === 'event';
+  if (fromEvent) {
+    const backBtn = document.querySelector('.pg-back');
+    if (backBtn) {
+      backBtn.style.setProperty('display', 'flex', 'important');
+    }
+  }
+
   function goBack() {
+    const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
+    const editId = pathCtx.id || new URLSearchParams(window.location.search).get('edit');
+    const fromEvent = new URLSearchParams(window.location.search).get('from') === 'event';
+    if (fromEvent && editId) {
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('event', editId) : getCleanUrl('event.html') + '?id=' + encodeURIComponent(editId);
+      return;
+    }
     if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
       window.history.back();
       return;
     }
-    // editId comes from clean path /edit-event/ABCD123 or legacy ?edit= param
-    const pathCtx = (typeof parseCurrentPath === 'function') ? parseCurrentPath() : {};
-    const editId = pathCtx.id || new URLSearchParams(window.location.search).get('edit');
     if (editId) {
       window.location.href = (typeof buildUrl === 'function') ? buildUrl('event', editId) : getCleanUrl('event.html') + '?id=' + encodeURIComponent(editId);
     } else {
