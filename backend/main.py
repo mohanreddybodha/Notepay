@@ -1,28 +1,30 @@
-import os
-import sys
+import traceback
 import json
-import time
-import asyncio
-import concurrent.futures
-from datetime import datetime
-from typing import List, Optional, Dict
-import boto3
-from dotenv import load_dotenv
-load_dotenv()  # Load .env for local development
-
-# Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Request, Query, Header, WebSocket, WebSocketDisconnect, UploadFile, File
-from fastapi.encoders import jsonable_encoder
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-import requests
 
 _init_error = None
 try:
+    import os
+    import sys
+    import time
+    import asyncio
+    import concurrent.futures
+    from datetime import datetime
+    from typing import List, Optional, Dict
+    import boto3
+    from dotenv import load_dotenv
+    load_dotenv()  # Load .env for local development
+
+    # Ensure local modules (models, schemas, crud, auth) can be found regardless of current directory
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+    from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Request, Query, Header, WebSocket, WebSocketDisconnect, UploadFile, File
+    from fastapi.encoders import jsonable_encoder
+    from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+    from fastapi.middleware.cors import CORSMiddleware
+    from sqlalchemy.orm import Session
+    from sqlalchemy import func
+    import requests
+
     import models, schemas, crud, auth
     from storage import storage_service
     try:
@@ -33,7 +35,6 @@ try:
     from limiter import verify_rate_limit, check_rate_limit
     models.Base.metadata.create_all(bind=engine)
 except Exception as e:
-    import traceback
     _init_error = traceback.format_exc()
 
 def _run_legacy_migrations():
