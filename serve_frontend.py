@@ -30,6 +30,7 @@ SEGMENT_ROUTES = [
     ('/edit-event/',    'create-event.html'),
     ('/donate/',        'donate.html'),
     ('/join/',          'join-event.html'),
+    ('/dashboard/',     'dashboard.html'),
 ]
 
 class Handler(http.server.SimpleHTTPRequestHandler):
