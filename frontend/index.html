@@ -64,14 +64,7 @@
         
         const user = await waitForAuthReady();
         if (user) {
-          const currentPath = window.location.pathname;
-          if (currentPath && currentPath !== '/' && currentPath !== '/index' && currentPath !== '/index.html') {
-            // Re-append .html to fetch the actual file from S3 via CloudFront
-            // The destination page's page-init.js will cleanly strip the .html again
-            window.location.replace(currentPath + '.html' + window.location.search);
-          } else {
-            window.location.replace(getCleanUrl('dashboard.html'));
-          }
+          window.location.replace(getCleanUrl('dashboard.html'));
           return;
         }
       }
