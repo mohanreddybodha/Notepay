@@ -256,7 +256,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       const counts = JSON.parse(localStorage.getItem("np_event_counts") || "[]");
       if (counts.length === 4) for (let i=0;i<4;i++) { const el=document.getElementById(`sb-count-${i}`); if(el) el.textContent=counts[i]; }
     } catch(e) {}
-    npIcons.render();
+    if (typeof initIcons === 'function') initIcons();
+
+    // Intercept all hash-only anchors to work with <base href="/">
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      const hash = anchor.getAttribute('href');
+      anchor.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(hash);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+          history.pushState(null, null, window.location.pathname + hash);
+        }
+      });
+    });
   });
   
 </script>

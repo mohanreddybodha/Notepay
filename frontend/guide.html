@@ -516,7 +516,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     } catch(e) {}
 
-    npIcons.render();
+    if (typeof initIcons === 'function') initIcons();
+
+    // Intercept all hash-only anchors to work with <base href="/">
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      const hash = anchor.getAttribute('href');
+      anchor.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(hash);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+          history.pushState(null, null, window.location.pathname + hash);
+        }
+      });
+    });
 
     const user = await waitForAuthReady();
     if (user) {
