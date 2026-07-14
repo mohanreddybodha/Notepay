@@ -477,7 +477,8 @@ let currentCollections = 0;
       } else {
         await createEvent(name, desc, date, true, true, goalAmount);
         showToast("Event created!");
-        window.location.replace((typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl("dashboard.html"));
+        localStorage.setItem('np_dash_tab', '1');
+        window.location.replace((typeof buildUrl === 'function') ? buildUrl('dashboard', 'my-events') : 'dashboard.html?tab=1');
       }
     } catch(err) {
       mainErrTxt.textContent = err.message || "Failed to save event. Please try again.";

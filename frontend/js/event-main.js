@@ -581,6 +581,13 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
           }
           return;
         } else {
+          // Pre-select correct active tab to prevent visual flashing before switchEventTab executes
+          const preDefaultTab = (currentTab && ((currentTab === 'don' && showDon) || (currentTab === 'exp' && showExp) || currentTab === 'sum')) ? currentTab : (showDon ? 'don' : (showExp ? 'exp' : 'sum'));
+          ["don", "exp", "sum"].forEach(t => {
+            const el = document.getElementById("tab-" + t);
+            if (el) el.classList.toggle("active", t === preDefaultTab);
+          });
+
           // ENSURE everything is visible for authorized users
           ["info-bar", "tab-bar"].forEach(id => {
             const el = document.getElementById(id); if (el) el.style.display = "flex";
