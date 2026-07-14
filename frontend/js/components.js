@@ -37,7 +37,7 @@ class NPSidebar extends HTMLElement {
 
       <nav class="sb-nav">
         <div class="sb-section">Events</div>
-        <div class="sb-item" id="sb-tab-0" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(0)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard'):'dashboard.html')}">
+        <div class="sb-item" id="sb-tab-0" onclick="if(typeof switchTab === 'function'){switchTab(0)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard'):'dashboard.html')}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
@@ -45,7 +45,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           All Events <span class="sb-count" id="sb-count-0">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-1" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(1)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard'):'dashboard.html')}">
+        <div class="sb-item" id="sb-tab-1" onclick="if(typeof switchTab === 'function'){switchTab(1)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard', 'my-events'):'dashboard.html?tab=1')}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
@@ -54,7 +54,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           My Events <span class="sb-count" id="sb-count-1">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-2" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(2)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard'):'dashboard.html')}">
+        <div class="sb-item" id="sb-tab-2" onclick="if(typeof switchTab === 'function'){switchTab(2)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard', 'shared'):'dashboard.html?tab=2')}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -63,7 +63,7 @@ class NPSidebar extends HTMLElement {
           </svg>
           Shared Events <span class="sb-count" id="sb-count-2">0</span>
         </div>
-        <div class="sb-item" id="sb-tab-3" onclick="if(typeof switchSPAView === 'function'){switchSPAView('overview'); switchTab(3)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard'):'dashboard.html')}">
+        <div class="sb-item" id="sb-tab-3" onclick="if(typeof switchTab === 'function'){switchTab(3)} else {window.location.href=(typeof buildUrl==='function'?buildUrl('dashboard', 'visited'):'dashboard.html?tab=3')}">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
             <circle cx="12" cy="12" r="3" />

@@ -19,9 +19,9 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
     const urlParams = new URLSearchParams(window.location.search);
     const viewParam = urlParams.get('view');
     if (viewParam === 'create') {
-      switchSPAView('create');
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('create-event') : 'create-event.html';
     } else if (viewParam === 'join') {
-      switchSPAView('join');
+      window.location.href = (typeof buildUrl === 'function') ? buildUrl('join') : 'join-event.html';
     }
 
     const msgParam = urlParams.get('msg');
@@ -932,7 +932,7 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         document.getElementById("spa-ev-name").value = "";
         document.getElementById("spa-ev-desc").value = "";
         document.getElementById("spa-ev-goal").value = "";
-        switchSPAView('overview');
+        window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : 'dashboard.html';
         refreshDashboard();
       } catch(err) {
         mainErrTxt.textContent = err.message || "Failed to create event.";

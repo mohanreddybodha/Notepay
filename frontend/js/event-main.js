@@ -1107,7 +1107,7 @@ function openExitPop() {
           showGlobalConfirmModal({
             title: "Make Organizer?",
             desc: `<p style="text-align:left;"><b>WARNING:</b> This action gives <span style="font-weight:900;">${escHtml(memTarget.name)}</span> <b>full organizer rights</b>.</p><ul style="text-align:left; margin:10px 0;padding-left:20px;font-size:12px;line-height:1.5;"><li>They can deactivate or delete the event.</li><li>They can manage and restrict other members.</li><li>They can see all summaries and data.</li></ul><p style="text-align:left;">Make sure you trust this person. This cannot be easily undone.</p>`,
-            confirmText: "Confirm Promotion",
+            confirmText: "Confirm",
             confirmColor: "var(--amber)",
             onConfirm: async () => {
               try {
