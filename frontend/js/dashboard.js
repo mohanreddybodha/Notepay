@@ -847,9 +847,6 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       if (href === 'dashboard.html' || href === '/' || href === '/dashboard') {
         e.preventDefault();
         window.location.reload();
-      } else if (href && (href.startsWith('profile.html') || href.startsWith('/profile') || href.startsWith('edit-profile.html') || href.startsWith('/edit-profile') || href.startsWith('admin.html') || href.startsWith('/admin') || href.startsWith('join-event.html') || href.startsWith('/join-event') || href.startsWith('create-event.html') || href.startsWith('/create-event'))) {
-        e.preventDefault();
-        window.location.href = getCleanUrl(href);
       }
     });
 

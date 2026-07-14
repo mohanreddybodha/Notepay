@@ -209,7 +209,11 @@
                     window.location.protocol === 'file:';
     if (!isLocal) {
       try {
-        const u = new URL(url, window.location.href);
+        let absoluteUrl = url;
+        if (url && !url.startsWith('/') && !url.startsWith('http://') && !url.startsWith('https://')) {
+          absoluteUrl = '/' + url;
+        }
+        const u = new URL(absoluteUrl, window.location.origin);
         u.pathname = u.pathname.replace(/\.html$/, '');
         return u.pathname + u.search + u.hash;
       } catch (e) { /* ignore bad URLs */ }
