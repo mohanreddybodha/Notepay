@@ -296,20 +296,7 @@
       </div>
     </div>
 
-    <!-- Restrict Member Confirmation Popup -->
-    <div id="restrict-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box">
-        <div class="pop-ic"><span data-np-icon="ban" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Restrict Member?</div>
-        <div class="pop-m">Do you want to restrict <strong id="restrict-user-name">this member</strong> from this event?
-          They will no longer be able to view or collect data.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="closeRestrictPop()">Cancel</button>
-          <button class="btn btn-solid-danger" onclick="confirmRestrict()">Restrict</button>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Reactivate Management Popup (Organizer only) -->
     <div id="deact-manage-pop" class="pop-ov" style="display:none;">
@@ -705,88 +692,7 @@
     </div>
 
     <!-- Remove Event Confirmation Popup handled by global modal -->
-    <!-- Demote Organizer Confirmation Popup -->
-    <div id="demote-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box" style="border:2px solid var(--red);">
-        <div class="pop-ic"><span data-np-icon="alert-triangle" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Demote Organizer?</div>
-        <div class="pop-m">This will remove all management rights from <strong id="demote-user-name">this user</strong>.
-          They will become a collector again.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="document.getElementById('demote-pop').style.display = 'none'">Cancel</button>
-          <button class="btn btn-solid-danger" onclick="confirmDemote()">Demote</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Deactivate Event Confirmation Popup -->
-    <div id="deact-confirm-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box" style="border:2px solid var(--amber);">
-        <div class="pop-t" style="color:var(--amber);">Deactivate Event?</div>
-        <div class="pop-m">This will lock all collectors out immediately.<br><br><b>Note:</b> The join code will be
-          permanently changed upon reactivation.</div>
-        <div class="pop-btns">
-          <button class="pbc"
-            onclick="document.getElementById('deact-confirm-pop').style.display = 'none'">Cancel</button>
-          <button class="btn btn-solid-amber" onclick="confirmDeactivate()"><span data-np-icon="lock" data-np-size="16"
-              style="vertical-align:middle;margin-right:6px;"></span> Lock Event</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Regenerate Code Confirmation Popup -->
-    <div id="regenerate-code-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box" style="border:2px solid var(--primary);">
-        <div class="pop-ic"><span data-np-icon="refresh" data-np-size="32" data-np-tone="primary"></span></div>
-        <div class="pop-t" style="color:var(--primary);">Regenerate Code?</div>
-        <div class="pop-m">Existing members keep access, but the old code will stop working. Anyone new must use the new
-          code to join.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc"
-            onclick="document.getElementById('regenerate-code-pop').style.display = 'none'">Cancel</button>
-          <button class="btn btn-solid-primary" onclick="confirmRegenerateCode()">Regenerate</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Promote to Organizer Popup -->
-    <div id="promote-pop" class="pop-ov" style="display:none;">
-      <div class="pop-box" style="border:2px solid var(--amber);">
-        <div class="pop-t" style="color:var(--amber);">Make Organizer?</div>
-        <div class="pop-m" style="text-align:left;">
-          <p><b>WARNING:</b> This action gives <span id="promote-user-name" style="font-weight:900;">User</span> <b>full
-              organizer rights</b>.</p>
-          <ul style="margin:10px 0;padding-left:20px;font-size:12px;line-height:1.5;">
-            <li>They can deactivate or delete the event.</li>
-            <li>They can manage and restrict other members.</li>
-            <li>They can see all summaries and data.</li>
-          </ul>
-          <p>Make sure you trust this person. This cannot be easily undone.</p>
-        </div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="document.getElementById('promote-pop').style.display = 'none'">Go Back</button>
-          <button class="btn" style="background:var(--amber);color:black;border:none;border-radius:14px;"
-            onclick="confirmPromote()"><span data-np-icon="crown" data-np-size="16"
-              style="vertical-align:middle;margin-right:6px;"></span> Confirm Promotion</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Restricted Promotion Popup -->
-    <div id="restricted-promo-pop" class="pop-ov" style="display:none; z-index:100100;">
-      <div class="pop-box" style="border:2px solid var(--red);">
-        <div class="pop-ic"><span data-np-icon="alert-triangle" data-np-size="32" data-np-tone="red"></span></div>
-        <div class="pop-t" style="color:var(--red);">Restricted Member</div>
-        <div class="pop-m">Restricted member can't be promoted to organizer.</div>
-        <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc"
-            onclick="document.getElementById('restricted-promo-pop').style.display = 'none'">OK</button>
-        </div>
-      </div>
-    </div>
 
     <!-- Member Context Menu Overlay -->
     <div id="mctx-ov" style="display:none;position:fixed;inset:0;background:transparent;z-index:25000;"

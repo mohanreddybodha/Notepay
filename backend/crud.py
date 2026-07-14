@@ -858,6 +858,11 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     event_dict = {c.name: getattr(event, c.name) for c in event.__table__.columns}
     event_dict["my_role"] = actual_role
     event_dict["is_restricted"] = is_restricted
+    event_dict["total_collections"] = total_donations
+    event_dict["total_expenses"] = total_expenses
+    event_dict["balance"] = total_donations - total_expenses
+    event_dict["total_to_collect"] = total_to_collect
+    
     _parse_json_columns(event_dict)
 
     # All donations (no limit — full dataset needed for table view)
@@ -1022,16 +1027,29 @@ def get_user_full_dashboard(db: Session, user_id: int):
     shared_events = get_shared_events(db, user_id)
     watched_raw = get_watched_events(db, user_id)
 
+    watched_event_ids = [w.event_id for w in watched_raw if w.event]
+    watched_aggs = _build_event_aggregates(db, watched_event_ids)
+
     watched_fixed = []
     for w in watched_raw:
         if not w.event:
             continue
+        
+        # Serialize the event exactly like _serialize_event_with_member_context does
+        e_dict = fix_event_json(w.event)
+        agg = watched_aggs.get(w.event_id, {})
+        e_dict["total_collections"] = agg.get("total_collections", 0)
+        e_dict["total_to_collect"] = agg.get("total_to_collect", 0)
+        e_dict["total_expenses"] = agg.get("total_expenses", 0)
+        e_dict["balance"] = agg.get("balance", 0)
+        e_dict["member_count"] = agg.get("member_count", 1)
+        
         w_dict = {
             "id": w.id,
             "user_id": w.user_id,
             "event_id": w.event_id,
             "last_viewed_at": w.last_viewed_at,
-            "event": fix_event_json(w.event)
+            "event": e_dict
         }
         watched_fixed.append(w_dict)
 

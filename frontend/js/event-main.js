@@ -7,17 +7,13 @@
     let fallbackDashTab = null;
 
     function getSmartDashTab() {
-      if (fallbackDashTab !== null && fallbackDashTab !== undefined) {
-        localStorage.setItem('np_dash_tab', fallbackDashTab);
-        return fallbackDashTab;
-      }
-      const savedTab = localStorage.getItem('np_dash_tab');
-      if (savedTab && ['0', '1', '2', '3'].includes(savedTab)) {
-        return savedTab;
+      if (typeof isOrganizer === 'undefined' || typeof isVisitor === 'undefined') {
+        return localStorage.getItem('np_dash_tab') || '0';
       }
       let tab = '0';
-      if (typeof isOrganizer !== 'undefined' && isOrganizer) tab = '1';
-      else if (typeof isVisitor !== 'undefined' && isVisitor) tab = '3';
+      if (isOrganizer) tab = '1';
+      else if (isVisitor) tab = '3';
+      else tab = '2'; // collector
       
       localStorage.setItem('np_dash_tab', tab);
       return tab;
@@ -813,20 +809,27 @@ function openExitPop() {
     }
 
     function revokeCode() {
-      document.getElementById('regenerate-code-pop').style.display = 'flex';
-    }
-    async function confirmRegenerateCode() {
-      try {
-        document.getElementById('regenerate-code-pop').style.display = 'none';
-        const res = await apiFetch("POST", `/events/${eventId}/generate_code`);
-        // Proactively update local state for instant sheet refresh
-        if (res && res.invite_code) eventData.invite_code = res.invite_code;
-        clearEventCache();
-        await loadAll(false, true);
-        openCodeSheet(); // Re-open the sheet so user can copy the new code
-        showToast("Invite code regenerated!", "success");
-      } catch (e) {
-        showToast(e.message || "Failed to regenerate code.", "error");
+      if (typeof showGlobalConfirmModal === 'function') {
+        showGlobalConfirmModal({
+          title: "Regenerate Invite Code?",
+          desc: "This will revoke the current invite code and generate a new one. The old code will immediately stop working.",
+          iconTone: "amber",
+          confirmText: "Generate New Code",
+          confirmColor: "var(--amber)",
+          onConfirm: async () => {
+            try {
+              const res = await apiFetch("POST", `/events/${eventId}/generate_code`);
+              // Proactively update local state for instant sheet refresh
+              if (res && res.invite_code) eventData.invite_code = res.invite_code;
+              clearEventCache();
+              await loadAll(false, true);
+              openCodeSheet(); // Re-open the sheet so user can copy the new code
+              showToast("Invite code regenerated!", "success");
+            } catch (e) {
+              showToast(e.message || "Failed to regenerate code.", "error");
+            }
+          }
+        });
       }
     }
 
@@ -898,7 +901,25 @@ function openExitPop() {
     async function toggleDeactivate() {
       if (isActive) {
         // Only show confirmation when DEACTIVATING
-        document.getElementById("deact-confirm-pop").style.display = "flex";
+        if (typeof showGlobalConfirmModal === 'function') {
+          showGlobalConfirmModal({
+            title: "Deactivate Event?",
+            desc: "This will lock all collectors out immediately.<br><br><b>Note:</b> The join code will be revoked and a new one will be generated upon reactivation.",
+            iconTone: "amber",
+            confirmText: "Deactivate",
+            confirmColor: "var(--amber)",
+            onConfirm: async () => {
+              try {
+                await apiFetch("PUT", `/events/${eventId}/deactivate`);
+                isActive = false;
+                eventData.is_active = false;
+                clearEventCache();
+                renderPage();
+                showToast("Event deactivated.");
+              } catch (e) { showToast(e.message || "Deactivate failed.", "error"); }
+            }
+          });
+        }
       } else {
         // Direct reactivation - NO POPUP, ONE CLICK
         try {
@@ -910,18 +931,6 @@ function openExitPop() {
           showToast("Event reactivated!", "success");
         } catch (e) { showToast(e.message || "Reactivate failed.", "error"); }
       }
-    }
-
-    async function confirmDeactivate() {
-      try {
-        await apiFetch("PUT", `/events/${eventId}/deactivate`);
-        isActive = false;
-        eventData.is_active = false;
-        clearEventCache();
-        document.getElementById("deact-confirm-pop").style.display = "none";
-        renderPage();
-        showToast("Event deactivated.");
-      } catch (e) { showToast(e.message || "Deactivate failed.", "error"); }
     }
 
     function closeDeactPop() {
@@ -1043,69 +1052,80 @@ function openExitPop() {
       const clampedX = Math.max(8, Math.min(x - bw / 2, window.innerWidth - bw - 8));
       const clampedY = Math.max(8, Math.min(y + 4, window.innerHeight - bh - 8));
       box.style.left = clampedX + "px";
-      box.style.top = clampedY + "px";
-    }
     function closeMCtx() { document.getElementById("mctx-ov").style.display = "none"; }
 
     function openRestrictedPromotionPopup() {
-      const popup = document.getElementById("restricted-promo-pop");
-      if (!popup) return;
-      popup.style.display = "flex";
+      if (typeof showGlobalConfirmModal === 'function') {
+        showGlobalConfirmModal({
+          title: "Restricted Member",
+          desc: "Restricted member can't be promoted to organizer.",
+          iconTone: "red",
+          confirmText: "OK",
+          confirmColor: "var(--red)",
+          cancelText: "Cancel",
+          onConfirm: () => {}
+        });
+      }
     }
 
     function handlePromoteClick() {
       closeMCtx();
       if (memTarget.role.toLowerCase() === "organizer") {
-        document.getElementById("demote-user-name").textContent = memTarget.name;
-        document.getElementById("demote-pop").style.display = "flex";
+        if (typeof showGlobalConfirmModal === 'function') {
+          showGlobalConfirmModal({
+            title: "Demote Organizer?",
+            desc: `<p style="text-align:left;">This will remove all management rights from <strong style="font-weight:900;">${escHtml(memTarget.name)}</strong>. They will become a collector again.</p>`,
+            confirmText: "Demote",
+            confirmColor: "var(--red)",
+            onConfirm: async () => {
+              try {
+                await apiFetch("PUT", `/events/${eventId}/members/${memTarget.id}/role`, { role: "Collector" });
+                if (members) {
+                  const m = members.find(x => x.user_id === memTarget.id);
+                  if (m) m.role = "Collector";
+                }
+                showToast(`${memTarget.name} is now a Collector.`);
+                clearEventCache();
+                await loadAll(true, true);
+                openMembersSheet();
+                if (memTarget.id === myUserId) location.reload();
+              } catch (e) {
+                showToast(e.message || "Failed to demote.", "error");
+              }
+            }
+          });
+        }
       } else {
         if (memTarget.res) {
           openRestrictedPromotionPopup();
           return;
         }
-        document.getElementById("promote-user-name").textContent = memTarget.name;
-        document.getElementById("promote-pop").style.display = "flex";
+        if (typeof showGlobalConfirmModal === 'function') {
+          showGlobalConfirmModal({
+            title: "Make Organizer?",
+            desc: `<p style="text-align:left;"><b>WARNING:</b> This action gives <span style="font-weight:900;">${escHtml(memTarget.name)}</span> <b>full organizer rights</b>.</p><ul style="text-align:left; margin:10px 0;padding-left:20px;font-size:12px;line-height:1.5;"><li>They can deactivate or delete the event.</li><li>They can manage and restrict other members.</li><li>They can see all summaries and data.</li></ul><p style="text-align:left;">Make sure you trust this person. This cannot be easily undone.</p>`,
+            confirmText: "Confirm Promotion",
+            confirmColor: "var(--amber)",
+            onConfirm: async () => {
+              try {
+                if (memTarget.res) {
+                  openRestrictedPromotionPopup();
+                  return;
+                }
+                await apiFetch("PUT", `/events/${eventId}/members/${memTarget.id}/role`, { role: "Organizer" });
+                if (members) {
+                  const m = members.find(x => x.user_id === memTarget.id);
+                  if (m) m.role = "Organizer";
+                }
+                showToast(`${memTarget.name} is now an Organizer!`);
+                clearEventCache();
+                await loadAll(true, true);
+                openMembersSheet();
+              } catch (e) { showToast(e.message || "Promotion failed.", "error"); }
+            }
+          });
+        }
       }
-    }
-
-    async function confirmDemote() {
-      try {
-        await apiFetch("PUT", `/events/${eventId}/members/${memTarget.id}/role`, { role: "Collector" });
-        // Proactively update local members array
-        if (members) {
-          const m = members.find(x => x.user_id === memTarget.id);
-          if (m) m.role = "Collector";
-        }
-        document.getElementById("demote-pop").style.display = "none";
-        showToast(`${memTarget.name} is now a Collector.`);
-        clearEventCache();
-        // Broadcast to dashboard for instant update
-        await loadAll(true, true);
-        openMembersSheet();
-        if (memTarget.id === myUserId) location.reload();
-      } catch (e) {
-        showToast(e.message || "Failed to demote.", "error");
-      }
-    }
-
-    async function confirmPromote() {
-      try {
-        if (memTarget.res) {
-          openRestrictedPromotionPopup();
-          document.getElementById("promote-pop").style.display = "none";
-          return;
-        }
-        await apiFetch("PUT", `/events/${eventId}/members/${memTarget.id}/role`, { role: "Organizer" });
-        if (members) {
-          const m = members.find(x => x.user_id === memTarget.id);
-          if (m) m.role = "Organizer";
-        }
-        document.getElementById("promote-pop").style.display = "none";
-        showToast(`${memTarget.name} is now an Organizer!`);
-        clearEventCache();
-        await loadAll(true, true);
-        openMembersSheet();
-      } catch (e) { showToast(e.message || "Promotion failed.", "error"); }
     }
 
     function handleRestrictClick() {
@@ -1118,38 +1138,40 @@ function openExitPop() {
     }
 
     // ── Restrict Logic ──
-    let restrictUserId = null;
-    function closeRestrictPop() { document.getElementById("restrict-pop").style.display = "none"; }
     function doRestrict(uid, name) {
-      restrictUserId = uid;
-      const ns = document.getElementById("restrict-user-name");
-      if (ns) ns.textContent = name;
-      document.getElementById("restrict-pop").style.display = "flex";
-    }
-    async function confirmRestrict() {
-      try {
-        await restrictMember(eventId, restrictUserId);
-        showToast("Member restricted.");
-        // Proactively update local members array for instant UI
-        if (members) {
-          const m = members.find(x => x.user_id === restrictUserId);
-          if (m) {
-            m.is_restricted = true;
-            m.role = "collector"; // Promotion logic in backend also demotes restricted orgs
+      if (typeof showGlobalConfirmModal === 'function') {
+        showGlobalConfirmModal({
+          title: "Restrict Access?",
+          desc: `<p style="text-align:left;">This will stop <strong style="font-weight:900;">${escHtml(name)}</strong> from making entries or viewing event details.<br><br>They will see a "You don't have access" message.</p>`,
+          iconTone: "red",
+          confirmText: "Restrict",
+          confirmColor: "var(--red)",
+          onConfirm: async () => {
+            try {
+              await restrictMember(eventId, uid);
+              showToast("Member restricted.");
+              // Proactively update local members array for instant UI
+              if (members) {
+                const m = members.find(x => x.user_id === uid);
+                if (m) {
+                  m.is_restricted = true;
+                  m.role = "collector"; // Promotion logic in backend also demotes restricted orgs
+                }
+              }
+              clearEventCache();
+              // If restricted member was the current user, show restricted page
+              if (uid === myUserId) {
+                isRestricted = true;
+                renderPage();
+              } else {
+                // Broadcast to other members' dashboards for instant update
+                await loadAll(true, true);
+              }
+              openMembersSheet(); // This will now use the updated 'members' array
+            } catch (e) { showToast(e.message || "Failed.", "error"); }
           }
-        }
-        clearEventCache();
-        // If restricted member was the current user, show restricted page
-        if (restrictUserId === myUserId) {
-          isRestricted = true;
-          renderPage();
-        } else {
-          // Broadcast to other members' dashboards for instant update
-          await loadAll(true, true);
-        }
-        closeRestrictPop();
-        openMembersSheet(); // This will now use the updated 'members' array
-      } catch (e) { showToast(e.message || "Failed.", "error"); }
+        });
+      }
     }
     async function doUnrestrict(uid) {
       try {

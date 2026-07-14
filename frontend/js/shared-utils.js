@@ -252,8 +252,8 @@
         <div class="popup-title">${escapeHtml(title)}</div>
         <div class="popup-desc" style="margin-bottom:16px;">${desc}</div>
         <div style="display:flex;gap:8px;width:100%;">
-          <button class="popup-btn pbc" id="ngcm-cancel" style="flex:1;">${escapeHtml(cancelText)}</button>
-          <button class="popup-btn" id="ngcm-confirm" style="flex:1; background:${confirmColor}; color:white; border:none; border-radius:20px; font-weight:700;">${escapeHtml(confirmText)}</button>
+          <button class="popup-btn" id="ngcm-cancel" style="flex:1; border-radius:8px;">${escapeHtml(cancelText)}</button>
+          <button class="popup-btn" id="ngcm-confirm" style="flex:1; background:${confirmColor}; color:white; border:none; border-radius:8px; font-weight:700;">${escapeHtml(confirmText)}</button>
         </div>
       </div>
     `;

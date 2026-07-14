@@ -821,83 +821,13 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
     function openSPAHelpModal() {
       if (document.getElementById('spa-view-create')?.style.display === 'flex') {
         document.getElementById('tips-modal')?.classList.add('open');
-      } else if (document.getElementById('spa-view-join')?.style.display === 'flex') {
-        document.getElementById('help-modal')?.classList.add('open');
-      }
+       document.getElementById('help-modal')?.classList.add('open');
     }
-
-    function spaGoBack() {
-      if (window.history.length > 1) {
-        history.back();
-      } else {
-        switchSPAView('overview');
-      }
-    }
-
-    function switchSPAView(viewName) {
-      const cr = document.getElementById('spa-view-create');
-      const overviewEls = document.querySelectorAll('.page-hdr, .tab-bar, .search-row, .tab-desc, .scroll-area, .fab');
-      const mainTopbar = document.querySelector('.topbar');
-      const spaHeader = document.getElementById('spa-pg-header');
-      const spaTitle = document.getElementById('spa-pg-title');
-
-      if (!cr) return;
-
-      closeSheet();
-
-      document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
-
-      if (viewName === 'create') {
-        overviewEls.forEach(el => el.style.display = 'none');
-        cr.style.display = 'flex';
-        if (mainTopbar) mainTopbar.style.display = 'none';
-        if (spaHeader) {
-          spaHeader.style.display = 'flex';
-          if (spaTitle) spaTitle.textContent = 'Create Event';
-        }
-        document.querySelector('a[href="create-event.html"]')?.classList.add('active');
-        if (window.location.pathname.indexOf('create-event') === -1) {
-          const createUrl = (typeof buildUrl === 'function') ? buildUrl('create-event') : '/create-event';
-          if (window.location.search.includes('view=create')) {
-            history.replaceState({spa: 'create'}, '', createUrl);
-          } else {
-            history.pushState({spa: 'create'}, '', createUrl);
-          }
-        }
-        const dateInput = document.getElementById("spa-ev-date");
-        if (dateInput && !dateInput.value) dateInput.valueAsDate = new Date();
-      } else if (viewName === 'join') {
-        // Navigate to standalone join page (clean URL)
-        window.location.href = (typeof buildUrl === 'function') ? buildUrl('join') : getCleanUrl('join-event.html');
-
-      } else {
-        cr.style.display = 'none';
-        if (mainTopbar) mainTopbar.style.display = 'flex';
-        if (spaHeader) spaHeader.style.display = 'none';
-        if (document.querySelector('.page-hdr')) document.querySelector('.page-hdr').style.display = '';
-        if (document.querySelector('.search-row')) document.querySelector('.search-row').style.display = '';
-        if (document.querySelector('.tab-bar')) document.querySelector('.tab-bar').style.display = '';
-        if (document.querySelector('.scroll-area')) document.querySelector('.scroll-area').style.display = 'block';
-        if (document.querySelector('.fab')) document.querySelector('.fab').style.display = 'flex';
-        const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
-        if (document.querySelector('.tb-title')) document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
-        document.getElementById('sb-tab-' + (typeof currentTab !== 'undefined' ? currentTab : 0))?.classList.add('active');
-        if (window.location.pathname.indexOf('dashboard') === -1 && window.location.pathname !== '/' && !window.location.pathname.endsWith('/')) {
-          history.pushState({spa: 'overview'}, '', (typeof buildUrl === 'function') ? buildUrl('dashboard') : getCleanUrl('dashboard.html'));
-        }
-      }
-      window.scrollTo(0, 0);
-    }
-    
-
 
     window.addEventListener('resize', () => {
-      const crView = document.getElementById('spa-view-create');
-      if (crView && crView.style.display === 'none') {
-        const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
-        if (document.querySelector('.tb-title')) {
-          document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
-        }
+      const tabNames = ["All Events", "My Events", "Shared Events", "Visited Events"];
+      if (document.querySelector('.tb-title')) {
+        document.querySelector('.tb-title').textContent = window.innerWidth >= 900 ? (tabNames[typeof currentTab !== 'undefined' ? currentTab : 0]) : '';
       }
       
       const activeTabEl = document.getElementById('mob-tab-' + (typeof currentTab !== 'undefined' ? currentTab : 0));
@@ -908,31 +838,21 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
       }
     });
 
-    window.addEventListener('popstate', () => {
-      const path = window.location.pathname;
-      if (path.includes('create-event')) switchSPAView('create');
-      else switchSPAView('overview');
-    });
-
-    // Intercept SPA links across dashboard
+    // Intercept navigation links
     document.addEventListener('click', (e) => {
       const link = e.target.closest('a');
       if (!link) return;
       const href = link.getAttribute('href');
-      if (href === 'create-event.html') {
+      
+      if (href === 'dashboard.html' || href === '/' || href === '/dashboard') {
         e.preventDefault();
-        switchSPAView('create');
-      } else if (href === 'dashboard.html') {
-        e.preventDefault();
-        switchSPAView('overview');
-      } else if (href && (href.startsWith('profile.html') || href.startsWith('edit-profile.html') || href.startsWith('admin.html'))) {
-        // Tab is in localStorage — no dbtab needed in URL, just navigate directly
+        window.location.reload();
+      } else if (href && (href.startsWith('profile.html') || href.startsWith('/profile') || href.startsWith('edit-profile.html') || href.startsWith('/edit-profile') || href.startsWith('admin.html') || href.startsWith('/admin') || href.startsWith('join-event.html') || href.startsWith('/join-event') || href.startsWith('create-event.html') || href.startsWith('/create-event'))) {
         e.preventDefault();
         window.location.href = getCleanUrl(href);
       }
     });
 
-    function updateSPALivePreview() {
       const name = document.getElementById("spa-ev-name").value.trim();
       const desc = document.getElementById("spa-ev-desc").value.trim();
       const date = document.getElementById("spa-ev-date").value;

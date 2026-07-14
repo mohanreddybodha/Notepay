@@ -193,7 +193,7 @@ def read_event(event_id: str, db: Session = Depends(get_db), user_id: int = Depe
     
     # Explicitly map to avoid Pydantic serialization issues with SQLAlchemy objects
     event_dict = {c.name: getattr(event, c.name) for c in event.__table__.columns}
-    event_dict["my_role"] = member.role if member else None
+    event_dict["my_role"] = member.role if member else "visitor"
     event_dict["is_restricted"] = member.is_restricted if member else False
     
     return crud.fix_event_json(event_dict)
