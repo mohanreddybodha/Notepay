@@ -652,7 +652,7 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
 
         // Pick the correct default tab based on visibility
         const defaultTab = (currentTab && ((currentTab === 'don' && showDon) || (currentTab === 'exp' && showExp) || currentTab === 'sum')) ? currentTab : (showDon ? 'don' : (showExp ? 'exp' : 'sum'));
-        switchTab(defaultTab, false, true);
+        switchEventTab(defaultTab, false, true);
         if (activeTheaterTab) {
           // If the active theater tab was just hidden, switch to the first available
           const theaterTabValid = (activeTheaterTab === 'don' && showDon) || (activeTheaterTab === 'exp' && showExp) || activeTheaterTab === 'sum';
@@ -682,12 +682,12 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
       const showDon = eventData.show_donations !== false;
       const showExp = eventData.show_expenses !== false;
       const fallback = showDon ? 'don' : (showExp ? 'exp' : 'sum');
-      switchTab(currentTab || fallback);
+      switchEventTab(currentTab || fallback);
     }
 
     // ── Tab switching ──
-    function switchTab(tab, updateUrl = true, preserveInline = false) {
-      // console.log(`[debug] switchTab: tab=${tab}, updateUrl=${updateUrl}, preserveInline=${preserveInline}, activeInlineAddType=${activeInlineAddType}`);
+    function switchEventTab(tab, updateUrl = true, preserveInline = false) {
+      // console.log(`[debug] switchEventTab: tab=${tab}, updateUrl=${updateUrl}, preserveInline=${preserveInline}, activeInlineAddType=${activeInlineAddType}`);
       if (!preserveInline) {
         activeInlineAddType = null;
         activeInlineEditType = null;

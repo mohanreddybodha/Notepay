@@ -612,7 +612,7 @@
           const topSearch = document.getElementById("theater-top-search");
           if (topSearch) topSearch.value = query;
         } else {
-          switchTab(tab);
+          switchEventTab(tab);
           const searchInput = document.getElementById(tab === 'don' ? 'don-search' : 'exp-search');
           if (searchInput) {
             searchInput.value = query;
