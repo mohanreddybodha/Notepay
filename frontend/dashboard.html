@@ -83,7 +83,7 @@
 
       <!-- SPA Page Header (hidden by default) -->
       <header class="pg-header" id="spa-pg-header" style="display:none;">
-        <button onclick="switchSPAView('overview')" class="pg-back" title="Back" aria-label="Go back">
+        <button onclick="" class="pg-back" title="Back" aria-label="Go back">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <div class="pg-title-wrap">
@@ -101,13 +101,13 @@
 
       <!-- Mobile Tabs -->
       <div class="tab-bar">
-        <div class="tab active" id="mob-tab-0" onclick="switchSPAView('overview'); switchTab(0)">All <span class="tab-chip"
+        <div class="tab active" id="mob-tab-0" onclick=" switchTab(0)">All <span class="tab-chip"
             id="mob-count-0">0</span></div>
-        <div class="tab" id="mob-tab-1" onclick="switchSPAView('overview'); switchTab(1)">My Events <span class="tab-chip"
+        <div class="tab" id="mob-tab-1" onclick=" switchTab(1)">My Events <span class="tab-chip"
             id="mob-count-1">0</span></div>
-        <div class="tab" id="mob-tab-2" onclick="switchSPAView('overview'); switchTab(2)">Shared <span class="tab-chip" id="mob-count-2">0</span>
+        <div class="tab" id="mob-tab-2" onclick=" switchTab(2)">Shared <span class="tab-chip" id="mob-count-2">0</span>
         </div>
-        <div class="tab" id="mob-tab-3" onclick="switchSPAView('overview'); switchTab(3)">Visited <span class="tab-chip" id="mob-count-3">0</span>
+        <div class="tab" id="mob-tab-3" onclick=" switchTab(3)">Visited <span class="tab-chip" id="mob-count-3">0</span>
         </div>
         <div class="tab-indicator" id="tab-indicator"></div>
       </div>
@@ -327,7 +327,7 @@
     <div class="sh-handle"></div>
     <div class="sh-title">Add to Notepay</div>
 
-    <a href="create-event.html" class="sh-opt opt-create" onclick="event.preventDefault(); switchSPAView('create');">
+    <a href="create-event.html" class="sh-opt opt-create" >
       <div class="sh-icon si-navy"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
           viewBox="0 0 24 24">
           <line x1="12" y1="5" x2="12" y2="19" />

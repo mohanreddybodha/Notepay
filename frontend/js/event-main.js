@@ -1052,6 +1052,9 @@ function openExitPop() {
       const clampedX = Math.max(8, Math.min(x - bw / 2, window.innerWidth - bw - 8));
       const clampedY = Math.max(8, Math.min(y + 4, window.innerHeight - bh - 8));
       box.style.left = clampedX + "px";
+      box.style.top = clampedY + "px";
+    }
+    
     function closeMCtx() { document.getElementById("mctx-ov").style.display = "none"; }
 
     function openRestrictedPromotionPopup() {
