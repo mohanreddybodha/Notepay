@@ -858,11 +858,6 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     event_dict = {c.name: getattr(event, c.name) for c in event.__table__.columns}
     event_dict["my_role"] = actual_role
     event_dict["is_restricted"] = is_restricted
-    event_dict["total_collections"] = total_donations
-    event_dict["total_expenses"] = total_expenses
-    event_dict["balance"] = total_donations - total_expenses
-    event_dict["total_to_collect"] = total_to_collect
-    
     _parse_json_columns(event_dict)
 
     # All donations (no limit — full dataset needed for table view)
@@ -891,6 +886,11 @@ def get_event_full_details(db: Session, event_id: str, user_id: int):
     total_donations = sum(d.get("amount") or 0 for d in donations if d.get("payment_received") is not False)
     total_to_collect = sum(d.get("amount") or 0 for d in donations if d.get("payment_received") is False)
     total_expenses = sum(e.get("amount") or 0 for e in expenses)
+
+    event_dict["total_collections"] = total_donations
+    event_dict["total_expenses"] = total_expenses
+    event_dict["balance"] = total_donations - total_expenses
+    event_dict["total_to_collect"] = total_to_collect
 
     txns = []
     for d in donations:
