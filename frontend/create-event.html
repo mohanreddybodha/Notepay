@@ -9,10 +9,7 @@
     const _params = new URLSearchParams(window.location.search);
     const _isEdit = _pathname.indexOf('/edit-event/') === 0 || (_pathname.indexOf('create-event.html') !== -1 && _params.get('edit'));
     
-    if (!_isEdit) {
-      _params.set('view', 'create');
-      window.location.replace('dashboard.html?' + _params.toString());
-    } else {
+    if (_isEdit) {
       document.documentElement.classList.add('is-editing');
       document.write('<style id="sync-edit-loader">.scroll-area { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.25s ease !important; }</style>');
     }
