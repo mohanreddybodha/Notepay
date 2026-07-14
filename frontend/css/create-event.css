@@ -297,7 +297,7 @@
       background: var(--border-str);
       color: var(--t1);
       border: none;
-      border-radius: var(--r-md);
+      border-radius: 8px;
       cursor: pointer;
       transition: background .15s;
     }

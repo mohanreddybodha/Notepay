@@ -420,9 +420,9 @@
         <div id="manual-collector" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 24px; background: var(--surface-2); color: var(--text);">Loading verified UPI owner...</div>
       </div>
       
-      <div class="pop-btns">
-        <button id="btn-manual-cancel" class="pbc">Cancel</button>
-        <button id="btn-manual-submit" class="btn btn-solid-primary" style="flex: 1; border: none;">Submit</button>
+      <div class="pop-btns" style="display:flex;gap:8px;width:100%;">
+        <button id="btn-manual-cancel" class="popup-btn" style="flex:1; border-radius:8px;">Cancel</button>
+        <button id="btn-manual-submit" class="popup-btn" style="flex:1; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:700;">Submit</button>
       </div>
     </div>
   </div>
@@ -442,9 +442,9 @@
         <span id="upi-confirm-id" style="font-size: 13px; color: var(--text3);"></span>
       </div>
       <div class="pop-line"></div>
-      <div class="pop-btns">
-        <button onclick="document.getElementById('upi-confirm-modal').style.display='none'" class="pbc">Cancel</button>
-        <a id="upi-confirm-proceed" class="btn btn-solid-primary" style="flex:1; border:none; text-decoration:none; display:flex; align-items:center; justify-content:center; background: var(--np-green);">Open UPI App</a>
+      <div class="pop-btns" style="display:flex;gap:8px;width:100%;">
+        <button onclick="document.getElementById('upi-confirm-modal').style.display='none'" class="popup-btn" style="flex:1; border-radius:8px;">Cancel</button>
+        <a id="upi-confirm-proceed" class="popup-btn" style="flex:1; background:var(--np-green); color:white; border:none; border-radius:8px; font-weight:700; text-decoration:none; display:flex; align-items:center; justify-content:center;">Open UPI App</a>
       </div>
     </div>
   </div>
@@ -457,7 +457,7 @@
       </div>
       <h3 style="margin:0 0 10px 0; font-size:17px; font-weight:700; color:#111827;">Receipt Not Accepted</h3>
       <p id="rejection-msg" style="margin:0 0 24px 0; font-size:14px; color:#4b5563; line-height:1.6;"></p>
-      <button onclick="document.getElementById('rejection-modal').style.display='none'; document.getElementById('main-card').style.display='block'; if (typeof setBackgroundScroll === 'function') setBackgroundScroll(false);" style="width:100%; padding:13px; background:var(--primary,#4f46e5); color:white; border:none; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer;">OK, Got It</button>
+      <button onclick="document.getElementById('rejection-modal').style.display='none'; document.getElementById('main-card').style.display='block'; if (typeof setBackgroundScroll === 'function') setBackgroundScroll(false);" class="popup-btn" style="width:100%; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:700;">OK, Got It</button>
     </div>
   </div>
 

@@ -307,9 +307,9 @@
           data.<br><br>You can still view summaries. To let collectors back in, reactivate and generate a new code.
         </div>
         <div class="pop-line"></div>
-        <div class="pop-btns">
-          <button class="pbc" onclick="viewDataOnly()">View Data</button>
-          <button class="btn btn-solid-primary" style="border:none;border-radius:14px;"
+        <div class="pop-btns" style="display:flex;gap:8px;width:100%;">
+          <button class="popup-btn" onclick="viewDataOnly()" style="flex:1; border-radius:8px;">View Data</button>
+          <button class="popup-btn" style="flex:1; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:700;"
             onclick="toggleDeactivate();closeDeactPop()">
             <span data-np-icon="unlock" data-np-size="16" style="vertical-align:middle;margin-right:4px;"></span>
             Reactivate</button>
