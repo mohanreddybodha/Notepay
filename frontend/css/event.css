@@ -175,17 +175,12 @@
       gap: 6px;
       padding: 12px 4px;
       min-height: 46px;
-      font-size: clamp(11px, 3.4vw, 13.5px) !important;
-      font-weight: 900;
-      letter-spacing: 0.2px;
-      color: var(--text3);
-      border-bottom: 2.5px solid transparent;
-      margin-bottom: -2px;
-      transition: color .18s, border-color .18s, background .18s;
-      border-radius: 8px 8px 0 0;
-      white-space: nowrap !important;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 15px !important;
+      font-weight: 500;
+      color: var(--t2);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color 0.15s;
     }
 
     .tab-h svg {
@@ -196,6 +191,7 @@
 
     .tab-h.active {
       color: var(--np-navy, #1A4E8C);
+      font-weight: 600;
     }
 
     .tab-h.active svg {
@@ -451,7 +447,26 @@
     }
 
     .tbl-sc::-webkit-scrollbar {
-      display: none;
+      width: 4px;
+      height: 4px;
+    }
+    .tbl-sc::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .tbl-sc::-webkit-scrollbar-thumb {
+      background: rgba(107, 138, 168, 0.22);
+      border-radius: 4px;
+    }
+    .tbl-sc::-webkit-scrollbar-thumb:hover {
+      background: rgba(107, 138, 168, 0.4);
+    }
+    body.dark-mode .tbl-sc::-webkit-scrollbar-thumb,
+    html.dark .tbl-sc::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    body.dark-mode .tbl-sc::-webkit-scrollbar-thumb:hover,
+    html.dark .tbl-sc::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.18);
     }
 
     .tbl-inner {
@@ -2589,7 +2604,7 @@
 
     /* Reply snippet inside message bubble */
     .chat-reply-snippet {
-      background: rgba(0, 0, 0, 0.06);
+      background: rgba(0, 0, 0, 0.1);
       border-left: 3px solid var(--primary);
       padding: 5px 10px;
       border-radius: 8px;
@@ -2664,21 +2679,11 @@
 
     /* Highlight */
     @keyframes highlightFlash {
-      0% {
-        opacity: 1;
-      }
-      25% {
-        opacity: 0.4;
-      }
-      50% {
-        opacity: 1;
-      }
-      75% {
-        opacity: 0.4;
-      }
-      100% {
-        opacity: 1;
-      }
+      0% { opacity: 1; box-shadow: 0 0 0 rgba(0,0,0,0); }
+      25% { opacity: 0.6; box-shadow: 0 0 12px var(--primary); }
+      50% { opacity: 1; box-shadow: 0 0 0 rgba(0,0,0,0); }
+      75% { opacity: 0.6; box-shadow: 0 0 12px var(--primary); }
+      100% { opacity: 1; box-shadow: 0 0 0 rgba(0,0,0,0); }
     }
 
     .highlight-msg {
@@ -2757,7 +2762,7 @@
       justify-content: space-between;
       padding: 14px 18px;
       background: var(--surface, #ffffff);
-      border-bottom: 1px solid var(--border-str, rgba(0, 0, 0, 0.06));
+      border-bottom: 1px solid var(--border-str, rgba(0, 0, 0, 0.1));
       flex-shrink: 0;
       position: relative;
       z-index: 2;
@@ -2773,7 +2778,7 @@
       display: flex;
       flex-direction: column;
       background: var(--surface, #ffffff);
-      border-top: 1px solid var(--border-str, rgba(0, 0, 0, 0.06));
+      border-top: 1px solid var(--border-str, rgba(0, 0, 0, 0.1));
     }
 
     .dark-mode .chat-footer-zone {
@@ -4131,3 +4136,4 @@
 #upi-sheet .sbox-footer .btn {
   border-radius: 12px !important;
 }
+

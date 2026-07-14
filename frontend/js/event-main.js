@@ -320,7 +320,7 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
       // console.log(isBackground ? "🔄 Background Refreshing..." : "🚀 Fetching Fresh Data");
       if (!isBackground && typeof showCircleLoading === "function") showCircleLoading();
       try {
-        const res = await apiFetch("GET", `/events/${eventId}/full-details`);
+        const res = await apiFetch("GET", `/events/${eventId}/full-details?_t=${Date.now()}`);
         if (!res) {
           if (!isBackground) renderPage();
           return;
@@ -420,8 +420,16 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
           return;
         }
         if (!wsAuthenticated) return;
-        if (msg.type === "DATA_CHANGED") {
-          console.log(`[debug] WS DATA_CHANGED received. activeInlineAddType=${activeInlineAddType}`);
+        if (
+          msg.type === "DATA_CHANGED" || 
+          msg.type === "DONATION_ADDED" || 
+          msg.type === "DONATION_UPDATED" || 
+          msg.type === "DONATION_DELETED" || 
+          msg.type === "EXPENSE_ADDED" || 
+          msg.type === "EXPENSE_UPDATED" || 
+          msg.type === "EXPENSE_DELETED"
+        ) {
+          console.log(`[debug] WS ${msg.type} received. activeInlineAddType=${activeInlineAddType}`);
           const weCausedIt = window._ignoreNextWsUpdate && (Date.now() - window._ignoreNextWsUpdate < 3000);
           loadAll(true, true, weCausedIt);
         }
@@ -708,12 +716,12 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
       });
 
       // Animate Tab Indicator
-      const tabs = Array.from(document.querySelectorAll("#tab-bar .tab-h")).filter(el => el.style.display !== "none");
-      const activeIndex = tabs.findIndex(el => el.classList.contains("active"));
+      const activeTabEl = document.getElementById("tab-" + tab);
+      
       const indicator = document.getElementById("tab-indicator");
-      if (indicator && tabs.length > 0 && activeIndex >= 0) {
-        indicator.style.width = `${100 / tabs.length}%`;
-        indicator.style.transform = `translateX(${activeIndex * 100}%)`;
+      if (indicator && activeTabEl) {
+        indicator.style.width = activeTabEl.offsetWidth + "px";
+        indicator.style.transform = `translateX(${activeTabEl.offsetLeft}px)`;
       }
 
       if (activeTheaterTab) return;
@@ -2761,10 +2769,8 @@ async function saveUpiId() {
     eventData.donation_custom_columns = res.donation_custom_columns || updatedDonCols;
     
     if (eventData.upi_id && eventData.upi_owner_name) {
-      const cleanPath = getCleanUrl('donate.html');
       const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
-      const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-      const link = origin + path + '?event_id=' + eventId;
+      const link = origin + (typeof buildUrl === 'function' ? buildUrl('donate', eventId) : '/donate.html?event_id=' + eventId);
       document.getElementById('upi-link-text').innerText = link;
       document.getElementById('upi-share-section').style.display = 'block';
       document.getElementById('btn-upi-save').style.display = '';
@@ -2782,10 +2788,8 @@ async function saveUpiId() {
 }
 
 function shareDonationLink() {
-  const cleanPath = getCleanUrl('donate.html');
   const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
-  const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-  const link = origin + path + '?event_id=' + eventId;
+  const link = origin + (typeof buildUrl === 'function' ? buildUrl('donate', eventId) : '/donate.html?event_id=' + eventId);
   if (navigator.share) {
     navigator.share({
       title: 'Contribution for ' + (eventData.name || 'our event'),
@@ -2799,10 +2803,8 @@ function shareDonationLink() {
 }
 
 function copyDonationLink(btnElement) {
-  const cleanPath = getCleanUrl('donate.html');
   const origin = window.location.origin.endsWith('/') ? window.location.origin.slice(0, -1) : window.location.origin;
-  const path = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
-  const link = origin + path + '?event_id=' + eventId;
+  const link = origin + (typeof buildUrl === 'function' ? buildUrl('donate', eventId) : '/donate.html?event_id=' + eventId);
   navigator.clipboard.writeText(link);
   
   if (btnElement) {
