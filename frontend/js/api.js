@@ -27,13 +27,24 @@ async function apiFetch(method, path, body = null, silent = true) {
     return handleOfflineWrite(method, path, body);
   }
 
-  const token = (typeof getIdToken === 'function') ? await getIdToken() : null;
+  let token = null;
+  try {
+    token = (typeof getIdToken === 'function') ? await getIdToken() : null;
+  } catch (err) {
+    throw err;
+  }
+
   if (!token) {
-    try { if (typeof auth !== 'undefined') auth.signOut(); } catch (e) {}
-    localStorage.removeItem('np_token_tmp');
-    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.href = (typeof getCleanUrl === 'function') ? getCleanUrl(`login.html?return=${returnUrl}`) : `login.html?return=${returnUrl}`;
-    throw new Error('Not authenticated');
+    const isLoggedOut = typeof auth !== 'undefined' && (typeof _authHasSettled !== 'undefined' ? _authHasSettled : true) && !auth.currentUser;
+    if (isLoggedOut) {
+      try { if (typeof auth !== 'undefined') auth.signOut(); } catch (e) {}
+      localStorage.removeItem('np_token_tmp');
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = (typeof getCleanUrl === 'function') ? getCleanUrl(`login.html?return=${returnUrl}`) : `login.html?return=${returnUrl}`;
+      throw new Error('Not authenticated');
+    } else {
+      throw new Error('Network error: Unable to retrieve authentication token.');
+    }
   }
 
   const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };

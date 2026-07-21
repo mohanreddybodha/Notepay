@@ -51,6 +51,16 @@ async function getIdToken() {
     return _cachedToken;
   } catch (e) {
     console.error("getIdToken error:", e);
+    
+    // Check if this is a transient network/offline issue
+    if (!navigator.onLine || e.code === "auth/network-request-failed" || e.message?.toLowerCase().includes("network")) {
+      if (_cachedToken) {
+        console.warn("Using expired cached token due to network/offline failure");
+        return _cachedToken;
+      }
+      throw new Error("Network error: Unable to refresh session token.");
+    }
+
     _cachedToken = null;
     _tokenExpiry = 0;
     return null;

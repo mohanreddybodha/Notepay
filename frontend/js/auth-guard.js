@@ -81,6 +81,26 @@
 (async function authGuard() {
   const user = await waitForAuthReady();
   if (!user) {
+    // If the device is offline, check if they have a session storage or profile marker to avoid kickout
+    if (!navigator.onLine && (localStorage.getItem('np_my_id') || sessionStorage.getItem('np_session_active') === 'true')) {
+      console.warn("Offline mode: Skipping login redirect since we have cached session markers.");
+      sessionStorage.setItem('np_session_active', 'true');
+      
+      const splash = document.getElementById('auth-guard-splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => {
+          splash.remove();
+          const style = document.getElementById('auth-guard-splash-style');
+          if (style) style.remove();
+        }, 200);
+      } else {
+        const style = document.getElementById('auth-guard-splash-style');
+        if (style) style.remove();
+      }
+      return;
+    }
+
     const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.replace(`login.html?return=${returnUrl}`);
   } else {
