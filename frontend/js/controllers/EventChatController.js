@@ -33,7 +33,7 @@
     const aiInlineBtn = document.getElementById('ai-inline-btn');
     if (aiInlineBtn) {
       aiInlineBtn.style.display = val.length > 0 ? 'none' : 'flex';
-      input.style.paddingRight = val.length > 0 ? '12px' : '74px';
+      input.style.paddingRight = val.length > 0 ? '12px' : '102px';
     }
   }
 
@@ -51,6 +51,15 @@
 
   function closeEmojiTray() {
     setEmojiTrayOpen(false);
+  }
+
+  function toggleInputEmojiTray() {
+    if (emojiTrayOpen && emojiPickerMode === 'input') {
+      setEmojiTrayOpen(false);
+    } else {
+      emojiPickerMode = 'input';
+      setEmojiTrayOpen(true);
+    }
   }
 
   let chatScrollLockY = 0;
@@ -979,6 +988,19 @@
         if (emojiPickerMode === 'reaction') {
           sendReactionInlineCtx(unicode);
           closeEmojiTray();
+        } else if (emojiPickerMode === 'input') {
+          const input = document.getElementById('chat-input');
+          if (input) {
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
+            input.value = text.substring(0, start) + unicode + text.substring(end);
+            input.selectionStart = input.selectionEnd = start + unicode.length;
+            input.focus();
+            autoResizeChatInput(input);
+            updateSendBtnVisibility();
+          }
+          closeEmojiTray();
         }
       });
     }
@@ -1061,12 +1083,21 @@
       </div>`;
     }
     let escaped = escHtml(text);
-    // Basic markdown parsing for AI responses
+    
+    // Parse headers: ### Title, ## Title, # Title
+    escaped = escaped.replace(/^### (.*?)$/gm, '<h4 style="margin: 6px 0 4px 0; font-size: 13.5px; font-weight: 800; color: var(--np-teal);">$1</h4>');
+    escaped = escaped.replace(/^## (.*?)$/gm, '<h3 style="margin: 8px 0 4px 0; font-size: 14.5px; font-weight: 800; color: var(--np-teal);">$1</h3>');
+    escaped = escaped.replace(/^# (.*?)$/gm, '<h2 style="margin: 10px 0 6px 0; font-size: 15.5px; font-weight: 900; color: var(--np-teal);">$1</h2>');
+
+    // Parse bold & italics
     escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
     escaped = escaped.replace(/\*(.*?)\*/g, '<i>$1</i>');
+    
     // Convert Markdown list items to bullet points (•)
     escaped = escaped.replace(/^[\s]*[\*\-]\s+/gm, '&bull; ');
-    escaped = escaped.replace(/\n  /g, '<br/>');
+    
+    // Convert all newlines to break tags
+    escaped = escaped.replace(/\n/g, '<br/>');
     
     return escaped.replace(
       /(https?:\/\/[^\s<]+)/g,
@@ -1088,6 +1119,7 @@
     updateSendBtnVisibility,
     setEmojiTrayOpen,
     closeEmojiTray,
+    toggleInputEmojiTray,
     lockPageScrollForChat,
     applyChatVisualViewport,
     bindChatVisualViewport,

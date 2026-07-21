@@ -290,6 +290,7 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
       }
       _isFetchingLoadAll = true;
 
+      let cacheHydrated = false;
       if (!isBackground && !forceFresh) {
         // RESET GLOBALS
         isOrganizer = false;
@@ -308,13 +309,14 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
             if (cData.event && cData.event.is_active && (cData.event.is_public || cData.my_role !== 'visitor')) {
               // console.log("⚡️ Hydrating from Cache (Place 2)");
               applyData(cData);
+              cacheHydrated = true;
             }
           } catch (e) { console.warn("Cache parse failed", e); }
         }
       }
 
       // console.log(isBackground ? "🔄 Background Refreshing..." : "🚀 Fetching Fresh Data");
-      if (!isBackground && typeof showCircleLoading === "function") showCircleLoading();
+      if (!isBackground && !cacheHydrated && typeof showCircleLoading === "function") showCircleLoading();
       try {
         const res = await apiFetch("GET", `/events/${eventId}/full-details?_t=${Date.now()}`);
         if (!res) {
