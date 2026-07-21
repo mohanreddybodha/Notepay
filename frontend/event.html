@@ -790,31 +790,16 @@
         <div id="ai-typing-status" style="display:none;"></div>
         <div class="chat-input-bar">
           <div class="chat-input-wrapper">
-            <!-- Emoji Smiley Button inside wrapper -->
-            <button type="button" class="chat-emoji-btn" onclick="toggleInputEmojiTray()" aria-label="Toggle emoji picker">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                <line x1="15" y1="9" x2="15.01" y2="9"></line>
-              </svg>
-            </button>
             <textarea class="chat-input" id="chat-input" rows="1" placeholder="Type message or @ai to ask assistant…" maxlength="500"
               enterkeyhint="send" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false"
               onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChatMessage();}"
-              oninput="autoResizeChatInput(this); updateSendBtnVisibility();" style="padding-right: 102px; width: 100%; border: none; background: transparent; outline: none; resize: none; color: var(--text); font-weight: 600;"></textarea>
-            <!-- Attachment Paperclip Button inside wrapper -->
-            <button type="button" class="chat-attach-btn" onclick="showToast('Attachments coming soon!', 'info')" aria-label="Add attachment">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-              </svg>
-            </button>
-            <div id="ai-inline-btn" style="position:absolute; right:36px; background: rgba(15, 163, 163, 0.1); border: 1px solid rgba(15, 163, 163, 0.3); border-radius: 10px; padding: 5px 10px; display:flex; align-items:center; gap:5px; font-size: 11.5px; font-weight: 800; color: var(--np-teal, #0fa3a3); cursor: pointer; z-index: 10; top: 50%; transform: translateY(-50%); bottom: auto; transition: all 0.15s;" onmouseover="this.style.background='rgba(15, 163, 163, 0.18)';" onmouseout="this.style.background='rgba(15, 163, 163, 0.1)';" onclick="document.getElementById('chat-input').value='@ai '; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" title="Ask AI Assistant">
+              oninput="autoResizeChatInput(this); updateSendBtnVisibility();" style="padding-right: 74px; width: 100%; border: none; background: transparent; outline: none; resize: none; color: var(--text); font-weight: 600;"></textarea>
+            <div id="ai-inline-btn" style="position:absolute; right:6px; background: rgba(15, 163, 163, 0.1); border: 1px solid rgba(15, 163, 163, 0.3); border-radius: 10px; padding: 5px 10px; display:flex; align-items:center; gap:5px; font-size: 11.5px; font-weight: 800; color: var(--np-teal, #0fa3a3); cursor: pointer; z-index: 10; top: 50%; transform: translateY(-50%); bottom: auto; transition: all 0.15s;" onmouseover="this.style.background='rgba(15, 163, 163, 0.18)';" onmouseout="this.style.background='rgba(15, 163, 163, 0.1)';" onclick="document.getElementById('chat-input').value='@ai '; document.getElementById('chat-input').focus(); updateSendBtnVisibility();" title="Ask AI Assistant">
               <span style="font-size:12px;">✨</span> Ask AI
             </div>
           </div>
-          <button type="button" class="chat-send-btn" id="chat-send-btn" aria-label="Send" style="border-radius: 50%; background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; align-items: center; justify-content: center; transition: all 0.15s; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg); margin-left: 2px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          <button type="button" class="chat-send-btn" id="chat-send-btn" aria-label="Send" style="border-radius: 12px; background: var(--np-teal, #0fa3a3); color: white; border: none; align-items: center; justify-content: center; transition: all 0.15s; box-shadow: 0 2px 6px rgba(15, 163, 163, 0.3);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
           </button>
         </div>
         <div id="emoji-picker-ov" onclick="event.stopPropagation()">

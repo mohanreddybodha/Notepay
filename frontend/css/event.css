@@ -3327,12 +3327,12 @@
     .chat-input-wrapper {
       flex: 1;
       display: flex;
-      align-items: flex-end !important;
+      align-items: center;
       min-width: 0;
       background: var(--input-bg, #f3f4f6) !important;
-      border-radius: 22px !important;
+      border-radius: 16px !important;
       border: 1.5px solid rgba(15, 163, 163, 0.45) !important;
-      padding: 4px 10px 4px 12px !important;
+      padding: 4px 6px 4px 14px !important;
       transition: all .2s ease;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
       position: relative;
@@ -3347,27 +3347,6 @@
       border-color: var(--primary, #0FA3A3) !important;
       background: var(--surface) !important;
       box-shadow: 0 0 0 3px rgba(15, 163, 163, 0.2), 0 4px 12px rgba(0,0,0,0.08) !important;
-    }
-
-    .chat-emoji-btn,
-    .chat-attach-btn {
-      background: none;
-      border: none;
-      padding: 4px;
-      margin-bottom: 6px;
-      cursor: pointer;
-      color: var(--text3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      outline: none;
-      transition: color 0.15s;
-    }
-
-    .chat-emoji-btn:hover,
-    .chat-attach-btn:hover {
-      color: var(--np-teal, #0fa3a3);
     }
 
     #ai-inline-btn {
@@ -3405,12 +3384,12 @@
 
     @media (max-width: 420px) {
       .chat-input {
-        padding-right: 44px !important;
+        padding-right: 64px !important;
       }
       #ai-inline-btn {
         padding: 4px 7px !important;
         font-size: 10.5px !important;
-        right: 32px !important;
+        right: 4px !important;
         top: 50% !important;
         bottom: auto !important;
         transform: translateY(-50%) !important;
@@ -3427,7 +3406,7 @@
       visibility: hidden;
       opacity: 0;
       pointer-events: none;
-      background: linear-gradient(135deg, #10B981, #059669);
+      background: linear-gradient(135deg, #0FA3A3, #0D8B8B);
       color: white;
       border: none;
       cursor: pointer;
@@ -3437,7 +3416,7 @@
       flex-shrink: 0;
       transform: scale(0.5);
       transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 3px 10px rgba(15, 163, 163, 0.4);
     }
 
     .chat-send-btn.is-visible {

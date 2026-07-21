@@ -33,7 +33,7 @@
     const aiInlineBtn = document.getElementById('ai-inline-btn');
     if (aiInlineBtn) {
       aiInlineBtn.style.display = val.length > 0 ? 'none' : 'flex';
-      input.style.paddingRight = val.length > 0 ? '12px' : '102px';
+      input.style.paddingRight = val.length > 0 ? '12px' : '74px';
     }
   }
 
@@ -51,15 +51,6 @@
 
   function closeEmojiTray() {
     setEmojiTrayOpen(false);
-  }
-
-  function toggleInputEmojiTray() {
-    if (emojiTrayOpen && emojiPickerMode === 'input') {
-      setEmojiTrayOpen(false);
-    } else {
-      emojiPickerMode = 'input';
-      setEmojiTrayOpen(true);
-    }
   }
 
   let chatScrollLockY = 0;
@@ -988,19 +979,6 @@
         if (emojiPickerMode === 'reaction') {
           sendReactionInlineCtx(unicode);
           closeEmojiTray();
-        } else if (emojiPickerMode === 'input') {
-          const input = document.getElementById('chat-input');
-          if (input) {
-            const start = input.selectionStart;
-            const end = input.selectionEnd;
-            const text = input.value;
-            input.value = text.substring(0, start) + unicode + text.substring(end);
-            input.selectionStart = input.selectionEnd = start + unicode.length;
-            input.focus();
-            autoResizeChatInput(input);
-            updateSendBtnVisibility();
-          }
-          closeEmojiTray();
         }
       });
     }
@@ -1119,7 +1097,6 @@
     updateSendBtnVisibility,
     setEmojiTrayOpen,
     closeEmojiTray,
-    toggleInputEmojiTray,
     lockPageScrollForChat,
     applyChatVisualViewport,
     bindChatVisualViewport,
