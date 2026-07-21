@@ -225,112 +225,120 @@
   function getFriendlyErrorMessage(err) {
     if (!err) return "An unexpected error occurred. Please try again.";
     
-    let msg = typeof err === 'string' ? err : (err.message || err.toString());
-    
-    // 1. Firebase Auth / OTP Errors
-    if (msg.includes("auth/user-not-found") || msg.includes("auth/wrong-password") || msg.includes("auth/invalid-credential") || msg.includes("invalid-credential")) {
-      return "Invalid email address or password. Please check your credentials.";
+    // Extract message string
+    let msg = typeof err === "string" ? err : (err.message || String(err));
+    const msgLower = msg.toLowerCase();
+
+    // 1. Connection / Network errors
+    if (
+      msgLower.includes("failed to fetch") ||
+      msgLower.includes("networkerror") ||
+      msgLower.includes("load failed") ||
+      msgLower.includes("abort") ||
+      msgLower.includes("unable to retrieve authentication token") ||
+      msgLower.includes("network error")
+    ) {
+      return "Connection lost. Please check your internet connection and try again.";
     }
-    if (msg.includes("auth/invalid-email")) {
+
+    // 2. Firebase Authentication Errors
+    if (msg.includes("auth/user-not-found") || msgLower.includes("user-not-found")) {
+      return "Account not found. Please verify your email or sign up.";
+    }
+    if (msg.includes("auth/wrong-password") || msgLower.includes("wrong-password")) {
+      return "Incorrect password. Please try again or reset your password.";
+    }
+    if (msg.includes("auth/invalid-email") || msgLower.includes("invalid-email")) {
       return "Please enter a valid email address.";
     }
-    if (msg.includes("auth/weak-password")) {
-      return "Password is too weak. Please choose a password with at least 6 characters.";
+    if (msg.includes("auth/weak-password") || msgLower.includes("weak-password")) {
+      return "Password is too weak. It must be at least 6 characters long.";
     }
-    if (msg.includes("auth/email-already-in-use") || msg.includes("email-already-in-use")) {
-      return "An account with this email address already exists.";
+    if (msg.includes("auth/email-already-in-use") || msgLower.includes("email-already-in-use")) {
+      return "This email address is already registered. Please sign in instead.";
     }
-    if (msg.includes("auth/too-many-requests") || msg.includes("too-many-requests")) {
-      return "This account has been temporarily locked due to multiple failed attempts. Please try again later.";
+    if (msg.includes("auth/user-disabled") || msgLower.includes("user-disabled")) {
+      return "This account has been deactivated. Please contact support.";
     }
-    if (msg.includes("auth/popup-closed-by-user") || msg.includes("popup-closed-by-user")) {
-      return "The sign-in window was closed. Please try again.";
+    if (msg.includes("auth/too-many-requests") || msgLower.includes("too-many-requests")) {
+      return "Too many failed attempts. Please try again in a few minutes.";
     }
-    if (msg.includes("auth/expired-action-code") || msg.includes("auth/invalid-action-code")) {
-      return "The link has expired or is invalid. Please request a new one.";
+    if (msg.includes("auth/network-request-failed") || msgLower.includes("network-request-failed")) {
+      return "Connection error. Please check your network and try again.";
     }
-    if (msg.includes("auth/network-request-failed") || msg.includes("network-request-failed")) {
-      return "Unable to connect to the authentication service. Please check your network connection.";
-    }
-    if (msg.includes("invalid-verification-code") || msg.includes("invalid-otp")) {
-      return "Invalid OTP. Please check and try again.";
-    }
-    if (msg.includes("code-expired")) {
-      return "OTP has expired. Please request a new one.";
-    }
-    if (msg.includes("quota-exceeded")) {
-      return "SMS quota exceeded. Please try again later.";
+    if (msgLower.includes("firebase") && msgLower.includes("auth")) {
+      return "Authentication service is temporarily unavailable. Please try again.";
     }
 
-    // 2. Network & Connection Issues
-    if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("Failed to connect") || msg.includes("net::ERR_") || msg.includes("Could not connect")) {
-      return "Unable to connect to the server. Please check your internet connection and try again.";
+    // 3. HTTP Server Errors
+    if (
+      msgLower.includes("http 500") ||
+      msgLower.includes("http 502") ||
+      msgLower.includes("http 503") ||
+      msgLower.includes("http 504") ||
+      msgLower.includes("internal server error")
+    ) {
+      return "We are experiencing temporary server issues. Please try again shortly.";
     }
-    if (msg.includes("AbortError") || msg.includes("timeout") || msg.includes("timed out")) {
-      return "The request took too long to respond. Please try again in a few moments.";
+    if (
+      msgLower.includes("http 403") ||
+      msgLower.includes("forbidden") ||
+      msgLower.includes("access denied") ||
+      msgLower.includes("signature has expired") ||
+      msgLower.includes("invalid token")
+    ) {
+      return "Access denied. You do not have permission to perform this action.";
     }
-    if (msg.includes("Unable to retrieve authentication token") || msg.includes("token refresh failed")) {
-      return "Your connection to the authentication service was interrupted. Retrying...";
-    }
-
-    // 3. HTTP Server Status Errors
-    if (msg.includes("HTTP 500") || msg.toLowerCase().includes("internal server error")) {
-      return "We're experiencing temporary issues on our server. Our team has been notified. Please try again shortly.";
-    }
-    if (msg.includes("HTTP 502") || msg.includes("HTTP 503") || msg.includes("HTTP 504") || msg.includes("Bad Gateway") || msg.includes("Service Unavailable") || msg.includes("Gateway Timeout")) {
-      return "The service is temporarily unavailable. Please try again in a few minutes.";
-    }
-    if (msg.includes("HTTP 404") || msg.toLowerCase().includes("not found")) {
+    if (msgLower.includes("http 404") || msgLower.includes("not found")) {
       return "The requested information could not be found.";
     }
-    if (msg.includes("HTTP 403") || msg.toLowerCase().includes("forbidden") || msg.toLowerCase().includes("permission denied")) {
-      return "You do not have permission to perform this action.";
+    if (msgLower.includes("http 400") || msgLower.includes("bad request")) {
+      return "Invalid request. Please verify the details and try again.";
     }
-    if (msg.includes("HTTP 401") || msg.toLowerCase().includes("unauthorized") || msg.toLowerCase().includes("session expired") || msg.includes("Not authenticated")) {
+    if (msgLower.includes("session expired") || msgLower.includes("not authenticated")) {
       return "Your session has expired. Please sign in again to continue.";
     }
-    if (msg.includes("HTTP 400") || msg.toLowerCase().includes("bad request")) {
-      return "The server could not process the request. Please verify your input and try again.";
-    }
-    if (msg.includes("HTTP 429") || msg.toLowerCase().includes("too many requests")) {
-      return "Too many requests. Please wait a moment before trying again.";
-    }
 
-    // 4. Database Constraints
-    if (msg.toLowerCase().includes("unique constraint") || msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("duplicate key")) {
+    // 4. Database / SQL Constraint Errors
+    if (msgLower.includes("duplicate key") || msgLower.includes("unique constraint") || msgLower.includes("already exists")) {
       return "This record already exists in the system.";
     }
-    if (msg.toLowerCase().includes("foreign key") || msg.toLowerCase().includes("violates foreign key")) {
-      return "This operation cannot be completed because this record is linked to other items.";
+    if (msgLower.includes("foreign key") || msgLower.includes("violates foreign key")) {
+      return "This action cannot be completed because it relies on other missing records.";
     }
-    if (msg.toLowerCase().includes("validation error") || msg.toLowerCase().includes("value_error") || msg.toLowerCase().includes("missing field")) {
-      return "Please check that all required fields are filled out correctly.";
+    if (msgLower.includes("value too long") || msgLower.includes("check constraint")) {
+      return "The provided details exceed allowed limits. Please verify your inputs.";
     }
 
-    // Return the original message if it's already a clean user-facing string
-    const technicalKeywords = [
-      "exception", "db", "query", "database", "sqlalchemy", "pyrebase", "firebase", "index", 
-      "null", "undefined", "object", "typeerror", "referenceerror", "syntaxerror", 
-      "eval", "coroutine", "async", "await", "stack", "trace", "line", "file", "http"
-    ];
-    const hasTechnicalKeywords = technicalKeywords.some(keyword => msg.toLowerCase().includes(keyword));
-    if (hasTechnicalKeywords) {
-      return "An unexpected application error occurred. Please try again or contact support if the issue persists.";
+    // 5. Contextual Notepay Application Errors
+    if (msgLower.includes("insufficient funds") || msgLower.includes("balance too low") || msgLower.includes("insufficient balance")) {
+      return "Insufficient balance to complete this transaction.";
+    }
+    if (msgLower.includes("event is inactive") || msgLower.includes("event deactivated") || msgLower.includes("deactivated by the organizer")) {
+      return "This event is no longer active.";
+    }
+    if (msgLower.includes("cannot join event") || msgLower.includes("invalid event invite") || msgLower.includes("invalid invite")) {
+      return "Invalid or expired event invitation link.";
+    }
+    if (msgLower.includes("only organizers") || msgLower.includes("only the organizer")) {
+      return "Only the event organizer has permission to perform this action.";
     }
 
     return msg;
   }
 
   function showToast(msg, type = "default") {
-    const friendlyMsg = (type === "error" || type === "warning") ? getFriendlyErrorMessage(msg) : msg;
     const existing = document.querySelector(".toast");
     if (existing) existing.remove();
     const toast = document.createElement("div");
     toast.className = "toast";
-    if (type === "error") toast.classList.add("toast-error");
+    if (type === "error") {
+      toast.classList.add("toast-error");
+      msg = getFriendlyErrorMessage(msg);
+    }
     else if (type === "warning") toast.classList.add("toast-warning");
     else if (type === "success") toast.classList.add("toast-success");
-    toast.textContent = friendlyMsg;
+    toast.textContent = msg;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2300);
   }
@@ -398,6 +406,7 @@
   global.escapeHtml = escapeHtml;
   global.formatINR = formatINR;
   global.formatDate = formatDate;
+  global.getFriendlyErrorMessage = getFriendlyErrorMessage;
   global.formatDateTime = formatDateTime;
   global.getInitials = getInitials;
   global.getAvatarColor = getAvatarColor;
@@ -407,7 +416,6 @@
   global.getCleanUrl = getCleanUrl;
   global.showToast = showToast;
   global.showGlobalConfirmModal = showGlobalConfirmModal;
-  global.getFriendlyErrorMessage = getFriendlyErrorMessage;
   global.escHtml = escapeHtml;
   global.goBack = function () { window.history.back(); };
 

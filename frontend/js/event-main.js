@@ -167,7 +167,8 @@ let currentTab = (typeof parseCurrentPath === 'function' ? parseCurrentPath().ta
         console.error("Init failed:", e);
         const loader = document.getElementById("loading-pane");
         if (loader) {
-          loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">❌</div><div style="font-weight:bold; margin-bottom:5px;">Load Failed</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">${e.message || "Unknown error"}</div><button class="btn" onclick="location.reload()">Retry</button></div>`;
+          const friendlyMsg = typeof getFriendlyErrorMessage === "function" ? getFriendlyErrorMessage(e) : (e.message || "Unknown error");
+          loader.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:10px;">❌</div><div style="font-weight:bold; margin-bottom:5px;">Load Failed</div><div style="font-size:12px; color:var(--text3); margin-bottom:20px;">${friendlyMsg}</div><button class="btn" onclick="location.reload()">Retry</button></div>`;
         }
       } finally {
         clearTimeout(loadTimeout);

@@ -935,7 +935,7 @@ let filterState = { q: '', sort: 'newest', status: 'all', privacy: 'all', pin: '
         window.location.href = (typeof buildUrl === 'function') ? buildUrl('dashboard') : 'dashboard.html';
         refreshDashboard();
       } catch(err) {
-        mainErrTxt.textContent = err.message || "Failed to create event.";
+        mainErrTxt.textContent = typeof getFriendlyErrorMessage === "function" ? getFriendlyErrorMessage(err) : (err.message || "Failed to create event.");
         mainErr.style.display = "flex";
       } finally {
         btn.disabled = false; btn.style.opacity = "1";

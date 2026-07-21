@@ -481,7 +481,7 @@ let currentCollections = 0;
         window.location.replace((typeof buildUrl === 'function') ? buildUrl('dashboard', 'my-events') : 'dashboard.html?tab=1');
       }
     } catch(err) {
-      mainErrTxt.textContent = err.message || "Failed to save event. Please try again.";
+      mainErrTxt.textContent = typeof getFriendlyErrorMessage === "function" ? getFriendlyErrorMessage(err) : (err.message || "Failed to save event. Please try again.");
       mainErr.classList.add("visible");
       btn.classList.remove("loading"); btn.disabled = false;
     }

@@ -80,8 +80,7 @@ async function apiFetch(method, path, body = null, silent = true) {
 
     if (!res.ok && res.status !== 304) {
       const msg = data?.detail || `HTTP ${res.status}`;
-      const friendlyMsg = (typeof getFriendlyErrorMessage === 'function') ? getFriendlyErrorMessage(msg) : msg;
-      const err = new Error(friendlyMsg);
+      const err = new Error(msg);
       err.isHttpError = true;
       throw err;
     }
@@ -92,11 +91,9 @@ async function apiFetch(method, path, body = null, silent = true) {
 
     return data;
   } catch (e) {
+    // If write failed due to network (not a 4xx/5xx HTTP error), queue it
     if (isWrite && !e.isHttpError) return handleOfflineWrite(method, path, body);
-    const friendlyMsg = (typeof getFriendlyErrorMessage === 'function') ? getFriendlyErrorMessage(e.message || e.toString()) : (e.message || e.toString());
-    const err = new Error(friendlyMsg);
-    err.isHttpError = e.isHttpError;
-    throw err;
+    throw e;
   }
 }
 
