@@ -999,20 +999,25 @@ async function resendOTP() {
 //  Friendly error messages
 // ─────────────────────────────────────────────
 function getFriendlyError(err) {
+  if (!err) return "An unexpected error occurred. Please try again.";
   const code = err.code || "";
-  if (code.includes("invalid-verification-code")) return "Invalid OTP. Please check and try again.";
-  if (code.includes("code-expired"))              return "OTP has expired. Please request a new one.";
-  if (code.includes("too-many-requests"))         return "Too many attempts. Please wait a few minutes.";
-  if (code.includes("billing-not-enabled"))       return "SMS not enabled. Add a test number in Firebase Console.";
-  if (code.includes("invalid-phone-number"))      return "Invalid phone number format.";
+  if (code.includes("invalid-verification-code")) return "Invalid OTP. Please check the code and try again.";
+  if (code.includes("code-expired"))              return "The OTP has expired. Please request a new one.";
+  if (code.includes("too-many-requests"))         return "Too many requests. Please wait a few minutes before trying again.";
+  if (code.includes("billing-not-enabled"))       return "SMS service is temporarily unavailable. Please try again later.";
+  if (code.includes("invalid-phone-number"))      return "Please enter a valid 10-digit phone number.";
   if (code.includes("missing-phone-number"))      return "Please enter a phone number.";
-  if (code.includes("quota-exceeded"))            return "SMS quota exceeded. Try again later.";
+  if (code.includes("quota-exceeded"))            return "SMS request limit reached. Please try again later.";
   
-  if (err.message === "Failed to fetch" || err.message === "NetworkError when attempting to fetch resource.") {
-    return "Cannot connect to the server. Please ensure the backend is running.";
+  const msg = err.message || err.toString() || "";
+  if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("Failed to connect") || msg.includes("net::ERR_") || msg.includes("Could not connect")) {
+    return "Unable to connect to the server. Please check your internet connection and try again.";
+  }
+  if (msg.includes("HTTP 500") || msg.toLowerCase().includes("internal server error")) {
+    return "We're experiencing temporary issues on our server. Please try again shortly.";
   }
 
-  return err.message || "Something went wrong. Please try again.";
+  return msg || "Something went wrong. Please try again.";
 }
 </script>
 </body>
