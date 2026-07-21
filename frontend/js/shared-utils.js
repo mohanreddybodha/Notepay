@@ -241,27 +241,30 @@
       return "Connection lost. Please check your internet connection and try again.";
     }
 
-    // 2. Firebase Authentication Errors
-    if (msg.includes("auth/user-not-found") || msgLower.includes("user-not-found")) {
-      return "Account not found. Please verify your email or sign up.";
+    // 2. Firebase Authentication Errors (SMS / Phone OTP)
+    if (msg.includes("auth/invalid-verification-code") || msgLower.includes("invalid-verification-code") || msgLower.includes("invalid verification code")) {
+      return "Invalid OTP. Please check the code and try again.";
     }
-    if (msg.includes("auth/wrong-password") || msgLower.includes("wrong-password")) {
-      return "Incorrect password. Please try again or reset your password.";
+    if (msg.includes("auth/code-expired") || msgLower.includes("code-expired")) {
+      return "The OTP has expired. Please request a new verification code.";
     }
-    if (msg.includes("auth/invalid-email") || msgLower.includes("invalid-email")) {
-      return "Please enter a valid email address.";
+    if (msg.includes("auth/too-many-requests") || msgLower.includes("too-many-requests")) {
+      return "Too many requests. Please wait a few minutes before trying again.";
     }
-    if (msg.includes("auth/weak-password") || msgLower.includes("weak-password")) {
-      return "Password is too weak. It must be at least 6 characters long.";
+    if (msg.includes("auth/billing-not-enabled") || msgLower.includes("billing-not-enabled")) {
+      return "SMS service is temporarily unavailable. Please try again later.";
     }
-    if (msg.includes("auth/email-already-in-use") || msgLower.includes("email-already-in-use")) {
-      return "This email address is already registered. Please sign in instead.";
+    if (msg.includes("auth/invalid-phone-number") || msgLower.includes("invalid-phone-number") || msgLower.includes("invalid phone number")) {
+      return "Please enter a valid phone number.";
+    }
+    if (msg.includes("auth/missing-phone-number") || msgLower.includes("missing-phone-number")) {
+      return "Please enter a phone number.";
+    }
+    if (msg.includes("auth/quota-exceeded") || msgLower.includes("quota-exceeded") || msgLower.includes("quota exceeded")) {
+      return "SMS request limit reached. Please try again later.";
     }
     if (msg.includes("auth/user-disabled") || msgLower.includes("user-disabled")) {
       return "This account has been deactivated. Please contact support.";
-    }
-    if (msg.includes("auth/too-many-requests") || msgLower.includes("too-many-requests")) {
-      return "Too many failed attempts. Please try again in a few minutes.";
     }
     if (msg.includes("auth/network-request-failed") || msgLower.includes("network-request-failed")) {
       return "Connection error. Please check your network and try again.";
