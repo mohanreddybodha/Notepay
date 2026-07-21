@@ -267,7 +267,7 @@
       return "This account has been deactivated. Please contact support.";
     }
     if (msg.includes("auth/network-request-failed") || msgLower.includes("network-request-failed")) {
-      return "Connection error. Please check your network and try again.";
+      return "Connection error. Please check your internet connection and try again.";
     }
     if (msgLower.includes("firebase") && msgLower.includes("auth")) {
       return "Authentication service is temporarily unavailable. Please try again.";

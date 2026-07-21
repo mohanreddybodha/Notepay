@@ -999,6 +999,10 @@ async function resendOTP() {
 //  Friendly error messages
 // ─────────────────────────────────────────────
 function getFriendlyError(err) {
+  if (typeof getFriendlyErrorMessage === "function") {
+    return getFriendlyErrorMessage(err);
+  }
+  
   const code = err.code || "";
   if (code.includes("invalid-verification-code")) return "Invalid OTP. Please check and try again.";
   if (code.includes("code-expired"))              return "OTP has expired. Please request a new one.";
