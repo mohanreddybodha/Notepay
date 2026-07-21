@@ -3359,7 +3359,8 @@
 
     .chat-input {
       flex: 1;
-      padding: 10px 0;
+      height: 32px; /* Default to single line */
+      padding: 6px 0;
       border: none;
       background: transparent;
       color: var(--text);
